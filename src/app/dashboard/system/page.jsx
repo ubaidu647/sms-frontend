@@ -1,5 +1,6 @@
 'use client';
 
+import { Sidebar } from '@/component/SideBar';
 import { useUserStore } from '@/store/userStore';
 
 export default function Dashboard() {
@@ -7,8 +8,8 @@ export default function Dashboard() {
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold">Welcome, {user?.name}</h1>
-      <p>This is your School dashboard page.</p>
+      <h1 className="text-2xl font-bold text-center text-black">Welcome, {user?.name}</h1>
+      <p className=" text-center text-black">This is your School dashboard page.</p>
     </div>
   );
 }
