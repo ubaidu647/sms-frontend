@@ -1,173 +1,208 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { ChevronDown, ChevronUp, LogOut } from 'lucide-react';
+import {
+  ChevronDown,
+  ChevronUp,
+  LogOut,
+  BookOpen,
+  GraduationCap,
+  Users,
+  ClipboardCheck,
+  BookUser,
+  FileText,
+  CalendarClock,
+  Wallet,
+  Megaphone,
+  Building2,
+  Bus,
+  Map,
+  UserCheck,
+  CalendarCheck,
+  BadgeDollarSign,
+} from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { canSee } from '@/utils/permissions';
 
+// `key` controls which menus appear in the role form / are stored on the role.
+// `base` is the view action used by canSee() — when set, sidebar visibility falls
+// back to canSee(role, base) so own-scope users see the menu even if the admin
+// only granted them view-own-X.
 const navigationItems = [
   {
-    label: 'Dashboard',
-    icon: 'https://c.animaapp.com/mi4xjeskxZrnLa/img/bold.svg',
-    key: 'dashboard',
-    isActive: true,
-    hasSubmenu: false,
-    path: '/dashboard/system',
-  },
-  {
-    label: 'Organizations',
+    label: 'Branches',
     icon: 'https://c.animaapp.com/mi4xjeskxZrnLa/img/frame-1.svg',
-    key: 'organizations',
-    isActive: false,
+    key: 'branch',
+    base: 'view-branch',
     hasSubmenu: false,
-    path: '/dashboard/system/organizations',
+    path: '/dashboard/school/branches',
   },
   {
-    label: 'Fees',
-    icon: 'https://c.animaapp.com/mi4xjeskxZrnLa/img/capa-1-1.svg',
-    key: 'fees',
-    isActive: false,
-    hasSubmenu: true,
-
-    path: '/dashboard',
-  },
-  {
-    label: 'Online Course',
+    label: 'Staff',
     icon: 'https://c.animaapp.com/mi4xjeskxZrnLa/img/layer-18.svg',
-    key: 'online_course',
-    isActive: false,
+    key: 'staff',
+    base: 'view-staff',
     hasSubmenu: false,
-    path: '/dashboard',
+    path: '/dashboard/school/staff',
   },
   {
-    label: 'Zoom Live Class',
-    icon: 'https://c.animaapp.com/mi4xjeskxZrnLa/img/glyph-1.svg',
-    key: 'zoom_class',
-    isActive: false,
-    hasSubmenu: false,
-    path: '/dashboard',
-  },
-  {
-    label: 'Gmeet Live Class',
-    icon: 'https://c.animaapp.com/mi4xjeskxZrnLa/img/frame.svg',
-    key: 'gmeet_class',
-    isActive: false,
-    hasSubmenu: false,
-    path: '/dashboard',
-  },
-  {
-    label: 'Class Timetable',
-    icon: 'https://c.animaapp.com/mi4xjeskxZrnLa/img/layer-2.svg',
-    key: 'timetable',
-    isActive: false,
-    hasSubmenu: false,
-    path: '/dashboard',
-  },
-  {
-    label: 'Lesson Plan',
-    icon: 'https://c.animaapp.com/mi4xjeskxZrnLa/img/solid.svg',
-    key: 'lesson_plan',
-    isActive: false,
-    hasSubmenu: false,
-    path: '/dashboard',
-  },
-  {
-    label: 'Syllabus Status',
+    label: 'Role',
     icon: 'https://c.animaapp.com/mi4xjeskxZrnLa/img/frame-3.svg',
-    key: 'syllabus',
-    isActive: false,
+    key: 'role',
+    base: 'view-role',
     hasSubmenu: false,
-    path: '/dashboard',
+    path: '/dashboard/school/roles',
   },
   {
-    label: 'Homework',
-    icon: 'https://c.animaapp.com/mi4xjeskxZrnLa/img/layer-1-4.svg',
-    key: 'homework',
-    isActive: false,
+    label: 'Classes',
+    iconComponent: GraduationCap,
+    key: 'class',
+    base: 'view-class',
     hasSubmenu: false,
-    path: '/dashboard',
+    path: '/dashboard/school/classes',
   },
   {
-    label: 'Online Exam',
-    icon: 'https://c.animaapp.com/mi4xjeskxZrnLa/img/layer-1-3.svg',
-    key: 'online_exam',
-    isActive: false,
+    label: 'Subjects',
+    iconComponent: BookOpen,
+    key: 'subject',
+    base: 'view-subject',
     hasSubmenu: false,
-    path: '/dashboard',
+    path: '/dashboard/school/subjects',
   },
   {
-    label: 'Apply Leave',
-    icon: 'https://c.animaapp.com/mi4xjeskxZrnLa/img/frame-2.svg',
-    key: 'apply_leave',
-    isActive: false,
+    label: 'Students',
+    iconComponent: Users,
+    key: 'student',
+    base: 'view-student',
     hasSubmenu: false,
-    path: '/dashboard',
-  },
-  {
-    label: 'Visitor Book',
-    icon: 'https://c.animaapp.com/mi4xjeskxZrnLa/img/layer-1-5.svg',
-    key: 'visitor_book',
-    isActive: false,
-    hasSubmenu: false,
-    path: '/dashboard',
+    path: '/dashboard/school/students',
   },
   {
     label: 'Attendance',
-    icon: 'https://c.animaapp.com/mi4xjeskxZrnLa/img/layer-1-6.svg',
+    iconComponent: ClipboardCheck,
     key: 'attendance',
-    isActive: false,
+    base: 'view-attendance',
     hasSubmenu: false,
-    path: '/dashboard',
+    path: '/dashboard/school/attendance',
   },
   {
-    label: 'Cbse Examination',
-    icon: 'https://c.animaapp.com/mi4xjeskxZrnLa/img/frame-4.svg',
-    key: 'cbse_exam',
-    isActive: false,
+    label: 'Staff Attendance',
+    iconComponent: CalendarCheck,
+    key: 'staff-attendance',
+    base: 'view-staff-attendance',
     hasSubmenu: false,
-    path: '/dashboard',
+    path: '/dashboard/school/staff-attendance',
   },
   {
-    label: 'Notice Board',
-    icon: 'https://c.animaapp.com/mi4xjeskxZrnLa/img/layer-1-1.svg',
-    key: 'notice_board',
-    isActive: false,
-    hasSubmenu: false,
-    path: '/dashboard',
+    label: 'Staff Salary',
+    iconComponent: BadgeDollarSign,
+    key: 'staff-salary',
+    hasSubmenu: true,
+    path: '/dashboard/school/staff-salary',
+    submenu: [
+      {
+        label: 'Dashboard',
+        iconComponent: BadgeDollarSign,
+        key: 'salary-dashboard',
+        base: 'view-payslip',
+        path: '/dashboard/school/staff-salary/dashboard',
+      },
+      {
+        label: 'Salary Structures',
+        iconComponent: BadgeDollarSign,
+        key: 'salary-structure',
+        base: 'view-staff-salary',
+        path: '/dashboard/school/staff-salary/structures',
+      },
+      {
+        label: 'Payslips',
+        iconComponent: BadgeDollarSign,
+        key: 'payslip',
+        base: 'view-payslip',
+        path: '/dashboard/school/staff-salary/payslips',
+      },
+    ],
   },
   {
-    label: 'Teachers Reviews',
-    icon: 'https://c.animaapp.com/mi4xjeskxZrnLa/img/capa-1.svg',
-    key: 'teacher_reviews',
-    isActive: false,
+    label: 'Teacher Assignments',
+    iconComponent: BookUser,
+    key: 'teaching-assignment',
+    base: 'view-teaching-assignment',
     hasSubmenu: false,
-    path: '/dashboard',
+    path: '/dashboard/school/teacher-assignments',
   },
   {
-    label: 'Library',
-    icon: 'https://c.animaapp.com/mi4xjeskxZrnLa/img/layer-1.svg',
-    key: 'library',
-    isActive: false,
+    label: 'Exams',
+    iconComponent: FileText,
+    key: 'exam',
+    base: 'view-exam',
     hasSubmenu: false,
-    path: '/dashboard',
+    path: '/dashboard/school/exams',
   },
   {
-    label: 'Transport Routes',
-    icon: 'https://c.animaapp.com/mi4xjeskxZrnLa/img/glyph.svg',
+    label: 'Timetable',
+    iconComponent: CalendarClock,
+    key: 'timetable',
+    base: 'view-timetable',
+    hasSubmenu: false,
+    path: '/dashboard/school/timetable',
+  },
+  {
+    label: 'Fees',
+    iconComponent: Wallet,
+    key: 'fee',
+    base: 'view-fee',
+    hasSubmenu: false,
+    path: '/dashboard/school/fees',
+  },
+  {
+    label: 'Announcements',
+    iconComponent: Megaphone,
+    key: 'announcement',
+    base: 'view-announcement',
+    hasSubmenu: false,
+    path: '/dashboard/school/announcements',
+  },
+  {
+    label: 'Transport',
+    iconComponent: Bus,
     key: 'transport',
-    isActive: false,
-    hasSubmenu: false,
-    path: '/dashboard',
+    hasSubmenu: true,
+    path: '/dashboard/school/transport',
+    submenu: [
+      {
+        label: 'Vehicles',
+        iconComponent: Bus,
+        key: 'vehicle',
+        base: 'view-vehicle',
+        path: '/dashboard/school/transport/vehicles',
+      },
+      {
+        label: 'Routes',
+        iconComponent: Map,
+        key: 'route',
+        base: 'view-route',
+        path: '/dashboard/school/transport/routes',
+      },
+      {
+        label: 'Assignments',
+        iconComponent: UserCheck,
+        key: 'transport-assignment',
+        base: 'view-transport-assignment',
+        path: '/dashboard/school/transport/assignments',
+      },
+    ],
   },
   {
-    label: 'Hostel Rooms',
-    icon: 'https://c.animaapp.com/mi4xjeskxZrnLa/img/layer-1-2.svg',
-    key: 'hostel',
-    isActive: false,
+    label: 'Branch Profile',
+    iconComponent: Building2,
+    key: 'branch',
+    base: 'view-branch',
     hasSubmenu: false,
-    path: '/dashboard',
+    path: '/dashboard/school/branches/profile',
   },
 ];
 
-export const Sidebar = ({ user = {}, actionList = [] }) => {
+export const Sidebar = ({ user = {}, menus = [], actions = [] }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [expandedItems, setExpandedItems] = useState(new Set());
   const [sidebarWidth, setSidebarWidth] = useState(240);
@@ -193,6 +228,32 @@ export const Sidebar = ({ user = {}, actionList = [] }) => {
   const isActive = (itemPath) => {
     return pathname === itemPath;
   };
+
+  const isParentActive = (item) =>
+    !!item.submenu?.some((sub) => pathname === sub.path || pathname.startsWith(sub.path + '/'));
+
+  // Visibility = (admin) OR (menu key granted) OR (any scope of base action granted).
+  // Falling back to canSee(base) means own-scope users see the menu even if the
+  // admin only ticked view-own-X without ticking the base menu.
+  const subVisible = (sub) =>
+    menus.includes(sub.key) || (sub.base && canSee(user?.role, sub.base));
+
+  const isItemVisible = (item) => {
+    if (user?.role?.isPredefined) return true;
+    if (item.submenu) return item.submenu.some(subVisible);
+    return menus.includes(item.key) || (item.base && canSee(user?.role, item.base));
+  };
+
+  useEffect(() => {
+    setExpandedItems((prev) => {
+      const next = new Set(prev);
+      navigationItems.forEach((item, idx) => {
+        if (item.hasSubmenu && isParentActive(item)) next.add(idx);
+      });
+      return next;
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname]);
 
   useEffect(() => {
     const handleMouseMove = (e) => {
@@ -228,8 +289,8 @@ export const Sidebar = ({ user = {}, actionList = [] }) => {
     <>
       <aside
         ref={sidebarRef}
-        style={{ width: `${sidebarWidth}px` }}
-        className="bg-teal-600 min-h-screen p-4 flex-shrink-0 transition-none flex flex-col relative"
+        style={{ width: `${sidebarWidth}px`, height: '100vh' }}
+        className="bg-teal-600 p-4 flex-shrink-0 transition-none flex flex-col sticky top-0 self-start overscroll-contain"
       >
         <div
           onMouseDown={startResizing}
@@ -282,11 +343,12 @@ export const Sidebar = ({ user = {}, actionList = [] }) => {
           </button>
         </div>
 
-        <nav className="flex flex-col items-start w-full flex-1 overflow-y-auto overflow-x-hidden">
+        <nav className="flex flex-col items-start w-full flex-1 overflow-y-auto overflow-x-hidden scrollbar-hide">
           {navigationItems.map((item, index) => {
-            if (user?.role?.name?.toLowerCase() !== 'super-admin' && !actionList.includes(item))
-              return null;
-            const itemIsActive = isActive(item.path);
+            if (!isItemVisible(item)) return null;
+            const itemIsActive = item.hasSubmenu
+              ? isParentActive(item)
+              : isActive(item.path);
             return (
               <div key={index} className="w-full">
                 {item.hasSubmenu ? (
@@ -301,13 +363,31 @@ export const Sidebar = ({ user = {}, actionList = [] }) => {
                     <div
                       className={`flex items-center gap-2.5 ${isCollapsed ? 'px-3' : 'px-7'} w-full overflow-hidden`}
                     >
-                      <img className="w-5 h-5 flex-shrink-0" alt={item.label} src={item.icon} />
+                      {item.iconComponent ? (
+                        <item.iconComponent
+                          className="w-5 h-5 flex-shrink-0"
+                          style={{ color: itemIsActive ? '#FFDC34' : '#ffffff' }}
+                        />
+                      ) : (
+                        <img
+                          className="w-5 h-5 flex-shrink-0"
+                          alt={item.label}
+                          src={item.icon}
+                          style={
+                            itemIsActive
+                              ? {
+                                  filter:
+                                    'brightness(0) saturate(100%) invert(86%) sepia(38%) saturate(1860%) hue-rotate(348deg) brightness(102%) contrast(101%)',
+                                }
+                              : undefined
+                          }
+                        />
+                      )}
                       {!isCollapsed && (
                         <>
                           <span
-                            className={`flex-1 text-left font-medium text-base truncate ${
-                              itemIsActive ? 'text-yellow-300' : 'text-white'
-                            }`}
+                            className="flex-1 text-left font-medium text-base truncate"
+                            style={{ color: itemIsActive ? '#FFDC34' : '#ffffff' }}
                             title={item.label}
                           >
                             {item.label}
@@ -324,49 +404,93 @@ export const Sidebar = ({ user = {}, actionList = [] }) => {
                     </div>
                   </button>
                 ) : (
-                  <Link href={item.path}>
-                    <button
-                      className={`w-full h-14 ${
-                        isCollapsed ? 'justify-center px-0' : 'justify-start px-0'
-                      } rounded-full transition-colors hover:bg-teal-700 ${
-                        itemIsActive ? 'bg-teal-700' : 'bg-transparent'
-                      } flex items-center`}
+                  <Link
+                    href={item.path}
+                    className={`w-full h-14 ${
+                      isCollapsed ? 'justify-center px-0' : 'justify-start px-0'
+                    } rounded-full transition-colors hover:bg-teal-700 ${
+                      itemIsActive ? 'bg-teal-700' : 'bg-transparent'
+                    } flex items-center cursor-pointer no-underline`}
+                  >
+                    <div
+                      className={`flex items-center gap-2.5 ${isCollapsed ? 'px-3' : 'px-7'} w-full overflow-hidden`}
                     >
-                      <div
-                        className={`flex items-center gap-2.5 ${isCollapsed ? 'px-3' : 'px-7'} w-full overflow-hidden`}
-                      >
-                        <img className="w-5 h-5 flex-shrink-0" alt={item.label} src={item.icon} />
-                        {!isCollapsed && (
-                          <span
-                            className={`flex-1 text-left font-medium text-base truncate ${
-                              itemIsActive ? 'text-yellow-300' : 'text-white'
-                            }`}
-                            title={item.label}
-                          >
-                            {item.label}
-                          </span>
-                        )}
-                      </div>
-                    </button>
+                      {item.iconComponent ? (
+                        <item.iconComponent
+                          className="w-5 h-5 flex-shrink-0"
+                          style={{ color: itemIsActive ? '#FFDC34' : '#ffffff' }}
+                        />
+                      ) : (
+                        <img
+                          className="w-5 h-5 flex-shrink-0"
+                          alt={item.label}
+                          src={item.icon}
+                          style={
+                            itemIsActive
+                              ? {
+                                  filter:
+                                    'brightness(0) saturate(100%) invert(86%) sepia(38%) saturate(1860%) hue-rotate(348deg) brightness(102%) contrast(101%)',
+                                }
+                              : undefined
+                          }
+                        />
+                      )}
+                      {!isCollapsed && (
+                        <span
+                          className={`flex-1 text-left font-medium text-base truncate ${
+                            itemIsActive ? 'text-yellow-300' : 'text-white'
+                          }`}
+                          title={item.label}
+                        >
+                          {item.label}
+                        </span>
+                      )}
+                    </div>
                   </Link>
                 )}
 
                 {!isCollapsed && item.hasSubmenu && expandedItems.has(index) && (
-                  <div className="ml-12 mt-2 mb-2 space-y-2">
-                    <button className="w-full h-10 flex items-center justify-start text-white/80 hover:bg-teal-700/60 rounded-md px-4 transition-colors">
-                      <span className="truncate" title="Submenu Item 1">
-                        Submenu Item 1
-                      </span>
-                    </button>
-                    <button className="w-full h-10 flex items-center justify-start text-white/80 hover:bg-teal-700/60 rounded-md px-4 transition-colors">
-                      <span className="truncate" title="Submenu Item 2">
-                        Submenu Item 2
-                      </span>
-                    </button>
+                  <div className="ml-12 mt-2 mb-2 space-y-1">
+                    {item.submenu
+                      ?.filter((sub) => user?.role?.isPredefined || subVisible(sub))
+                      .map((sub) => {
+                        const subActive =
+                          pathname === sub.path ||
+                          pathname.startsWith(sub.path + '/');
+                        const SubIcon = sub.iconComponent;
+                        return (
+                          <Link
+                            key={sub.path}
+                            href={sub.path}
+                            className={`w-full h-10 flex items-center gap-2 rounded-md px-4 transition-colors no-underline ${
+                              subActive
+                                ? 'bg-teal-700/80'
+                                : 'hover:bg-teal-700/60'
+                            }`}
+                          >
+                            {SubIcon && (
+                              <SubIcon
+                                className="w-4 h-4 flex-shrink-0"
+                                style={{
+                                  color: subActive ? '#FFDC34' : '#ffffff',
+                                }}
+                              />
+                            )}
+                            <span
+                              className="truncate text-sm"
+                              title={sub.label}
+                              style={{
+                                color: subActive ? '#FFDC34' : '#ffffff',
+                              }}
+                            >
+                              {sub.label}
+                            </span>
+                          </Link>
+                        );
+                      })}
                   </div>
                 )}
 
-                {(index === 2 || index === 9 || index === 14) && <div className="my-0" />}
               </div>
             );
           })}

@@ -1,6 +1,5 @@
 'use client';
 
-import { Sidebar } from '@/component/SideBar';
 import { useUserStore } from '@/store/userStore';
 
 export default function Dashboard() {

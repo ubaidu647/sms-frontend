@@ -1,0 +1,345 @@
+'use client';
+import React, { useState, useMemo } from 'react';
+import { Table } from '@/component/Table';
+import { Plus, Search, Eye, Edit, Power } from 'lucide-react';
+import AddSubjectModal from './AddSubjectModal';
+import EditSubjectModal from './EditSubjectModal';
+import SubjectDetailModal from './SubjectDetailModal';
+import { useTokenStore } from '@/store/tokenStore';
+import { useUserStore } from '@/store/userStore';
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
+import { fetchData, patchData } from '@/utils/api';
+import toast from 'react-hot-toast';
+import { SUBJECT_TYPES, SUBJECT_CATEGORIES } from '@/constants/subject';
+
+function currentAcademicYear() {
+  const y = new Date().getFullYear();
+  return `${y}-${y + 1}`;
+}
+
+export default function SubjectsPage() {
+  const { accessToken: token } = useTokenStore();
+  const { user } = useUserStore();
+  const queryClient = useQueryClient();
+
+  const [isAddOpen, setIsAddOpen] = useState(false);
+  const [editSubject, setEditSubject] = useState(null);
+  const [detailSubjectId, setDetailSubjectId] = useState(null);
+
+  // Pagination
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(20);
+
+  // Filters
+  const [search, setSearch] = useState('');
+  const [classId, setClassId] = useState('');
+  const [subjectType, setSubjectType] = useState('');
+  const [category, setCategory] = useState('');
+  const [academicYear, setAcademicYear] = useState(currentAcademicYear());
+  const [branchId, setBranchId] = useState('');
+  const [isActive, setIsActive] = useState('true');
+  const [branchDropdownTouched, setBranchDropdownTouched] = useState(false);
+
+  // RBAC
+  const actions = user?.role?.actions || [];
+  const isAdmin = !!user?.role?.isPredefined;
+  const canCreate = isAdmin || actions.includes('create-subject') || actions.includes('create-all-branch-subject');
+  const canUpdate = isAdmin || actions.includes('update-subject') || actions.includes('update-all-branch-subject');
+  const canToggle = isAdmin || actions.includes('delete-subject') || actions.includes('delete-all-branch-subject');
+  const isOrgLevel = isAdmin || actions.includes('view-all-branch-subject');
+  const userBranchId = user?.branchId || user?.branch?._id || '';
+
+  const { data: branchData } = useQuery({
+    queryKey: ['branches-dropdown'],
+    queryFn: () => fetchData({ url: '/branch/list', page: 1, limit: 100, token }),
+    enabled: !!token && isOrgLevel && branchDropdownTouched,
+    staleTime: Infinity,
+  });
+  const branches = branchData?.data || [];
+
+  const { data: classData } = useQuery({
+    queryKey: ['classes-dropdown', branchId, academicYear],
+    queryFn: () => {
+      const params = { page: 1, limit: 200, token };
+      if (academicYear) params.academicYear = academicYear;
+      if (isOrgLevel && branchId) params.branchId = branchId;
+      else if (!isOrgLevel) params.branchId = userBranchId;
+      return fetchData({ url: '/class/list', ...params });
+    },
+    enabled: !!token,
+    staleTime: 30000,
+  });
+  const classes = classData?.data || [];
+
+  const toggleMutation = useMutation({
+    mutationFn: (id) => patchData({ url: `/subject/${id}/toggle-status`, token }),
+    onSuccess: (res, id) => {
+      queryClient.setQueriesData({ queryKey: ['subjects'] }, (old) => {
+        if (!old) return old;
+        return {
+          ...old,
+          data: (old.data || []).map((s) =>
+            s._id === id ? { ...s, isActive: res.data.isActive, status: res.data.status } : s,
+          ),
+        };
+      });
+      queryClient.invalidateQueries({ queryKey: ['subjects'] });
+      const msg = res?.data?.isActive ? 'Subject activated' : 'Subject deactivated';
+      toast.success(msg);
+    },
+    onError: (err) => toast.error(err.message || 'Failed to toggle status'),
+  });
+
+  const columns = useMemo(() => [
+    {
+      header: 'Subject',
+      accessor: 'name',
+      render: (v, row) => (
+        <div>
+          <div className="font-medium text-gray-900">{v}</div>
+          <div className="text-xs text-gray-400">{row.serialNumber}</div>
+        </div>
+      ),
+    },
+    {
+      header: 'Code',
+      accessor: 'code',
+      render: (v) => (
+        <span className="inline-flex px-2 py-0.5 rounded-md text-xs font-mono font-semibold bg-gray-100 text-gray-800">{v}</span>
+      ),
+    },
+    {
+      header: 'Class',
+      accessor: 'class',
+      render: (v) => (
+        <div className="text-sm text-gray-700">
+          {v?.name ?? '—'}
+          {v?.grade && <span className="text-xs text-gray-400 ml-1">(Grade {v.grade})</span>}
+        </div>
+      ),
+    },
+    {
+      header: 'Type',
+      accessor: 'subjectType',
+      render: (v) => (
+        <span className="inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 capitalize">{v}</span>
+      ),
+    },
+    {
+      header: 'Category',
+      accessor: 'category',
+      render: (v) => (
+        <span className="inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 capitalize">{v}</span>
+      ),
+    },
+    {
+      header: 'Marks',
+      accessor: 'totalMarks',
+      render: (v, row) => (
+        <div className="text-sm text-gray-700">
+          <div>{v} <span className="text-gray-400">total</span></div>
+          <div className="text-xs text-gray-400">Pass: {row.passingMarks}</div>
+        </div>
+      ),
+    },
+    {
+      header: 'Teacher',
+      accessor: 'teacherInfo',
+      render: (v) => <div className="text-gray-700 text-sm">{v?.user?.name ?? '—'}</div>,
+    },
+    ...(isOrgLevel ? [{
+      header: 'Branch',
+      accessor: 'branch',
+      render: (v) => <div className="text-gray-600 text-sm">{v?.name ?? '—'}</div>,
+    }] : []),
+    {
+      header: 'Status',
+      accessor: 'isActive',
+      render: (v) => (
+        <span className={`inline-flex px-3 py-1 rounded-full text-xs font-medium ${v ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+          {v ? 'Active' : 'Inactive'}
+        </span>
+      ),
+    },
+  ], [isOrgLevel]);
+
+  const visibleColumns = useMemo(() => columns.map((c) => c.accessor), [columns]);
+
+  const rowActions = (row) => {
+    const items = [{ label: 'View Details', value: 'view', icon: Eye }];
+    if (canUpdate) items.push({ label: 'Edit', value: 'edit', icon: Edit });
+    if (canToggle) items.push(
+      row.isActive
+        ? { label: 'Deactivate', value: 'toggle', icon: Power }
+        : { label: 'Activate', value: 'toggle', icon: Power },
+    );
+    return items;
+  };
+
+  const queryKey = ['subjects', page, limit, search, classId, subjectType, category, academicYear, branchId, isActive, isOrgLevel, userBranchId];
+
+  const { data } = useQuery({
+    queryKey,
+    queryFn: async () => {
+      const params = {};
+      if (!isOrgLevel) params.branchId = userBranchId;
+      else if (branchId) params.branchId = branchId;
+      if (search) params.search = search;
+      if (classId) params.classId = classId;
+      if (subjectType) params.subjectType = subjectType;
+      if (category) params.category = category;
+      if (academicYear) params.academicYear = academicYear;
+      if (isActive !== '') params.isActive = isActive === 'true';
+      return fetchData({ url: '/subject/list', page, limit, token, ...params });
+    },
+    placeholderData: keepPreviousData,
+    enabled: !!token && !!user,
+  });
+
+  const subjects = data?.data || [];
+  const resetPage = () => setPage(1);
+
+  return (
+    <div className="min-h-screen bg-gray-50 p-6">
+      <div className="max-w-7xl mx-auto">
+
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Subjects</h1>
+            <p className="text-gray-600 mt-1">Manage subjects offered in each class</p>
+          </div>
+          {canCreate && (
+            <button
+              onClick={() => setIsAddOpen(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors shadow-sm"
+            >
+              <Plus className="w-5 h-5" />
+              Add Subject
+            </button>
+          )}
+        </div>
+
+        {/* Filters */}
+        <div className="mb-4 flex flex-wrap items-center gap-3">
+          {/* Search */}
+          <div className="flex items-center bg-white px-3 py-2 rounded-lg border border-gray-200 gap-2">
+            <Search className="w-4 h-4 text-gray-400 shrink-0" />
+            <input
+              type="text"
+              placeholder="Search by name or code..."
+              value={search}
+              onChange={(e) => { setSearch(e.target.value); resetPage(); }}
+              className="outline-none text-sm w-56 text-gray-900 placeholder:text-gray-400"
+            />
+          </div>
+
+          {/* Academic year */}
+          <div className="flex items-center bg-white px-3 py-2 rounded-lg border border-gray-200 gap-2">
+            <input
+              type="text"
+              placeholder="2025-2026"
+              value={academicYear}
+              onChange={(e) => { setAcademicYear(e.target.value); resetPage(); }}
+              className="outline-none text-sm w-24 text-gray-900 placeholder:text-gray-400"
+            />
+          </div>
+
+          {/* Status */}
+          <select
+            value={isActive}
+            onChange={(e) => { setIsActive(e.target.value); resetPage(); }}
+            className="bg-white px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700"
+          >
+            <option value="true">Active</option>
+            <option value="false">Inactive</option>
+            <option value="">All</option>
+          </select>
+
+          {/* Class */}
+          <select
+            value={classId}
+            onChange={(e) => { setClassId(e.target.value); resetPage(); }}
+            className="bg-white px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700"
+          >
+            <option value="">All Classes</option>
+            {classes.map((c) => (
+              <option key={c._id} value={c._id}>{c.name} {c.grade ? `(Gr ${c.grade})` : ''}</option>
+            ))}
+          </select>
+
+          {/* Subject type */}
+          <select
+            value={subjectType}
+            onChange={(e) => { setSubjectType(e.target.value); resetPage(); }}
+            className="bg-white px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700 capitalize"
+          >
+            <option value="">All Types</option>
+            {SUBJECT_TYPES.map((t) => <option key={t} value={t} className="capitalize">{t}</option>)}
+          </select>
+
+          {/* Category */}
+          <select
+            value={category}
+            onChange={(e) => { setCategory(e.target.value); resetPage(); }}
+            className="bg-white px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700 capitalize"
+          >
+            <option value="">All Categories</option>
+            {SUBJECT_CATEGORIES.map((c) => <option key={c} value={c} className="capitalize">{c}</option>)}
+          </select>
+
+          {/* Branch — org-level only */}
+          {isOrgLevel && (
+            <select
+              value={branchId}
+              onFocus={() => setBranchDropdownTouched(true)}
+              onChange={(e) => { setBranchId(e.target.value); resetPage(); }}
+              className="bg-white px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700"
+            >
+              <option value="">All Branches</option>
+              {branches.map((b) => <option key={b._id} value={b._id}>{b.name}</option>)}
+            </select>
+          )}
+        </div>
+
+        <Table
+          columns={columns}
+          data={subjects}
+          rowActions={rowActions}
+          onRowAction={(action, row) => {
+            if (action === 'view') setDetailSubjectId(row._id);
+            if (action === 'edit') setEditSubject(row);
+            if (action === 'toggle') toggleMutation.mutate(row._id);
+          }}
+          showImage={false}
+          visibleColumns={visibleColumns}
+          page={page}
+          limit={limit}
+          onPageChange={setPage}
+          onLimitChange={setLimit}
+          totalItems={data?.total}
+        />
+
+        {/* Modals */}
+        <AddSubjectModal
+          isOpen={isAddOpen}
+          onClose={() => setIsAddOpen(false)}
+          onSuccess={() => setIsAddOpen(false)}
+        />
+
+        <EditSubjectModal
+          isOpen={!!editSubject}
+          onClose={() => setEditSubject(null)}
+          onSuccess={() => setEditSubject(null)}
+          subject={editSubject}
+        />
+
+        <SubjectDetailModal
+          isOpen={!!detailSubjectId}
+          onClose={() => setDetailSubjectId(null)}
+          subjectId={detailSubjectId}
+        />
+      </div>
+    </div>
+  );
+}

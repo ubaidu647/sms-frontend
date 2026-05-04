@@ -12,7 +12,9 @@ export const useAuth = () => {
   const isLoggingOut = useRef(false); // Prevent double logout/redirect
 
   const login = (data) => {
-    setUser(data.userCreated || data.user);
+    const u = data.userCreated || data.user;
+    if (u && u.id && !u._id) u._id = u.id;
+    setUser(u);
     setTokens({
       accessToken: data.accessToken || data.token,
       refreshToken: data.refreshToken,
@@ -32,12 +34,20 @@ export const useAuth = () => {
           const res = await apiClient.get('/auth/me');
 
           if (!res) return;
-          if (res) {
-            document.cookie = `auth-role=${encodeURIComponent(
-              JSON.stringify(res?.data?.user?.role),
-            )}; path=/; max-age=86400;`;
-            setUser(res.data.user);
+          // Backend wraps /auth/me as { data: { user }, status, message }; older
+          // shape was { user } at the body root. Support both.
+          const me = res.data?.data?.user || res.data?.user;
+          if (!me) {
+            console.error('Failed to parse /auth/me — no user in payload', res.data);
+            return;
           }
+          // /auth/me returns `id`, /auth/login returns `_id`. Alias so the rest of
+          // the app can always read user._id.
+          if (me.id && !me._id) me._id = me.id;
+          document.cookie = `auth-role=${encodeURIComponent(
+            JSON.stringify(me.role || {}),
+          )}; path=/; max-age=86400;`;
+          setUser(me);
         } catch (err) {
           console.error('Failed to fetch /auth/me:', err);
         } finally {

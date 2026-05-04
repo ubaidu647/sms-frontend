@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { MoreVertical, Eye, Edit, Package, CreditCard, Ban, Trash2 } from 'lucide-react';
 
 export const Table = ({
@@ -8,22 +9,46 @@ export const Table = ({
   showImage = false,
   imageAccessor = 'image',
   visibleColumns = [],
+  rowActions,          // optional — overrides the default action list
+  // controlled pagination (optional)
+  page: controlledPage,
+  limit: controlledLimit,
+  onPageChange,
+  onLimitChange,
+  totalItems, // if provided, assume server returns paginated data
 }) => {
   const [openMenuId, setOpenMenuId] = useState(null);
+  const [anchorRect, setAnchorRect] = useState(null);
 
-  // Pagination States
-  const [limit, setLimit] = useState(10);
-  const [page, setPage] = useState(1);
+  // Pagination States (uncontrolled fallback)
+  const [internalLimit, setInternalLimit] = useState(controlledLimit ?? 10);
+  const [internalPage, setInternalPage] = useState(controlledPage ?? 1);
+  const limit = controlledLimit ?? internalLimit;
+  const page = controlledPage ?? internalPage;
+
+  useEffect(() => {
+    if (controlledLimit !== undefined) setInternalLimit(controlledLimit);
+  }, [controlledLimit]);
+
+  useEffect(() => {
+    if (controlledPage !== undefined) setInternalPage(controlledPage);
+  }, [controlledPage]);
+
   const visibleColumnsArray = visibleColumns.length > 0 ? visibleColumns : [];
   const filteredColumns = columns.filter((col) => visibleColumnsArray.includes(col.accessor));
+
   // Calculate total pages
-  const totalPages = Math.ceil(data.length / limit);
+  const totalPages = Math.ceil((totalItems !== undefined ? totalItems : data.length) / limit) || 1;
 
   // Paginated data
   const paginatedData = useMemo(() => {
+    if (totalItems !== undefined) {
+      // assume server returned already-paginated data
+      return data;
+    }
     const start = (page - 1) * limit;
     return data.slice(start, start + limit);
-  }, [data, page, limit]);
+  }, [data, page, limit, totalItems]);
 
   // Page number generator
   const getPageNumbers = () => {
@@ -43,8 +68,11 @@ export const Table = ({
   };
 
   const handleLimitChange = (e) => {
-    setLimit(Number(e.target.value));
-    setPage(1);
+    const v = Number(e.target.value);
+    if (onLimitChange) onLimitChange(v);
+    else setInternalLimit(v);
+    if (onPageChange) onPageChange(1);
+    else setInternalPage(1);
   };
 
   const toggleMenu = (_id) => {
@@ -56,7 +84,7 @@ export const Table = ({
     if (onRowAction) onRowAction(action, row);
   };
 
-  const actions = [
+  const defaultActions = [
     { label: 'View Details', value: 'view', icon: Eye },
     { label: 'Edit', value: 'edit', icon: Edit },
     { label: 'View Package', value: 'package', icon: Package },
@@ -64,13 +92,18 @@ export const Table = ({
     { label: 'Disable', value: 'disable', icon: Ban },
     { label: 'Delete', value: 'delete', icon: Trash2, danger: true },
   ];
+  // rowActions can be an array (same for every row) or a function (row) => array
+  const resolveActions = (row) =>
+    typeof rowActions === 'function'
+      ? rowActions(row)
+      : (rowActions ?? defaultActions);
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-      <div className="overflow-x-auto">
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden flex flex-col">
+      <div className="overflow-auto scrollbar-hide max-h-[calc(100vh-280px)]">
         {/* ================= TABLE ================= */}
         <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
+          <thead className="bg-gray-50 sticky top-0 z-10">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase w-12">
                 #
@@ -148,40 +181,50 @@ export const Table = ({
                       </td>
                     ))}
 
-                    <td className="px-6 py-4 whitespace-nowrap text-right relative">
+                    <td className="px-6 py-4 whitespace-nowrap text-right">
                       <button
-                        onClick={() => toggleMenu(row._id)}
+                        onClick={(e) => {
+                          const rect = e.currentTarget.getBoundingClientRect();
+                          setAnchorRect({ top: rect.top + window.scrollY, left: rect.left + window.scrollX, right: rect.right + window.scrollX, bottom: rect.bottom + window.scrollY });
+                          setOpenMenuId(openMenuId === row._id ? null : row._id);
+                        }}
                         className="inline-flex items-center justify-center w-8 h-8 rounded-lg hover:bg-gray-100 transition-colors"
                       >
                         <MoreVertical className="w-5 h-5 text-gray-600" />
                       </button>
 
-                      {openMenuId === row._id && (
-                        <>
-                          <div className="fixed inset-0 z-10" onClick={() => setOpenMenuId(null)} />
-                          <div className="absolute right-0 mt-2 w-56 rounded-lg shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-20">
-                            <div className="py-1">
-                              {actions.map((action) => {
-                                const Icon = action.icon;
-                                return (
-                                  <button
-                                    key={action.value}
-                                    onClick={() => handleAction(action.value, row)}
-                                    className={`w-full flex items-center gap-3 px-4 py-2 text-sm transition-colors ${
-                                      action.danger
-                                        ? 'text-red-700 hover:bg-red-50'
-                                        : 'text-gray-700 hover:bg-gray-50'
-                                    }`}
-                                  >
-                                    <Icon className="w-4 h-4" />
-                                    {action.label}
-                                  </button>
-                                );
-                              })}
+                      {openMenuId === row._id && anchorRect && typeof document !== 'undefined' &&
+                        createPortal(
+                          <>
+                            <div className="fixed inset-0 z-40" onClick={() => setOpenMenuId(null)} />
+                            <div
+                              className="absolute z-50 w-56 rounded-lg shadow-lg bg-white ring-1 ring-black ring-opacity-5"
+                              style={{
+                                top: Math.min(anchorRect.bottom + 8, window.scrollY + window.innerHeight - 8 - 200),
+                                left: Math.max(anchorRect.right - 224, 8),
+                              }}
+                            >
+                              <div className="py-1">
+                                {resolveActions(row).map((action) => {
+                                  const Icon = action.icon;
+                                  return (
+                                    <button
+                                      key={action.value}
+                                      onClick={() => handleAction(action.value, row)}
+                                      className={`w-full flex items-center gap-3 px-4 py-2 text-sm transition-colors ${
+                                        action.danger ? 'text-red-700 hover:bg-red-50' : 'text-gray-700 hover:bg-gray-50'
+                                      }`}
+                                    >
+                                      <Icon className="w-4 h-4" />
+                                      {action.label}
+                                    </button>
+                                  );
+                                })}
+                              </div>
                             </div>
-                          </div>
-                        </>
-                      )}
+                          </>,
+                          document.body,
+                        )}
                     </td>
                   </tr>
                 );
@@ -214,7 +257,7 @@ export const Table = ({
         <div className="text-black flex items-center gap-2">
           <button
             disabled={page === 1}
-            onClick={() => setPage(page - 1)}
+            onClick={() => (onPageChange ? onPageChange(page - 1) : setInternalPage(page - 1))}
             className={`px-3 py-1 border rounded text-sm ${page === 1 ? 'opacity-40' : ''}`}
           >
             Prev
@@ -228,7 +271,7 @@ export const Table = ({
             ) : (
               <button
                 key={idx}
-                onClick={() => setPage(num)}
+                onClick={() => (onPageChange ? onPageChange(num) : setInternalPage(num))}
                 className={`px-3 py-1 border rounded text-sm ${
                   num === page ? 'bg-teal-600 text-white' : ''
                 }`}
@@ -240,7 +283,7 @@ export const Table = ({
 
           <button
             disabled={page === totalPages}
-            onClick={() => setPage(page + 1)}
+            onClick={() => (onPageChange ? onPageChange(page + 1) : setInternalPage(page + 1))}
             className={`px-3 py-1 border rounded text-sm ${page === totalPages ? 'opacity-40' : ''}`}
           >
             Next

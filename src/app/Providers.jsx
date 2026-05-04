@@ -6,7 +6,17 @@ import { useState } from "react";
 
 export default function Providers({ children }) {
     // Create query client only once
-    const [queryClient] = useState(() => new QueryClient());
+    const [queryClient] = useState(
+        () =>
+            new QueryClient({
+                defaultOptions: {
+                    queries: {
+                        staleTime: 60 * 1000, // 1 minute — prevents StrictMode double-fetch
+                        refetchOnWindowFocus: false,
+                    },
+                },
+            }),
+    );
 
     return (
         <QueryClientProvider client={queryClient}>

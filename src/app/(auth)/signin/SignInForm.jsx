@@ -56,6 +56,7 @@ const SignInForm = () => {
             <div className="mt-[2rem] flex items-center justify-center">
 
                 <Button
+                    type="submit"
                     styleObject={{
                         baseColor: "bg-black",
                         hoverColor: "hover:bg-gray-800",
@@ -65,7 +66,6 @@ const SignInForm = () => {
                     }}
                     loading={isPending}
                     success={isSuccess}
-                //    handleClick={handleSubmit}
                 >
                     Login
                 </Button>

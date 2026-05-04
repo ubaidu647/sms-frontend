@@ -10,6 +10,43 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  /* Brand palette — built around #00918E */
+  --color-teal-50:  #e8f6f5;
+  --color-teal-100: #ccecea;
+  --color-teal-200: #9adcd9;
+  --color-teal-300: #66cbc7;
+  --color-teal-400: #33b9b5;
+  --color-teal-500: #00a8a4;
+  --color-teal-600: #00918E;
+  --color-teal-700: #007a77;
+  --color-teal-800: #006360;
+  --color-teal-900: #004c4a;
+
+  /* Direct alias if you want explicit brand classes */
+  --color-brand:     #00918E;
+  --color-brand-50:  #e8f6f5;
+  --color-brand-100: #ccecea;
+  --color-brand-500: #00a8a4;
+  --color-brand-600: #00918E;
+  --color-brand-700: #007a77;
+  --color-brand-800: #006360;
+
+  /* Accent palette — built around #FFDC34 (active state, highlights) */
+  --color-yellow-50:  #fffbe5;
+  --color-yellow-100: #fff5b8;
+  --color-yellow-200: #ffec85;
+  --color-yellow-300: #FFDC34;
+  --color-yellow-400: #f5c81c;
+  --color-yellow-500: #e0b400;
+  --color-yellow-600: #b89300;
+  --color-yellow-700: #8a6e00;
+  --color-yellow-800: #5c4900;
+  --color-yellow-900: #3d3000;
+
+  --color-accent:     #FFDC34;
+  --color-accent-300: #FFDC34;
+  --color-accent-400: #f5c81c;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -23,6 +60,25 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Tints legacy <img> sidebar icons to the accent yellow #FFDC34 when active.
+   Lucide icons inherit color via currentColor, so they don't need this. */
+.sidebar-icon-active {
+  filter: brightness(0) saturate(100%) invert(86%) sepia(38%) saturate(1860%)
+    hue-rotate(348deg) brightness(102%) contrast(101%);
+}
+
+@utility scrollbar-hide {
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
+
+  &::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+    background: transparent !important;
+  }
 }
 
 @keyframes shimmer {

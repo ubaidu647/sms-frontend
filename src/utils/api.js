@@ -1,4 +1,4 @@
-import axios from 'axios';
+import apiClient from '@/services/apiClient';
 
 export const fetchData = async ({
   url,
@@ -6,37 +6,62 @@ export const fetchData = async ({
   limit = 20,
   columnFilters = [],
   columnFiltersOr = [],
-  token,
+  token, // kept for call-site compatibility, interceptor handles auth
   ...extraParams
 }) => {
-  const { data } = await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}${url}`, {
+  const { data } = await apiClient.get(url, {
     params: {
       page,
       limit,
       columnFilters: JSON.stringify(columnFilters),
       columnFiltersOr: JSON.stringify(columnFiltersOr),
-      ...extraParams, // any additional params
-    },
-    headers: {
-      ...(token && { Authorization: `Bearer ${token}` }),
+      ...extraParams,
     },
   });
-
-  return data; // whatever the API returns
+  return data;
 };
 
-export const postData = async ({ url, payload = {}, token, params = {} }) => {
+const isFormData = (v) => typeof FormData !== 'undefined' && v instanceof FormData;
+
+// Let the browser set the multipart boundary by clearing the JSON default.
+const buildConfig = (payload, params) => {
+  const config = { params };
+  if (isFormData(payload)) config.headers = { 'Content-Type': undefined };
+  return config;
+};
+
+export const postData = async ({ url, payload = {}, token: _token, params = {} }) => {
   try {
-    const { data } = await axios.post(`${process.env.NEXT_PUBLIC_BACKEND_URL}${url}`, payload, {
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token && { Authorization: `Bearer ${token}` }),
-      },
-      params,
-    });
+    const { data } = await apiClient.post(url, payload, buildConfig(payload, params));
     return data;
   } catch (error) {
-    // This is critical!
+    throw new Error(error.response?.data?.message || error.message || 'Failed');
+  }
+};
+
+export const putData = async ({ url, payload = {}, token: _token, params = {} }) => {
+  try {
+    const { data } = await apiClient.put(url, payload, buildConfig(payload, params));
+    return data;
+  } catch (error) {
+    throw new Error(error.response?.data?.message || error.message || 'Failed');
+  }
+};
+
+export const patchData = async ({ url, payload = {}, token: _token, params = {} }) => {
+  try {
+    const { data } = await apiClient.patch(url, payload, { params });
+    return data;
+  } catch (error) {
+    throw new Error(error.response?.data?.message || error.message || 'Failed');
+  }
+};
+
+export const deleteData = async ({ url, token: _token, params = {} }) => {
+  try {
+    const { data } = await apiClient.delete(url, { params });
+    return data;
+  } catch (error) {
     throw new Error(error.response?.data?.message || error.message || 'Failed');
   }
 };

@@ -30,7 +30,7 @@ apiClient.interceptors.response.use(
         const status = error.response?.status;
         const store = useTokenStore.getState();
 
-        if (status === 401 && !orig._retry) {
+        if (status === 401 && !orig._retry && !orig.url.includes('/auth/login')) {
             orig._retry = true;
 
             if (!store.refreshToken) {

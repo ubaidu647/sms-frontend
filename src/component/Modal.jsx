@@ -30,6 +30,8 @@ export const Modal = ({
     }
   };
 
+  const sizeClass = { sm: 'w-[25vw]', md: 'w-[30vw]', lg: 'w-[55vw]', xl: 'w-[75vw]' }[size] || 'w-[30vw]';
+
   return (
     <>
       <div
@@ -38,7 +40,7 @@ export const Modal = ({
       />
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div
-          className={`bg-white rounded-2xl shadow-2xl w-[30vw] max-h-[90vh] overflow-y-auto transition-all duration-300 transform animate-fadeIn`}
+          className={`bg-white rounded-2xl shadow-2xl ${sizeClass} max-h-[90vh] overflow-y-auto transition-all duration-300 transform animate-fadeIn`}
         >
           <div className="sticky top-0 bg-gradient-to-r from-teal-50 to-blue-50 border-b border-gray-200 px-8 py-6 flex items-start justify-between">
             <div className="flex-1">
