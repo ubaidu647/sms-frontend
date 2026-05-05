@@ -23,7 +23,10 @@ export default function BranchesPage() {
   const isAdmin = !!user?.role?.isPredefined;
   const actions = user?.role?.actions || [];
   const canViewAllProfiles =
-    isAdmin || actions.includes('view-branch') || actions.includes('update-branch');
+    isAdmin ||
+    actions.includes('view-all-branch-profile') ||
+    actions.includes('view-branch');
+  const canCreateBranch = isAdmin || actions.includes('create-branch');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [fromDate, setFromDate] = useState(twoMonthsBeforeISO());
@@ -151,13 +154,15 @@ export default function BranchesPage() {
                 All Profiles
               </Link>
             )}
-            <button
-              onClick={() => setIsModalOpen(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors shadow-sm"
-            >
-              <Plus className="w-5 h-5" />
-              Add Branch
-            </button>
+            {canCreateBranch && (
+              <button
+                onClick={() => setIsModalOpen(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors shadow-sm"
+              >
+                <Plus className="w-5 h-5" />
+                Add Branch
+              </button>
+            )}
           </div>
         </div>
 

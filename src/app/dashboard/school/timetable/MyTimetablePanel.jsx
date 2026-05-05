@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { useTokenStore } from '@/store/tokenStore';
 import { useUserStore } from '@/store/userStore';
 import { useQuery } from '@tanstack/react-query';
@@ -8,6 +8,7 @@ import { MapPin } from 'lucide-react';
 import {
   DAYS,
   DAY_LABELS,
+  PERIOD_TYPE_COLORS,
   currentAcademicYear,
 } from '@/constants/timetable';
 
@@ -17,7 +18,6 @@ export default function MyTimetablePanel() {
 
   const actions = user?.role?.actions || [];
   const isAdmin = !!user?.role?.isPredefined;
-  const isOrgLevel = isAdmin || actions.includes('view-all-branch-timetable');
 
   const ownStaffId =
     user?.staffId ||
@@ -64,17 +64,11 @@ export default function MyTimetablePanel() {
   });
   const grid = ttRes?.data?.grid || {};
   const slots = ttRes?.data?.slots || [];
-
-  const periodNumbers = useMemo(() => {
-    const set = new Set();
-    DAYS.forEach((d) => {
-      Object.keys(grid?.[d] || {}).forEach((n) => set.add(Number(n)));
-    });
-    if (set.size === 0) return [];
-    const arr = Array.from(set);
-    arr.sort((a, b) => a - b);
-    return arr;
-  }, [grid]);
+  const schedule = ttRes?.data?.periods?.[0];
+  const schedulePeriods = schedule?.periods || [];
+  const workingDays = (schedule?.workingDays?.length ? schedule.workingDays : DAYS).filter((d) =>
+    DAYS.includes(d)
+  );
 
   return (
     <div className="space-y-4">
@@ -138,7 +132,7 @@ export default function MyTimetablePanel() {
         <div className="bg-white rounded-xl border border-gray-200 p-12 text-center text-gray-500 text-sm">
           Loading…
         </div>
-      ) : !slots.length ? (
+      ) : !schedulePeriods.length && !slots.length ? (
         <div className="bg-white rounded-xl border border-gray-200 p-12 text-center text-gray-500 text-sm">
           No classes assigned for {academicYear}.
         </div>
@@ -147,10 +141,10 @@ export default function MyTimetablePanel() {
           <table className="w-full text-sm">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-3 py-3 text-left text-xs uppercase text-gray-500 font-semibold w-20">
-                  Period
+                <th className="px-3 py-3 text-left text-xs uppercase text-gray-500 font-semibold w-32">
+                  Time
                 </th>
-                {DAYS.map((d) => (
+                {workingDays.map((d) => (
                   <th
                     key={d}
                     className="px-3 py-3 text-left text-xs uppercase text-gray-500 font-semibold min-w-[160px]"
@@ -161,38 +155,54 @@ export default function MyTimetablePanel() {
               </tr>
             </thead>
             <tbody>
-              {periodNumbers.map((num) => (
-                <tr key={num} className="border-t border-gray-100 align-top">
-                  <td className="px-3 py-3 font-semibold text-gray-900 text-sm">
-                    {num}
-                  </td>
-                  {DAYS.map((d) => {
-                    const slot = grid?.[d]?.[num];
-                    return (
-                      <td key={d} className="px-3 py-3 border-l border-gray-100">
-                        {slot ? (
-                          <div>
-                            <div className="font-semibold text-gray-900">
-                              {slot.subject?.name || slot.customLabel || '—'}
-                            </div>
-                            <div className="text-xs text-gray-500">
-                              {slot.class?.name}
-                              {slot.section?.name ? ` - ${slot.section.name}` : ''}
-                            </div>
-                            {slot.room && (
-                              <div className="mt-1 inline-flex items-center gap-1 text-xs text-gray-500">
-                                <MapPin className="w-3 h-3" /> {slot.room}
-                              </div>
-                            )}
-                          </div>
-                        ) : (
-                          <span className="text-xs text-gray-400 italic">Free</span>
-                        )}
+              {schedulePeriods.map((p) => {
+                const isLesson = p.type === 'lesson';
+                const typeColor = PERIOD_TYPE_COLORS[p.type] || PERIOD_TYPE_COLORS.other;
+                return (
+                  <tr key={p.number} className="border-t border-gray-100 align-top">
+                    <td className="px-3 py-3 text-gray-900 text-sm">
+                      <div className="font-semibold">{p.name}</div>
+                      <div className="text-xs text-gray-500">
+                        {p.startTime} – {p.endTime}
+                      </div>
+                    </td>
+                    {!isLesson ? (
+                      <td
+                        colSpan={workingDays.length}
+                        className={`px-3 py-3 border-l border-gray-100 text-xs font-semibold uppercase tracking-wide text-center ${typeColor}`}
+                      >
+                        {p.type}
                       </td>
-                    );
-                  })}
-                </tr>
-              ))}
+                    ) : (
+                      workingDays.map((d) => {
+                        const slot = grid?.[d]?.[p.number];
+                        return (
+                          <td key={d} className="px-3 py-3 border-l border-gray-100">
+                            {slot ? (
+                              <div>
+                                <div className="font-semibold text-gray-900">
+                                  {slot.subject?.name || slot.customLabel || '—'}
+                                </div>
+                                <div className="text-xs text-gray-500">
+                                  {slot.class?.name}
+                                  {slot.section?.name ? ` - ${slot.section.name}` : ''}
+                                </div>
+                                {slot.room && (
+                                  <div className="mt-1 inline-flex items-center gap-1 text-xs text-gray-500">
+                                    <MapPin className="w-3 h-3" /> {slot.room}
+                                  </div>
+                                )}
+                              </div>
+                            ) : (
+                              <span className="text-xs text-gray-400 italic">Free</span>
+                            )}
+                          </td>
+                        );
+                      })
+                    )}
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

@@ -18,6 +18,7 @@ export default function BranchProfileEditPage() {
     queryFn: async () => (await apiClient.get(`/branch/${branchId}`)).data,
     enabled: !!token && !!branchId,
     staleTime: 60000,
+    retry: false,
   });
   const branch = branchData?.data;
 
@@ -29,9 +30,15 @@ export default function BranchProfileEditPage() {
   });
   const profile = data?.data || null;
 
+  // Fall back to the populated branchId on the profile when /branch/:id is forbidden.
+  const branchName =
+    branch?.name ||
+    (typeof profile?.branchId === 'object' ? profile?.branchId?.name : '') ||
+    '';
+
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-5xl mx-auto">
+    <div className="flex-1 overflow-y-auto bg-gray-50 p-6">
+      <div className="max-w-5xl mx-auto pb-6">
         <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
           <div className="flex items-center gap-3">
             <Link
@@ -61,7 +68,7 @@ export default function BranchProfileEditPage() {
             <BranchProfileForm
               initialProfile={profile}
               branchId={branchId}
-              branchLabel={branch?.name}
+              branchLabel={branchName}
             />
           </>
         )}

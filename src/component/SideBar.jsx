@@ -195,8 +195,8 @@ const navigationItems = [
   {
     label: 'Branch Profile',
     iconComponent: Building2,
-    key: 'branch',
-    base: 'view-branch',
+    key: 'branch-profile',
+    base: 'view-branch-profile',
     hasSubmenu: false,
     path: '/dashboard/school/branches/profile',
   },

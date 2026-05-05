@@ -1,12 +1,12 @@
 'use client';
-import React from 'react';
+import React, { useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { fetchData } from '@/utils/api';
 import { useTokenStore } from '@/store/tokenStore';
 import { useUserStore } from '@/store/userStore';
-import { ArrowLeft, Building2, Edit, Globe, Mail, Phone } from 'lucide-react';
+import { ArrowLeft, Building2, Edit, Globe, Mail, Phone, Plus } from 'lucide-react';
 
 export default function AllBranchProfilesPage() {
   const router = useRouter();
@@ -14,33 +14,75 @@ export default function AllBranchProfilesPage() {
   const { user } = useUserStore();
 
   const isAdmin = !!user?.role?.isPredefined;
-  const canList =
-    isAdmin ||
-    user?.role?.actions?.includes('view-all-branch-fee') ||
-    user?.role?.actions?.includes('view-branch') ||
-    user?.role?.actions?.includes('update-branch');
+  const acts = user?.role?.actions || [];
+  const canList = isAdmin || acts.includes('view-all-branch-profile');
+  const canCreate = isAdmin || acts.includes('create-all-branch-profile');
+  const canViewBranches = isAdmin || acts.includes('view-branch');
 
-  const { data, isLoading } = useQuery({
+  const { data: profilesData, isLoading: loadingProfiles } = useQuery({
     queryKey: ['branch-profiles-list'],
     queryFn: () => fetchData({ url: '/branch-profile/list', token }),
     enabled: !!token && canList,
   });
 
-  const profiles = data?.data || [];
+  const { data: branchesData, isLoading: loadingBranches } = useQuery({
+    queryKey: ['branches-dropdown'],
+    queryFn: () => fetchData({ url: '/branch/list', page: 1, limit: 200, token }),
+    enabled: !!token && canList,
+    staleTime: 60000,
+    // If the role lacks view-branch the API will 403 — silently fall back
+    // to whatever the /branch-profile/list response gives us. The page is
+    // still usable for editing existing profiles in that case.
+    retry: false,
+  });
+
+  const profiles = profilesData?.data || [];
+  const branches = branchesData?.data || [];
+  const isLoading = loadingProfiles || loadingBranches;
+  const branchListUnavailable = !branchesData && !loadingBranches;
+
+  // Merge: every known branch gets a card; profiles for branches we didn't see
+  // in /branch/list (e.g. forbidden) still render via the populated branchId.
+  const cards = useMemo(() => {
+    const map = new Map();
+    for (const b of branches) {
+      map.set(String(b._id), { branch: b, profile: null });
+    }
+    for (const p of profiles) {
+      const bid = p.branchId?._id || p.branchId;
+      if (!bid) continue;
+      const key = String(bid);
+      const existing = map.get(key);
+      if (existing) {
+        existing.profile = p;
+      } else {
+        const populated = typeof p.branchId === 'object' ? p.branchId : null;
+        map.set(key, {
+          branch: populated || { _id: bid, name: '—' },
+          profile: p,
+        });
+      }
+    }
+    return Array.from(map.values());
+  }, [profiles, branches]);
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
           <div className="flex items-center gap-3">
-            <Link
-              href="/dashboard/school/branches"
-              className="flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Branches
-            </Link>
-            <span className="text-gray-300">/</span>
+            {canViewBranches && (
+              <>
+                <Link
+                  href="/dashboard/school/branches"
+                  className="flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  Branches
+                </Link>
+                <span className="text-gray-300">/</span>
+              </>
+            )}
             <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
               <Building2 className="w-6 h-6 text-teal-600" />
               Branch Profiles
@@ -58,27 +100,36 @@ export default function AllBranchProfilesPage() {
           <div className="text-sm text-red-600">You don&apos;t have permission to view this list.</div>
         ) : isLoading ? (
           <div className="text-sm text-gray-500">Loading profiles...</div>
-        ) : profiles.length === 0 ? (
+        ) : cards.length === 0 ? (
           <div className="bg-white rounded-2xl border border-gray-200 p-10 text-center">
             <div className="text-5xl mb-3">🏢</div>
-            <div className="text-lg font-medium text-gray-700">No profiles yet</div>
+            <div className="text-lg font-medium text-gray-700">No branches yet</div>
             <p className="text-sm text-gray-500 mt-1">
-              Open a branch and set up its profile so reports can use a branded header.
+              {branchListUnavailable
+                ? 'No profiles found. To see branches that still need a profile, ask an admin to grant view-branch.'
+                : 'Create a branch first, then come back to set up its profile.'}
             </p>
           </div>
         ) : (
+          <>
+            {branchListUnavailable && (
+              <div className="mb-4 rounded-xl bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-800">
+                Showing only branches that already have a profile. To see branches that
+                still need one, ask an admin to grant <code className="font-mono">view-branch</code>.
+              </div>
+            )}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {profiles.map((p) => {
-              const branchId = p.branchId?._id || p.branchId;
-              const accent = p.primaryColor || '#0d9488';
+            {cards.map(({ branch, profile: p }) => {
+              const accent = p?.primaryColor || '#cbd5e1';
+              const hasProfile = !!p;
               return (
                 <div
-                  key={p._id}
+                  key={branch._id}
                   className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow"
                   style={{ borderTop: `3px solid ${accent}` }}
                 >
                   <div className="aspect-[16/9] bg-gray-50 border-b border-gray-200 flex items-center justify-center">
-                    {p.logo ? (
+                    {p?.logo ? (
                       <img
                         src={p.logo}
                         alt={p.displayName}
@@ -90,22 +141,31 @@ export default function AllBranchProfilesPage() {
                   </div>
                   <div className="p-4 space-y-2">
                     <div>
-                      <div className="font-semibold text-gray-900 truncate" title={p.displayName}>
-                        {p.displayName}
+                      <div className="font-semibold text-gray-900 truncate" title={p?.displayName || branch.name}>
+                        {p?.displayName || branch.name}
                       </div>
-                      {p.tagline && (
+                      {p?.tagline && (
                         <div className="text-xs text-gray-500 truncate" title={p.tagline}>
                           {p.tagline}
                         </div>
                       )}
                     </div>
-                    <div className="text-xs text-gray-600">
-                      Branch:{' '}
-                      <span className="font-medium text-gray-800">
-                        {p.branchId?.name || '—'}
+                    <div className="flex items-center justify-between text-xs">
+                      <div className="text-gray-600">
+                        Branch:{' '}
+                        <span className="font-medium text-gray-800">{branch.name}</span>
+                      </div>
+                      <span
+                        className={`inline-flex px-2 py-0.5 rounded-full font-medium ${
+                          hasProfile
+                            ? 'bg-green-100 text-green-700'
+                            : 'bg-amber-100 text-amber-700'
+                        }`}
+                      >
+                        {hasProfile ? 'Has profile' : 'No profile'}
                       </span>
                     </div>
-                    {(p.printPhone || p.printEmail || p.website) && (
+                    {hasProfile && (p.printPhone || p.printEmail || p.website) && (
                       <div className="text-xs text-gray-500 space-y-0.5 pt-1 border-t border-gray-100">
                         {p.printPhone && (
                           <div className="flex items-center gap-1">
@@ -126,17 +186,34 @@ export default function AllBranchProfilesPage() {
                     )}
                     <button
                       onClick={() =>
-                        router.push(`/dashboard/school/branches/${branchId}/profile`)
+                        router.push(`/dashboard/school/branches/${branch._id}/profile`)
                       }
-                      className="w-full mt-2 flex items-center justify-center gap-1.5 px-3 py-2 bg-teal-600 text-white rounded-lg text-sm hover:bg-teal-700"
+                      disabled={!hasProfile && !canCreate}
+                      title={!hasProfile && !canCreate ? 'You need create permission' : undefined}
+                      className={`w-full mt-2 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-sm transition-colors ${
+                        hasProfile
+                          ? 'bg-teal-600 text-white hover:bg-teal-700'
+                          : canCreate
+                          ? 'bg-amber-500 text-white hover:bg-amber-600'
+                          : 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                      }`}
                     >
-                      <Edit className="w-3.5 h-3.5" /> Edit Profile
+                      {hasProfile ? (
+                        <>
+                          <Edit className="w-3.5 h-3.5" /> Edit Profile
+                        </>
+                      ) : (
+                        <>
+                          <Plus className="w-3.5 h-3.5" /> Create Profile
+                        </>
+                      )}
                     </button>
                   </div>
                 </div>
               );
             })}
-          </div>
+            </div>
+          </>
         )}
       </div>
     </div>

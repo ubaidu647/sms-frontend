@@ -11,6 +11,7 @@ import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tansta
 import { fetchData, patchData } from '@/utils/api';
 import toast from 'react-hot-toast';
 import { SUBJECT_TYPES, SUBJECT_CATEGORIES } from '@/constants/subject';
+import { resolveScope } from '@/utils/permissions';
 
 function currentAcademicYear() {
   const y = new Date().getFullYear();
@@ -43,10 +44,12 @@ export default function SubjectsPage() {
   // RBAC
   const actions = user?.role?.actions || [];
   const isAdmin = !!user?.role?.isPredefined;
-  const canCreate = isAdmin || actions.includes('create-subject') || actions.includes('create-all-branch-subject');
-  const canUpdate = isAdmin || actions.includes('update-subject') || actions.includes('update-all-branch-subject');
-  const canToggle = isAdmin || actions.includes('delete-subject') || actions.includes('delete-all-branch-subject');
-  const isOrgLevel = isAdmin || actions.includes('view-all-branch-subject');
+  const scope = resolveScope(user?.role, 'view-subject');
+  const isOwnOnly = scope === 'own';
+  const isOrgLevel = scope === 'all';
+  const canCreate = !isOwnOnly && (isAdmin || actions.includes('create-subject') || actions.includes('create-all-branch-subject'));
+  const canUpdate = !isOwnOnly && (isAdmin || actions.includes('update-subject') || actions.includes('update-all-branch-subject'));
+  const canToggle = !isOwnOnly && (isAdmin || actions.includes('delete-subject') || actions.includes('delete-all-branch-subject'));
   const userBranchId = user?.branchId || user?.branch?._id || '';
 
   const { data: branchData } = useQuery({
@@ -142,11 +145,11 @@ export default function SubjectsPage() {
         </div>
       ),
     },
-    {
+    ...(isOwnOnly ? [] : [{
       header: 'Teacher',
       accessor: 'teacherInfo',
       render: (v) => <div className="text-gray-700 text-sm">{v?.user?.name ?? '—'}</div>,
-    },
+    }]),
     ...(isOrgLevel ? [{
       header: 'Branch',
       accessor: 'branch',
@@ -161,7 +164,7 @@ export default function SubjectsPage() {
         </span>
       ),
     },
-  ], [isOrgLevel]);
+  ], [isOrgLevel, isOwnOnly]);
 
   const visibleColumns = useMemo(() => columns.map((c) => c.accessor), [columns]);
 
@@ -176,11 +179,55 @@ export default function SubjectsPage() {
     return items;
   };
 
-  const queryKey = ['subjects', page, limit, search, classId, subjectType, category, academicYear, branchId, isActive, isOrgLevel, userBranchId];
+  const queryKey = isOwnOnly
+    ? ['subjects-own', page, limit, search, classId, subjectType, category, academicYear, isActive]
+    : ['subjects', page, limit, search, classId, subjectType, category, academicYear, branchId, isActive, isOrgLevel, userBranchId];
 
   const { data } = useQuery({
     queryKey,
     queryFn: async () => {
+      if (isOwnOnly) {
+        // Server pins staffId to self via view-own-teaching-assignment.
+        const res = await fetchData({
+          url: '/teaching-assignment/list',
+          page: 1,
+          limit: 500,
+          token,
+          academicYear: academicYear || undefined,
+          classId: classId || undefined,
+          isActive: isActive !== '' ? isActive : undefined,
+        });
+        const assignments = res?.data || [];
+        const seen = new Map();
+        for (const a of assignments) {
+          const s = a.subject;
+          if (!s?._id || seen.has(s._id)) continue;
+          seen.set(s._id, {
+            _id: s._id,
+            name: s.name,
+            code: s.code,
+            class: a.class || null,
+            section: a.section || null,
+            subjectType: s.subjectType,
+            category: s.category,
+            totalMarks: s.totalMarks,
+            passingMarks: s.passingMarks,
+            isActive: s.isActive ?? a.isActive,
+          });
+        }
+        let derived = Array.from(seen.values());
+        if (search.trim()) {
+          const q = search.toLowerCase();
+          derived = derived.filter(
+            (s) => s.name?.toLowerCase().includes(q) || s.code?.toLowerCase().includes(q),
+          );
+        }
+        if (subjectType) derived = derived.filter((s) => s.subjectType === subjectType);
+        if (category) derived = derived.filter((s) => s.category === category);
+        const start = (page - 1) * limit;
+        return { data: derived.slice(start, start + limit), total: derived.length };
+      }
+
       const params = {};
       if (!isOrgLevel) params.branchId = userBranchId;
       else if (branchId) params.branchId = branchId;
@@ -206,8 +253,14 @@ export default function SubjectsPage() {
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Subjects</h1>
-            <p className="text-gray-600 mt-1">Manage subjects offered in each class</p>
+            <h1 className="text-3xl font-bold text-gray-900">
+              {isOwnOnly ? 'My Subjects' : 'Subjects'}
+            </h1>
+            <p className="text-gray-600 mt-1">
+              {isOwnOnly
+                ? 'Subjects you are assigned to teach.'
+                : 'Manage subjects offered in each class'}
+            </p>
           </div>
           {canCreate && (
             <button

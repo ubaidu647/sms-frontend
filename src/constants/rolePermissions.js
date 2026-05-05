@@ -29,6 +29,18 @@ export const ACTIONS = {
   UPDATE_BRANCH: 'update-branch',
   DELETE_BRANCH: 'delete-branch',
 
+  // ── Branch profile (logo, stamp, principal info, social links) ────
+  CREATE_BRANCH_PROFILE: 'create-branch-profile',
+  VIEW_BRANCH_PROFILE: 'view-branch-profile',
+  UPDATE_BRANCH_PROFILE: 'update-branch-profile',
+  DELETE_BRANCH_PROFILE: 'delete-branch-profile',
+
+  // ── Branch profile (org-level — across all branches) ──────────────
+  CREATE_ALL_BRANCH_PROFILE: 'create-all-branch-profile',
+  VIEW_ALL_BRANCH_PROFILE: 'view-all-branch-profile',
+  UPDATE_ALL_BRANCH_PROFILE: 'update-all-branch-profile',
+  DELETE_ALL_BRANCH_PROFILE: 'delete-all-branch-profile',
+
   // ── Class management ─────────────────────────────
   CREATE_CLASS: 'create-class',
   VIEW_CLASS: 'view-class',
@@ -221,6 +233,7 @@ export const ACTIONS = {
   // ── Self-scoped (own data only) ───────────────────
   VIEW_OWN_STAFF: 'view-own-staff',
   UPDATE_OWN_STAFF: 'update-own-staff',
+  VIEW_OWN_SUBJECT: 'view-own-subject',
   VIEW_OWN_STAFF_ATTENDANCE: 'view-own-staff-attendance',
   VIEW_OWN_STAFF_SALARY: 'view-own-staff-salary',
   VIEW_OWN_PAYSLIP: 'view-own-payslip',
@@ -236,6 +249,7 @@ export const ACTIONS = {
 
 export const AVAILABLE_MENUS = [
   { key: 'branch',  label: 'Branch' },
+  { key: 'branch-profile', label: 'Branch Profile' },
   { key: 'role',    label: 'Roles' },
   { key: 'staff',   label: 'Staff' },
   { key: 'class',   label: 'Classes' },
@@ -262,6 +276,16 @@ export const AVAILABLE_ACTIONS = [
   { key: ACTIONS.CREATE_BRANCH, label: 'Create', menu: 'branch' },
   { key: ACTIONS.UPDATE_BRANCH, label: 'Update', menu: 'branch' },
   { key: ACTIONS.DELETE_BRANCH, label: 'Delete', menu: 'branch' },
+
+  // Branch Profile
+  { key: ACTIONS.VIEW_BRANCH_PROFILE,             label: 'View',              menu: 'branch-profile' },
+  { key: ACTIONS.CREATE_BRANCH_PROFILE,           label: 'Create',            menu: 'branch-profile' },
+  { key: ACTIONS.UPDATE_BRANCH_PROFILE,           label: 'Update',            menu: 'branch-profile' },
+  { key: ACTIONS.DELETE_BRANCH_PROFILE,           label: 'Delete',            menu: 'branch-profile' },
+  { key: ACTIONS.VIEW_ALL_BRANCH_PROFILE,         label: 'View All Branch',   menu: 'branch-profile' },
+  { key: ACTIONS.CREATE_ALL_BRANCH_PROFILE,       label: 'Create All Branch', menu: 'branch-profile' },
+  { key: ACTIONS.UPDATE_ALL_BRANCH_PROFILE,       label: 'Update All Branch', menu: 'branch-profile' },
+  { key: ACTIONS.DELETE_ALL_BRANCH_PROFILE,       label: 'Delete All Branch', menu: 'branch-profile' },
 
   // Staff
   { key: ACTIONS.VIEW_STAFF,                label: 'View',                    menu: 'staff' },
@@ -448,6 +472,7 @@ export const AVAILABLE_ACTIONS = [
   // Self-scoped (own data only) — admins should know these are weaker than branch-level grants
   { key: ACTIONS.VIEW_OWN_STAFF,                  label: 'View Own',           menu: 'staff',                 scope: 'own' },
   { key: ACTIONS.UPDATE_OWN_STAFF,                label: 'Update Own',         menu: 'staff',                 scope: 'own' },
+  { key: ACTIONS.VIEW_OWN_SUBJECT,                label: 'View Own',           menu: 'subject',               scope: 'own' },
   { key: ACTIONS.VIEW_OWN_STUDENT,                label: 'View Own',           menu: 'student',               scope: 'own' },
   { key: ACTIONS.VIEW_OWN_ATTENDANCE,             label: 'View Own',           menu: 'attendance',            scope: 'own' },
   { key: ACTIONS.VIEW_OWN_STAFF_ATTENDANCE,       label: 'View Own',           menu: 'staff-attendance',      scope: 'own' },

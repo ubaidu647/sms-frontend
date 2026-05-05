@@ -49,10 +49,13 @@ export default function BranchProfileForm({
   const [successState, setSuccessState] = useState(false);
 
   const isAdmin = !!user?.role?.isPredefined;
+  const acts = user?.role?.actions || [];
   const canEdit =
     isAdmin ||
-    user?.role?.actions?.includes('update-branch') ||
-    user?.role?.actions?.includes('create-branch');
+    acts.includes('update-branch-profile') ||
+    acts.includes('create-branch-profile') ||
+    acts.includes('update-all-branch-profile') ||
+    acts.includes('create-all-branch-profile');
 
   useEffect(() => {
     if (initialProfile) {
