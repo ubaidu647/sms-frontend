@@ -144,7 +144,7 @@ export const AddOrganizationModal = ({ isOpen, onClose, token, onSuccess = null 
     >
       <form className="space-y-5">
         {submitError && (
-          <div className="p-4 bg-red-50 border border-red-300 rounded-xl text-red-700 text-sm flex items-start gap-3">
+          <div className="p-4 bg-red-50 dark:bg-red-950/40 border border-red-300 rounded-xl text-red-700 dark:text-red-400 text-sm flex items-start gap-3">
             <div className="flex-shrink-0 mt-0.5">
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                 <path
@@ -189,12 +189,12 @@ export const AddOrganizationModal = ({ isOpen, onClose, token, onSuccess = null 
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
+            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
               Package <span className="text-red-500">*</span>
             </label>
             <select
               {...register('packageId')}
-              className="w-full px-4 py-3 border border-gray-200 rounded-xl"
+              className="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 rounded-xl"
             >
               <option value="691b63ae069855041a3c6655">Basic</option>
               <option value="691b63ae069855041a3c6655">Standard</option>
@@ -204,12 +204,12 @@ export const AddOrganizationModal = ({ isOpen, onClose, token, onSuccess = null 
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
+            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
               Status <span className="text-red-500">*</span>
             </label>
             <select
               {...register('status')}
-              className="w-full px-4 py-3 border border-gray-200 rounded-xl"
+              className="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 rounded-xl"
             >
               <option value="active">Active</option>
               <option value="inactive">Inactive</option>

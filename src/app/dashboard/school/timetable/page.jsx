@@ -35,11 +35,11 @@ export default function TimetablePage() {
   // Own-scope users see only their personal schedule.
   if (isOwnOnly) {
     return (
-      <div className="min-h-screen bg-gray-50 p-6">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-800 p-6 rounded-[50px]">
         <div className="max-w-7xl mx-auto">
           <div className="mb-6">
-            <h1 className="text-3xl font-bold text-gray-900">My Schedule</h1>
-            <p className="text-gray-600 mt-1">Your personal timetable.</p>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">My Schedule</h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-1">Your personal timetable.</p>
           </div>
           <MyTimetablePanel />
         </div>
@@ -58,18 +58,18 @@ export default function TimetablePage() {
   const [activeTab, setActiveTab] = useState(tabs[0]?.key || 'editor');
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-800 p-6 rounded-[50px]">
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Timetable</h1>
-            <p className="text-gray-600 mt-1">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Timetable</h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-1">
               Define period configs, build section schedules and review live status
             </p>
           </div>
         </div>
 
-        <div className="mb-6 flex flex-wrap gap-1 bg-white p-1 rounded-xl border border-gray-200 w-fit">
+        <div className="mb-6 flex flex-wrap gap-1 bg-white dark:bg-gray-900 p-1 rounded-xl border border-gray-200 dark:border-gray-700 w-fit">
           {tabs.map((t) => {
             const Icon = t.icon;
             const isActive = activeTab === t.key;

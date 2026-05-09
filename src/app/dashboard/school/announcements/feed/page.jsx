@@ -82,19 +82,19 @@ export default function AnnouncementFeedPage() {
     <div className="p-6">
       <div className="max-w-3xl mx-auto">
         <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-900">Announcements</h1>
-          <p className="text-gray-600 mt-1">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Announcements</h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-1">
             Notices, events, and important updates targeted to you.
           </p>
         </div>
 
         {isLoading ? (
-          <div className="text-sm text-gray-500">Loading feed...</div>
+          <div className="text-sm text-gray-500 dark:text-gray-400">Loading feed...</div>
         ) : items.length === 0 ? (
-          <div className="bg-white rounded-2xl border border-gray-200 p-10 text-center">
+          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 p-10 text-center">
             <div className="text-5xl mb-3">📭</div>
-            <div className="text-lg font-medium text-gray-700">No announcements yet</div>
-            <p className="text-sm text-gray-500 mt-1">
+            <div className="text-lg font-medium text-gray-700 dark:text-gray-300">No announcements yet</div>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
               When something is posted for your audience, it will appear here.
             </p>
           </div>
@@ -116,7 +116,7 @@ export default function AnnouncementFeedPage() {
             <button
               onClick={() => fetchNextPage()}
               disabled={isFetchingNextPage}
-              className="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+              className="px-4 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50"
             >
               {isFetchingNextPage ? 'Loading...' : 'Load more'}
             </button>
@@ -156,7 +156,7 @@ function FeedCard({ a, onMarkRead, onAcknowledge }) {
   return (
     <div
       ref={ref}
-      className={`rounded-2xl shadow-sm border border-gray-200 border-l-4 ${borderTone} ${cardTone} p-5`}
+      className={`rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 border-l-4 ${borderTone} ${cardTone} p-5`}
     >
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1 min-w-0">
@@ -181,7 +181,7 @@ function FeedCard({ a, onMarkRead, onAcknowledge }) {
               {a.priority}
             </span>
             {a.requiresAck && !a.acknowledged && (
-              <span className="inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-700">
+              <span className="inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-700 dark:text-indigo-400">
                 Acknowledgement required
               </span>
             )}
@@ -191,15 +191,15 @@ function FeedCard({ a, onMarkRead, onAcknowledge }) {
               </span>
             )}
           </div>
-          <h3 className="text-lg font-semibold text-gray-900">{a.title}</h3>
-          <div className="text-xs text-gray-500 mt-0.5">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{a.title}</h3>
+          <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
             {formatDateTime(a.publishedAt)}
             {a.expiresAt && ` · expires ${formatDateTime(a.expiresAt)}`}
           </div>
         </div>
       </div>
 
-      <div className="mt-3 text-sm text-gray-800 whitespace-pre-wrap leading-relaxed">
+      <div className="mt-3 text-sm text-gray-800 dark:text-gray-200 whitespace-pre-wrap leading-relaxed">
         {a.body}
       </div>
 
@@ -211,12 +211,12 @@ function FeedCard({ a, onMarkRead, onAcknowledge }) {
               href={att.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 hover:bg-gray-50 text-sm"
+              className="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 text-sm"
             >
-              <FileText className="w-4 h-4 text-gray-500" />
-              <span className="text-teal-700 font-medium">{att.name}</span>
+              <FileText className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+              <span className="text-teal-700 dark:text-teal-400 font-medium">{att.name}</span>
               {att.size != null && (
-                <span className="text-xs text-gray-500 ml-auto">{formatBytes(att.size)}</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400 ml-auto">{formatBytes(att.size)}</span>
               )}
             </a>
           ))}
@@ -234,12 +234,12 @@ function FeedCard({ a, onMarkRead, onAcknowledge }) {
         ) : !a.isRead ? (
           <button
             onClick={onMarkRead}
-            className="px-3 py-1.5 text-xs text-teal-700 border border-teal-300 rounded-full hover:bg-teal-50"
+            className="px-3 py-1.5 text-xs text-teal-700 dark:text-teal-400 border border-teal-300 rounded-full hover:bg-teal-50 dark:hover:bg-teal-950/40"
           >
             Mark as read
           </button>
         ) : (
-          <span className="inline-flex items-center gap-1 text-xs text-gray-500">
+          <span className="inline-flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
             <Check className="w-3 h-3 text-green-600" />
             {a.acknowledged ? 'Acknowledged' : 'Read'}
           </span>

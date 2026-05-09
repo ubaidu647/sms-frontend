@@ -150,7 +150,7 @@ export default function GeneratePayslipModal({ isOpen, onClose }) {
     >
       <div className="space-y-4">
         {submitError && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+          <div className="p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 rounded-lg text-red-700 dark:text-red-400 text-sm">
             {submitError}
           </div>
         )}
@@ -185,14 +185,14 @@ export default function GeneratePayslipModal({ isOpen, onClose }) {
           {staffId && (
             <div className="col-span-2">
               {structLoading ? (
-                <div className="text-xs text-gray-500">Loading structure…</div>
+                <div className="text-xs text-gray-500 dark:text-gray-400">Loading structure…</div>
               ) : noStruct ? (
                 <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg text-amber-800 text-sm">
                   No active salary structure for this staff. Define one in
                   Salary Structures before generating a payslip.
                 </div>
               ) : struct ? (
-                <div className="p-3 bg-teal-50 border border-teal-100 rounded-lg text-sm text-gray-700 flex flex-wrap gap-x-6 gap-y-1">
+                <div className="p-3 bg-teal-50 dark:bg-teal-950/40 border border-teal-100 rounded-lg text-sm text-gray-700 dark:text-gray-300 flex flex-wrap gap-x-6 gap-y-1">
                   <span>
                     Basic:{' '}
                     <strong>

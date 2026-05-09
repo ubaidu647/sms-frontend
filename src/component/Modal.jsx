@@ -40,16 +40,16 @@ export const Modal = ({
       />
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div
-          className={`bg-white rounded-2xl shadow-2xl ${sizeClass} max-h-[90vh] overflow-y-auto transition-all duration-300 transform animate-fadeIn`}
+          className={`bg-white dark:bg-gray-900 rounded-2xl shadow-2xl ${sizeClass} max-h-[90vh] overflow-y-auto transition-all duration-300 transform animate-fadeIn`}
         >
-          <div className="sticky top-0 bg-gradient-to-r from-teal-50 to-blue-50 border-b border-gray-200 px-8 py-6 flex items-start justify-between">
+          <div className="sticky top-0 bg-gradient-to-r from-teal-50 to-blue-50 dark:from-teal-950/40 dark:to-blue-950/40 border-b border-gray-200 dark:border-gray-700 px-8 py-6 flex items-start justify-between">
             <div className="flex-1">
-              <h2 className="text-2xl font-bold text-gray-900">{title}</h2>
-              {subtitle && <p className="text-sm text-gray-600 mt-1">{subtitle}</p>}
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{title}</h2>
+              {subtitle && <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{subtitle}</p>}
             </div>
             <button
               onClick={onClose}
-              className="ml-4 text-gray-400 hover:text-gray-600 transition-colors p-2 hover:bg-gray-100 rounded-lg"
+              className="ml-4 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg"
               type="button"
             >
               <X className="w-6 h-6" />
@@ -59,7 +59,7 @@ export const Modal = ({
           <div className="px-8 py-6">{children}</div>
 
           {footer && (
-            <div className="sticky bottom-0 bg-gray-50 border-t border-gray-200 px-8 py-6 flex gap-3 justify-end">
+            <div className="sticky bottom-0 bg-gray-50 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 px-8 py-6 flex gap-3 justify-end">
               {footer}
             </div>
           )}

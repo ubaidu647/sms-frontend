@@ -149,17 +149,17 @@ export default function CalendarViewPanel() {
   return (
     <div className="space-y-4">
       {/* Selectors */}
-      <div className="bg-white rounded-xl border border-gray-200 p-4">
+      <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           {isOrgLevel && (
             <div>
-              <label className="block text-xs font-semibold text-gray-600 mb-1">
+              <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">
                 Branch
               </label>
               <select
                 value={branchId}
                 onChange={(e) => setBranchId(e.target.value)}
-                className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg bg-white text-gray-900 outline-none focus:border-teal-500"
+                className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 outline-none focus:border-teal-500"
               >
                 <option value="">Select branch...</option>
                 {branches.map((b) => (
@@ -171,13 +171,13 @@ export default function CalendarViewPanel() {
             </div>
           )}
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1">
+            <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">
               Staff Type
             </label>
             <select
               value={staffType}
               onChange={(e) => setStaffType(e.target.value)}
-              className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg bg-white text-gray-900 outline-none focus:border-teal-500 capitalize"
+              className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 outline-none focus:border-teal-500 capitalize"
             >
               <option value="">All</option>
               {STAFF_TYPES.map((t) => (
@@ -191,12 +191,12 @@ export default function CalendarViewPanel() {
       </div>
 
       {/* Calendar card */}
-      <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden flex flex-col">
+      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col">
         {/* Header bar */}
         <div className="flex items-center justify-between px-6 py-4 gap-4 flex-wrap">
           <button
             onClick={() => setWeekStart(startOfWeekMonday(new Date()))}
-            className="px-5 py-2 rounded-full border border-gray-200 text-sm font-semibold text-gray-800 hover:bg-gray-50 shadow-sm"
+            className="px-5 py-2 rounded-full border border-gray-200 dark:border-gray-700 text-sm font-semibold text-gray-800 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 shadow-sm"
           >
             Today
           </button>
@@ -204,22 +204,22 @@ export default function CalendarViewPanel() {
           <div className="flex items-center gap-4">
             <button
               onClick={() => setWeekStart(addDays(weekStart, -7))}
-              className="w-9 h-9 rounded-full border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-50"
+              className="w-9 h-9 rounded-full border border-gray-200 dark:border-gray-700 flex items-center justify-center text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
-            <div className="text-base font-semibold text-gray-900 min-w-[160px] text-center">
+            <div className="text-base font-semibold text-gray-900 dark:text-gray-100 min-w-[160px] text-center">
               {formatRange(days[0], weekEnd)}
             </div>
             <button
               onClick={() => setWeekStart(addDays(weekStart, 7))}
-              className="w-9 h-9 rounded-full border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-50"
+              className="w-9 h-9 rounded-full border border-gray-200 dark:border-gray-700 flex items-center justify-center text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
             >
               <ChevronRight className="w-5 h-5" />
             </button>
           </div>
 
-          <div className="flex bg-gray-100 rounded-full p-1">
+          <div className="flex bg-gray-100 dark:bg-gray-800 rounded-full p-1">
             {VIEW_OPTIONS.map((v) => {
               const active = view === v;
               return (
@@ -240,9 +240,9 @@ export default function CalendarViewPanel() {
         </div>
 
         {/* Grid */}
-        <div className="overflow-auto scrollbar-hide border-t border-gray-100 max-h-[calc(100vh-380px)]">
+        <div className="overflow-auto scrollbar-hide border-t border-gray-100 dark:border-gray-800 max-h-[calc(100vh-380px)]">
           {!effectiveBranchId ? (
-            <div className="p-12 text-center text-gray-500 text-sm">
+            <div className="p-12 text-center text-gray-500 dark:text-gray-400 text-sm">
               Pick a branch to load the week.
             </div>
           ) : isLoading && staffList.length === 0 ? (
@@ -250,25 +250,25 @@ export default function CalendarViewPanel() {
               <div className="w-8 h-8 border-4 border-teal-600 border-t-transparent rounded-full animate-spin" />
             </div>
           ) : staffList.length === 0 ? (
-            <div className="p-12 text-center text-gray-500 text-sm">
+            <div className="p-12 text-center text-gray-500 dark:text-gray-400 text-sm">
               No staff in this branch.
             </div>
           ) : (
             <table className="w-full border-collapse">
               <thead>
-                <tr className="bg-white">
-                  <th className="sticky left-0 bg-white border-b border-r border-gray-100 px-4 py-3 w-44 text-center align-middle">
+                <tr className="bg-white dark:bg-gray-900">
+                  <th className="sticky left-0 bg-white dark:bg-gray-900 border-b border-r border-gray-100 dark:border-gray-800 px-4 py-3 w-44 text-center align-middle">
                     <Clock className="w-5 h-5 text-teal-600 mx-auto" />
                   </th>
                   {days.map((d, i) => (
                     <th
                       key={i}
-                      className="border-b border-r border-gray-100 px-3 py-3 text-center"
+                      className="border-b border-r border-gray-100 dark:border-gray-800 px-3 py-3 text-center"
                     >
-                      <div className="text-sm font-bold text-teal-700">
+                      <div className="text-sm font-bold text-teal-700 dark:text-teal-400">
                         {d.toLocaleDateString('en', { weekday: 'long' })}
                       </div>
-                      <div className="text-base font-semibold text-gray-700 mt-0.5">
+                      <div className="text-base font-semibold text-gray-700 dark:text-gray-300 mt-0.5">
                         {d.getDate()}
                       </div>
                     </th>
@@ -278,11 +278,11 @@ export default function CalendarViewPanel() {
               <tbody>
                 {staffList.map((s) => (
                   <tr key={s.staffId} className="hover:bg-gray-50/40">
-                    <td className="sticky left-0 bg-white hover:bg-gray-50/40 border-b border-r border-gray-100 px-4 py-3 align-middle">
+                    <td className="sticky left-0 bg-white dark:bg-gray-900 hover:bg-gray-50/40 border-b border-r border-gray-100 dark:border-gray-800 px-4 py-3 align-middle">
                       <div className="text-xs font-semibold text-teal-600 capitalize">
                         {s.staffType || s.employeeId || ''}
                       </div>
-                      <div className="text-sm font-medium text-gray-900 truncate max-w-[160px]">
+                      <div className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate max-w-[160px]">
                         {s.name}
                       </div>
                     </td>
@@ -291,7 +291,7 @@ export default function CalendarViewPanel() {
                       return (
                         <td
                           key={di}
-                          className="border-b border-r border-gray-100 px-3 py-3 text-center align-middle h-[60px]"
+                          className="border-b border-r border-gray-100 dark:border-gray-800 px-3 py-3 text-center align-middle h-[60px]"
                         >
                           {status ? (
                             <span

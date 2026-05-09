@@ -52,40 +52,40 @@ export default function CollectionReportPage() {
       <div className="max-w-5xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
               <TrendingUp className="w-7 h-7 text-teal-600" /> Collection Report
             </h1>
-            <p className="text-gray-600 mt-1">Daily / monthly cashbook by payment method.</p>
+            <p className="text-gray-600 dark:text-gray-400 mt-1">Daily / monthly cashbook by payment method.</p>
           </div>
         </div>
 
         <div className="flex flex-wrap items-end gap-3 mb-6">
           <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-1">From</label>
+            <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">From</label>
             <input
               type="date"
               value={from}
               onChange={(e) => setFrom(e.target.value)}
-              className="bg-white px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-900 outline-none"
+              className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-900 dark:text-gray-100 outline-none"
             />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-1">To</label>
+            <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">To</label>
             <input
               type="date"
               value={to}
               onChange={(e) => setTo(e.target.value)}
-              className="bg-white px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-900 outline-none"
+              className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-900 dark:text-gray-100 outline-none"
             />
           </div>
           {isOrgLevel && (
             <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-1">Branch</label>
+              <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Branch</label>
               <select
                 value={branchId}
                 onFocus={() => setBranchDropdownTouched(true)}
                 onChange={(e) => setBranchId(e.target.value)}
-                className="bg-white px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700"
+                className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
               >
                 <option value="">All Branches</option>
                 {branches.map((b) => (
@@ -99,7 +99,7 @@ export default function CollectionReportPage() {
         </div>
 
         {isFetching && !report ? (
-          <div className="text-sm text-gray-500">Loading...</div>
+          <div className="text-sm text-gray-500 dark:text-gray-400">Loading...</div>
         ) : !report ? null : (
           <>
             <div className="grid grid-cols-2 gap-4 mb-6">
@@ -110,24 +110,24 @@ export default function CollectionReportPage() {
                   {report.from} → {report.to}
                 </div>
               </div>
-              <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
-                <div className="text-sm text-gray-500 uppercase tracking-widest">Payments</div>
-                <div className="text-4xl font-bold text-gray-900 mt-2">{report.totalCount}</div>
-                <div className="text-sm text-gray-500 mt-1">
+              <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+                <div className="text-sm text-gray-500 dark:text-gray-400 uppercase tracking-widest">Payments</div>
+                <div className="text-4xl font-bold text-gray-900 dark:text-gray-100 mt-2">{report.totalCount}</div>
+                <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                   {report.byMethod?.length || 0} method(s)
                 </div>
               </div>
             </div>
 
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-              <div className="px-6 py-4 border-b border-gray-200">
-                <h2 className="text-base font-bold text-gray-900">Breakdown by Method</h2>
+            <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+              <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                <h2 className="text-base font-bold text-gray-900 dark:text-gray-100">Breakdown by Method</h2>
               </div>
               {(!report.byMethod || report.byMethod.length === 0) ? (
-                <p className="px-6 py-8 text-sm text-gray-500 text-center">No payments in range.</p>
+                <p className="px-6 py-8 text-sm text-gray-500 dark:text-gray-400 text-center">No payments in range.</p>
               ) : (
                 <table className="w-full text-sm">
-                  <thead className="bg-gray-50 text-gray-600">
+                  <thead className="bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
                     <tr>
                       <th className="px-6 py-3 text-left">Method</th>
                       <th className="px-6 py-3 text-right">Count</th>
@@ -141,7 +141,7 @@ export default function CollectionReportPage() {
                         ? Math.round((m.total / report.grandTotal) * 100)
                         : 0;
                       return (
-                        <tr key={m._id} className="border-t border-gray-100">
+                        <tr key={m._id} className="border-t border-gray-100 dark:border-gray-800">
                           <td className="px-6 py-3">
                             <span
                               className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${
@@ -151,19 +151,19 @@ export default function CollectionReportPage() {
                               {m._id}
                             </span>
                           </td>
-                          <td className="px-6 py-3 text-right text-gray-700">{m.count}</td>
-                          <td className="px-6 py-3 text-right font-medium text-gray-900">
+                          <td className="px-6 py-3 text-right text-gray-700 dark:text-gray-300">{m.count}</td>
+                          <td className="px-6 py-3 text-right font-medium text-gray-900 dark:text-gray-100">
                             {formatMoney(m.total)}
                           </td>
                           <td className="px-6 py-3 text-right">
                             <div className="flex items-center justify-end gap-2">
-                              <div className="w-24 h-2 bg-gray-100 rounded-full overflow-hidden">
+                              <div className="w-24 h-2 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
                                 <div
                                   className="h-full bg-teal-500"
                                   style={{ width: `${share}%` }}
                                 />
                               </div>
-                              <span className="text-xs text-gray-600 w-10 text-right">
+                              <span className="text-xs text-gray-600 dark:text-gray-400 w-10 text-right">
                                 {share}%
                               </span>
                             </div>

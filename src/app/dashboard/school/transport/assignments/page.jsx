@@ -1,7 +1,7 @@
 'use client';
 import React, { useMemo, useState } from 'react';
 import { Table } from '@/component/Table';
-import { Plus, Search, Edit, Trash2 } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, X } from 'lucide-react';
 import { useTokenStore } from '@/store/tokenStore';
 import { useUserStore } from '@/store/userStore';
 import {
@@ -33,14 +33,53 @@ export default function AssignmentsPage() {
 
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(20);
+  // Filters — draft state holds in-progress UI values; applied state drives the API.
+  const defaultAcademicYear = currentAcademicYear();
+  const [draftSearch, setDraftSearch] = useState('');
+  const [draftRouteId, setDraftRouteId] = useState('');
+  const [draftVehicleId, setDraftVehicleId] = useState('');
+  const [draftAcademicYear, setDraftAcademicYear] = useState(defaultAcademicYear);
+  const [draftStatus, setDraftStatus] = useState('');
+  const [draftBranchId, setDraftBranchId] = useState('');
+  const [draftIsActive, setDraftIsActive] = useState('true');
+
   const [search, setSearch] = useState('');
   const [routeId, setRouteId] = useState('');
   const [vehicleId, setVehicleId] = useState('');
-  const [academicYear, setAcademicYear] = useState(currentAcademicYear());
+  const [academicYear, setAcademicYear] = useState(defaultAcademicYear);
   const [status, setStatus] = useState('');
   const [branchId, setBranchId] = useState('');
   const [isActive, setIsActive] = useState('true');
   const [branchDropdownTouched, setBranchDropdownTouched] = useState(false);
+
+  const applyFilters = () => {
+    setSearch(draftSearch);
+    setRouteId(draftRouteId);
+    setVehicleId(draftVehicleId);
+    setAcademicYear(draftAcademicYear);
+    setStatus(draftStatus);
+    setBranchId(draftBranchId);
+    setIsActive(draftIsActive);
+    setPage(1);
+  };
+
+  const clearFilters = () => {
+    setDraftSearch('');
+    setDraftRouteId('');
+    setDraftVehicleId('');
+    setDraftAcademicYear(defaultAcademicYear);
+    setDraftStatus('');
+    setDraftBranchId('');
+    setDraftIsActive('true');
+    setSearch('');
+    setRouteId('');
+    setVehicleId('');
+    setAcademicYear(defaultAcademicYear);
+    setStatus('');
+    setBranchId('');
+    setIsActive('true');
+    setPage(1);
+  };
 
   const scope = resolveScope(user?.role, 'view-transport-assignment');
   const isOrgLevel = scope === 'all';
@@ -73,13 +112,14 @@ export default function AssignmentsPage() {
   });
   const branches = branchData?.data || [];
 
-  const effectiveBranchId = isOrgLevel ? branchId : userBranchId;
+  // Dropdown queries: branchId uses draft so picking a branch instantly refreshes options.
+  const draftEffectiveBranchId = isOrgLevel ? draftBranchId : userBranchId;
 
   const { data: routeData } = useQuery({
-    queryKey: ['routes-dropdown', effectiveBranchId],
+    queryKey: ['routes-dropdown', draftEffectiveBranchId],
     queryFn: () => {
       const params = { page: 1, limit: 200, token };
-      if (effectiveBranchId) params.branchId = effectiveBranchId;
+      if (draftEffectiveBranchId) params.branchId = draftEffectiveBranchId;
       return fetchData({ url: '/transport/route', ...params });
     },
     enabled: !!token,
@@ -88,10 +128,10 @@ export default function AssignmentsPage() {
   const routes = routeData?.data || [];
 
   const { data: vehicleData } = useQuery({
-    queryKey: ['vehicles-dropdown-assign', effectiveBranchId],
+    queryKey: ['vehicles-dropdown-assign', draftEffectiveBranchId],
     queryFn: () => {
       const params = { page: 1, limit: 200, token };
-      if (effectiveBranchId) params.branchId = effectiveBranchId;
+      if (draftEffectiveBranchId) params.branchId = draftEffectiveBranchId;
       return fetchData({ url: '/transport/vehicle', ...params });
     },
     enabled: !!token,
@@ -147,25 +187,24 @@ export default function AssignmentsPage() {
     ? list.filter((a) => {
         const term = search.toLowerCase();
         return (
-          a.studentId?.user?.name?.toLowerCase().includes(term) ||
-          a.studentId?.admissionNumber?.toLowerCase().includes(term) ||
-          a.routeId?.name?.toLowerCase().includes(term) ||
-          a.routeId?.code?.toLowerCase().includes(term) ||
+          a.student?.name?.toLowerCase().includes(term) ||
+          a.student?.admissionNumber?.toLowerCase().includes(term) ||
+          a.route?.name?.toLowerCase().includes(term) ||
+          a.route?.code?.toLowerCase().includes(term) ||
           a.stopName?.toLowerCase().includes(term)
         );
       })
     : list;
-  const resetPage = () => setPage(1);
 
   const columns = useMemo(
     () => [
       {
         header: 'Student',
-        accessor: 'studentId',
+        accessor: 'student',
         render: (s) => (
           <div>
-            <div className="font-medium text-gray-900">{s?.user?.name || '—'}</div>
-            <div className="text-xs text-gray-500">
+            <div className="font-medium text-gray-900 dark:text-gray-100">{s?.name || '—'}</div>
+            <div className="text-xs text-gray-500 dark:text-gray-400">
               {s?.admissionNumber}
               {s?.rollNumber ? ` · Roll ${s.rollNumber}` : ''}
             </div>
@@ -174,31 +213,31 @@ export default function AssignmentsPage() {
       },
       {
         header: 'Route',
-        accessor: 'routeId',
+        accessor: 'route',
         render: (r) => (
-          <div className="text-sm text-gray-700">
+          <div className="text-sm text-gray-700 dark:text-gray-300">
             {r?.name || '—'}
-            {r?.code && <span className="text-gray-400"> · {r.code}</span>}
+            {r?.code && <span className="text-gray-400 dark:text-gray-500"> · {r.code}</span>}
           </div>
         ),
       },
       {
         header: 'Stop',
         accessor: 'stopName',
-        render: (v) => <span className="text-sm text-gray-700">{v}</span>,
+        render: (v) => <span className="text-sm text-gray-700 dark:text-gray-300">{v}</span>,
       },
       {
         header: 'Vehicle',
-        accessor: 'vehicleId',
+        accessor: 'vehicle',
         render: (v) => (
-          <span className="text-sm text-gray-700">{v?.registrationNumber || '—'}</span>
+          <span className="text-sm text-gray-700 dark:text-gray-300">{v?.registrationNumber || '—'}</span>
         ),
       },
       {
         header: 'Direction',
         accessor: 'direction',
         render: (v) => (
-          <span className="text-sm text-gray-700">
+          <span className="text-sm text-gray-700 dark:text-gray-300">
             {ASSIGNMENT_DIRECTION_LABELS[v] || v}
           </span>
         ),
@@ -206,12 +245,12 @@ export default function AssignmentsPage() {
       {
         header: 'Monthly Fee',
         accessor: 'monthlyFee',
-        render: (v) => <span className="text-sm font-medium text-teal-700">{formatMoney(v)}</span>,
+        render: (v) => <span className="text-sm font-medium text-teal-700 dark:text-teal-400">{formatMoney(v)}</span>,
       },
       {
         header: 'Year',
         accessor: 'academicYear',
-        render: (v) => <span className="text-sm text-gray-600">{v}</span>,
+        render: (v) => <span className="text-sm text-gray-600 dark:text-gray-400">{v}</span>,
       },
       {
         header: 'Status',
@@ -250,8 +289,8 @@ export default function AssignmentsPage() {
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Transport Assignments</h1>
-            <p className="text-gray-600 mt-1">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Transport Assignments</h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-1">
               Students assigned to routes and stops with locked-in monthly fees.
             </p>
           </div>
@@ -267,38 +306,30 @@ export default function AssignmentsPage() {
         </div>
 
         <div className="mb-4 flex flex-wrap items-center gap-3">
-          <div className="flex items-center bg-white px-3 py-2 rounded-lg border border-gray-200 gap-2">
-            <Search className="w-4 h-4 text-gray-400 shrink-0" />
+          <div className="flex items-center bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 gap-2">
             <input
               type="text"
               placeholder="Search student / route / stop..."
-              value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
-                resetPage();
-              }}
-              className="outline-none text-sm w-64 text-gray-900 placeholder:text-gray-400"
+              value={draftSearch}
+              onChange={(e) => setDraftSearch(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') applyFilters(); }}
+              className="outline-none text-sm w-64 text-gray-900 dark:text-gray-100 placeholder:text-gray-400"
             />
           </div>
 
           <input
             type="text"
             placeholder="2025-2026"
-            value={academicYear}
-            onChange={(e) => {
-              setAcademicYear(e.target.value);
-              resetPage();
-            }}
-            className="bg-white px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-900 w-32 outline-none"
+            value={draftAcademicYear}
+            onChange={(e) => setDraftAcademicYear(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter') applyFilters(); }}
+            className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-900 dark:text-gray-100 w-32 outline-none"
           />
 
           <select
-            value={routeId}
-            onChange={(e) => {
-              setRouteId(e.target.value);
-              resetPage();
-            }}
-            className="bg-white px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700"
+            value={draftRouteId}
+            onChange={(e) => setDraftRouteId(e.target.value)}
+            className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
           >
             <option value="">All Routes</option>
             {routes.map((r) => (
@@ -309,12 +340,9 @@ export default function AssignmentsPage() {
           </select>
 
           <select
-            value={vehicleId}
-            onChange={(e) => {
-              setVehicleId(e.target.value);
-              resetPage();
-            }}
-            className="bg-white px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700"
+            value={draftVehicleId}
+            onChange={(e) => setDraftVehicleId(e.target.value)}
+            className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
           >
             <option value="">All Vehicles</option>
             {vehicles.map((v) => (
@@ -325,12 +353,9 @@ export default function AssignmentsPage() {
           </select>
 
           <select
-            value={status}
-            onChange={(e) => {
-              setStatus(e.target.value);
-              resetPage();
-            }}
-            className="bg-white px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700 capitalize"
+            value={draftStatus}
+            onChange={(e) => setDraftStatus(e.target.value)}
+            className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300 capitalize"
           >
             <option value="">All Status</option>
             {ASSIGNMENT_STATUSES.map((s) => (
@@ -341,12 +366,9 @@ export default function AssignmentsPage() {
           </select>
 
           <select
-            value={isActive}
-            onChange={(e) => {
-              setIsActive(e.target.value);
-              resetPage();
-            }}
-            className="bg-white px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700"
+            value={draftIsActive}
+            onChange={(e) => setDraftIsActive(e.target.value)}
+            className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
           >
             <option value="true">Active</option>
             <option value="false">Inactive</option>
@@ -355,13 +377,10 @@ export default function AssignmentsPage() {
 
           {isOrgLevel && (
             <select
-              value={branchId}
+              value={draftBranchId}
               onFocus={() => setBranchDropdownTouched(true)}
-              onChange={(e) => {
-                setBranchId(e.target.value);
-                resetPage();
-              }}
-              className="bg-white px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700"
+              onChange={(e) => setDraftBranchId(e.target.value)}
+              className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
             >
               <option value="">All Branches</option>
               {branches.map((b) => (
@@ -371,6 +390,23 @@ export default function AssignmentsPage() {
               ))}
             </select>
           )}
+
+          <button
+            type="button"
+            onClick={applyFilters}
+            className="flex items-center gap-1 px-3 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 text-sm"
+          >
+            <Search className="w-4 h-4" />
+            Search
+          </button>
+          <button
+            type="button"
+            onClick={clearFilters}
+            className="flex items-center gap-1 px-3 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 text-sm"
+          >
+            <X className="w-4 h-4" />
+            Clear
+          </button>
         </div>
 
         <Table
@@ -399,7 +435,7 @@ export default function AssignmentsPage() {
           title="Cancel Assignment"
           message={
             deleteTarget
-              ? `Cancel transport assignment for "${deleteTarget.studentId?.user?.name || 'this student'}"? This sets status to cancelled and ends it today.`
+              ? `Cancel transport assignment for "${deleteTarget.student?.name || 'this student'}"? This sets status to cancelled and ends it today.`
               : ''
           }
           confirmLabel="Cancel Assignment"

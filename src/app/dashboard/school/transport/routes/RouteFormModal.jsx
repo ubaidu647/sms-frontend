@@ -279,7 +279,7 @@ export default function RouteFormModal({ isOpen, onClose, route }) {
     >
       <div className="space-y-6">
         {submitError && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+          <div className="p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 rounded-lg text-red-700 dark:text-red-400 text-sm">
             {submitError}
           </div>
         )}
@@ -416,14 +416,14 @@ export default function RouteFormModal({ isOpen, onClose, route }) {
         <div>
           <div className="flex items-center justify-between mb-3">
             <h3 className={sectionCls + ' mb-0'}>Stops</h3>
-            <span className="text-xs text-gray-500">
+            <span className="text-xs text-gray-500 dark:text-gray-400">
               {stops.length} stop{stops.length === 1 ? '' : 's'}
             </span>
           </div>
 
-          <div className="overflow-x-auto rounded-lg border border-gray-200">
+          <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
             <table className="w-full text-sm">
-              <thead className="bg-gray-50 text-gray-600">
+              <thead className="bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
                 <tr>
                   <th className="px-3 py-2 text-left font-semibold">#</th>
                   <th className="px-3 py-2 text-left font-semibold">Name</th>
@@ -438,16 +438,16 @@ export default function RouteFormModal({ isOpen, onClose, route }) {
               </thead>
               <tbody>
                 {stops.map((s, i) => (
-                  <tr key={i} className="border-t border-gray-100">
+                  <tr key={i} className="border-t border-gray-100 dark:border-gray-800">
                     <td className="px-2 py-2 w-16">
                       <div className="flex flex-col items-center gap-0.5">
-                        <span className="text-xs text-gray-500">{s.sequence}</span>
+                        <span className="text-xs text-gray-500 dark:text-gray-400">{s.sequence}</span>
                         <div className="flex gap-1">
                           <button
                             type="button"
                             onClick={() => moveStop(i, -1)}
                             disabled={i === 0}
-                            className="p-0.5 text-gray-400 hover:text-gray-700 disabled:opacity-30"
+                            className="p-0.5 text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 disabled:opacity-30"
                           >
                             <ChevronUp className="w-3 h-3" />
                           </button>
@@ -455,7 +455,7 @@ export default function RouteFormModal({ isOpen, onClose, route }) {
                             type="button"
                             onClick={() => moveStop(i, 1)}
                             disabled={i === stops.length - 1}
-                            className="p-0.5 text-gray-400 hover:text-gray-700 disabled:opacity-30"
+                            className="p-0.5 text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 disabled:opacity-30"
                           >
                             <ChevronDown className="w-3 h-3" />
                           </button>
@@ -542,7 +542,7 @@ export default function RouteFormModal({ isOpen, onClose, route }) {
           <button
             type="button"
             onClick={addStop}
-            className="mt-3 inline-flex items-center gap-2 px-3 py-1.5 text-sm text-teal-700 hover:bg-teal-50 rounded-lg border border-teal-200"
+            className="mt-3 inline-flex items-center gap-2 px-3 py-1.5 text-sm text-teal-700 dark:text-teal-400 hover:bg-teal-50 dark:hover:bg-teal-950/40 rounded-lg border border-teal-200"
           >
             <Plus className="w-4 h-4" />
             Add Stop

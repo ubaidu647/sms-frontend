@@ -13,8 +13,8 @@ async function fetchRoleById(id) {
 function DetailRow({ label, children }) {
   return (
     <div className="flex flex-col gap-1">
-      <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{label}</span>
-      <div className="text-sm text-gray-800">{children}</div>
+      <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">{label}</span>
+      <div className="text-sm text-gray-800 dark:text-gray-200">{children}</div>
     </div>
   );
 }
@@ -56,7 +56,7 @@ export default function RoleDetailModal({ isOpen, onClose, roleId }) {
       closeOnBackdrop
     >
       {isLoading && (
-        <div className="py-12 flex items-center justify-center text-gray-500 text-sm">
+        <div className="py-12 flex items-center justify-center text-gray-500 dark:text-gray-400 text-sm">
           Loading…
         </div>
       )}
@@ -111,26 +111,26 @@ export default function RoleDetailModal({ isOpen, onClose, roleId }) {
                 ))}
               </div>
             ) : (
-              <span className="text-gray-400">None</span>
+              <span className="text-gray-400 dark:text-gray-500">None</span>
             )}
           </DetailRow>
 
           {/* Actions grouped by menu */}
           {(actionsByMenu.length > 0 || ungroupedActions.length > 0) && (
             <div>
-              <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+              <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
                 Actions ({role.actions?.length ?? 0})
               </span>
               <div className="mt-2 space-y-3">
                 {actionsByMenu.map((group) =>
                   group.actions.length > 0 ? (
                     <div key={group.key}>
-                      <p className="text-xs font-medium text-gray-400 mb-1">{group.label}</p>
+                      <p className="text-xs font-medium text-gray-400 dark:text-gray-500 mb-1">{group.label}</p>
                       <div className="flex flex-wrap gap-1.5">
                         {group.actions.map((a) => (
                           <span
                             key={a}
-                            className="inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700 border border-indigo-100"
+                            className="inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-400 border border-indigo-100"
                           >
                             {actionLabelMap[a] || a}
                           </span>
@@ -144,7 +144,7 @@ export default function RoleDetailModal({ isOpen, onClose, roleId }) {
                     {ungroupedActions.map((a) => (
                       <span
                         key={a}
-                        className="inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700 border border-indigo-100"
+                        className="inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-400 border border-indigo-100"
                       >
                         {actionLabelMap[a] || a}
                       </span>

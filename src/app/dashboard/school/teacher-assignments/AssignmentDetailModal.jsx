@@ -9,8 +9,8 @@ import { Star } from 'lucide-react';
 function Row({ label, value, className = '' }) {
   return (
     <div className={`flex flex-col gap-0.5 min-w-0 ${className}`}>
-      <span className="text-[10px] text-gray-400 font-medium uppercase tracking-wide">{label}</span>
-      <span className="text-xs text-gray-800 font-medium break-words leading-tight">
+      <span className="text-[10px] text-gray-400 dark:text-gray-500 font-medium uppercase tracking-wide">{label}</span>
+      <span className="text-xs text-gray-800 dark:text-gray-200 font-medium break-words leading-tight">
         {value || <span className="text-gray-300">—</span>}
       </span>
     </div>
@@ -21,7 +21,7 @@ function Section({ title, children, cols = 4 }) {
   const gridCols = { 2: 'grid-cols-2', 3: 'grid-cols-3', 4: 'grid-cols-4' }[cols];
   return (
     <div>
-      <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 pb-1 border-b border-gray-100">
+      <h3 className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-2 pb-1 border-b border-gray-100 dark:border-gray-800">
         {title}
       </h3>
       <div className={`grid ${gridCols} gap-x-4 gap-y-2`}>{children}</div>
@@ -98,20 +98,20 @@ export default function AssignmentDetailModal({ isOpen, onClose, assignmentId })
                   className="w-20 h-20 rounded-full object-cover border-4 border-white shadow-md ring-2 ring-teal-200"
                 />
               ) : (
-                <div className="w-20 h-20 rounded-full bg-teal-100 text-teal-700 font-bold text-xl flex items-center justify-center border-4 border-white shadow-md ring-2 ring-teal-200">
+                <div className="w-20 h-20 rounded-full bg-teal-100 text-teal-700 dark:text-teal-400 font-bold text-xl flex items-center justify-center border-4 border-white shadow-md ring-2 ring-teal-200">
                   {initials}
                 </div>
               )}
             </div>
 
             <div className="flex-1 min-w-0">
-              <div className="text-lg font-bold text-gray-900 truncate">{teacherName}</div>
-              <div className="text-sm text-gray-600 truncate">
+              <div className="text-lg font-bold text-gray-900 dark:text-gray-100 truncate">{teacherName}</div>
+              <div className="text-sm text-gray-600 dark:text-gray-400 truncate">
                 {a.subject?.name} {a.subject?.code ? `(${a.subject.code})` : ''}
                 {' · '}
                 {a.class?.name}{a.section?.name ? ` / ${a.section.name}` : ''}
               </div>
-              <div className="text-xs text-gray-500 mt-0.5">
+              <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                 {a.staff?.designation} · {a.academicYear}
               </div>
               <div className="flex flex-wrap gap-1.5 mt-2">

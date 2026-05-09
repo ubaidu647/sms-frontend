@@ -149,14 +149,7 @@ export default function AddRoleModal({ isOpen, onClose, onSuccess }) {
   const createRoleMutation = useMutation({
     mutationFn: (payload) => postData({ url: '/role/create', payload, token }),
     onSuccess: (res) => {
-      queryClient.setQueriesData({ queryKey: ['roles'] }, (old) => {
-        if (!old) return old;
-        return {
-          ...old,
-          data: [res.data, ...(old.data || [])],
-          total: (old.total || 0) + 1,
-        };
-      });
+      queryClient.invalidateQueries({ queryKey: ['roles'] });
       toast.success(res?.message || 'Role created');
       onSuccess?.(res?.data);
       setSuccessState(true);
@@ -243,14 +236,14 @@ export default function AddRoleModal({ isOpen, onClose, onSuccess }) {
     >
       <form className="space-y-6">
         {submitError && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+          <div className="p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 rounded-lg text-red-700 dark:text-red-400 text-sm">
             {submitError}
           </div>
         )}
 
         {/* Presets — pre-fill name/menus/actions for common roles */}
         <div>
-          <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+          <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">
             Quick presets
           </label>
           <div className="flex flex-wrap gap-2">
@@ -259,26 +252,26 @@ export default function AddRoleModal({ isOpen, onClose, onSuccess }) {
                 key={key}
                 type="button"
                 onClick={() => applyPreset(key)}
-                className="px-3 py-1.5 rounded-full text-xs font-medium border border-gray-300 bg-white text-gray-700 hover:border-teal-400 hover:bg-teal-50 transition-colors"
+                className="px-3 py-1.5 rounded-full text-xs font-medium border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 hover:border-teal-400 hover:bg-teal-50 dark:hover:bg-teal-950/40 transition-colors"
               >
                 {preset.label}
               </button>
             ))}
           </div>
-          <p className="text-xs text-gray-400 mt-1">
+          <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
             Applies a recommended set — you can still adjust before saving.
           </p>
         </div>
 
         {/* Role Name */}
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-1">
+          <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">
             Role Name <span className="text-red-500">*</span>
           </label>
           <input
             {...register('name')}
             placeholder="e.g. Branch Manager"
-            className="w-full px-4 py-3 border border-gray-200 rounded-xl outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 text-gray-900 placeholder:text-gray-400"
+            className="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 rounded-xl outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 text-gray-900 dark:text-gray-100 placeholder:text-gray-400"
           />
           {errors.name && (
             <p className="text-red-500 text-xs mt-1">{errors.name.message}</p>
@@ -288,12 +281,12 @@ export default function AddRoleModal({ isOpen, onClose, onSuccess }) {
         {/* Branch — only visible to admin; non-admin gets their branch set silently */}
         {isAdmin && (
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1">
+            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">
               Branch <span className="text-red-500">*</span>
             </label>
             <select
               {...register('branchId')}
-              className="w-full px-4 py-3 border border-gray-200 rounded-xl outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 bg-white text-gray-900"
+              className="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 rounded-xl outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
             >
               <option value="">Select a branch...</option>
               {branches.map((branch) => (
@@ -310,7 +303,7 @@ export default function AddRoleModal({ isOpen, onClose, onSuccess }) {
 
         {/* Menus */}
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
+          <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
             Menus <span className="text-red-500">*</span>
           </label>
           <div className="flex flex-wrap gap-2">
@@ -339,16 +332,16 @@ export default function AddRoleModal({ isOpen, onClose, onSuccess }) {
 
         {/* Actions grouped by menu */}
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
+          <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
             Actions <span className="text-red-500">*</span>
           </label>
           {selectedMenus.length === 0 && (
-            <p className="text-gray-400 text-xs mb-2">Select a menu above to see its actions.</p>
+            <p className="text-gray-400 dark:text-gray-500 text-xs mb-2">Select a menu above to see its actions.</p>
           )}
           <div className="space-y-4">
             {actionsByMenu.map((group) => (
               <div key={group.key}>
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+                <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">
                   {group.label}
                 </p>
                 <div className="flex flex-wrap gap-2">
@@ -381,18 +374,18 @@ export default function AddRoleModal({ isOpen, onClose, onSuccess }) {
         {/* Self-scoped (own data only) — shown only when at least one selected
             menu has own-scope actions available */}
         {ownActionsByMenu.length > 0 && (
-          <div className="border-t border-gray-200 pt-4">
-            <label className="block text-sm font-semibold text-gray-700">
-              Self-scoped <span className="font-normal text-gray-500">(own data only)</span>
+          <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
+              Self-scoped <span className="font-normal text-gray-500 dark:text-gray-400">(own data only)</span>
             </label>
-            <p className="text-xs text-gray-500 mb-3">
+            <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
               These permissions are weaker than the branch-level ones above — they only
               let the user see/update their own record.
             </p>
             <div className="space-y-4">
               {ownActionsByMenu.map((group) => (
                 <div key={`own-${group.key}`}>
-                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+                  <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">
                     {group.label}
                   </p>
                   <div className="flex flex-wrap gap-2">

@@ -9,6 +9,7 @@ import {
   Ban,
   CheckCircle,
   ArrowRightLeft,
+  X,
 } from 'lucide-react';
 import AddStudentModal from './AddStudentModal';
 import EditStudentModal from './EditStudentModal';
@@ -49,17 +50,67 @@ export default function StudentsPage() {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(20);
 
-  // Filters
+  // Filters — draft state holds the in-progress UI values; applied state drives the API.
+  const defaultAcademicYear = currentAcademicYear();
+  const [draftSearch, setDraftSearch] = useState('');
+  const [draftAdmissionNumber, setDraftAdmissionNumber] = useState('');
+  const [draftRollNumber, setDraftRollNumber] = useState('');
+  const [draftGender, setDraftGender] = useState('');
+  const [draftAcademicStatus, setDraftAcademicStatus] = useState('');
+  const [draftAcademicYear, setDraftAcademicYear] = useState(defaultAcademicYear);
+  const [draftClassId, setDraftClassId] = useState('');
+  const [draftSectionId, setDraftSectionId] = useState('');
+  const [draftBranchId, setDraftBranchId] = useState('');
+  const [draftIsActive, setDraftIsActive] = useState('true');
+
   const [search, setSearch] = useState('');
   const [admissionNumber, setAdmissionNumber] = useState('');
   const [rollNumber, setRollNumber] = useState('');
   const [gender, setGender] = useState('');
   const [academicStatus, setAcademicStatus] = useState('');
-  const [academicYear, setAcademicYear] = useState(currentAcademicYear());
+  const [academicYear, setAcademicYear] = useState(defaultAcademicYear);
   const [classId, setClassId] = useState('');
   const [sectionId, setSectionId] = useState('');
   const [branchId, setBranchId] = useState('');
   const [isActive, setIsActive] = useState('true');
+
+  const applyFilters = () => {
+    setSearch(draftSearch);
+    setAdmissionNumber(draftAdmissionNumber);
+    setRollNumber(draftRollNumber);
+    setGender(draftGender);
+    setAcademicStatus(draftAcademicStatus);
+    setAcademicYear(draftAcademicYear);
+    setClassId(draftClassId);
+    setSectionId(draftSectionId);
+    setBranchId(draftBranchId);
+    setIsActive(draftIsActive);
+    setPage(1);
+  };
+
+  const clearFilters = () => {
+    setDraftSearch('');
+    setDraftAdmissionNumber('');
+    setDraftRollNumber('');
+    setDraftGender('');
+    setDraftAcademicStatus('');
+    setDraftAcademicYear(defaultAcademicYear);
+    setDraftClassId('');
+    setDraftSectionId('');
+    setDraftBranchId('');
+    setDraftIsActive('true');
+    setSearch('');
+    setAdmissionNumber('');
+    setRollNumber('');
+    setGender('');
+    setAcademicStatus('');
+    setAcademicYear(defaultAcademicYear);
+    setClassId('');
+    setSectionId('');
+    setBranchId('');
+    setIsActive('true');
+    setPage(1);
+  };
 
   // RBAC
   const scope = resolveScope(user?.role, 'view-student');
@@ -86,13 +137,14 @@ export default function StudentsPage() {
   });
   const branches = branchData?.data || [];
 
-  // Class dropdown for filter
+  // Class dropdown for filter — academicYear uses applied (text input avoids keystroke storms);
+  // branchId uses draft so changing the branch select instantly refreshes class options.
   const { data: classData } = useQuery({
-    queryKey: ['classes-dropdown', academicYear, branchId, userBranchId, isOrgLevel],
+    queryKey: ['classes-dropdown', academicYear, draftBranchId, userBranchId, isOrgLevel],
     queryFn: () => {
       const params = { academicYear };
       if (!isOrgLevel) params.branchId = userBranchId;
-      else if (branchId) params.branchId = branchId;
+      else if (draftBranchId) params.branchId = draftBranchId;
       return fetchData({ url: '/class/list', page: 1, limit: 200, token, ...params });
     },
     enabled: !!token && !!academicYear,
@@ -100,11 +152,11 @@ export default function StudentsPage() {
   });
   const classes = classData?.data || [];
 
-  // Section dropdown — depends on classId
+  // Section dropdown — uses draftClassId so picking a class instantly refreshes section options.
   const { data: sectionData } = useQuery({
-    queryKey: ['sections-dropdown', classId],
-    queryFn: () => fetchData({ url: `/class/${classId}/sections`, token }),
-    enabled: !!token && !!classId,
+    queryKey: ['sections-dropdown', draftClassId],
+    queryFn: () => fetchData({ url: `/class/${draftClassId}/sections`, token }),
+    enabled: !!token && !!draftClassId,
     staleTime: 60000,
   });
   const sections = sectionData?.data || [];
@@ -127,19 +179,19 @@ export default function StudentsPage() {
               <img
                 src={row.photo}
                 alt={name}
-                className="w-10 h-10 rounded-full object-cover border border-gray-200 flex-shrink-0"
+                className="w-10 h-10 rounded-full object-cover border border-gray-200 dark:border-gray-700 flex-shrink-0"
                 onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.nextSibling.style.display = 'flex'; }}
               />
             ) : null}
             <div
-              className="w-10 h-10 rounded-full bg-teal-100 text-teal-700 font-semibold text-sm items-center justify-center flex-shrink-0"
+              className="w-10 h-10 rounded-full bg-teal-100 text-teal-700 dark:text-teal-400 font-semibold text-sm items-center justify-center flex-shrink-0"
               style={{ display: row.photo ? 'none' : 'flex' }}
             >
               {initials}
             </div>
             <div className="min-w-0">
-              <div className="font-medium text-gray-900 truncate">{name}</div>
-              <div className="text-xs text-gray-400 truncate">{v?.email}</div>
+              <div className="font-medium text-gray-900 dark:text-gray-100 truncate">{name}</div>
+              <div className="text-xs text-gray-400 dark:text-gray-500 truncate">{v?.email}</div>
             </div>
           </div>
         );
@@ -148,37 +200,37 @@ export default function StudentsPage() {
     {
       header: 'Admission No.',
       accessor: 'admissionNumber',
-      render: (v) => <div className="text-gray-700 text-sm font-medium">{v}</div>,
+      render: (v) => <div className="text-gray-700 dark:text-gray-300 text-sm font-medium">{v}</div>,
     },
     {
       header: 'Roll',
       accessor: 'rollNumber',
-      render: (v) => <div className="text-gray-700 text-sm">{v}</div>,
+      render: (v) => <div className="text-gray-700 dark:text-gray-300 text-sm">{v}</div>,
     },
     {
       header: 'Class',
       accessor: 'class',
       render: (_, row) => (
-        <div className="text-gray-700 text-sm">
+        <div className="text-gray-700 dark:text-gray-300 text-sm">
           {row.class?.name || '—'}
-          {row.section?.name ? <span className="text-gray-400"> / {row.section.name}</span> : null}
+          {row.section?.name ? <span className="text-gray-400 dark:text-gray-500"> / {row.section.name}</span> : null}
         </div>
       ),
     },
     {
       header: 'Year',
       accessor: 'academicYear',
-      render: (v) => <div className="text-gray-600 text-sm">{v}</div>,
+      render: (v) => <div className="text-gray-600 dark:text-gray-400 text-sm">{v}</div>,
     },
     {
       header: 'Father',
       accessor: 'father',
-      render: (v) => <div className="text-gray-600 text-sm">{v?.name || '—'}</div>,
+      render: (v) => <div className="text-gray-600 dark:text-gray-400 text-sm">{v?.name || '—'}</div>,
     },
     {
       header: 'Branch',
       accessor: 'branch',
-      render: (v) => <div className="text-gray-600 text-sm">{v?.name ?? '—'}</div>,
+      render: (v) => <div className="text-gray-600 dark:text-gray-400 text-sm">{v?.name ?? '—'}</div>,
     },
     {
       header: 'Academic Status',
@@ -288,19 +340,17 @@ export default function StudentsPage() {
 
   const students = data?.data || [];
 
-  const resetPage = () => setPage(1);
-
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-800 p-6 rounded-[50px]">
       <div className="max-w-7xl mx-auto">
 
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
               {isOwnOnly ? 'My Profile' : 'Students'}
             </h1>
-            <p className="text-gray-600 mt-1">
+            <p className="text-gray-600 dark:text-gray-400 mt-1">
               {isOwnOnly
                 ? 'Your own student profile.'
                 : 'Manage student enrollments and records'}
@@ -324,9 +374,9 @@ export default function StudentsPage() {
         >
           {/* Active / Blocked toggle */}
           <select
-            value={isActive}
-            onChange={(e) => { setIsActive(e.target.value); resetPage(); }}
-            className="bg-white px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700"
+            value={draftIsActive}
+            onChange={(e) => setDraftIsActive(e.target.value)}
+            className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
           >
             <option value="true">Active</option>
             <option value="false">Blocked</option>
@@ -334,55 +384,58 @@ export default function StudentsPage() {
           </select>
 
           {/* Name search */}
-          <div className="flex items-center bg-white px-3 py-2 rounded-lg border border-gray-200">
-            <Search className="w-4 h-4 text-gray-400 mr-2 shrink-0" />
+          <div className="flex items-center bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700">
             <input
               type="text"
               placeholder="Search name..."
-              value={search}
-              onChange={(e) => { setSearch(e.target.value); resetPage(); }}
-              className="outline-none text-sm w-36 text-gray-900 placeholder:text-gray-400"
+              value={draftSearch}
+              onChange={(e) => setDraftSearch(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') applyFilters(); }}
+              className="outline-none text-sm w-36 text-gray-900 dark:text-gray-100 placeholder:text-gray-400"
             />
           </div>
 
           {/* Admission number */}
-          <div className="flex items-center bg-white px-3 py-2 rounded-lg border border-gray-200">
+          <div className="flex items-center bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700">
             <input
               type="text"
               placeholder="Admission no..."
-              value={admissionNumber}
-              onChange={(e) => { setAdmissionNumber(e.target.value); resetPage(); }}
-              className="outline-none text-sm w-32 text-gray-900 placeholder:text-gray-400"
+              value={draftAdmissionNumber}
+              onChange={(e) => setDraftAdmissionNumber(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') applyFilters(); }}
+              className="outline-none text-sm w-32 text-gray-900 dark:text-gray-100 placeholder:text-gray-400"
             />
           </div>
 
           {/* Roll number */}
-          <div className="flex items-center bg-white px-3 py-2 rounded-lg border border-gray-200">
+          <div className="flex items-center bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700">
             <input
               type="text"
               placeholder="Roll no..."
-              value={rollNumber}
-              onChange={(e) => { setRollNumber(e.target.value); resetPage(); }}
-              className="outline-none text-sm w-24 text-gray-900 placeholder:text-gray-400"
+              value={draftRollNumber}
+              onChange={(e) => setDraftRollNumber(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') applyFilters(); }}
+              className="outline-none text-sm w-24 text-gray-900 dark:text-gray-100 placeholder:text-gray-400"
             />
           </div>
 
           {/* Academic year */}
-          <div className="flex items-center bg-white px-3 py-2 rounded-lg border border-gray-200">
+          <div className="flex items-center bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700">
             <input
               type="text"
               placeholder="2025-2026"
-              value={academicYear}
-              onChange={(e) => { setAcademicYear(e.target.value); resetPage(); }}
-              className="outline-none text-sm w-28 text-gray-900 placeholder:text-gray-400"
+              value={draftAcademicYear}
+              onChange={(e) => setDraftAcademicYear(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') applyFilters(); }}
+              className="outline-none text-sm w-28 text-gray-900 dark:text-gray-100 placeholder:text-gray-400"
             />
           </div>
 
           {/* Class */}
           <select
-            value={classId}
-            onChange={(e) => { setClassId(e.target.value); setSectionId(''); resetPage(); }}
-            className="bg-white px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700"
+            value={draftClassId}
+            onChange={(e) => { setDraftClassId(e.target.value); setDraftSectionId(''); }}
+            className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
           >
             <option value="">All Classes</option>
             {classes.map((c) => (
@@ -391,11 +444,11 @@ export default function StudentsPage() {
           </select>
 
           {/* Section (only when class selected) */}
-          {classId && (
+          {draftClassId && (
             <select
-              value={sectionId}
-              onChange={(e) => { setSectionId(e.target.value); resetPage(); }}
-              className="bg-white px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700"
+              value={draftSectionId}
+              onChange={(e) => setDraftSectionId(e.target.value)}
+              className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
             >
               <option value="">All Sections</option>
               {sections.map((s) => (
@@ -406,9 +459,9 @@ export default function StudentsPage() {
 
           {/* Gender */}
           <select
-            value={gender}
-            onChange={(e) => { setGender(e.target.value); resetPage(); }}
-            className="bg-white px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700"
+            value={draftGender}
+            onChange={(e) => setDraftGender(e.target.value)}
+            className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
           >
             <option value="">All Genders</option>
             <option value="male">Male</option>
@@ -418,9 +471,9 @@ export default function StudentsPage() {
 
           {/* Academic status */}
           <select
-            value={academicStatus}
-            onChange={(e) => { setAcademicStatus(e.target.value); resetPage(); }}
-            className="bg-white px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700"
+            value={draftAcademicStatus}
+            onChange={(e) => setDraftAcademicStatus(e.target.value)}
+            className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
           >
             <option value="">All Academic Status</option>
             {ACADEMIC_STATUSES.map((s) => (
@@ -431,10 +484,10 @@ export default function StudentsPage() {
           {/* Branch filter — org-level only */}
           {isOrgLevel && (
             <select
-              value={branchId}
+              value={draftBranchId}
               onFocus={() => setBranchDropdownTouched(true)}
-              onChange={(e) => { setBranchId(e.target.value); setClassId(''); setSectionId(''); resetPage(); }}
-              className="bg-white px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700"
+              onChange={(e) => { setDraftBranchId(e.target.value); setDraftClassId(''); setDraftSectionId(''); }}
+              className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
             >
               <option value="">All Branches</option>
               {branches.map((b) => (
@@ -442,6 +495,23 @@ export default function StudentsPage() {
               ))}
             </select>
           )}
+
+          <button
+            type="button"
+            onClick={applyFilters}
+            className="flex items-center gap-1 px-3 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 text-sm"
+          >
+            <Search className="w-4 h-4" />
+            Search
+          </button>
+          <button
+            type="button"
+            onClick={clearFilters}
+            className="flex items-center gap-1 px-3 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 text-sm"
+          >
+            <X className="w-4 h-4" />
+            Clear
+          </button>
         </div>
 
         <Table

@@ -14,16 +14,16 @@ export const FilterBar = ({
   const hasActiveFilters = Object.values(filters).some((value) => value !== '');
 
   return (
-    <div className="bg-white text-black rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
+    <div className="bg-white dark:bg-gray-900 text-black dark:text-gray-100 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 mb-6">
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" />
           <input
             type="text"
             placeholder={searchPlaceholder}
             value={filters.organizationName || ''}
             onChange={(e) => handleInputChange('organizationName', e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
           />
         </div>
 
@@ -31,13 +31,13 @@ export const FilterBar = ({
           type="date"
           value={filters.createdAt || ''}
           onChange={(e) => handleInputChange('createdAt', e.target.value)}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
+          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
         />
 
         <select
           value={filters.packageName || ''}
           onChange={(e) => handleInputChange('packageName', e.target.value)}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
+          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
         >
           <option value="">All Packages</option>
           <option value="basic">Basic</option>
@@ -49,7 +49,7 @@ export const FilterBar = ({
         <select
           value={filters.status || ''}
           onChange={(e) => handleInputChange('status', e.target.value)}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
+          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
         >
           <option value="">All Status</option>
           <option value="active">Active</option>
@@ -61,7 +61,7 @@ export const FilterBar = ({
       {hasActiveFilters && (
         <button
           onClick={onClearFilters}
-          className="mt-4 flex items-center gap-2 px-4 py-2 text-sm text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+          className="mt-4 flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition-colors"
         >
           <X className="w-4 h-4" />
           Clear Filters

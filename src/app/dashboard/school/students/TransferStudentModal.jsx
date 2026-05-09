@@ -173,18 +173,18 @@ export default function TransferStudentModal({ isOpen, onClose, onSuccess, stude
     >
       <form className="space-y-4">
         {submitError && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+          <div className="p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 rounded-lg text-red-700 dark:text-red-400 text-sm">
             {submitError}
           </div>
         )}
 
-        <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg text-blue-800 text-xs">
+        <div className="p-3 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 rounded-lg text-blue-800 dark:text-blue-300 text-xs">
           <div className="font-semibold mb-1">Current placement</div>
           <div>
             {student.class?.name}{student.section?.name ? ` / ${student.section.name}` : ''} ·{' '}
             {student.academicYear} · Roll {student.rollNumber}
           </div>
-          <div className="mt-1 text-blue-700">
+          <div className="mt-1 text-blue-700 dark:text-blue-400">
             Transferring will assign a new roll number and reset academic status to "enrolled".
           </div>
         </div>
@@ -196,7 +196,7 @@ export default function TransferStudentModal({ isOpen, onClose, onSuccess, stude
         <Field label="New Class" required error={errors.classId?.message}>
           <select
             {...register('classId')}
-            className={`${inputCls} bg-white`}
+            className={`${inputCls} bg-white dark:bg-gray-900`}
             disabled={!academicYear}
           >
             <option value="">
@@ -213,7 +213,7 @@ export default function TransferStudentModal({ isOpen, onClose, onSuccess, stude
         <Field label="New Section" required error={errors.sectionId?.message}>
           <select
             {...register('sectionId')}
-            className={`${inputCls} bg-white`}
+            className={`${inputCls} bg-white dark:bg-gray-900`}
             disabled={!selectedClassId}
           >
             <option value="">

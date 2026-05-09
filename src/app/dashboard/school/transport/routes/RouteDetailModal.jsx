@@ -20,8 +20,8 @@ const PIN_PALETTES = [
 function InfoCell({ label, value }) {
   return (
     <div className="flex flex-col">
-      <span className="text-xs text-gray-500">{label}</span>
-      <span className="text-sm font-semibold text-gray-900 mt-0.5">
+      <span className="text-xs text-gray-500 dark:text-gray-400">{label}</span>
+      <span className="text-sm font-semibold text-gray-900 dark:text-gray-100 mt-0.5">
         {value || '—'}
       </span>
     </div>
@@ -82,7 +82,7 @@ export default function RouteDetailModal({ isOpen, onClose, route }) {
     >
       <div className="space-y-8">
         {/* Vehicle / Driver header card */}
-        <div className="bg-white border border-gray-200 rounded-2xl shadow-sm px-6 py-5">
+        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-sm px-6 py-5">
           <div className="grid grid-cols-1 md:grid-cols-[120px_1fr_1fr_1fr] gap-6 items-center">
             <div className="w-[120px] h-[80px] rounded-xl bg-amber-50 flex items-center justify-center border border-amber-100">
               <Bus className="w-12 h-12 text-amber-500" />
@@ -124,37 +124,37 @@ export default function RouteDetailModal({ isOpen, onClose, route }) {
         </div>
 
         {/* Route summary line */}
-        <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-gray-700">
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-gray-700 dark:text-gray-300">
           <div>
-            <span className="text-gray-500">Path: </span>
+            <span className="text-gray-500 dark:text-gray-400">Path: </span>
             <span className="font-medium">{route.startPoint}</span>
-            <span className="text-gray-400 mx-1">→</span>
+            <span className="text-gray-400 dark:text-gray-500 mx-1">→</span>
             <span className="font-medium">{route.endPoint}</span>
           </div>
           {route.distanceKm != null && (
             <div>
-              <span className="text-gray-500">Total Distance: </span>
+              <span className="text-gray-500 dark:text-gray-400">Total Distance: </span>
               <span className="font-medium">{route.distanceKm} km</span>
             </div>
           )}
           {route.estimatedDurationMin != null && (
             <div>
-              <span className="text-gray-500">Est. Duration: </span>
+              <span className="text-gray-500 dark:text-gray-400">Est. Duration: </span>
               <span className="font-medium">
                 {route.estimatedDurationMin} min
               </span>
             </div>
           )}
           <div>
-            <span className="text-gray-500">Stops: </span>
+            <span className="text-gray-500 dark:text-gray-400">Stops: </span>
             <span className="font-medium">{stops.length}</span>
           </div>
         </div>
 
         {/* Winding road with stops */}
-        <div className="relative bg-gradient-to-b from-gray-50 to-white border border-gray-200 rounded-2xl px-4 py-8 overflow-x-auto">
+        <div className="relative bg-gradient-to-b from-gray-50 to-white border border-gray-200 dark:border-gray-700 rounded-2xl px-4 py-8 overflow-x-auto">
           {stops.length === 0 ? (
-            <p className="text-sm text-gray-500 text-center py-8">
+            <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-8">
               No stops defined for this route.
             </p>
           ) : (
@@ -217,12 +217,12 @@ export default function RouteDetailModal({ isOpen, onClose, route }) {
 
                 const pinFace = (
                   <div
-                    className={`relative w-20 h-20 rounded-full border-[3px] ${palette.border} bg-white flex items-center justify-center shadow-sm`}
+                    className={`relative w-20 h-20 rounded-full border-[3px] ${palette.border} bg-white dark:bg-gray-900 flex items-center justify-center shadow-sm`}
                   >
                     <MapPin
                       className={`w-4 h-4 ${palette.text} absolute top-1.5 left-1.5`}
                     />
-                    <span className="text-[11px] font-semibold text-gray-700 px-1 text-center leading-tight">
+                    <span className="text-[11px] font-semibold text-gray-700 dark:text-gray-300 px-1 text-center leading-tight">
                       {stop.name || `Stop ${i + 1}`}
                     </span>
                   </div>
@@ -231,7 +231,7 @@ export default function RouteDetailModal({ isOpen, onClose, route }) {
                 const meta = (
                   <div className="flex items-center gap-2 ml-16">
                     <Compass className={`w-7 h-7 ${palette.text}`} />
-                    <div className="text-xs text-gray-700 leading-tight whitespace-nowrap">
+                    <div className="text-xs text-gray-700 dark:text-gray-300 leading-tight whitespace-nowrap">
                       <div>Distance (km): {distance}</div>
                       <div>Pickup time: {stop.pickupTime || '—'}</div>
                     </div>

@@ -135,12 +135,12 @@ export default function RecordPaymentModal({ isOpen, onClose, voucher }) {
       {!receipt ? (
         <div className="space-y-4">
           {submitError && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+            <div className="p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 rounded-lg text-red-700 dark:text-red-400 text-sm">
               {submitError}
             </div>
           )}
 
-          <div className="grid grid-cols-3 gap-2 p-3 bg-gray-50 rounded-lg text-sm">
+          <div className="grid grid-cols-3 gap-2 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg text-sm">
             <Stat label="Total" value={formatMoney(voucher.totalAmount)} />
             <Stat label="Paid" value={formatMoney(voucher.paidAmount)} tone="text-green-700" />
             <Stat label="Balance" value={formatMoney(voucher.balanceAmount)} tone="text-red-700" />
@@ -215,15 +215,15 @@ export default function RecordPaymentModal({ isOpen, onClose, voucher }) {
         </div>
       ) : (
         <div className="space-y-4">
-          <div className="text-center p-6 bg-green-50 border border-green-200 rounded-lg">
-            <div className="text-xs text-green-700 uppercase tracking-widest">Receipt</div>
-            <div className="text-3xl font-bold text-green-800 mt-1">
+          <div className="text-center p-6 bg-green-50 dark:bg-green-950/40 border border-green-200 rounded-lg">
+            <div className="text-xs text-green-700 dark:text-green-400 uppercase tracking-widest">Receipt</div>
+            <div className="text-3xl font-bold text-green-800 dark:text-green-300 mt-1">
               {receipt.payment.receiptNumber}
             </div>
-            <div className="text-2xl font-bold text-gray-900 mt-3">
+            <div className="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-3">
               {formatMoney(receipt.payment.amount)}
             </div>
-            <div className="text-sm text-gray-600 mt-1 capitalize">{receipt.payment.method}</div>
+            <div className="text-sm text-gray-600 dark:text-gray-400 mt-1 capitalize">{receipt.payment.method}</div>
           </div>
           <div className="grid grid-cols-3 gap-2 text-sm">
             <Stat
@@ -241,7 +241,7 @@ export default function RecordPaymentModal({ isOpen, onClose, voucher }) {
               tone={receipt.voucher.balanceAmount > 0 ? 'text-red-700' : 'text-gray-700'}
             />
           </div>
-          <div className="text-center text-xs text-gray-500 capitalize">
+          <div className="text-center text-xs text-gray-500 dark:text-gray-400 capitalize">
             Voucher status: <strong>{receipt.voucher.status}</strong>
           </div>
         </div>
@@ -253,7 +253,7 @@ export default function RecordPaymentModal({ isOpen, onClose, voucher }) {
 function Stat({ label, value, tone = 'text-gray-900' }) {
   return (
     <div>
-      <div className="text-xs uppercase tracking-wide text-gray-500">{label}</div>
+      <div className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">{label}</div>
       <div className={`text-base font-medium ${tone}`}>{value}</div>
     </div>
   );

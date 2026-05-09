@@ -154,7 +154,7 @@ export default function RegenerateSectionModal({ isOpen, onClose }) {
       }
     >
       {submitError && (
-        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+        <div className="mb-4 p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 rounded-lg text-red-700 dark:text-red-400 text-sm">
           {submitError}
         </div>
       )}
@@ -286,16 +286,16 @@ export default function RegenerateSectionModal({ isOpen, onClose }) {
 
           {(result.skippedDueToPayments || []).length > 0 && (
             <div>
-              <h4 className="text-xs font-bold text-gray-500 uppercase mb-2">
+              <h4 className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase mb-2">
                 Skipped — has payments ({result.skippedDueToPayments.length})
               </h4>
-              <ul className="text-sm text-gray-700 max-h-48 overflow-y-auto rounded-lg border border-gray-200 divide-y">
+              <ul className="text-sm text-gray-700 dark:text-gray-300 max-h-48 overflow-y-auto rounded-lg border border-gray-200 dark:border-gray-700 divide-y">
                 {result.skippedDueToPayments.map((s, i) => (
                   <li key={i} className="px-3 py-2 flex items-center justify-between">
-                    <span className="font-mono text-xs text-gray-500">
+                    <span className="font-mono text-xs text-gray-500 dark:text-gray-400">
                       voucher: {s.voucherId}
                     </span>
-                    <span className="text-gray-700">paid: {formatMoney(s.paidAmount)}</span>
+                    <span className="text-gray-700 dark:text-gray-300">paid: {formatMoney(s.paidAmount)}</span>
                   </li>
                 ))}
               </ul>
@@ -304,16 +304,16 @@ export default function RegenerateSectionModal({ isOpen, onClose }) {
 
           {(result.skippedOther || []).length > 0 && (
             <div>
-              <h4 className="text-xs font-bold text-gray-500 uppercase mb-2">
+              <h4 className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase mb-2">
                 Skipped — other ({result.skippedOther.length})
               </h4>
-              <ul className="text-sm text-gray-700 max-h-48 overflow-y-auto rounded-lg border border-gray-200 divide-y">
+              <ul className="text-sm text-gray-700 dark:text-gray-300 max-h-48 overflow-y-auto rounded-lg border border-gray-200 dark:border-gray-700 divide-y">
                 {result.skippedOther.map((s, i) => (
                   <li key={i} className="px-3 py-2">
-                    <span className="font-mono text-xs text-gray-500">
+                    <span className="font-mono text-xs text-gray-500 dark:text-gray-400">
                       {s.studentId || s.voucherId}
                     </span>
-                    {s.reason && <span className="text-gray-700"> — {s.reason}</span>}
+                    {s.reason && <span className="text-gray-700 dark:text-gray-300"> — {s.reason}</span>}
                   </li>
                 ))}
               </ul>

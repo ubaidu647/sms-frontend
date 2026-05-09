@@ -86,19 +86,19 @@ export default function StaffPage() {
               <img
                 src={row.photo}
                 alt={name}
-                className="w-10 h-10 rounded-full object-cover border border-gray-200 flex-shrink-0"
+                className="w-10 h-10 rounded-full object-cover border border-gray-200 dark:border-gray-700 flex-shrink-0"
                 onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.nextSibling.style.display = 'flex'; }}
               />
             ) : null}
             <div
-              className="w-10 h-10 rounded-full bg-teal-100 text-teal-700 font-semibold text-sm items-center justify-center flex-shrink-0"
+              className="w-10 h-10 rounded-full bg-teal-100 text-teal-700 dark:text-teal-400 font-semibold text-sm items-center justify-center flex-shrink-0"
               style={{ display: row.photo ? 'none' : 'flex' }}
             >
               {initials}
             </div>
             <div className="min-w-0">
-              <div className="font-medium text-gray-900 truncate">{name}</div>
-              <div className="text-xs text-gray-400 truncate">{v?.email}</div>
+              <div className="font-medium text-gray-900 dark:text-gray-100 truncate">{name}</div>
+              <div className="text-xs text-gray-400 dark:text-gray-500 truncate">{v?.email}</div>
             </div>
           </div>
         );
@@ -107,12 +107,12 @@ export default function StaffPage() {
     {
       header: 'Serial No.',
       accessor: 'serialNumber',
-      render: (v) => <div className="text-gray-600 text-sm">{v}</div>,
+      render: (v) => <div className="text-gray-600 dark:text-gray-400 text-sm">{v}</div>,
     },
     {
       header: 'Designation',
       accessor: 'designation',
-      render: (v) => <div className="text-gray-700 text-sm">{v}</div>,
+      render: (v) => <div className="text-gray-700 dark:text-gray-300 text-sm">{v}</div>,
     },
     {
       header: 'Type',
@@ -129,7 +129,7 @@ export default function StaffPage() {
       header: 'Employment',
       accessor: 'employmentType',
       render: (v) => (
-        <span className="inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 capitalize">
+        <span className="inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:text-blue-300 capitalize">
           {v}
         </span>
       ),
@@ -137,17 +137,17 @@ export default function StaffPage() {
     {
       header: 'Branch',
       accessor: 'branch',
-      render: (v) => <div className="text-gray-600 text-sm">{v?.name ?? '—'}</div>,
+      render: (v) => <div className="text-gray-600 dark:text-gray-400 text-sm">{v?.name ?? '—'}</div>,
     },
     {
       header: 'Role',
       accessor: 'role',
-      render: (v) => <div className="text-gray-600 text-sm">{v?.name ?? '—'}</div>,
+      render: (v) => <div className="text-gray-600 dark:text-gray-400 text-sm">{v?.name ?? '—'}</div>,
     },
     {
       header: 'Joining Date',
       accessor: 'joiningDate',
-      render: (v) => <div className="text-gray-500 text-sm">{v ? new Date(v).toLocaleDateString() : '—'}</div>,
+      render: (v) => <div className="text-gray-500 dark:text-gray-400 text-sm">{v ? new Date(v).toLocaleDateString() : '—'}</div>,
     },
     {
       header: 'Status',
@@ -192,6 +192,7 @@ export default function StaffPage() {
           ),
         };
       });
+      queryClient.invalidateQueries({ queryKey: ['staff'] });
       toast.success(res.message || 'Status updated');
     },
     onError: (err) => toast.error(err.message || 'Failed to update status'),
@@ -254,16 +255,16 @@ export default function StaffPage() {
   const resetPage = () => setPage(1);
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-800 p-6 rounded-[50px]">
       <div className="max-w-7xl mx-auto">
 
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
               {isOwnOnly ? 'My Profile' : 'Staff'}
             </h1>
-            <p className="text-gray-600 mt-1">
+            <p className="text-gray-600 dark:text-gray-400 mt-1">
               {isOwnOnly
                 ? 'Your own staff profile.'
                 : 'Manage staff members and their accounts'}
@@ -286,18 +287,18 @@ export default function StaffPage() {
           style={{ display: isOwnOnly ? 'none' : undefined }}
         >
           {/* Date range */}
-          <div className="flex items-center bg-white px-3 py-2 rounded-lg border border-gray-200 gap-2">
-            <label className="text-sm text-gray-500">From</label>
-            <input type="date" value={fromDate} onChange={(e) => { setFromDate(e.target.value); resetPage(); }} className="text-sm outline-none text-gray-900" />
-            <label className="text-sm text-gray-500">To</label>
-            <input type="date" value={toDate} onChange={(e) => { setToDate(e.target.value); resetPage(); }} className="text-sm outline-none text-gray-900" />
+          <div className="flex items-center bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 gap-2">
+            <label className="text-sm text-gray-500 dark:text-gray-400">From</label>
+            <input type="date" value={fromDate} onChange={(e) => { setFromDate(e.target.value); resetPage(); }} className="text-sm outline-none text-gray-900 dark:text-gray-100" />
+            <label className="text-sm text-gray-500 dark:text-gray-400">To</label>
+            <input type="date" value={toDate} onChange={(e) => { setToDate(e.target.value); resetPage(); }} className="text-sm outline-none text-gray-900 dark:text-gray-100" />
           </div>
 
           {/* Active / Blocked toggle */}
           <select
             value={isActive}
             onChange={(e) => { setIsActive(e.target.value); resetPage(); }}
-            className="bg-white px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700"
+            className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
           >
             <option value="true">Active</option>
             <option value="false">Blocked</option>
@@ -305,36 +306,36 @@ export default function StaffPage() {
           </select>
 
           {/* Name search */}
-          <div className="flex items-center bg-white px-3 py-2 rounded-lg border border-gray-200">
-            <Search className="w-4 h-4 text-gray-400 mr-2 shrink-0" />
+          <div className="flex items-center bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700">
+            <Search className="w-4 h-4 text-gray-400 dark:text-gray-500 mr-2 shrink-0" />
             <input
               type="text"
               placeholder="Name..."
               value={name}
               onChange={(e) => { setName(e.target.value); resetPage(); }}
-              className="outline-none text-sm w-32 text-gray-900 placeholder:text-gray-400"
+              className="outline-none text-sm w-32 text-gray-900 dark:text-gray-100 placeholder:text-gray-400"
             />
           </div>
 
           {/* Designation search */}
-          <div className="flex items-center bg-white px-3 py-2 rounded-lg border border-gray-200">
+          <div className="flex items-center bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700">
             <input
               type="text"
               placeholder="Designation..."
               value={designation}
               onChange={(e) => { setDesignation(e.target.value); resetPage(); }}
-              className="outline-none text-sm w-32 text-gray-900 placeholder:text-gray-400"
+              className="outline-none text-sm w-32 text-gray-900 dark:text-gray-100 placeholder:text-gray-400"
             />
           </div>
 
           {/* Serial number */}
-          <div className="flex items-center bg-white px-3 py-2 rounded-lg border border-gray-200">
+          <div className="flex items-center bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700">
             <input
               type="text"
               placeholder="Serial no..."
               value={serialNumber}
               onChange={(e) => { setSerialNumber(e.target.value); resetPage(); }}
-              className="outline-none text-sm w-28 text-gray-900 placeholder:text-gray-400"
+              className="outline-none text-sm w-28 text-gray-900 dark:text-gray-100 placeholder:text-gray-400"
             />
           </div>
 
@@ -342,7 +343,7 @@ export default function StaffPage() {
           <select
             value={staffType}
             onChange={(e) => { setStaffType(e.target.value); resetPage(); }}
-            className="bg-white px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700"
+            className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
           >
             <option value="">All Types</option>
             <option value="teaching">Teaching</option>
@@ -353,7 +354,7 @@ export default function StaffPage() {
           <select
             value={employmentType}
             onChange={(e) => { setEmploymentType(e.target.value); resetPage(); }}
-            className="bg-white px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700"
+            className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
           >
             <option value="">All Employment</option>
             <option value="permanent">Permanent</option>
@@ -366,7 +367,7 @@ export default function StaffPage() {
           <select
             value={gender}
             onChange={(e) => { setGender(e.target.value); resetPage(); }}
-            className="bg-white px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700"
+            className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
           >
             <option value="">All Genders</option>
             <option value="male">Male</option>
@@ -380,7 +381,7 @@ export default function StaffPage() {
               value={branchId}
               onFocus={() => setBranchDropdownTouched(true)}
               onChange={(e) => { setBranchId(e.target.value); resetPage(); }}
-              className="bg-white px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700"
+              className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
             >
               <option value="">All Branches</option>
               {branches.map((b) => (
@@ -435,18 +436,18 @@ export default function StaffPage() {
           <>
             <div className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm" />
             <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-              <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-8 space-y-4">
-                <h3 className="text-lg font-bold text-gray-900">Delete Staff</h3>
-                <p className="text-sm text-gray-600">
+              <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-sm p-8 space-y-4">
+                <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">Delete Staff</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
                   Are you sure you want to permanently delete{' '}
-                  <span className="font-semibold text-gray-900">{deleteTarget.user?.name}</span>?
+                  <span className="font-semibold text-gray-900 dark:text-gray-100">{deleteTarget.user?.name}</span>?
                   This will also remove their login account and cannot be undone.
                 </p>
                 <div className="flex gap-3 pt-2">
                   <button
                     onClick={() => setDeleteTarget(null)}
                     disabled={deleteMutation.isPending}
-                    className="flex-1 px-4 py-2 rounded-xl border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50"
+                    className="flex-1 px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
                   >
                     Cancel
                   </button>

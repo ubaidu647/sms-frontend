@@ -150,7 +150,7 @@ export default function EditAssignmentModal({ isOpen, onClose, onSuccess, assign
     >
       <form className="space-y-4">
         {submitError && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+          <div className="p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 rounded-lg text-red-700 dark:text-red-400 text-sm">
             {submitError}
           </div>
         )}
@@ -161,14 +161,14 @@ export default function EditAssignmentModal({ isOpen, onClose, onSuccess, assign
 
         <div className="grid grid-cols-2 gap-4">
           <Field label="Role" error={errors.role?.message}>
-            <select {...register('role')} className={`${inputCls} bg-white`}>
+            <select {...register('role')} className={`${inputCls} bg-white dark:bg-gray-900`}>
               <option value="teacher">Teacher</option>
               <option value="co-teacher">Co-teacher</option>
               <option value="substitute">Substitute</option>
             </select>
           </Field>
           <Field label="Primary Teacher?" error={errors.isPrimary?.message}>
-            <select {...register('isPrimary')} className={`${inputCls} bg-white`}>
+            <select {...register('isPrimary')} className={`${inputCls} bg-white dark:bg-gray-900`}>
               <option value="true">Yes (will demote existing primary)</option>
               <option value="false">No</option>
             </select>
@@ -180,13 +180,13 @@ export default function EditAssignmentModal({ isOpen, onClose, onSuccess, assign
             <input {...register('endDate')} type="date" className={inputCls} />
           </Field>
           <Field label="Status" error={errors.status?.message}>
-            <select {...register('status')} className={`${inputCls} bg-white`}>
+            <select {...register('status')} className={`${inputCls} bg-white dark:bg-gray-900`}>
               <option value="active">Active</option>
               <option value="inactive">Inactive</option>
             </select>
           </Field>
           <Field label="Active" error={errors.isActive?.message}>
-            <select {...register('isActive')} className={`${inputCls} bg-white`}>
+            <select {...register('isActive')} className={`${inputCls} bg-white dark:bg-gray-900`}>
               <option value="true">Yes</option>
               <option value="false">No</option>
             </select>

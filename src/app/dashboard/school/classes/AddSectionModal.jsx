@@ -107,7 +107,7 @@ export default function AddSectionModal({ isOpen, onClose, onSuccess, classId, a
     >
       <form className="space-y-4">
         {submitError && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">{submitError}</div>
+          <div className="p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 rounded-lg text-red-700 dark:text-red-400 text-sm">{submitError}</div>
         )}
         <div className="grid grid-cols-2 gap-4">
           <Field label="Section Name" required error={errors.name?.message}>

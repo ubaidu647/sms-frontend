@@ -99,18 +99,18 @@ export const Table = ({
       : (rowActions ?? defaultActions);
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden flex flex-col">
+    <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col">
       <div className="overflow-auto scrollbar-hide max-h-[calc(100vh-280px)]">
         {/* ================= TABLE ================= */}
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50 sticky top-0 z-10">
+        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+          <thead className="bg-gray-50 dark:bg-gray-800 sticky top-0 z-10">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase w-12">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase w-12">
                 #
               </th>
 
               {showImage && (
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                   Logo
                 </th>
               )}
@@ -118,24 +118,24 @@ export const Table = ({
               {filteredColumns.map((column, index) => (
                 <th
                   key={index}
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase"
                 >
                   {column.header}
                 </th>
               ))}
 
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
+              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                 Actions
               </th>
             </tr>
           </thead>
 
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
             {paginatedData.length === 0 ? (
               <tr>
                 <td
                   colSpan={filteredColumns.length + (showImage ? 2 : 1)}
-                  className="px-6 py-12 text-center text-gray-500"
+                  className="px-6 py-12 text-center text-gray-500 dark:text-gray-400"
                 >
                   No data available
                 </td>
@@ -144,8 +144,8 @@ export const Table = ({
               paginatedData.map((row, rowIndex) => {
                 const rowNumber = (page - 1) * limit + rowIndex + 1;
                 return (
-                  <tr key={row._id || rowIndex} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-4 text-sm text-gray-600 font-medium w-12">
+                  <tr key={row._id || rowIndex} className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                    <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-300 font-medium w-12">
                       {rowNumber}
                     </td>
 
@@ -154,7 +154,7 @@ export const Table = ({
                         <div className="h-12 w-12">
                           {row[imageAccessor] ? (
                             <img
-                              className="h-12 w-12 rounded-lg object-cover border border-gray-200"
+                              className="h-12 w-12 rounded-lg object-cover border border-gray-200 dark:border-gray-700"
                               src={row[imageAccessor]}
                               alt={row.name || 'Logo'}
                               onError={(e) => {
@@ -188,9 +188,9 @@ export const Table = ({
                           setAnchorRect({ top: rect.top + window.scrollY, left: rect.left + window.scrollX, right: rect.right + window.scrollX, bottom: rect.bottom + window.scrollY });
                           setOpenMenuId(openMenuId === row._id ? null : row._id);
                         }}
-                        className="inline-flex items-center justify-center w-8 h-8 rounded-lg hover:bg-gray-100 transition-colors"
+                        className="inline-flex items-center justify-center w-8 h-8 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                       >
-                        <MoreVertical className="w-5 h-5 text-gray-600" />
+                        <MoreVertical className="w-5 h-5 text-gray-600 dark:text-gray-300" />
                       </button>
 
                       {openMenuId === row._id && anchorRect && typeof document !== 'undefined' &&
@@ -198,7 +198,7 @@ export const Table = ({
                           <>
                             <div className="fixed inset-0 z-40" onClick={() => setOpenMenuId(null)} />
                             <div
-                              className="absolute z-50 w-56 rounded-lg shadow-lg bg-white ring-1 ring-black ring-opacity-5"
+                              className="absolute z-50 w-56 rounded-lg shadow-lg bg-white dark:bg-gray-900 ring-1 ring-black/5 dark:ring-white/10"
                               style={{
                                 top: Math.min(anchorRect.bottom + 8, window.scrollY + window.innerHeight - 8 - 200),
                                 left: Math.max(anchorRect.right - 224, 8),
@@ -212,7 +212,7 @@ export const Table = ({
                                       key={action.value}
                                       onClick={() => handleAction(action.value, row)}
                                       className={`w-full flex items-center gap-3 px-4 py-2 text-sm transition-colors ${
-                                        action.danger ? 'text-red-700 hover:bg-red-50' : 'text-gray-700 hover:bg-gray-50'
+                                        action.danger ? 'text-red-700 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
                                       }`}
                                     >
                                       <Icon className="w-4 h-4" />
@@ -238,12 +238,12 @@ export const Table = ({
       <div className="flex items-center justify-between p-4">
         {/* Items Per Page */}
         <div className="flex items-center gap-2">
-          <span className="text-gray-600 text-sm">Items per page:</span>
+          <span className="text-gray-600 dark:text-gray-400 text-sm">Items per page:</span>
 
           <select
             value={limit}
             onChange={handleLimitChange}
-            className="text-black border px-2 py-1 rounded text-sm"
+            className="text-black dark:text-gray-100 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 px-2 py-1 rounded text-sm"
           >
             {[10, 20, 50, 100].map((n) => (
               <option key={n} value={n}>
@@ -254,26 +254,26 @@ export const Table = ({
         </div>
 
         {/* Page Navigation */}
-        <div className="text-black flex items-center gap-2">
+        <div className="text-black dark:text-gray-100 flex items-center gap-2">
           <button
             disabled={page === 1}
             onClick={() => (onPageChange ? onPageChange(page - 1) : setInternalPage(page - 1))}
-            className={`px-3 py-1 border rounded text-sm ${page === 1 ? 'opacity-40' : ''}`}
+            className={`px-3 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm ${page === 1 ? 'opacity-40' : ''}`}
           >
             Prev
           </button>
 
           {getPageNumbers().map((num, idx) =>
             num === '...' ? (
-              <span key={idx} className="px-3 py-1 text-gray-500">
+              <span key={idx} className="px-3 py-1 text-gray-500 dark:text-gray-400">
                 ...
               </span>
             ) : (
               <button
                 key={idx}
                 onClick={() => (onPageChange ? onPageChange(num) : setInternalPage(num))}
-                className={`px-3 py-1 border rounded text-sm ${
-                  num === page ? 'bg-teal-600 text-white' : ''
+                className={`px-3 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm ${
+                  num === page ? 'bg-teal-600 text-white border-teal-600' : ''
                 }`}
               >
                 {num}
@@ -284,7 +284,7 @@ export const Table = ({
           <button
             disabled={page === totalPages}
             onClick={() => (onPageChange ? onPageChange(page + 1) : setInternalPage(page + 1))}
-            className={`px-3 py-1 border rounded text-sm ${page === totalPages ? 'opacity-40' : ''}`}
+            className={`px-3 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm ${page === totalPages ? 'opacity-40' : ''}`}
           >
             Next
           </button>

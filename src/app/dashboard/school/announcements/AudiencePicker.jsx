@@ -271,13 +271,13 @@ function MultiSelect({
           {selected.map((s) => (
             <span
               key={s.value}
-              className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-teal-50 border border-teal-200 rounded-full text-xs text-teal-800"
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-teal-50 dark:bg-teal-950/40 border border-teal-200 rounded-full text-xs text-teal-800"
             >
               {s.label}
               <button
                 type="button"
                 onClick={() => remove(s.value)}
-                className="text-teal-700 hover:text-teal-900"
+                className="text-teal-700 dark:text-teal-400 hover:text-teal-900"
               >
                 <X className="w-3 h-3" />
               </button>

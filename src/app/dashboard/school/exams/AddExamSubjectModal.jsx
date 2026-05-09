@@ -184,7 +184,7 @@ export default function AddExamSubjectModal({ isOpen, onClose, onSuccess, examId
     >
       <form className="space-y-6">
         {submitError && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+          <div className="p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 rounded-lg text-red-700 dark:text-red-400 text-sm">
             {submitError}
           </div>
         )}
@@ -246,7 +246,7 @@ export default function AddExamSubjectModal({ isOpen, onClose, onSuccess, examId
             />
           </Field>
         </div>
-        <p className="text-xs text-gray-500">
+        <p className="text-xs text-gray-500 dark:text-gray-400">
           If both Theory and Practical are provided, they must add up to Total Marks.
         </p>
       </form>

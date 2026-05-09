@@ -1,7 +1,7 @@
 'use client';
 import React, { useMemo, useState } from 'react';
 import { Table } from '@/component/Table';
-import { Plus, Search, Edit, Trash2, Users, Eye } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, Users, Eye, X } from 'lucide-react';
 import { useTokenStore } from '@/store/tokenStore';
 import { useUserStore } from '@/store/userStore';
 import {
@@ -35,12 +35,42 @@ export default function RoutesPage() {
 
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(20);
+  // Filters — draft state holds in-progress UI values; applied state drives the API.
+  const [draftSearch, setDraftSearch] = useState('');
+  const [draftStatus, setDraftStatus] = useState('');
+  const [draftVehicleId, setDraftVehicleId] = useState('');
+  const [draftBranchId, setDraftBranchId] = useState('');
+  const [draftIsActive, setDraftIsActive] = useState('true');
+
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState('');
   const [vehicleId, setVehicleId] = useState('');
   const [branchId, setBranchId] = useState('');
   const [isActive, setIsActive] = useState('true');
   const [branchDropdownTouched, setBranchDropdownTouched] = useState(false);
+
+  const applyFilters = () => {
+    setSearch(draftSearch);
+    setStatus(draftStatus);
+    setVehicleId(draftVehicleId);
+    setBranchId(draftBranchId);
+    setIsActive(draftIsActive);
+    setPage(1);
+  };
+
+  const clearFilters = () => {
+    setDraftSearch('');
+    setDraftStatus('');
+    setDraftVehicleId('');
+    setDraftBranchId('');
+    setDraftIsActive('true');
+    setSearch('');
+    setStatus('');
+    setVehicleId('');
+    setBranchId('');
+    setIsActive('true');
+    setPage(1);
+  };
 
   const actions = user?.role?.actions || [];
   const isAdmin = !!user?.role?.isPredefined;
@@ -65,13 +95,14 @@ export default function RoutesPage() {
   });
   const branches = branchData?.data || [];
 
-  const effectiveBranchId = isOrgLevel ? branchId : userBranchId;
+  // Vehicle dropdown uses draft branchId so picking a branch instantly refreshes options.
+  const draftEffectiveBranchId = isOrgLevel ? draftBranchId : userBranchId;
 
   const { data: vehicleData } = useQuery({
-    queryKey: ['vehicles-dropdown', effectiveBranchId],
+    queryKey: ['vehicles-dropdown', draftEffectiveBranchId],
     queryFn: () => {
       const params = { page: 1, limit: 200, token };
-      if (effectiveBranchId) params.branchId = effectiveBranchId;
+      if (draftEffectiveBranchId) params.branchId = draftEffectiveBranchId;
       return fetchData({ url: '/transport/vehicle', ...params });
     },
     enabled: !!token,
@@ -119,7 +150,6 @@ export default function RoutesPage() {
   });
 
   const list = data?.data || [];
-  const resetPage = () => setPage(1);
 
   const columns = useMemo(
     () => [
@@ -128,8 +158,8 @@ export default function RoutesPage() {
         accessor: 'name',
         render: (v, row) => (
           <div>
-            <div className="font-medium text-gray-900">{v}</div>
-            <div className="text-xs text-gray-400">{row.code || '—'}</div>
+            <div className="font-medium text-gray-900 dark:text-gray-100">{v}</div>
+            <div className="text-xs text-gray-400 dark:text-gray-500">{row.code || '—'}</div>
           </div>
         ),
       },
@@ -137,9 +167,9 @@ export default function RoutesPage() {
         header: 'Path',
         accessor: 'startPoint',
         render: (v, row) => (
-          <div className="text-sm text-gray-700">
+          <div className="text-sm text-gray-700 dark:text-gray-300">
             {v}
-            <span className="text-gray-400"> → </span>
+            <span className="text-gray-400 dark:text-gray-500"> → </span>
             {row.endPoint}
           </div>
         ),
@@ -148,7 +178,7 @@ export default function RoutesPage() {
         header: 'Vehicle',
         accessor: 'vehicleId',
         render: (v) => (
-          <span className="text-sm text-gray-700">
+          <span className="text-sm text-gray-700 dark:text-gray-300">
             {v?.registrationNumber || '—'}
           </span>
         ),
@@ -156,17 +186,17 @@ export default function RoutesPage() {
       {
         header: 'Stops',
         accessor: 'stops',
-        render: (v) => <span className="text-sm text-gray-700">{(v || []).length}</span>,
+        render: (v) => <span className="text-sm text-gray-700 dark:text-gray-300">{(v || []).length}</span>,
       },
       {
         header: 'Base Fee',
         accessor: 'baseFee',
-        render: (v) => <span className="text-sm font-medium text-teal-700">{formatMoney(v)}</span>,
+        render: (v) => <span className="text-sm font-medium text-teal-700 dark:text-teal-400">{formatMoney(v)}</span>,
       },
       {
         header: 'Branch',
         accessor: 'branchId',
-        render: (v) => <span className="text-sm text-gray-600">{v?.name || '—'}</span>,
+        render: (v) => <span className="text-sm text-gray-600 dark:text-gray-400">{v?.name || '—'}</span>,
       },
       {
         header: 'Status',
@@ -209,8 +239,8 @@ export default function RoutesPage() {
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Routes</h1>
-            <p className="text-gray-600 mt-1">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Routes</h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-1">
               Define pickup/drop routes with stops, fees, and an assigned vehicle.
             </p>
           </div>
@@ -226,27 +256,21 @@ export default function RoutesPage() {
         </div>
 
         <div className="mb-4 flex flex-wrap items-center gap-3">
-          <div className="flex items-center bg-white px-3 py-2 rounded-lg border border-gray-200 gap-2">
-            <Search className="w-4 h-4 text-gray-400 shrink-0" />
+          <div className="flex items-center bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 gap-2">
             <input
               type="text"
               placeholder="Search by name..."
-              value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
-                resetPage();
-              }}
-              className="outline-none text-sm w-56 text-gray-900 placeholder:text-gray-400"
+              value={draftSearch}
+              onChange={(e) => setDraftSearch(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') applyFilters(); }}
+              className="outline-none text-sm w-56 text-gray-900 dark:text-gray-100 placeholder:text-gray-400"
             />
           </div>
 
           <select
-            value={status}
-            onChange={(e) => {
-              setStatus(e.target.value);
-              resetPage();
-            }}
-            className="bg-white px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700 capitalize"
+            value={draftStatus}
+            onChange={(e) => setDraftStatus(e.target.value)}
+            className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300 capitalize"
           >
             <option value="">All Status</option>
             {ROUTE_STATUSES.map((s) => (
@@ -257,12 +281,9 @@ export default function RoutesPage() {
           </select>
 
           <select
-            value={vehicleId}
-            onChange={(e) => {
-              setVehicleId(e.target.value);
-              resetPage();
-            }}
-            className="bg-white px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700"
+            value={draftVehicleId}
+            onChange={(e) => setDraftVehicleId(e.target.value)}
+            className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
           >
             <option value="">All Vehicles</option>
             {vehicles.map((v) => (
@@ -273,12 +294,9 @@ export default function RoutesPage() {
           </select>
 
           <select
-            value={isActive}
-            onChange={(e) => {
-              setIsActive(e.target.value);
-              resetPage();
-            }}
-            className="bg-white px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700"
+            value={draftIsActive}
+            onChange={(e) => setDraftIsActive(e.target.value)}
+            className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
           >
             <option value="true">Active</option>
             <option value="false">Inactive</option>
@@ -287,13 +305,10 @@ export default function RoutesPage() {
 
           {isOrgLevel && (
             <select
-              value={branchId}
+              value={draftBranchId}
               onFocus={() => setBranchDropdownTouched(true)}
-              onChange={(e) => {
-                setBranchId(e.target.value);
-                resetPage();
-              }}
-              className="bg-white px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700"
+              onChange={(e) => setDraftBranchId(e.target.value)}
+              className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
             >
               <option value="">All Branches</option>
               {branches.map((b) => (
@@ -303,6 +318,23 @@ export default function RoutesPage() {
               ))}
             </select>
           )}
+
+          <button
+            type="button"
+            onClick={applyFilters}
+            className="flex items-center gap-1 px-3 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 text-sm"
+          >
+            <Search className="w-4 h-4" />
+            Search
+          </button>
+          <button
+            type="button"
+            onClick={clearFilters}
+            className="flex items-center gap-1 px-3 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 text-sm"
+          >
+            <X className="w-4 h-4" />
+            Clear
+          </button>
         </div>
 
         <Table

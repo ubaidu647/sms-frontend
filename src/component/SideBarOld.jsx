@@ -218,7 +218,7 @@ export const Sidebar = ({ user = {}, actionList = [] }) => {
         <div className="flex items-center justify-between mb-6">
           {!isCollapsed ? (
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center flex-shrink-0">
+              <div className="w-10 h-10 bg-white dark:bg-gray-900 rounded-lg flex items-center justify-center flex-shrink-0">
                 <svg
                   width="24"
                   height="24"
@@ -233,7 +233,7 @@ export const Sidebar = ({ user = {}, actionList = [] }) => {
               <h2 className="text-white font-bold text-xl truncate">School Portal</h2>
             </div>
           ) : (
-            <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
+            <div className="w-10 h-10 bg-white dark:bg-gray-900 rounded-lg flex items-center justify-center">
               <svg
                 width="24"
                 height="24"

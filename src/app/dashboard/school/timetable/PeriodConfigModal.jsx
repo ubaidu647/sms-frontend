@@ -207,18 +207,18 @@ export default function PeriodConfigModal({ isOpen, onClose, onSuccess, config }
     >
       <div className="space-y-6">
         {submitError && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+          <div className="p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 rounded-lg text-red-700 dark:text-red-400 text-sm">
             {submitError}
           </div>
         )}
 
         <div>
-          <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
+          <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">
             Basic Info
           </h3>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">
+              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">
                 Name <span className="text-red-500">*</span>
               </label>
               <input
@@ -230,7 +230,7 @@ export default function PeriodConfigModal({ isOpen, onClose, onSuccess, config }
             </div>
             {!isEditing && canCreateAllBranch && (
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">
+                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">
                   Branch <span className="text-red-500">*</span>
                 </label>
                 <select
@@ -254,7 +254,7 @@ export default function PeriodConfigModal({ isOpen, onClose, onSuccess, config }
                 onChange={(e) => setIsDefault(e.target.checked)}
                 className="w-4 h-4 accent-teal-600"
               />
-              <span className="text-sm text-gray-700">
+              <span className="text-sm text-gray-700 dark:text-gray-300">
                 Set as branch default — used by all section editors
               </span>
             </label>
@@ -262,7 +262,7 @@ export default function PeriodConfigModal({ isOpen, onClose, onSuccess, config }
         </div>
 
         <div>
-          <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
+          <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">
             Working Days
           </h3>
           <div className="flex flex-wrap gap-2">
@@ -288,13 +288,13 @@ export default function PeriodConfigModal({ isOpen, onClose, onSuccess, config }
 
         <div>
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest">
+            <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">
               Periods
             </h3>
             <button
               type="button"
               onClick={addPeriod}
-              className="flex items-center gap-1 text-sm text-teal-700 hover:text-teal-800"
+              className="flex items-center gap-1 text-sm text-teal-700 dark:text-teal-400 hover:text-teal-800"
             >
               <Plus className="w-4 h-4" /> Add Period
             </button>
@@ -302,7 +302,7 @@ export default function PeriodConfigModal({ isOpen, onClose, onSuccess, config }
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-xs text-gray-500 uppercase">
+                <tr className="text-xs text-gray-500 dark:text-gray-400 uppercase">
                   <th className="text-left py-2 pr-2 font-semibold w-16">#</th>
                   <th className="text-left py-2 pr-2 font-semibold">Name</th>
                   <th className="text-left py-2 pr-2 font-semibold w-28">Start</th>
@@ -313,7 +313,7 @@ export default function PeriodConfigModal({ isOpen, onClose, onSuccess, config }
               </thead>
               <tbody>
                 {periods.map((p, idx) => (
-                  <tr key={idx} className="border-t border-gray-100">
+                  <tr key={idx} className="border-t border-gray-100 dark:border-gray-800">
                     <td className="py-2 pr-2">
                       <input
                         type="number"
@@ -380,7 +380,7 @@ export default function PeriodConfigModal({ isOpen, onClose, onSuccess, config }
               </tbody>
             </table>
           </div>
-          <p className="text-xs text-gray-500 mt-2">
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
             Periods must have unique numbers and end after start.
           </p>
         </div>

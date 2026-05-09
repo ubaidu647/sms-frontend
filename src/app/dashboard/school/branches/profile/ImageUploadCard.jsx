@@ -61,9 +61,9 @@ export default function ImageUploadCard({
   };
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-4">
+    <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-4">
       <div className="flex items-center justify-between mb-2">
-        <div className="text-sm font-semibold text-gray-800">{label}</div>
+        <div className="text-sm font-semibold text-gray-800 dark:text-gray-200">{label}</div>
         {pendingFile && (
           <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
             New · {formatBytes(pendingFile.size)}
@@ -71,14 +71,14 @@ export default function ImageUploadCard({
         )}
       </div>
 
-      <div className="aspect-[3/2] rounded-lg border border-dashed border-gray-300 bg-gray-50 flex items-center justify-center overflow-hidden mb-3">
+      <div className="aspect-[3/2] rounded-lg border border-dashed border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 flex items-center justify-center overflow-hidden mb-3">
         {src ? (
           isPdf ? (
             <a
               href={src}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex flex-col items-center gap-2 text-teal-700"
+              className="flex flex-col items-center gap-2 text-teal-700 dark:text-teal-400"
             >
               <FileText className="w-8 h-8" />
               <span className="text-xs">View PDF</span>
@@ -91,7 +91,7 @@ export default function ImageUploadCard({
             />
           )
         ) : (
-          <div className="flex flex-col items-center text-gray-400">
+          <div className="flex flex-col items-center text-gray-400 dark:text-gray-500">
             <Upload className="w-8 h-8 mb-1" />
             <span className="text-xs">No {label.toLowerCase()} uploaded</span>
           </div>
@@ -99,7 +99,7 @@ export default function ImageUploadCard({
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
-        <label className="flex items-center gap-1 px-3 py-1.5 bg-white border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 text-xs text-gray-700">
+        <label className="flex items-center gap-1 px-3 py-1.5 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 text-xs text-gray-700 dark:text-gray-300">
           <Upload className="w-3.5 h-3.5" />
           {pendingFile ? 'Pick another' : src ? 'Replace' : 'Upload'}
           <input
@@ -114,7 +114,7 @@ export default function ImageUploadCard({
           <button
             type="button"
             onClick={() => onPick(null)}
-            className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs text-gray-600 hover:text-gray-900"
+            className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100"
           >
             <X className="w-3.5 h-3.5" /> Cancel
           </button>
@@ -133,7 +133,7 @@ export default function ImageUploadCard({
         )}
       </div>
 
-      {hint && <p className="text-xs text-gray-400 mt-2">{hint}</p>}
+      {hint && <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">{hint}</p>}
     </div>
   );
 }

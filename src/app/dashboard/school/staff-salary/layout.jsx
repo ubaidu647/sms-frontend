@@ -3,7 +3,7 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useUserStore } from '@/store/userStore';
-import { LayoutDashboard, ListTree, Receipt } from 'lucide-react';
+import { LayoutDashboard, ListTree, Receipt, Scale } from 'lucide-react';
 import { canSee, resolveScope } from '@/utils/permissions';
 
 const TABS = [
@@ -29,6 +29,12 @@ const TABS = [
     icon: Receipt,
     canAccess: (role) => canSee(role, 'view-payslip'),
   },
+  {
+    label: 'Policy',
+    href: '/dashboard/school/staff-salary/policy',
+    icon: Scale,
+    canAccess: (role) => canSee(role, 'view-staff-salary-policy'),
+  },
 ];
 
 export default function StaffSalaryLayout({ children }) {
@@ -38,9 +44,9 @@ export default function StaffSalaryLayout({ children }) {
   const visibleTabs = TABS.filter((t) => t.canAccess(user?.role));
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-6 pt-6">
-        <div className="flex items-center gap-1 border-b border-gray-200 overflow-x-auto">
+    <div className="flex-1 flex flex-col overflow-hidden bg-gray-50 dark:bg-gray-800">
+      <div className="max-w-7xl mx-auto px-6 pt-6 w-full">
+        <div className="flex items-center gap-1 border-b border-gray-200 dark:border-gray-700 overflow-x-auto scrollbar-hide">
           {visibleTabs.map((tab) => {
             const isActive =
               pathname === tab.href ||
@@ -64,7 +70,7 @@ export default function StaffSalaryLayout({ children }) {
           })}
         </div>
       </div>
-      {children}
+      <div className="flex-1 overflow-y-auto scrollbar-hide">{children}</div>
     </div>
   );
 }

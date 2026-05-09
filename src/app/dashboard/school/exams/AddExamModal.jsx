@@ -179,13 +179,13 @@ export default function AddExamModal({ isOpen, onClose, onSuccess }) {
     >
       <form className="space-y-6">
         {submitError && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+          <div className="p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 rounded-lg text-red-700 dark:text-red-400 text-sm">
             {submitError}
           </div>
         )}
 
         <div>
-          <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
+          <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">
             Exam Info
           </h3>
           <div className="grid grid-cols-2 gap-4">
@@ -239,7 +239,7 @@ export default function AddExamModal({ isOpen, onClose, onSuccess }) {
         </div>
 
         <div>
-          <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
+          <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">
             Description
           </h3>
           <Field label="Description" error={errors.description?.message}>

@@ -333,24 +333,24 @@ export default function AddAssignmentModal({ isOpen, mode = 'single', onClose, o
     >
       {bulkResult ? (
         <div className="space-y-4">
-          <div className="p-5 rounded-xl bg-green-50 border border-green-200">
+          <div className="p-5 rounded-xl bg-green-50 dark:bg-green-950/40 border border-green-200">
             <h3 className="text-lg font-bold text-green-900">Bulk Assignment Complete</h3>
-            <p className="text-sm text-green-800 mt-1">
+            <p className="text-sm text-green-800 dark:text-green-300 mt-1">
               Created {bulkResult.createdCount} of {bulkResult.total} requested.
             </p>
           </div>
 
           {bulkResult.created?.length > 0 && (
             <div>
-              <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Created</h4>
+              <h4 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-2">Created</h4>
               <ul className="space-y-1">
                 {bulkResult.created.map((c) => {
                   const sec = sections.find((s) => s._id === c.sectionId);
                   return (
-                    <li key={c._id} className="flex items-center gap-2 text-sm text-gray-700">
+                    <li key={c._id} className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
                       <CheckCircle2 className="w-4 h-4 text-green-600 flex-shrink-0" />
                       <span>Section {sec?.name || c.sectionId}</span>
-                      <span className="text-xs text-gray-400">{c.serialNumber}</span>
+                      <span className="text-xs text-gray-400 dark:text-gray-500">{c.serialNumber}</span>
                     </li>
                   );
                 })}
@@ -360,16 +360,16 @@ export default function AddAssignmentModal({ isOpen, mode = 'single', onClose, o
 
           {bulkResult.skipped?.length > 0 && (
             <div>
-              <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Skipped</h4>
+              <h4 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-2">Skipped</h4>
               <ul className="space-y-1">
                 {bulkResult.skipped.map((s, i) => {
                   const sec = sections.find((sec) => sec._id === s.sectionId);
                   return (
-                    <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
+                    <li key={i} className="flex items-start gap-2 text-sm text-gray-700 dark:text-gray-300">
                       <AlertTriangle className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
                       <div>
                         <span>Section {sec?.name || s.sectionId}</span>
-                        <span className="text-xs text-gray-500 ml-2">— {s.reason}</span>
+                        <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">— {s.reason}</span>
                       </div>
                     </li>
                   );
@@ -381,18 +381,18 @@ export default function AddAssignmentModal({ isOpen, mode = 'single', onClose, o
       ) : (
         <form className="space-y-6">
           {submitError && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+            <div className="p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 rounded-lg text-red-700 dark:text-red-400 text-sm">
               {submitError}
             </div>
           )}
 
           {/* Scope */}
           <div>
-            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Scope</h3>
+            <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">Scope</h3>
             <div className="grid grid-cols-2 gap-4">
               {canCreateAllBranch ? (
                 <Field label="Branch" required error={errors.branchId?.message}>
-                  <select {...register('branchId')} className={`${inputCls} bg-white`}>
+                  <select {...register('branchId')} className={`${inputCls} bg-white dark:bg-gray-900`}>
                     <option value="">Select branch...</option>
                     {branches.map((b) => (
                       <option key={b._id} value={b._id}>{b.name}</option>
@@ -408,7 +408,7 @@ export default function AddAssignmentModal({ isOpen, mode = 'single', onClose, o
               <Field label="Class" required error={errors.classId?.message}>
                 <select
                   {...register('classId')}
-                  className={`${inputCls} bg-white`}
+                  className={`${inputCls} bg-white dark:bg-gray-900`}
                   disabled={!branchId}
                 >
                   <option value="">{branchId ? 'Select class...' : 'Select branch first'}</option>
@@ -423,7 +423,7 @@ export default function AddAssignmentModal({ isOpen, mode = 'single', onClose, o
                 <Field label="Section" required error={errors.sectionId?.message}>
                   <select
                     {...register('sectionId')}
-                    className={`${inputCls} bg-white`}
+                    className={`${inputCls} bg-white dark:bg-gray-900`}
                     disabled={!classId}
                   >
                     <option value="">{classId ? 'Select section...' : 'Select class first'}</option>
@@ -441,20 +441,20 @@ export default function AddAssignmentModal({ isOpen, mode = 'single', onClose, o
           {/* Section picker for bulk */}
           {isBulk && (
             <div>
-              <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
+              <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">
                 Sections to Assign ({selectedSectionIds.length} selected)
               </h3>
               {!classId ? (
-                <p className="text-sm text-gray-400 italic">Select a class to load sections.</p>
+                <p className="text-sm text-gray-400 dark:text-gray-500 italic">Select a class to load sections.</p>
               ) : sections.length === 0 ? (
-                <p className="text-sm text-gray-400 italic">No sections in this class.</p>
+                <p className="text-sm text-gray-400 dark:text-gray-500 italic">No sections in this class.</p>
               ) : (
-                <div className="space-y-2 max-h-56 overflow-y-auto p-3 bg-gray-50 rounded-xl border border-gray-200">
-                  <div className="flex items-center justify-end gap-2 pb-2 border-b border-gray-200">
+                <div className="space-y-2 max-h-56 overflow-y-auto p-3 bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
+                  <div className="flex items-center justify-end gap-2 pb-2 border-b border-gray-200 dark:border-gray-700">
                     <button
                       type="button"
                       onClick={() => setSelectedSectionIds(sections.map((s) => s._id))}
-                      className="text-xs text-teal-700 font-medium hover:underline"
+                      className="text-xs text-teal-700 dark:text-teal-400 font-medium hover:underline"
                     >
                       Select all
                     </button>
@@ -462,7 +462,7 @@ export default function AddAssignmentModal({ isOpen, mode = 'single', onClose, o
                     <button
                       type="button"
                       onClick={() => setSelectedSectionIds([])}
-                      className="text-xs text-gray-500 font-medium hover:underline"
+                      className="text-xs text-gray-500 dark:text-gray-400 font-medium hover:underline"
                     >
                       Clear
                     </button>
@@ -482,8 +482,8 @@ export default function AddAssignmentModal({ isOpen, mode = 'single', onClose, o
                           onChange={() => toggleSectionSelection(s._id)}
                           className="w-4 h-4 accent-teal-600"
                         />
-                        <span className="text-sm font-medium text-gray-900">Section {s.name}</span>
-                        <span className="text-xs text-gray-500 ml-auto">
+                        <span className="text-sm font-medium text-gray-900 dark:text-gray-100">Section {s.name}</span>
+                        <span className="text-xs text-gray-500 dark:text-gray-400 ml-auto">
                           {s.currentStrength}/{s.capacity}
                         </span>
                       </label>
@@ -496,14 +496,14 @@ export default function AddAssignmentModal({ isOpen, mode = 'single', onClose, o
 
           {/* Subject + Teacher */}
           <div>
-            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
+            <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">
               Subject &amp; Teacher
             </h3>
             <div className="grid grid-cols-2 gap-4">
               <Field label="Subject" required error={errors.subjectId?.message}>
                 <select
                   {...register('subjectId')}
-                  className={`${inputCls} bg-white`}
+                  className={`${inputCls} bg-white dark:bg-gray-900`}
                   disabled={!classId}
                 >
                   <option value="">{classId ? 'Select subject...' : 'Select class first'}</option>
@@ -517,7 +517,7 @@ export default function AddAssignmentModal({ isOpen, mode = 'single', onClose, o
               <Field label="Teacher" required error={errors.staffId?.message}>
                 <select
                   {...register('staffId')}
-                  className={`${inputCls} bg-white`}
+                  className={`${inputCls} bg-white dark:bg-gray-900`}
                   disabled={!branchId}
                 >
                   <option value="">{branchId ? 'Select teacher...' : 'Select branch first'}</option>
@@ -533,17 +533,17 @@ export default function AddAssignmentModal({ isOpen, mode = 'single', onClose, o
 
           {/* Role */}
           <div>
-            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Role</h3>
+            <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">Role</h3>
             <div className="grid grid-cols-2 gap-4">
               <Field label="Role" error={errors.role?.message}>
-                <select {...register('role')} className={`${inputCls} bg-white`}>
+                <select {...register('role')} className={`${inputCls} bg-white dark:bg-gray-900`}>
                   <option value="teacher">Teacher</option>
                   <option value="co-teacher">Co-teacher</option>
                   <option value="substitute">Substitute</option>
                 </select>
               </Field>
               <Field label="Primary Teacher?" error={errors.isPrimary?.message}>
-                <select {...register('isPrimary')} className={`${inputCls} bg-white`}>
+                <select {...register('isPrimary')} className={`${inputCls} bg-white dark:bg-gray-900`}>
                   <option value="true">Yes — primary (will demote any existing primary)</option>
                   <option value="false">No</option>
                 </select>

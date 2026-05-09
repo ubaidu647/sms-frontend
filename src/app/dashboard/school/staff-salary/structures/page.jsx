@@ -143,10 +143,10 @@ export default function StructuresPage() {
         accessor: 'staffId',
         render: (v) => (
           <div>
-            <div className="font-medium text-gray-900 text-sm">
+            <div className="font-medium text-gray-900 dark:text-gray-100 text-sm">
               {v?.userId?.name || v?.user?.name || v?.name || '—'}
             </div>
-            <div className="text-xs text-gray-400">
+            <div className="text-xs text-gray-400 dark:text-gray-500">
               {v?.employeeId || v?.serialNumber || ''}
             </div>
           </div>
@@ -156,7 +156,7 @@ export default function StructuresPage() {
         header: 'Basic',
         accessor: 'basicSalary',
         render: (v, row) => (
-          <span className="text-sm font-medium text-gray-900">
+          <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
             {formatMoney(v, row.currency)}
           </span>
         ),
@@ -165,24 +165,24 @@ export default function StructuresPage() {
         header: 'Allowances',
         accessor: 'allowances',
         render: (v) => (
-          <span className="text-sm text-gray-700">{(v || []).length}</span>
+          <span className="text-sm text-gray-700 dark:text-gray-300">{(v || []).length}</span>
         ),
       },
       {
         header: 'Deductions',
         accessor: 'deductions',
         render: (v) => (
-          <span className="text-sm text-gray-700">{(v || []).length}</span>
+          <span className="text-sm text-gray-700 dark:text-gray-300">{(v || []).length}</span>
         ),
       },
       {
         header: 'Effective',
         accessor: 'effectiveFrom',
         render: (v, row) => (
-          <div className="text-xs text-gray-700">
+          <div className="text-xs text-gray-700 dark:text-gray-300">
             <div>{formatDate(v)}</div>
             {row.effectiveTo && (
-              <div className="text-gray-400">to {formatDate(row.effectiveTo)}</div>
+              <div className="text-gray-400 dark:text-gray-500">to {formatDate(row.effectiveTo)}</div>
             )}
           </div>
         ),
@@ -225,10 +225,10 @@ export default function StructuresPage() {
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
               Salary Structures
             </h1>
-            <p className="text-gray-600 mt-1">
+            <p className="text-gray-600 dark:text-gray-400 mt-1">
               Define basic salary, allowances, and deductions per staff member.
             </p>
           </div>
@@ -251,7 +251,7 @@ export default function StructuresPage() {
                 setStaffId(e.target.value);
                 resetPage();
               }}
-              className="bg-white px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700 min-w-[200px]"
+              className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300 min-w-[200px]"
             >
               <option value="">All Staff</option>
               {staffList.map((s) => (
@@ -268,7 +268,7 @@ export default function StructuresPage() {
               setIsActive(e.target.value);
               resetPage();
             }}
-            className="bg-white px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700"
+            className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
           >
             <option value="true">Active</option>
             <option value="false">Closed</option>
@@ -283,7 +283,7 @@ export default function StructuresPage() {
                 setBranchId(e.target.value);
                 resetPage();
               }}
-              className="bg-white px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700"
+              className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
             >
               <option value="">All Branches</option>
               {branches.map((b) => (

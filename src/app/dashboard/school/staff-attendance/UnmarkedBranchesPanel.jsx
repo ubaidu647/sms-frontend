@@ -30,31 +30,31 @@ export default function UnmarkedBranchesPanel() {
 
   return (
     <div className="space-y-4">
-      <div className="bg-white rounded-xl border border-gray-200 p-4">
+      <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 max-w-md">
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1">Date</label>
+            <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">Date</label>
             <input
               type="date"
               value={date}
               max={todayISO()}
               onChange={(e) => setDate(e.target.value)}
-              className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg bg-white text-gray-900 outline-none focus:border-teal-500"
+              className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 outline-none focus:border-teal-500"
             />
           </div>
         </div>
       </div>
 
       {isFetching && (
-        <div className="bg-white rounded-xl border border-gray-200 p-12 flex justify-center">
+        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-12 flex justify-center">
           <div className="w-8 h-8 border-4 border-teal-600 border-t-transparent rounded-full animate-spin" />
         </div>
       )}
 
       {!isFetching && count === 0 && (
-        <div className="bg-white rounded-xl border border-green-200 p-8 text-center">
+        <div className="bg-white dark:bg-gray-900 rounded-xl border border-green-200 p-8 text-center">
           <CheckCircle2 className="w-12 h-12 mx-auto text-green-500" />
-          <p className="text-green-700 font-medium mt-3">
+          <p className="text-green-700 dark:text-green-400 font-medium mt-3">
             All branches have marked staff attendance for {date}.
           </p>
         </div>
@@ -70,17 +70,17 @@ export default function UnmarkedBranchesPanel() {
             </span>
           </div>
 
-          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+          <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
             <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-200">
+              <thead className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
                 <tr>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
                     Branch
                   </th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
                     Code
                   </th>
-                  <th className="text-center px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                  <th className="text-center px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
                     Active Staff
                   </th>
                 </tr>
@@ -89,13 +89,13 @@ export default function UnmarkedBranchesPanel() {
                 {branches.map((b) => (
                   <tr
                     key={b.branchId}
-                    className="border-b border-gray-100 last:border-b-0 hover:bg-gray-50"
+                    className="border-b border-gray-100 dark:border-gray-800 last:border-b-0 hover:bg-gray-50 dark:hover:bg-gray-800"
                   >
-                    <td className="px-4 py-3 text-sm font-medium text-gray-900">
+                    <td className="px-4 py-3 text-sm font-medium text-gray-900 dark:text-gray-100">
                       {b.branchName}
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-700">{b.branchCode || '—'}</td>
-                    <td className="px-4 py-3 text-sm text-center text-gray-700">
+                    <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">{b.branchCode || '—'}</td>
+                    <td className="px-4 py-3 text-sm text-center text-gray-700 dark:text-gray-300">
                       {b.staffCount ?? 0}
                     </td>
                   </tr>

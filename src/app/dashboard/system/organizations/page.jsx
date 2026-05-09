@@ -45,17 +45,17 @@ export default function organization() {
     {
       header: 'Organization Name',
       accessor: 'name',
-      render: (value) => <div className="font-medium text-gray-900">{value}</div>,
+      render: (value) => <div className="font-medium text-gray-900 dark:text-gray-100">{value}</div>,
     },
     {
       header: 'Email',
       accessor: 'email',
-      render: (value) => <div className="text-gray-600">{value}</div>,
+      render: (value) => <div className="text-gray-600 dark:text-gray-400">{value}</div>,
     },
     {
       header: 'Phone',
       accessor: 'phone',
-      render: (value) => <div className="text-gray-600">{value}</div>,
+      render: (value) => <div className="text-gray-600 dark:text-gray-400">{value}</div>,
     },
     {
       header: 'Package',
@@ -80,7 +80,7 @@ export default function organization() {
       header: 'Created Date',
       accessor: 'createdAt',
       render: (value) => (
-        <div className="text-gray-600">{new Date(value).toLocaleDateString()}</div>
+        <div className="text-gray-600 dark:text-gray-400">{new Date(value).toLocaleDateString()}</div>
       ),
     },
     {
@@ -191,12 +191,12 @@ export default function organization() {
     activeTab === 'active' ? filterData(mockOrganizations) : filterData(mockDisabledOrganizations);
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-800 p-6 rounded-[50px]">
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Organizations</h1>
-            <p className="text-gray-600 mt-1">Manage all your organizations</p>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Organizations</h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-1">Manage all your organizations</p>
           </div>
           <button
             onClick={() => setIsModalOpen(true)}

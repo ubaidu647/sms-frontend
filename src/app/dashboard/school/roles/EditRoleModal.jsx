@@ -109,6 +109,7 @@ export default function EditRoleModal({ isOpen, onClose, onSuccess, role }) {
         };
       });
       queryClient.setQueryData(['role-detail', role._id], res.data);
+      queryClient.invalidateQueries({ queryKey: ['roles'] });
       toast.success(res?.message || 'Role updated');
       setSuccessState(true);
       setTimeout(() => {
@@ -182,20 +183,20 @@ export default function EditRoleModal({ isOpen, onClose, onSuccess, role }) {
     >
       <form className="space-y-6">
         {submitError && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+          <div className="p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 rounded-lg text-red-700 dark:text-red-400 text-sm">
             {submitError}
           </div>
         )}
 
         {/* Role Name */}
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-1">
+          <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">
             Role Name <span className="text-red-500">*</span>
           </label>
           <input
             {...register('name')}
             placeholder="e.g. Branch Manager"
-            className="w-full px-4 py-3 border border-gray-200 rounded-xl outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 text-gray-900 placeholder:text-gray-400"
+            className="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 rounded-xl outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 text-gray-900 dark:text-gray-100 placeholder:text-gray-400"
           />
           {errors.name && (
             <p className="text-red-500 text-xs mt-1">{errors.name.message}</p>
@@ -205,12 +206,12 @@ export default function EditRoleModal({ isOpen, onClose, onSuccess, role }) {
         {/* Branch — only for users with canChangeBranch */}
         {canChangeBranch && (
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1">
+            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">
               Branch <span className="text-red-500">*</span>
             </label>
             <select
               {...register('branchId')}
-              className="w-full px-4 py-3 border border-gray-200 rounded-xl outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 bg-white text-gray-900"
+              className="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 rounded-xl outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
             >
               <option value="">Select a branch...</option>
               {branches.map((branch) => (
@@ -227,7 +228,7 @@ export default function EditRoleModal({ isOpen, onClose, onSuccess, role }) {
 
         {/* Menus */}
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
+          <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
             Menus <span className="text-red-500">*</span>
           </label>
           <div className="flex flex-wrap gap-2">
@@ -256,16 +257,16 @@ export default function EditRoleModal({ isOpen, onClose, onSuccess, role }) {
 
         {/* Actions grouped by selected menus */}
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
+          <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
             Actions <span className="text-red-500">*</span>
           </label>
           {selectedMenus.length === 0 && (
-            <p className="text-gray-400 text-xs mb-2">Select a menu above to see its actions.</p>
+            <p className="text-gray-400 dark:text-gray-500 text-xs mb-2">Select a menu above to see its actions.</p>
           )}
           <div className="space-y-4">
             {actionsByMenu.map((group) => (
               <div key={group.key}>
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+                <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">
                   {group.label}
                 </p>
                 <div className="flex flex-wrap gap-2">
@@ -296,18 +297,18 @@ export default function EditRoleModal({ isOpen, onClose, onSuccess, role }) {
         </div>
 
         {ownActionsByMenu.length > 0 && (
-          <div className="border-t border-gray-200 pt-4">
-            <label className="block text-sm font-semibold text-gray-700">
-              Self-scoped <span className="font-normal text-gray-500">(own data only)</span>
+          <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
+              Self-scoped <span className="font-normal text-gray-500 dark:text-gray-400">(own data only)</span>
             </label>
-            <p className="text-xs text-gray-500 mb-3">
+            <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
               These permissions are weaker than the branch-level ones above — they only
               let the user see/update their own record.
             </p>
             <div className="space-y-4">
               {ownActionsByMenu.map((group) => (
                 <div key={`own-${group.key}`}>
-                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+                  <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">
                     {group.label}
                   </p>
                   <div className="flex flex-wrap gap-2">

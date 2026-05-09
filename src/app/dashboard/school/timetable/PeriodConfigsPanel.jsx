@@ -77,8 +77,8 @@ export default function PeriodConfigsPanel() {
         render: (v, row) => (
           <div className="flex items-center gap-2">
             <div>
-              <div className="font-medium text-gray-900">{v}</div>
-              <div className="text-xs text-gray-400">{row.serialNumber}</div>
+              <div className="font-medium text-gray-900 dark:text-gray-100">{v}</div>
+              <div className="text-xs text-gray-400 dark:text-gray-500">{row.serialNumber}</div>
             </div>
             {row.isDefault && (
               <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
@@ -96,7 +96,7 @@ export default function PeriodConfigsPanel() {
             {(v || []).map((d) => (
               <span
                 key={d}
-                className="inline-flex px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-700 uppercase"
+                className="inline-flex px-2 py-0.5 rounded text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 uppercase"
               >
                 {d}
               </span>
@@ -108,7 +108,7 @@ export default function PeriodConfigsPanel() {
         header: 'Periods',
         accessor: 'periodCount',
         render: (_v, row) => (
-          <span className="text-sm text-gray-700">{(row.periods || []).length}</span>
+          <span className="text-sm text-gray-700 dark:text-gray-300">{(row.periods || []).length}</span>
         ),
       },
       {
@@ -116,9 +116,9 @@ export default function PeriodConfigsPanel() {
         accessor: 'dailyRange',
         render: (_v, row) => {
           const v = row.periods || [];
-          if (!v.length) return <span className="text-gray-400">—</span>;
+          if (!v.length) return <span className="text-gray-400 dark:text-gray-500">—</span>;
           return (
-            <span className="text-sm text-gray-700">
+            <span className="text-sm text-gray-700 dark:text-gray-300">
               {v[0]?.startTime} → {v[v.length - 1]?.endTime}
             </span>
           );
@@ -129,7 +129,7 @@ export default function PeriodConfigsPanel() {
             {
               header: 'Branch',
               accessor: 'branch',
-              render: (v) => <div className="text-gray-600 text-sm">{v?.name ?? '—'}</div>,
+              render: (v) => <div className="text-gray-600 dark:text-gray-400 text-sm">{v?.name ?? '—'}</div>,
             },
           ]
         : []),
@@ -154,7 +154,7 @@ export default function PeriodConfigsPanel() {
             <select
               value={branchId}
               onChange={(e) => setBranchId(e.target.value)}
-              className="bg-white px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700"
+              className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
             >
               <option value="">All Branches</option>
               {branches.map((b) => (
@@ -176,7 +176,7 @@ export default function PeriodConfigsPanel() {
       </div>
 
       {isFetching && (
-        <div className="text-xs text-gray-500">Loading…</div>
+        <div className="text-xs text-gray-500 dark:text-gray-400">Loading…</div>
       )}
 
       <Table

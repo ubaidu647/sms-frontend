@@ -1,7 +1,7 @@
 'use client';
 import React, { useMemo, useState } from 'react';
 import { Table } from '@/component/Table';
-import { Plus, Search, Edit, Trash2, Eye, Users } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, Eye, Users, X } from 'lucide-react';
 import { useTokenStore } from '@/store/tokenStore';
 import { useUserStore } from '@/store/userStore';
 import {
@@ -33,12 +33,42 @@ export default function VehiclesPage() {
 
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(20);
+  // Filters — draft state holds in-progress UI values; applied state drives the API.
+  const [draftSearch, setDraftSearch] = useState('');
+  const [draftVehicleType, setDraftVehicleType] = useState('');
+  const [draftStatus, setDraftStatus] = useState('');
+  const [draftBranchId, setDraftBranchId] = useState('');
+  const [draftIsActive, setDraftIsActive] = useState('true');
+
   const [search, setSearch] = useState('');
   const [vehicleType, setVehicleType] = useState('');
   const [status, setStatus] = useState('');
   const [branchId, setBranchId] = useState('');
   const [isActive, setIsActive] = useState('true');
   const [branchDropdownTouched, setBranchDropdownTouched] = useState(false);
+
+  const applyFilters = () => {
+    setSearch(draftSearch);
+    setVehicleType(draftVehicleType);
+    setStatus(draftStatus);
+    setBranchId(draftBranchId);
+    setIsActive(draftIsActive);
+    setPage(1);
+  };
+
+  const clearFilters = () => {
+    setDraftSearch('');
+    setDraftVehicleType('');
+    setDraftStatus('');
+    setDraftBranchId('');
+    setDraftIsActive('true');
+    setSearch('');
+    setVehicleType('');
+    setStatus('');
+    setBranchId('');
+    setIsActive('true');
+    setPage(1);
+  };
 
   const actions = user?.role?.actions || [];
   const isAdmin = !!user?.role?.isPredefined;
@@ -99,7 +129,6 @@ export default function VehiclesPage() {
   });
 
   const list = data?.data || [];
-  const resetPage = () => setPage(1);
 
   const columns = useMemo(
     () => [
@@ -108,8 +137,8 @@ export default function VehiclesPage() {
         accessor: 'registrationNumber',
         render: (v, row) => (
           <div>
-            <div className="font-medium text-gray-900">{v}</div>
-            <div className="text-xs text-gray-400 capitalize">{row.vehicleType}</div>
+            <div className="font-medium text-gray-900 dark:text-gray-100">{v}</div>
+            <div className="text-xs text-gray-400 dark:text-gray-500 capitalize">{row.vehicleType}</div>
           </div>
         ),
       },
@@ -117,31 +146,31 @@ export default function VehiclesPage() {
         header: 'Make / Model',
         accessor: 'make',
         render: (v, row) => (
-          <div className="text-sm text-gray-700">
+          <div className="text-sm text-gray-700 dark:text-gray-300">
             {v || '—'}
-            {row.modelName && <span className="text-gray-400"> · {row.modelName}</span>}
+            {row.modelName && <span className="text-gray-400 dark:text-gray-500"> · {row.modelName}</span>}
           </div>
         ),
       },
       {
         header: 'Capacity',
         accessor: 'capacity',
-        render: (v) => <span className="text-sm text-gray-700">{v}</span>,
+        render: (v) => <span className="text-sm text-gray-700 dark:text-gray-300">{v}</span>,
       },
       {
         header: 'Driver',
         accessor: 'driver',
         render: (v) => (
           <div>
-            <div className="text-sm font-medium text-gray-900">{v?.name || '—'}</div>
-            <div className="text-xs text-gray-500">{v?.phone || ''}</div>
+            <div className="text-sm font-medium text-gray-900 dark:text-gray-100">{v?.name || '—'}</div>
+            <div className="text-xs text-gray-500 dark:text-gray-400">{v?.phone || ''}</div>
           </div>
         ),
       },
       {
         header: 'Branch',
         accessor: 'branchId',
-        render: (v) => <span className="text-sm text-gray-600">{v?.name || '—'}</span>,
+        render: (v) => <span className="text-sm text-gray-600 dark:text-gray-400">{v?.name || '—'}</span>,
       },
       {
         header: 'Status',
@@ -181,8 +210,8 @@ export default function VehiclesPage() {
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Vehicles</h1>
-            <p className="text-gray-600 mt-1">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Vehicles</h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-1">
               Buses, vans and other vehicles available for student transport.
             </p>
           </div>
@@ -198,27 +227,21 @@ export default function VehiclesPage() {
         </div>
 
         <div className="mb-4 flex flex-wrap items-center gap-3">
-          <div className="flex items-center bg-white px-3 py-2 rounded-lg border border-gray-200 gap-2">
-            <Search className="w-4 h-4 text-gray-400 shrink-0" />
+          <div className="flex items-center bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 gap-2">
             <input
               type="text"
               placeholder="Registration number..."
-              value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
-                resetPage();
-              }}
-              className="outline-none text-sm w-56 text-gray-900 placeholder:text-gray-400"
+              value={draftSearch}
+              onChange={(e) => setDraftSearch(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') applyFilters(); }}
+              className="outline-none text-sm w-56 text-gray-900 dark:text-gray-100 placeholder:text-gray-400"
             />
           </div>
 
           <select
-            value={vehicleType}
-            onChange={(e) => {
-              setVehicleType(e.target.value);
-              resetPage();
-            }}
-            className="bg-white px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700 capitalize"
+            value={draftVehicleType}
+            onChange={(e) => setDraftVehicleType(e.target.value)}
+            className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300 capitalize"
           >
             <option value="">All Types</option>
             {VEHICLE_TYPES.map((t) => (
@@ -229,12 +252,9 @@ export default function VehiclesPage() {
           </select>
 
           <select
-            value={status}
-            onChange={(e) => {
-              setStatus(e.target.value);
-              resetPage();
-            }}
-            className="bg-white px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700 capitalize"
+            value={draftStatus}
+            onChange={(e) => setDraftStatus(e.target.value)}
+            className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300 capitalize"
           >
             <option value="">All Status</option>
             {VEHICLE_STATUSES.map((s) => (
@@ -245,12 +265,9 @@ export default function VehiclesPage() {
           </select>
 
           <select
-            value={isActive}
-            onChange={(e) => {
-              setIsActive(e.target.value);
-              resetPage();
-            }}
-            className="bg-white px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700"
+            value={draftIsActive}
+            onChange={(e) => setDraftIsActive(e.target.value)}
+            className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
           >
             <option value="true">Active</option>
             <option value="false">Inactive</option>
@@ -259,13 +276,10 @@ export default function VehiclesPage() {
 
           {isOrgLevel && (
             <select
-              value={branchId}
+              value={draftBranchId}
               onFocus={() => setBranchDropdownTouched(true)}
-              onChange={(e) => {
-                setBranchId(e.target.value);
-                resetPage();
-              }}
-              className="bg-white px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700"
+              onChange={(e) => setDraftBranchId(e.target.value)}
+              className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
             >
               <option value="">All Branches</option>
               {branches.map((b) => (
@@ -275,6 +289,23 @@ export default function VehiclesPage() {
               ))}
             </select>
           )}
+
+          <button
+            type="button"
+            onClick={applyFilters}
+            className="flex items-center gap-1 px-3 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 text-sm"
+          >
+            <Search className="w-4 h-4" />
+            Search
+          </button>
+          <button
+            type="button"
+            onClick={clearFilters}
+            className="flex items-center gap-1 px-3 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 text-sm"
+          >
+            <X className="w-4 h-4" />
+            Clear
+          </button>
         </div>
 
         <Table

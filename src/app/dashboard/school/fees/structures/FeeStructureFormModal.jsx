@@ -229,7 +229,7 @@ export default function FeeStructureFormModal({ isOpen, onClose, structure }) {
     >
       <div className="space-y-6">
         {submitError && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+          <div className="p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 rounded-lg text-red-700 dark:text-red-400 text-sm">
             {submitError}
           </div>
         )}
@@ -304,17 +304,17 @@ export default function FeeStructureFormModal({ isOpen, onClose, structure }) {
 
         <div>
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest">
+            <h3 className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">
               Components
             </h3>
-            <span className="text-xs text-gray-500">
-              Monthly total: <strong className="text-teal-700">₨ {totalMonthly.toLocaleString()}</strong>
+            <span className="text-xs text-gray-500 dark:text-gray-400">
+              Monthly total: <strong className="text-teal-700 dark:text-teal-400">₨ {totalMonthly.toLocaleString()}</strong>
             </span>
           </div>
 
-          <div className="overflow-x-auto rounded-lg border border-gray-200">
+          <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
             <table className="w-full text-sm">
-              <thead className="bg-gray-50 text-gray-600">
+              <thead className="bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
                 <tr>
                   <th className="px-3 py-2 text-left font-semibold">Name</th>
                   <th className="px-3 py-2 text-left font-semibold">Amount</th>
@@ -329,7 +329,7 @@ export default function FeeStructureFormModal({ isOpen, onClose, structure }) {
                 {components.map((c, i) => {
                   const needsMonth = c.frequency === 'annual' || c.frequency === 'quarterly';
                   return (
-                    <tr key={i} className="border-t border-gray-100">
+                    <tr key={i} className="border-t border-gray-100 dark:border-gray-800">
                       <td className="px-3 py-2">
                         <input
                           type="text"
@@ -425,7 +425,7 @@ export default function FeeStructureFormModal({ isOpen, onClose, structure }) {
           <button
             type="button"
             onClick={addComponent}
-            className="mt-3 inline-flex items-center gap-2 px-3 py-1.5 text-sm text-teal-700 hover:bg-teal-50 rounded-lg border border-teal-200"
+            className="mt-3 inline-flex items-center gap-2 px-3 py-1.5 text-sm text-teal-700 dark:text-teal-400 hover:bg-teal-50 dark:hover:bg-teal-950/40 rounded-lg border border-teal-200"
           >
             <Plus className="w-4 h-4" />
             Add Component

@@ -112,7 +112,7 @@ export const AddBranchModal = ({ isOpen, onClose, onSuccess = null }) => {
     >
       <form className="space-y-4">
         {submitError && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded text-red-700 text-sm">
+          <div className="p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 rounded text-red-700 dark:text-red-400 text-sm">
             {submitError}
           </div>
         )}
@@ -143,12 +143,12 @@ export const AddBranchModal = ({ isOpen, onClose, onSuccess = null }) => {
         />
 
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
+          <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
             Status <span className="text-red-500">*</span>
           </label>
           <select
             {...register('status')}
-            className="w-full px-4 py-3 border border-gray-200 rounded-xl"
+            className="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 rounded-xl"
           >
             <option value="active">Active</option>
             <option value="inactive">Inactive</option>

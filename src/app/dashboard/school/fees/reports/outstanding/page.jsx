@@ -90,10 +90,10 @@ export default function OutstandingReportPage() {
       <div className="max-w-6xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
               <TrendingDown className="w-7 h-7 text-red-500" /> Outstanding Fees
             </h1>
-            <p className="text-gray-600 mt-1">Defaulters ranked by outstanding amount.</p>
+            <p className="text-gray-600 dark:text-gray-400 mt-1">Defaulters ranked by outstanding amount.</p>
           </div>
         </div>
 
@@ -107,7 +107,7 @@ export default function OutstandingReportPage() {
               setClassId('');
               setSectionId('');
             }}
-            className="bg-white px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-900 w-32 outline-none"
+            className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-900 dark:text-gray-100 w-32 outline-none"
           />
           <select
             value={classId}
@@ -115,7 +115,7 @@ export default function OutstandingReportPage() {
               setClassId(e.target.value);
               setSectionId('');
             }}
-            className="bg-white px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700"
+            className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
           >
             <option value="">All Classes</option>
             {classes.map((c) => (
@@ -128,7 +128,7 @@ export default function OutstandingReportPage() {
             value={sectionId}
             onChange={(e) => setSectionId(e.target.value)}
             disabled={!classId}
-            className="bg-white px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700"
+            className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
           >
             <option value="">{classId ? 'All Sections' : 'Pick class'}</option>
             {sections.map((s) => (
@@ -142,7 +142,7 @@ export default function OutstandingReportPage() {
               value={branchId}
               onFocus={() => setBranchDropdownTouched(true)}
               onChange={(e) => setBranchId(e.target.value)}
-              className="bg-white px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700"
+              className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
             >
               <option value="">All Branches</option>
               {branches.map((b) => (
@@ -155,7 +155,7 @@ export default function OutstandingReportPage() {
         </div>
 
         {isFetching && !report ? (
-          <div className="text-sm text-gray-500">Loading...</div>
+          <div className="text-sm text-gray-500 dark:text-gray-400">Loading...</div>
         ) : !report ? null : (
           <>
             <div className="grid grid-cols-2 gap-4 mb-6">
@@ -163,24 +163,24 @@ export default function OutstandingReportPage() {
                 <div className="text-sm opacity-90 uppercase tracking-widest">Total Outstanding</div>
                 <div className="text-4xl font-bold mt-2">{formatMoney(report.grandTotal)}</div>
               </div>
-              <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
-                <div className="text-sm text-gray-500 uppercase tracking-widest">
+              <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+                <div className="text-sm text-gray-500 dark:text-gray-400 uppercase tracking-widest">
                   Students With Dues
                 </div>
-                <div className="text-4xl font-bold text-gray-900 mt-2">{report.studentCount}</div>
+                <div className="text-4xl font-bold text-gray-900 dark:text-gray-100 mt-2">{report.studentCount}</div>
               </div>
             </div>
 
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-              <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-                <h2 className="text-base font-bold text-gray-900">Defaulter List</h2>
-                <span className="text-xs text-gray-500">{students.length} student(s)</span>
+            <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+              <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+                <h2 className="text-base font-bold text-gray-900 dark:text-gray-100">Defaulter List</h2>
+                <span className="text-xs text-gray-500 dark:text-gray-400">{students.length} student(s)</span>
               </div>
               {students.length === 0 ? (
-                <p className="px-6 py-8 text-sm text-gray-500 text-center">No outstanding fees.</p>
+                <p className="px-6 py-8 text-sm text-gray-500 dark:text-gray-400 text-center">No outstanding fees.</p>
               ) : (
                 <table className="w-full text-sm">
-                  <thead className="bg-gray-50 text-gray-600">
+                  <thead className="bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
                     <tr>
                       <th className="px-6 py-3 text-left">Student</th>
                       <th className="px-6 py-3 text-left">Roll</th>
@@ -192,7 +192,7 @@ export default function OutstandingReportPage() {
                   </thead>
                   <tbody>
                     {students.map((s) => (
-                      <tr key={s.studentId} className="border-t border-gray-100">
+                      <tr key={s.studentId} className="border-t border-gray-100 dark:border-gray-800">
                         <td className="px-6 py-3">
                           <div className="flex items-center gap-3">
                             {s.photo ? (
@@ -202,20 +202,20 @@ export default function OutstandingReportPage() {
                                 className="w-8 h-8 rounded-full object-cover"
                               />
                             ) : (
-                              <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs text-gray-600">
+                              <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-xs text-gray-600 dark:text-gray-400">
                                 {s.name?.[0] || '?'}
                               </div>
                             )}
                             <div>
-                              <div className="font-medium text-gray-900">{s.name}</div>
-                              <div className="text-xs text-gray-500">{s.admissionNumber}</div>
+                              <div className="font-medium text-gray-900 dark:text-gray-100">{s.name}</div>
+                              <div className="text-xs text-gray-500 dark:text-gray-400">{s.admissionNumber}</div>
                             </div>
                           </div>
                         </td>
-                        <td className="px-6 py-3 text-gray-700">{s.rollNumber}</td>
-                        <td className="px-6 py-3 text-right text-gray-700">{s.voucherCount}</td>
-                        <td className="px-6 py-3 text-gray-700">{formatDate(s.oldestDueDate)}</td>
-                        <td className="px-6 py-3 text-right font-medium text-red-700">
+                        <td className="px-6 py-3 text-gray-700 dark:text-gray-300">{s.rollNumber}</td>
+                        <td className="px-6 py-3 text-right text-gray-700 dark:text-gray-300">{s.voucherCount}</td>
+                        <td className="px-6 py-3 text-gray-700 dark:text-gray-300">{formatDate(s.oldestDueDate)}</td>
+                        <td className="px-6 py-3 text-right font-medium text-red-700 dark:text-red-400">
                           {formatMoney(s.outstandingTotal)}
                         </td>
                         <td className="px-6 py-3 text-right">

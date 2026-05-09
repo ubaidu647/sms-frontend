@@ -120,6 +120,13 @@ const navigationItems = [
         base: 'view-payslip',
         path: '/dashboard/school/staff-salary/payslips',
       },
+      {
+        label: 'Policy',
+        iconComponent: BadgeDollarSign,
+        key: 'salary-policy',
+        base: 'view-staff-salary-policy',
+        path: '/dashboard/school/staff-salary/policy',
+      },
     ],
   },
   {
@@ -290,11 +297,11 @@ export const Sidebar = ({ user = {}, menus = [], actions = [] }) => {
       <aside
         ref={sidebarRef}
         style={{ width: `${sidebarWidth}px`, height: '100vh' }}
-        className="bg-teal-600 p-4 flex-shrink-0 transition-none flex flex-col sticky top-0 self-start overscroll-contain"
+        className="bg-teal-600 dark:bg-slate-900 p-4 flex-shrink-0 transition-none flex flex-col sticky top-0 self-start overscroll-contain"
       >
         <div
           onMouseDown={startResizing}
-          className="absolute top-0 right-0 w-1 h-full cursor-col-resize hover:bg-teal-500 transition-colors z-50"
+          className="absolute top-0 right-0 w-1 h-full cursor-col-resize hover:bg-teal-500 dark:hover:bg-slate-700 transition-colors z-50"
         />
 
         <div className="flex items-center justify-between mb-6">
@@ -333,7 +340,7 @@ export const Sidebar = ({ user = {}, menus = [], actions = [] }) => {
               setIsCollapsed(!isCollapsed);
               setSidebarWidth(isCollapsed ? 240 : 80);
             }}
-            className="w-9 h-9 flex items-center justify-center text-white hover:bg-teal-700 rounded-md transition-colors flex-shrink-0"
+            className="w-9 h-9 flex items-center justify-center text-white hover:bg-teal-700 dark:hover:bg-slate-800 rounded-md transition-colors flex-shrink-0"
           >
             {isCollapsed ? (
               <ChevronDown className="w-5 h-5 rotate-90" />
@@ -356,8 +363,8 @@ export const Sidebar = ({ user = {}, menus = [], actions = [] }) => {
                     onClick={() => toggleExpand(index)}
                     className={`w-full h-14 ${
                       isCollapsed ? 'justify-center px-0' : 'justify-start px-0'
-                    } rounded-full transition-colors hover:bg-teal-700 ${
-                      itemIsActive ? 'bg-teal-700' : 'bg-transparent'
+                    } rounded-full transition-colors hover:bg-teal-700 dark:hover:bg-slate-800 ${
+                      itemIsActive ? 'bg-teal-700 dark:bg-slate-800' : 'bg-transparent'
                     } flex items-center`}
                   >
                     <div
@@ -464,8 +471,8 @@ export const Sidebar = ({ user = {}, menus = [], actions = [] }) => {
                             href={sub.path}
                             className={`w-full h-10 flex items-center gap-2 rounded-md px-4 transition-colors no-underline ${
                               subActive
-                                ? 'bg-teal-700/80'
-                                : 'hover:bg-teal-700/60'
+                                ? 'bg-teal-700/80 dark:bg-slate-800'
+                                : 'hover:bg-teal-700/60 dark:hover:bg-slate-800/80'
                             }`}
                           >
                             {SubIcon && (
@@ -500,7 +507,7 @@ export const Sidebar = ({ user = {}, menus = [], actions = [] }) => {
           <button
             className={`w-full h-14 ${
               isCollapsed ? 'justify-center px-0' : 'justify-start px-0'
-            } rounded-full transition-colors hover:bg-teal-700 bg-transparent flex items-center`}
+            } rounded-full transition-colors hover:bg-teal-700 dark:hover:bg-slate-800 bg-transparent flex items-center`}
           >
             <div
               className={`flex items-center gap-2.5 ${isCollapsed ? 'px-10' : 'px-7'} overflow-hidden w-full`}
@@ -516,7 +523,7 @@ export const Sidebar = ({ user = {}, menus = [], actions = [] }) => {
 
       {/* Horizontal line from sidebar to end of screen */}
       <div
-        className="bg-teal-600 fixed top-0 h-25.5 bg-teal-500 z-0 "
+        className="bg-teal-600 dark:bg-slate-900 fixed top-0 h-25.5 z-0"
         style={{
           left: `${sidebarWidth}px`,
           right: 0,
@@ -524,7 +531,7 @@ export const Sidebar = ({ user = {}, menus = [], actions = [] }) => {
       />
 
       {/* Vertical line on the right end */}
-      <div className="bg-teal-600 fixed top-0 right-0 w-25.5 h-full bg-teal-500 z-0" />
+      <div className="bg-teal-600 dark:bg-slate-900 fixed top-0 right-0 w-25.5 h-full z-0" />
     </>
   );
 };

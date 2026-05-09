@@ -244,7 +244,7 @@ export default function EditStaffModal({ isOpen, onClose, onSuccess, staff, isSe
     >
       <form className="space-y-6">
         {submitError && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+          <div className="p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 rounded-lg text-red-700 dark:text-red-400 text-sm">
             {submitError}
           </div>
         )}
@@ -255,7 +255,7 @@ export default function EditStaffModal({ isOpen, onClose, onSuccess, staff, isSe
 
         {/* Basic Info */}
         <div>
-          <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Basic Info</h3>
+          <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">Basic Info</h3>
           <div className="grid grid-cols-2 gap-4">
             <Field label="Full Name" error={errors.name?.message}>
               <input {...register('name')} placeholder="Ahmed Ali" className={inputCls} />
@@ -264,7 +264,7 @@ export default function EditStaffModal({ isOpen, onClose, onSuccess, staff, isSe
               <input {...register('phone')} placeholder="03211234567" className={inputCls} />
             </Field>
             <Field label="Gender" error={errors.gender?.message}>
-              <select {...register('gender')} className={`${inputCls} bg-white`}>
+              <select {...register('gender')} className={`${inputCls} bg-white dark:bg-gray-900`}>
                 <option value="">Select gender...</option>
                 <option value="male">Male</option>
                 <option value="female">Female</option>
@@ -278,7 +278,7 @@ export default function EditStaffModal({ isOpen, onClose, onSuccess, staff, isSe
               <input {...register('cnic')} placeholder="35201-1234567-1" className={inputCls} />
             </Field>
             <Field label="Blood Group" error={errors.bloodGroup?.message}>
-              <select {...register('bloodGroup')} className={`${inputCls} bg-white`}>
+              <select {...register('bloodGroup')} className={`${inputCls} bg-white dark:bg-gray-900`}>
                 <option value="">Select...</option>
                 {['A+','A-','B+','B-','AB+','AB-','O+','O-'].map((g) => (
                   <option key={g} value={g}>{g}</option>
@@ -286,7 +286,7 @@ export default function EditStaffModal({ isOpen, onClose, onSuccess, staff, isSe
               </select>
             </Field>
             <Field label="Marital Status" error={errors.maritalStatus?.message}>
-              <select {...register('maritalStatus')} className={`${inputCls} bg-white`}>
+              <select {...register('maritalStatus')} className={`${inputCls} bg-white dark:bg-gray-900`}>
                 <option value="">Select...</option>
                 <option value="single">Single</option>
                 <option value="married">Married</option>
@@ -296,7 +296,7 @@ export default function EditStaffModal({ isOpen, onClose, onSuccess, staff, isSe
             </Field>
             {!isSelf && (
               <Field label="Status" error={errors.isActive?.message}>
-                <select {...register('isActive')} className={`${inputCls} bg-white`}>
+                <select {...register('isActive')} className={`${inputCls} bg-white dark:bg-gray-900`}>
                   <option value="true">Active</option>
                   <option value="false">Inactive</option>
                 </select>
@@ -308,20 +308,20 @@ export default function EditStaffModal({ isOpen, onClose, onSuccess, staff, isSe
         {/* Employment — HR-only, hidden on self-update */}
         {!isSelf && (
         <div>
-          <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Employment</h3>
+          <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">Employment</h3>
           <div className="grid grid-cols-2 gap-4">
             <Field label="Designation" error={errors.designation?.message}>
               <input {...register('designation')} placeholder="Class Teacher" className={inputCls} />
             </Field>
             <Field label="Staff Type" error={errors.staffType?.message}>
-              <select {...register('staffType')} className={`${inputCls} bg-white`}>
+              <select {...register('staffType')} className={`${inputCls} bg-white dark:bg-gray-900`}>
                 <option value="">Select type...</option>
                 <option value="teaching">Teaching</option>
                 <option value="non-teaching">Non-Teaching</option>
               </select>
             </Field>
             <Field label="Employment Type" error={errors.employmentType?.message}>
-              <select {...register('employmentType')} className={`${inputCls} bg-white`}>
+              <select {...register('employmentType')} className={`${inputCls} bg-white dark:bg-gray-900`}>
                 <option value="">Select type...</option>
                 <option value="permanent">Permanent</option>
                 <option value="contract">Contract</option>
@@ -348,7 +348,7 @@ export default function EditStaffModal({ isOpen, onClose, onSuccess, staff, isSe
         {/* Leaving (optional) — HR-only */}
         {!isSelf && (
         <div>
-          <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Leaving (optional)</h3>
+          <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">Leaving (optional)</h3>
           <div className="grid grid-cols-2 gap-4">
             <Field label="Leaving Date" error={errors.leavingDate?.message}>
               <input {...register('leavingDate')} type="date" className={inputCls} />
@@ -364,7 +364,7 @@ export default function EditStaffModal({ isOpen, onClose, onSuccess, staff, isSe
 
         {/* Address */}
         <div>
-          <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Address</h3>
+          <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">Address</h3>
           <div className="grid grid-cols-2 gap-4">
             <div className="col-span-2">
               <Field label="Street">
@@ -382,7 +382,7 @@ export default function EditStaffModal({ isOpen, onClose, onSuccess, staff, isSe
 
         {/* Emergency Contact */}
         <div>
-          <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Emergency Contact</h3>
+          <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">Emergency Contact</h3>
           <div className="grid grid-cols-2 gap-4">
             <Field label="Name">
               <input {...register('emergencyContact.name')} placeholder="Ali Hassan" className={inputCls} />
@@ -398,14 +398,14 @@ export default function EditStaffModal({ isOpen, onClose, onSuccess, staff, isSe
 
         {/* Photo */}
         <div>
-          <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Photo</h3>
+          <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">Photo</h3>
           <div className="flex items-center gap-4">
             {photoPreview ? (
-              <img src={photoPreview} alt="Preview" className="w-20 h-20 rounded-full object-cover border border-gray-200" />
+              <img src={photoPreview} alt="Preview" className="w-20 h-20 rounded-full object-cover border border-gray-200 dark:border-gray-700" />
             ) : currentPhoto ? (
-              <img src={currentPhoto} alt="Current" className="w-20 h-20 rounded-full object-cover border border-gray-200" />
+              <img src={currentPhoto} alt="Current" className="w-20 h-20 rounded-full object-cover border border-gray-200 dark:border-gray-700" />
             ) : (
-              <div className="w-20 h-20 rounded-full border border-dashed border-gray-300 bg-gray-50 flex items-center justify-center text-xs text-gray-400">
+              <div className="w-20 h-20 rounded-full border border-dashed border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 flex items-center justify-center text-xs text-gray-400 dark:text-gray-500">
                 {photoFile?.type === 'application/pdf' ? 'PDF' : 'No image'}
               </div>
             )}
@@ -414,14 +414,14 @@ export default function EditStaffModal({ isOpen, onClose, onSuccess, staff, isSe
                 type="file"
                 accept="image/jpeg,image/jpg,image/png,image/webp,application/pdf"
                 onChange={handlePhotoChange}
-                className="block text-sm text-gray-700 file:mr-3 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-medium file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100"
+                className="block text-sm text-gray-700 dark:text-gray-300 file:mr-3 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-medium file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100"
               />
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                 Leave empty to keep current photo. JPG, PNG, WEBP or PDF — max 5 MB.
               </p>
               {photoFile && (
-                <p className="text-xs text-gray-600 mt-1">
-                  {photoFile.name} <span className="text-gray-400">({(photoFile.size / 1024).toFixed(0)} KB)</span>
+                <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                  {photoFile.name} <span className="text-gray-400 dark:text-gray-500">({(photoFile.size / 1024).toFixed(0)} KB)</span>
                 </p>
               )}
               {photoError && <p className={errorCls}>{photoError}</p>}

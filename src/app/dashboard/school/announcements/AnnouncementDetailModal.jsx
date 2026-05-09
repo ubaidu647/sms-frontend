@@ -29,7 +29,7 @@ export default function AnnouncementDetailModal({ isOpen, onClose, announcementI
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={a?.title || 'Announcement'} size="lg">
       {isLoading || !a ? (
-        <div className="text-sm text-gray-500">Loading...</div>
+        <div className="text-sm text-gray-500 dark:text-gray-400">Loading...</div>
       ) : (
         <div className="space-y-5">
           <div className="flex flex-wrap items-center gap-2">
@@ -60,7 +60,7 @@ export default function AnnouncementDetailModal({ isOpen, onClose, announcementI
               </span>
             )}
             {a.requiresAck && (
-              <span className="inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-700">
+              <span className="inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-700 dark:text-indigo-400">
                 Acknowledgement required
               </span>
             )}
@@ -77,24 +77,24 @@ export default function AnnouncementDetailModal({ isOpen, onClose, announcementI
           </div>
 
           <div>
-            <h4 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Body</h4>
-            <div className="text-sm text-gray-800 whitespace-pre-wrap leading-relaxed">{a.body}</div>
+            <h4 className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2">Body</h4>
+            <div className="text-sm text-gray-800 dark:text-gray-200 whitespace-pre-wrap leading-relaxed">{a.body}</div>
           </div>
 
           <div>
-            <h4 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">
+            <h4 className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2">
               Audience
             </h4>
-            <div className="rounded-lg border border-gray-200 p-3 text-sm">
-              <div className="text-gray-800">
+            <div className="rounded-lg border border-gray-200 dark:border-gray-700 p-3 text-sm">
+              <div className="text-gray-800 dark:text-gray-200">
                 <strong>Scope:</strong> {SCOPE_LABELS[a.audience?.scope] || a.audience?.scope}
               </div>
-              <div className="text-gray-700 mt-1">
+              <div className="text-gray-700 dark:text-gray-300 mt-1">
                 <strong>Notify:</strong>{' '}
                 {(a.audience?.targetUserTypes || []).map((t) => (
                   <span
                     key={t}
-                    className="inline-flex px-2 py-0.5 rounded-full text-xs bg-gray-100 text-gray-700 capitalize ml-1"
+                    className="inline-flex px-2 py-0.5 rounded-full text-xs bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 capitalize ml-1"
                   >
                     {t}
                   </span>
@@ -120,26 +120,26 @@ export default function AnnouncementDetailModal({ isOpen, onClose, announcementI
 
           {(a.attachments || []).length > 0 && (
             <div>
-              <h4 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">
+              <h4 className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2">
                 Attachments
               </h4>
               <ul className="space-y-2">
                 {a.attachments.map((att) => (
                   <li
                     key={att._id}
-                    className="flex items-center justify-between rounded-lg border border-gray-200 px-3 py-2"
+                    className="flex items-center justify-between rounded-lg border border-gray-200 dark:border-gray-700 px-3 py-2"
                   >
                     <div className="flex items-center gap-2 text-sm">
-                      <FileText className="w-4 h-4 text-gray-500" />
+                      <FileText className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                       <a
                         href={att.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-teal-700 hover:underline font-medium"
+                        className="text-teal-700 dark:text-teal-400 hover:underline font-medium"
                       >
                         {att.name}
                       </a>
-                      <span className="text-xs text-gray-500">{formatBytes(att.size)}</span>
+                      <span className="text-xs text-gray-500 dark:text-gray-400">{formatBytes(att.size)}</span>
                     </div>
                   </li>
                 ))}
@@ -162,29 +162,29 @@ export default function AnnouncementDetailModal({ isOpen, onClose, announcementI
 function Info({ label, value }) {
   return (
     <div>
-      <div className="text-xs text-gray-500 uppercase tracking-wide">{label}</div>
-      <div className="text-sm text-gray-900 font-medium">{value || '—'}</div>
+      <div className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">{label}</div>
+      <div className="text-sm text-gray-900 dark:text-gray-100 font-medium">{value || '—'}</div>
     </div>
   );
 }
 
 function Stat({ label, value }) {
   return (
-    <div className="rounded-lg bg-gray-50 p-3">
-      <div className="text-xs text-gray-500 uppercase tracking-wide">{label}</div>
-      <div className="text-2xl font-bold text-gray-900 mt-1">{value}</div>
+    <div className="rounded-lg bg-gray-50 dark:bg-gray-800 p-3">
+      <div className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">{label}</div>
+      <div className="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-1">{value}</div>
     </div>
   );
 }
 
 function ScopeList({ label, items }) {
   return (
-    <div className="text-gray-700 mt-1">
+    <div className="text-gray-700 dark:text-gray-300 mt-1">
       <strong>{label}:</strong>{' '}
       {items.map((it, i) => (
         <span
           key={i}
-          className="inline-flex px-2 py-0.5 rounded-full text-xs bg-teal-50 text-teal-800 ml-1"
+          className="inline-flex px-2 py-0.5 rounded-full text-xs bg-teal-50 dark:bg-teal-950/40 text-teal-800 ml-1"
         >
           {String(it)}
         </span>

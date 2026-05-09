@@ -113,7 +113,7 @@ export default function PayslipsPage() {
         header: 'Serial',
         accessor: 'serialNumber',
         render: (v) => (
-          <span className="text-xs font-mono text-gray-700">{v || '—'}</span>
+          <span className="text-xs font-mono text-gray-700 dark:text-gray-300">{v || '—'}</span>
         ),
       },
       {
@@ -121,10 +121,10 @@ export default function PayslipsPage() {
         accessor: 'staffId',
         render: (v) => (
           <div>
-            <div className="font-medium text-gray-900 text-sm">
+            <div className="font-medium text-gray-900 dark:text-gray-100 text-sm">
               {v?.userId?.name || v?.user?.name || v?.name || '—'}
             </div>
-            <div className="text-xs text-gray-400">
+            <div className="text-xs text-gray-400 dark:text-gray-500">
               {v?.employeeId || v?.serialNumber || ''}
             </div>
           </div>
@@ -134,14 +134,14 @@ export default function PayslipsPage() {
         header: 'Month',
         accessor: 'month',
         render: (v) => (
-          <span className="text-sm text-gray-700">{formatMonth(v)}</span>
+          <span className="text-sm text-gray-700 dark:text-gray-300">{formatMonth(v)}</span>
         ),
       },
       {
         header: 'Gross',
         accessor: 'gross',
         render: (v, row) => (
-          <span className="text-sm text-gray-700">
+          <span className="text-sm text-gray-700 dark:text-gray-300">
             {formatMoney(v, row.currency)}
           </span>
         ),
@@ -150,7 +150,7 @@ export default function PayslipsPage() {
         header: 'Net',
         accessor: 'netSalary',
         render: (v, row) => (
-          <span className="text-sm font-bold text-teal-700">
+          <span className="text-sm font-bold text-teal-700 dark:text-teal-400">
             {formatMoney(v, row.currency)}
           </span>
         ),
@@ -172,7 +172,7 @@ export default function PayslipsPage() {
         header: 'Branch',
         accessor: 'branchId',
         render: (v) => (
-          <span className="text-sm text-gray-600">{v?.name || '—'}</span>
+          <span className="text-sm text-gray-600 dark:text-gray-400">{v?.name || '—'}</span>
         ),
       },
     ],
@@ -197,8 +197,8 @@ export default function PayslipsPage() {
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Payslips</h1>
-            <p className="text-gray-600 mt-1">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Payslips</h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-1">
               Generate, edit, and pay monthly payslips for staff.
             </p>
           </div>
@@ -206,7 +206,7 @@ export default function PayslipsPage() {
             <div className="flex gap-2">
               <button
                 onClick={() => setGenOpen(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-gray-800 rounded-lg hover:bg-gray-50 transition-colors shadow-sm"
+                className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors shadow-sm"
               >
                 <Plus className="w-5 h-5" />
                 Generate Payslip
@@ -230,7 +230,7 @@ export default function PayslipsPage() {
               setMonth(e.target.value);
               resetPage();
             }}
-            className="bg-white px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700"
+            className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
           />
 
           {!isOwnOnly && (
@@ -240,7 +240,7 @@ export default function PayslipsPage() {
                 setStaffId(e.target.value);
                 resetPage();
               }}
-              className="bg-white px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700 min-w-[200px]"
+              className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300 min-w-[200px]"
             >
               <option value="">All Staff</option>
               {staffList.map((s) => (
@@ -257,7 +257,7 @@ export default function PayslipsPage() {
               setStatus(e.target.value);
               resetPage();
             }}
-            className="bg-white px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700 capitalize"
+            className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300 capitalize"
           >
             <option value="">All Status</option>
             {PAYSLIP_STATUSES.map((s) => (
@@ -275,7 +275,7 @@ export default function PayslipsPage() {
                 setBranchId(e.target.value);
                 resetPage();
               }}
-              className="bg-white px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700"
+              className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
             >
               <option value="">All Branches</option>
               {branches.map((b) => (

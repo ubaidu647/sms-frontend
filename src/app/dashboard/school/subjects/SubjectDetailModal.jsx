@@ -8,8 +8,8 @@ import { useTokenStore } from '@/store/tokenStore';
 function Row({ label, value }) {
   return (
     <div className="flex flex-col gap-0.5">
-      <span className="text-xs text-gray-400 font-medium uppercase tracking-wide">{label}</span>
-      <span className="text-sm text-gray-800 font-medium">{value ?? <span className="text-gray-300">—</span>}</span>
+      <span className="text-xs text-gray-400 dark:text-gray-500 font-medium uppercase tracking-wide">{label}</span>
+      <span className="text-sm text-gray-800 dark:text-gray-200 font-medium">{value ?? <span className="text-gray-300">—</span>}</span>
     </div>
   );
 }
@@ -17,7 +17,7 @@ function Row({ label, value }) {
 function InfoSection({ title, children }) {
   return (
     <div>
-      <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3 pb-1 border-b border-gray-100">{title}</h3>
+      <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3 pb-1 border-b border-gray-100 dark:border-gray-800">{title}</h3>
       <div className="grid grid-cols-2 gap-x-6 gap-y-4">{children}</div>
     </div>
   );
@@ -73,7 +73,7 @@ export default function SubjectDetailModal({ isOpen, onClose, subjectId }) {
       {!isLoading && sub && (
         <div className="space-y-6">
           {/* Status banner */}
-          <div className="flex items-center flex-wrap gap-2 p-3 bg-gray-50 rounded-xl">
+          <div className="flex items-center flex-wrap gap-2 p-3 bg-gray-50 dark:bg-gray-800 rounded-xl">
             <Badge label={sub.isActive ? 'Active' : 'Inactive'} color={sub.isActive ? 'green' : 'red'} />
             <Badge label={cap(sub.subjectType)} color="purple" />
             <Badge label={cap(sub.category)} color="blue" />

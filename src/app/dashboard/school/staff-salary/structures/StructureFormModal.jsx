@@ -94,6 +94,14 @@ export default function StructureFormModal({ isOpen, onClose, structure }) {
   });
   const staffList = staffData?.data || [];
 
+  // Prefill basic salary from the staff record set during staff creation.
+  useEffect(() => {
+    if (isEdit || !staffId) return;
+    const staff = staffList.find((s) => s._id === staffId);
+    if (!staff) return;
+    setBasicSalary(staff.salary != null ? String(staff.salary) : '');
+  }, [staffId, staffList, isEdit]);
+
   const totals = useMemo(() => {
     const basic = Number(basicSalary) || 0;
     const sumPart = (arr) =>
@@ -256,7 +264,7 @@ export default function StructureFormModal({ isOpen, onClose, structure }) {
       <button
         type="button"
         onClick={() => setList((prev) => [...prev, blankComponent()])}
-        className="inline-flex items-center gap-2 px-3 py-1.5 text-sm text-teal-700 hover:bg-teal-50 rounded-lg border border-teal-200"
+        className="inline-flex items-center gap-2 px-3 py-1.5 text-sm text-teal-700 dark:text-teal-400 hover:bg-teal-50 dark:hover:bg-teal-950/40 rounded-lg border border-teal-200"
       >
         <Plus className="w-4 h-4" />
         Add {kind}
@@ -307,7 +315,7 @@ export default function StructureFormModal({ isOpen, onClose, structure }) {
     >
       <div className="space-y-6">
         {submitError && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+          <div className="p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 rounded-lg text-red-700 dark:text-red-400 text-sm">
             {submitError}
           </div>
         )}
@@ -394,7 +402,7 @@ export default function StructureFormModal({ isOpen, onClose, structure }) {
         <div>
           <div className="flex items-center justify-between mb-3">
             <h3 className={sectionCls + ' mb-0'}>Allowances</h3>
-            <span className="text-xs text-gray-500">
+            <span className="text-xs text-gray-500 dark:text-gray-400">
               {allowances.length} item{allowances.length === 1 ? '' : 's'}
             </span>
           </div>
@@ -404,7 +412,7 @@ export default function StructureFormModal({ isOpen, onClose, structure }) {
         <div>
           <div className="flex items-center justify-between mb-3">
             <h3 className={sectionCls + ' mb-0'}>Deductions</h3>
-            <span className="text-xs text-gray-500">
+            <span className="text-xs text-gray-500 dark:text-gray-400">
               {deductions.length} item{deductions.length === 1 ? '' : 's'}
             </span>
           </div>
@@ -413,26 +421,26 @@ export default function StructureFormModal({ isOpen, onClose, structure }) {
 
         <div className="grid grid-cols-3 gap-3 bg-gradient-to-r from-teal-50 to-blue-50 border border-teal-100 rounded-xl p-4">
           <div>
-            <div className="text-xs text-gray-500 uppercase tracking-widest">
+            <div className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-widest">
               Total Allowances
             </div>
-            <div className="text-lg font-bold text-gray-900 mt-1">
+            <div className="text-lg font-bold text-gray-900 dark:text-gray-100 mt-1">
               + {totals.totalAllowance.toLocaleString()}
             </div>
           </div>
           <div>
-            <div className="text-xs text-gray-500 uppercase tracking-widest">
+            <div className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-widest">
               Total Deductions
             </div>
-            <div className="text-lg font-bold text-gray-900 mt-1">
+            <div className="text-lg font-bold text-gray-900 dark:text-gray-100 mt-1">
               − {totals.totalDeduction.toLocaleString()}
             </div>
           </div>
           <div>
-            <div className="text-xs text-gray-500 uppercase tracking-widest">
+            <div className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-widest">
               Net (estimate)
             </div>
-            <div className="text-lg font-bold text-teal-700 mt-1">
+            <div className="text-lg font-bold text-teal-700 dark:text-teal-400 mt-1">
               {totals.net.toLocaleString()} {currency}
             </div>
           </div>

@@ -213,7 +213,7 @@ export default function EditorPanel() {
 
   return (
     <div className="space-y-4">
-      <div className="bg-white rounded-xl border border-gray-200 p-4">
+      <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
         <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
           {isOrgLevel && (
             <Select
@@ -224,12 +224,12 @@ export default function EditorPanel() {
             />
           )}
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1">Academic Year</label>
+            <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">Academic Year</label>
             <input
               value={academicYear}
               onChange={(e) => setAcademicYear(e.target.value)}
               placeholder="2025-2026"
-              className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg bg-white text-gray-900 outline-none focus:border-teal-500"
+              className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 outline-none focus:border-teal-500"
             />
           </div>
           <Select
@@ -266,15 +266,15 @@ export default function EditorPanel() {
       </div>
 
       {!sectionId ? (
-        <div className="bg-white rounded-xl border border-gray-200 p-12 text-center text-gray-500 text-sm">
+        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-12 text-center text-gray-500 dark:text-gray-400 text-sm">
           Pick a section to load its timetable.
         </div>
       ) : timetableLoading ? (
-        <div className="bg-white rounded-xl border border-gray-200 p-12 text-center text-gray-500 text-sm">
+        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-12 text-center text-gray-500 dark:text-gray-400 text-sm">
           Loading timetable…
         </div>
       ) : !periodConfig ? (
-        <div className="bg-white rounded-xl border border-gray-200 p-6 text-sm text-amber-800 bg-amber-50 flex items-start gap-2">
+        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-6 text-sm text-amber-800 bg-amber-50 flex items-start gap-2">
           <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
           <div>
             <p className="font-semibold">No period config</p>
@@ -286,17 +286,17 @@ export default function EditorPanel() {
           </div>
         </div>
       ) : (
-        <div className="bg-white rounded-xl border border-gray-200 overflow-x-auto">
+        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 overflow-x-auto">
           <table className="w-full text-sm">
-            <thead className="bg-gray-50">
+            <thead className="bg-gray-50 dark:bg-gray-800">
               <tr>
-                <th className="px-3 py-3 text-left text-xs uppercase text-gray-500 font-semibold border-r border-gray-200 sticky left-0 bg-gray-50">
+                <th className="px-3 py-3 text-left text-xs uppercase text-gray-500 dark:text-gray-400 font-semibold border-r border-gray-200 dark:border-gray-700 sticky left-0 bg-gray-50 dark:bg-gray-800">
                   Period
                 </th>
                 {periodConfig.workingDays.map((d) => (
                   <th
                     key={d}
-                    className="px-3 py-3 text-left text-xs uppercase text-gray-500 font-semibold min-w-[200px]"
+                    className="px-3 py-3 text-left text-xs uppercase text-gray-500 dark:text-gray-400 font-semibold min-w-[200px]"
                   >
                     {DAY_LABELS[d]}
                   </th>
@@ -305,10 +305,10 @@ export default function EditorPanel() {
             </thead>
             <tbody>
               {periodConfig.periods.map((p) => (
-                <tr key={p.number} className="border-t border-gray-100 align-top">
-                  <td className="px-3 py-3 border-r border-gray-200 sticky left-0 bg-white">
-                    <div className="font-semibold text-gray-900 text-sm">{p.name}</div>
-                    <div className="text-xs text-gray-500">
+                <tr key={p.number} className="border-t border-gray-100 dark:border-gray-800 align-top">
+                  <td className="px-3 py-3 border-r border-gray-200 dark:border-gray-700 sticky left-0 bg-white dark:bg-gray-900">
+                    <div className="font-semibold text-gray-900 dark:text-gray-100 text-sm">{p.name}</div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400">
                       {p.startTime} – {p.endTime}
                     </div>
                     <span
@@ -320,7 +320,7 @@ export default function EditorPanel() {
                     </span>
                   </td>
                   {periodConfig.workingDays.map((d) => (
-                    <td key={d} className="px-2 py-2 border-l border-gray-100">
+                    <td key={d} className="px-2 py-2 border-l border-gray-100 dark:border-gray-800">
                       {p.type === 'lesson' ? (
                         <LessonCell
                           cell={grid?.[d]?.[p.number]}
@@ -330,7 +330,7 @@ export default function EditorPanel() {
                           onChange={(patch) => updateCell(d, p.number, patch)}
                         />
                       ) : (
-                        <div className="text-xs text-gray-500 italic px-2 py-3">
+                        <div className="text-xs text-gray-500 dark:text-gray-400 italic px-2 py-3">
                           {p.name}
                         </div>
                       )}
@@ -344,7 +344,7 @@ export default function EditorPanel() {
       )}
 
       {!canEdit && sectionId && (
-        <p className="text-xs text-gray-500">You have read-only access to timetables.</p>
+        <p className="text-xs text-gray-500 dark:text-gray-400">You have read-only access to timetables.</p>
       )}
     </div>
   );
@@ -353,12 +353,12 @@ export default function EditorPanel() {
 function Select({ label, value, onChange, options, disabled }) {
   return (
     <div>
-      <label className="block text-xs font-semibold text-gray-600 mb-1">{label}</label>
+      <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">{label}</label>
       <select
         value={value}
         disabled={disabled}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg bg-white text-gray-900 outline-none focus:border-teal-500 disabled:bg-gray-50"
+        className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 outline-none focus:border-teal-500 disabled:bg-gray-50"
       >
         {options.map((o) => (
           <option key={o.value} value={o.value}>
@@ -378,7 +378,7 @@ function LessonCell({ cell, subjects, teachers, disabled, onChange }) {
         value={c.subjectId || ''}
         disabled={disabled}
         onChange={(e) => onChange({ subjectId: e.target.value })}
-        className="w-full px-2 py-1 text-xs border border-gray-200 rounded-md bg-white text-gray-900 outline-none focus:border-teal-500 disabled:bg-gray-50"
+        className="w-full px-2 py-1 text-xs border border-gray-200 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 outline-none focus:border-teal-500 disabled:bg-gray-50"
       >
         <option value="">— Subject —</option>
         {subjects.map((s) => (
@@ -391,7 +391,7 @@ function LessonCell({ cell, subjects, teachers, disabled, onChange }) {
         value={c.staffId || ''}
         disabled={disabled}
         onChange={(e) => onChange({ staffId: e.target.value })}
-        className="w-full px-2 py-1 text-xs border border-gray-200 rounded-md bg-white text-gray-900 outline-none focus:border-teal-500 disabled:bg-gray-50"
+        className="w-full px-2 py-1 text-xs border border-gray-200 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 outline-none focus:border-teal-500 disabled:bg-gray-50"
       >
         <option value="">— Teacher —</option>
         {teachers.map((t) => (
@@ -406,7 +406,7 @@ function LessonCell({ cell, subjects, teachers, disabled, onChange }) {
         disabled={disabled}
         onChange={(e) => onChange({ room: e.target.value })}
         placeholder="Room"
-        className="w-full px-2 py-1 text-xs border border-gray-200 rounded-md bg-white text-gray-900 outline-none focus:border-teal-500 disabled:bg-gray-50 placeholder:text-gray-400"
+        className="w-full px-2 py-1 text-xs border border-gray-200 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 outline-none focus:border-teal-500 disabled:bg-gray-50 placeholder:text-gray-400"
       />
     </div>
   );

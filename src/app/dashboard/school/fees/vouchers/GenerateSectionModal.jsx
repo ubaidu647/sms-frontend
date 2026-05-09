@@ -147,7 +147,7 @@ export default function GenerateSectionModal({ isOpen, onClose }) {
       }
     >
       {submitError && (
-        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+        <div className="mb-4 p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 rounded-lg text-red-700 dark:text-red-400 text-sm">
           {submitError}
         </div>
       )}
@@ -242,7 +242,7 @@ export default function GenerateSectionModal({ isOpen, onClose }) {
               onChange={(e) => setDueDate(e.target.value)}
               className={inputCls}
             />
-            <p className="text-xs text-gray-400 mt-1">Defaults to structure&apos;s due day.</p>
+            <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">Defaults to structure&apos;s due day.</p>
           </div>
         </div>
       ) : (
@@ -254,12 +254,12 @@ export default function GenerateSectionModal({ isOpen, onClose }) {
           </div>
           {result.skipped?.length > 0 && (
             <div>
-              <h4 className="text-xs font-bold text-gray-500 uppercase mb-2">Skipped</h4>
-              <ul className="text-sm text-gray-700 max-h-60 overflow-y-auto rounded-lg border border-gray-200 divide-y">
+              <h4 className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase mb-2">Skipped</h4>
+              <ul className="text-sm text-gray-700 dark:text-gray-300 max-h-60 overflow-y-auto rounded-lg border border-gray-200 dark:border-gray-700 divide-y">
                 {result.skipped.map((s, i) => (
                   <li key={i} className="px-3 py-2 flex items-center justify-between">
-                    <span className="font-mono text-xs text-gray-500">{s.studentId}</span>
-                    <span className="text-gray-700">{s.reason}</span>
+                    <span className="font-mono text-xs text-gray-500 dark:text-gray-400">{s.studentId}</span>
+                    <span className="text-gray-700 dark:text-gray-300">{s.reason}</span>
                   </li>
                 ))}
               </ul>

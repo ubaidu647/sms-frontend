@@ -166,7 +166,7 @@ export default function EditAnnouncementModal({ isOpen, onClose, announcement })
     >
       <div className="space-y-6">
         {submitError && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+          <div className="p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 rounded-lg text-red-700 dark:text-red-400 text-sm">
             {submitError}
           </div>
         )}
@@ -241,7 +241,7 @@ export default function EditAnnouncementModal({ isOpen, onClose, announcement })
           </div>
 
           <div className="flex flex-wrap gap-4">
-            <label className="flex items-center gap-2 text-sm text-gray-700">
+            <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
               <input
                 type="checkbox"
                 checked={isPinned}
@@ -249,7 +249,7 @@ export default function EditAnnouncementModal({ isOpen, onClose, announcement })
               />
               Pin to top
             </label>
-            <label className="flex items-center gap-2 text-sm text-gray-700">
+            <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
               <input
                 type="checkbox"
                 checked={requiresAck}
@@ -261,7 +261,7 @@ export default function EditAnnouncementModal({ isOpen, onClose, announcement })
         </div>
 
         <div>
-          <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">
+          <h3 className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-3">
             Audience
           </h3>
           <AudiencePicker value={audience} onChange={setAudience} isOrgLevel={isOrgLevel} />

@@ -174,7 +174,7 @@ export default function ComposeAnnouncementModal({ isOpen, onClose }) {
     >
       <div className="space-y-6">
         {submitError && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+          <div className="p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 rounded-lg text-red-700 dark:text-red-400 text-sm">
             {submitError}
           </div>
         )}
@@ -238,7 +238,7 @@ export default function ComposeAnnouncementModal({ isOpen, onClose }) {
                 onChange={(e) => setPublishedAt(e.target.value)}
                 className={inputCls}
               />
-              <p className="text-xs text-gray-400 mt-1">Defaults to now if you publish.</p>
+              <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">Defaults to now if you publish.</p>
             </div>
             <div>
               <label className={labelCls}>Expires At</label>
@@ -252,7 +252,7 @@ export default function ComposeAnnouncementModal({ isOpen, onClose }) {
           </div>
 
           <div className="flex flex-wrap gap-4">
-            <label className="flex items-center gap-2 text-sm text-gray-700">
+            <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
               <input
                 type="checkbox"
                 checked={isPinned}
@@ -260,7 +260,7 @@ export default function ComposeAnnouncementModal({ isOpen, onClose }) {
               />
               Pin to top
             </label>
-            <label className="flex items-center gap-2 text-sm text-gray-700">
+            <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
               <input
                 type="checkbox"
                 checked={requiresAck}
@@ -268,7 +268,7 @@ export default function ComposeAnnouncementModal({ isOpen, onClose }) {
               />
               Require acknowledgement
             </label>
-            <label className="flex items-center gap-2 text-sm text-gray-700">
+            <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
               <input
                 type="radio"
                 name="status"
@@ -277,7 +277,7 @@ export default function ComposeAnnouncementModal({ isOpen, onClose }) {
               />
               Save as draft
             </label>
-            <label className="flex items-center gap-2 text-sm text-gray-700">
+            <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
               <input
                 type="radio"
                 name="status"
@@ -290,22 +290,22 @@ export default function ComposeAnnouncementModal({ isOpen, onClose }) {
         </div>
 
         <div>
-          <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">
+          <h3 className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-3">
             Audience
           </h3>
           <AudiencePicker value={audience} onChange={setAudience} isOrgLevel={isOrgLevel} />
         </div>
 
         <div>
-          <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">
+          <h3 className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-3">
             Attachment (optional)
           </h3>
           {file ? (
-            <div className="flex items-center justify-between p-3 border border-gray-200 rounded-lg bg-teal-50">
-              <div className="flex items-center gap-2 text-sm text-gray-800">
+            <div className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-700 rounded-lg bg-teal-50 dark:bg-teal-950/40">
+              <div className="flex items-center gap-2 text-sm text-gray-800 dark:text-gray-200">
                 <Paperclip className="w-4 h-4" />
                 <span className="font-medium">{file.name}</span>
-                <span className="text-xs text-gray-500">({formatBytes(file.size)})</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">({formatBytes(file.size)})</span>
               </div>
               <button
                 type="button"
@@ -316,7 +316,7 @@ export default function ComposeAnnouncementModal({ isOpen, onClose }) {
               </button>
             </div>
           ) : (
-            <label className="flex items-center gap-2 px-3 py-2 border border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 text-sm text-gray-700">
+            <label className="flex items-center gap-2 px-3 py-2 border border-dashed border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 text-sm text-gray-700 dark:text-gray-300">
               <Paperclip className="w-4 h-4" />
               <span>Attach file (jpg / png / webp / pdf, max 5MB)</span>
               <input

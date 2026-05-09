@@ -84,16 +84,7 @@ export default function AddClassModal({ isOpen, onClose, onSuccess }) {
     mutationFn: (payload) => postData({ url: '/class/create', payload, token }),
     onSuccess: (res) => {
       const newClass = res?.data;
-      if (newClass) {
-        queryClient.setQueriesData({ queryKey: ['classes'] }, (old) => {
-          if (!old) return old;
-          return {
-            ...old,
-            data: [newClass, ...(old.data || [])],
-            total: (old.total || 0) + 1,
-          };
-        });
-      }
+      queryClient.invalidateQueries({ queryKey: ['classes'] });
       toast.success(res?.message || 'Class created successfully');
       onSuccess?.(newClass);
       setSuccessState(true);
@@ -143,11 +134,11 @@ export default function AddClassModal({ isOpen, onClose, onSuccess }) {
     >
       <form className="space-y-6">
         {submitError && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">{submitError}</div>
+          <div className="p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 rounded-lg text-red-700 dark:text-red-400 text-sm">{submitError}</div>
         )}
 
         <div>
-          <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Basic Info</h3>
+          <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">Basic Info</h3>
           <div className="grid grid-cols-2 gap-4">
             <Field label="Class Name" required error={errors.name?.message}>
               <input {...register('name')} placeholder="Grade 5" className={inputCls} />
@@ -194,7 +185,7 @@ export default function AddClassModal({ isOpen, onClose, onSuccess }) {
 
         {canCreateAllBranch && (
           <div>
-            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Branch</h3>
+            <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">Branch</h3>
             <Field label="Branch" required error={errors.branchId?.message}>
               <select {...register('branchId')} className={inputCls}>
                 <option value="">Select branch...</option>

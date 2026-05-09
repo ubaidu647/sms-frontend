@@ -187,15 +187,15 @@ export default function MarkAttendancePanel() {
   return (
     <div className="space-y-4">
       {/* Selectors */}
-      <div className="bg-white rounded-xl border border-gray-200 p-4">
+      <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
         <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
           {isOrgLevel && (
             <div>
-              <label className="block text-xs font-semibold text-gray-600 mb-1">Branch</label>
+              <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">Branch</label>
               <select
                 value={branchId}
                 onChange={(e) => setBranchId(e.target.value)}
-                className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg bg-white text-gray-900 outline-none focus:border-teal-500"
+                className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 outline-none focus:border-teal-500"
               >
                 <option value="">Select branch...</option>
                 {branches.map((b) => (
@@ -206,22 +206,22 @@ export default function MarkAttendancePanel() {
           )}
 
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1">Academic Year</label>
+            <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">Academic Year</label>
             <input
               value={academicYear}
               onChange={(e) => setAcademicYear(e.target.value)}
               placeholder="2025-2026"
-              className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg bg-white text-gray-900 placeholder:text-gray-400 outline-none focus:border-teal-500"
+              className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder:text-gray-400 outline-none focus:border-teal-500"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1">Class</label>
+            <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">Class</label>
             <select
               value={classId}
               onChange={(e) => setClassId(e.target.value)}
               disabled={!effectiveBranchId}
-              className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg bg-white text-gray-900 outline-none focus:border-teal-500 disabled:bg-gray-50"
+              className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 outline-none focus:border-teal-500 disabled:bg-gray-50"
             >
               <option value="">{effectiveBranchId ? 'Select class...' : 'Select branch first'}</option>
               {classes.map((c) => (
@@ -233,12 +233,12 @@ export default function MarkAttendancePanel() {
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1">Section</label>
+            <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">Section</label>
             <select
               value={sectionId}
               onChange={(e) => setSectionId(e.target.value)}
               disabled={!classId}
-              className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg bg-white text-gray-900 outline-none focus:border-teal-500 disabled:bg-gray-50"
+              className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 outline-none focus:border-teal-500 disabled:bg-gray-50"
             >
               <option value="">{classId ? 'Select section...' : 'Select class first'}</option>
               {sections.map((s) => (
@@ -250,15 +250,15 @@ export default function MarkAttendancePanel() {
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1">Date</label>
+            <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">Date</label>
             <div className="relative">
-              <CalendarDays className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+              <CalendarDays className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500 pointer-events-none" />
               <input
                 type="date"
                 value={date}
                 max={todayISO()}
                 onChange={(e) => setDate(e.target.value)}
-                className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg bg-white text-gray-900 outline-none focus:border-teal-500"
+                className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 outline-none focus:border-teal-500"
               />
             </div>
           </div>
@@ -267,9 +267,9 @@ export default function MarkAttendancePanel() {
 
       {/* Empty state */}
       {(!classId || !sectionId) && (
-        <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
+        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-12 text-center">
           <ClipboardEmpty />
-          <p className="text-gray-500 mt-3">
+          <p className="text-gray-500 dark:text-gray-400 mt-3">
             Select a class, section and date to load the roster.
           </p>
         </div>
@@ -277,7 +277,7 @@ export default function MarkAttendancePanel() {
 
       {/* Loading */}
       {classId && sectionId && dailyLoading && (
-        <div className="bg-white rounded-xl border border-gray-200 p-12 flex justify-center">
+        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-12 flex justify-center">
           <div className="w-8 h-8 border-4 border-teal-600 border-t-transparent rounded-full animate-spin" />
         </div>
       )}
@@ -286,7 +286,7 @@ export default function MarkAttendancePanel() {
       {classId && sectionId && !dailyLoading && roster.length > 0 && (
         <>
           {/* Summary banner */}
-          <div className="bg-white rounded-xl border border-gray-200 p-4">
+          <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="flex flex-wrap gap-2 text-xs">
                 {STATUS_CONFIG.filter((s) => s.value !== 'holiday').map((s) => (
@@ -295,13 +295,13 @@ export default function MarkAttendancePanel() {
                     <span className="ml-2 font-bold">{counts[s.value] || 0}</span>
                   </div>
                 ))}
-                <div className="px-3 py-1.5 rounded-lg border bg-gray-50 border-gray-200 text-gray-700">
+                <div className="px-3 py-1.5 rounded-lg border bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300">
                   <span className="font-semibold">Total</span>
                   <span className="ml-2 font-bold">{roster.length}</span>
                 </div>
               </div>
               {summary?.unmarked != null && summary.unmarked === 0 && (
-                <span className="inline-flex items-center gap-1 text-xs text-green-700 font-medium">
+                <span className="inline-flex items-center gap-1 text-xs text-green-700 dark:text-green-400 font-medium">
                   <CheckCircle2 className="w-4 h-4" />
                   All marked
                 </span>
@@ -312,22 +312,22 @@ export default function MarkAttendancePanel() {
           {/* Quick actions */}
           {canMark && (
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-xs text-gray-500 font-medium mr-1">Quick actions:</span>
+              <span className="text-xs text-gray-500 dark:text-gray-400 font-medium mr-1">Quick actions:</span>
               <button
                 onClick={() => setAllStatuses('present')}
-                className="px-3 py-1.5 text-xs font-medium bg-green-50 text-green-700 border border-green-200 rounded-lg hover:bg-green-100"
+                className="px-3 py-1.5 text-xs font-medium bg-green-50 dark:bg-green-950/40 text-green-700 dark:text-green-400 border border-green-200 rounded-lg hover:bg-green-100"
               >
                 Mark all Present
               </button>
               <button
                 onClick={() => setAllStatuses('holiday')}
-                className="px-3 py-1.5 text-xs font-medium bg-gray-100 text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-200"
+                className="px-3 py-1.5 text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700"
               >
                 Holiday Today
               </button>
               <button
                 onClick={() => setAllStatuses('absent')}
-                className="px-3 py-1.5 text-xs font-medium bg-red-50 text-red-700 border border-red-200 rounded-lg hover:bg-red-100"
+                className="px-3 py-1.5 text-xs font-medium bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-400 border border-red-200 rounded-lg hover:bg-red-100"
               >
                 Mark all Absent
               </button>
@@ -335,14 +335,14 @@ export default function MarkAttendancePanel() {
           )}
 
           {/* Roster list */}
-          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+          <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
             <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-200">
+              <thead className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
                 <tr>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide w-16">Roll</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Student</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Status</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide w-72">Details</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide w-16">Roll</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Student</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Status</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide w-72">Details</th>
                 </tr>
               </thead>
               <tbody>
@@ -358,20 +358,20 @@ export default function MarkAttendancePanel() {
                     .map((n) => n[0]?.toUpperCase())
                     .join('') || '?';
                   return (
-                    <tr key={s.studentId} className="border-b border-gray-100 last:border-b-0 hover:bg-gray-50">
-                      <td className="px-4 py-3 text-sm font-medium text-gray-700">{s.rollNumber}</td>
+                    <tr key={s.studentId} className="border-b border-gray-100 dark:border-gray-800 last:border-b-0 hover:bg-gray-50 dark:hover:bg-gray-800">
+                      <td className="px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300">{s.rollNumber}</td>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-3">
                           {s.photo ? (
-                            <img src={s.photo} alt={s.name} className="w-9 h-9 rounded-full object-cover border border-gray-200" />
+                            <img src={s.photo} alt={s.name} className="w-9 h-9 rounded-full object-cover border border-gray-200 dark:border-gray-700" />
                           ) : (
-                            <div className="w-9 h-9 rounded-full bg-teal-100 text-teal-700 font-semibold text-xs flex items-center justify-center">
+                            <div className="w-9 h-9 rounded-full bg-teal-100 text-teal-700 dark:text-teal-400 font-semibold text-xs flex items-center justify-center">
                               {initials}
                             </div>
                           )}
                           <div className="min-w-0">
-                            <div className="font-medium text-gray-900 text-sm truncate">{s.name}</div>
-                            <div className="text-xs text-gray-400 truncate">{s.admissionNumber}</div>
+                            <div className="font-medium text-gray-900 dark:text-gray-100 text-sm truncate">{s.name}</div>
+                            <div className="text-xs text-gray-400 dark:text-gray-500 truncate">{s.admissionNumber}</div>
                           </div>
                         </div>
                       </td>
@@ -402,7 +402,7 @@ export default function MarkAttendancePanel() {
                               value={e.arrivalTime || ''}
                               onChange={(ev) => updateEntry(s.studentId, { arrivalTime: ev.target.value })}
                               disabled={!canMark}
-                              className="w-28 px-2 py-1 text-xs border border-gray-200 rounded text-gray-900 outline-none focus:border-teal-500"
+                              className="w-28 px-2 py-1 text-xs border border-gray-200 dark:border-gray-700 rounded text-gray-900 dark:text-gray-100 outline-none focus:border-teal-500"
                               placeholder="Arrival"
                             />
                           )}
@@ -412,7 +412,7 @@ export default function MarkAttendancePanel() {
                               value={e.departureTime || ''}
                               onChange={(ev) => updateEntry(s.studentId, { departureTime: ev.target.value })}
                               disabled={!canMark}
-                              className="w-28 px-2 py-1 text-xs border border-gray-200 rounded text-gray-900 outline-none focus:border-teal-500"
+                              className="w-28 px-2 py-1 text-xs border border-gray-200 dark:border-gray-700 rounded text-gray-900 dark:text-gray-100 outline-none focus:border-teal-500"
                               placeholder="Departure"
                             />
                           )}
@@ -423,7 +423,7 @@ export default function MarkAttendancePanel() {
                               onChange={(ev) => updateEntry(s.studentId, { reason: ev.target.value })}
                               disabled={!canMark}
                               placeholder="Reason (optional)"
-                              className="w-full px-2 py-1 text-xs border border-gray-200 rounded text-gray-900 placeholder:text-gray-400 outline-none focus:border-teal-500"
+                              className="w-full px-2 py-1 text-xs border border-gray-200 dark:border-gray-700 rounded text-gray-900 dark:text-gray-100 placeholder:text-gray-400 outline-none focus:border-teal-500"
                             />
                           )}
                         </div>
@@ -453,8 +453,8 @@ export default function MarkAttendancePanel() {
 
       {/* No students */}
       {classId && sectionId && !dailyLoading && roster.length === 0 && (
-        <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
-          <p className="text-gray-500">No students enrolled in this section.</p>
+        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-12 text-center">
+          <p className="text-gray-500 dark:text-gray-400">No students enrolled in this section.</p>
         </div>
       )}
     </div>
@@ -463,8 +463,8 @@ export default function MarkAttendancePanel() {
 
 function ClipboardEmpty() {
   return (
-    <div className="w-14 h-14 mx-auto rounded-full bg-gray-100 flex items-center justify-center">
-      <CalendarDays className="w-7 h-7 text-gray-400" />
+    <div className="w-14 h-14 mx-auto rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+      <CalendarDays className="w-7 h-7 text-gray-400 dark:text-gray-500" />
     </div>
   );
 }

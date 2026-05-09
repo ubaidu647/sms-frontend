@@ -3,7 +3,7 @@ import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Table } from '@/component/Table';
-import { Plus, Search, Building2, Eye, LayoutGrid } from 'lucide-react';
+import { Plus, Search, Building2, Eye, LayoutGrid, X } from 'lucide-react';
 import AddBranchModal from './AddBranchModal';
 import { useTokenStore } from '@/store/tokenStore';
 import { useUserStore } from '@/store/userStore';
@@ -28,44 +28,70 @@ export default function BranchesPage() {
     actions.includes('view-branch');
   const canCreateBranch = isAdmin || actions.includes('create-branch');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const defaultFromDate = twoMonthsBeforeISO();
+  const defaultToDate = new Date().toISOString().slice(0, 10);
+  const [draftSearch, setDraftSearch] = useState('');
+  const [draftFromDate, setDraftFromDate] = useState(defaultFromDate);
+  const [draftToDate, setDraftToDate] = useState(defaultToDate);
+  const [draftStatusFilter, setDraftStatusFilter] = useState('');
   const [search, setSearch] = useState('');
-  const [fromDate, setFromDate] = useState(twoMonthsBeforeISO());
-  const [toDate, setToDate] = useState(new Date().toISOString().slice(0, 10));
+  const [fromDate, setFromDate] = useState(defaultFromDate);
+  const [toDate, setToDate] = useState(defaultToDate);
   const [statusFilter, setStatusFilter] = useState('');
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(20);
+
+  const applyFilters = () => {
+    setSearch(draftSearch);
+    setFromDate(draftFromDate);
+    setToDate(draftToDate);
+    setStatusFilter(draftStatusFilter);
+    setPage(1);
+  };
+
+  const clearFilters = () => {
+    setDraftSearch('');
+    setDraftFromDate(defaultFromDate);
+    setDraftToDate(defaultToDate);
+    setDraftStatusFilter('');
+    setSearch('');
+    setFromDate(defaultFromDate);
+    setToDate(defaultToDate);
+    setStatusFilter('');
+    setPage(1);
+  };
 
   const columns = useMemo(
     () => [
       {
         header: 'Branch Name',
         accessor: 'name',
-        render: (v) => <div className="font-medium text-gray-900">{v}</div>,
+        render: (v) => <div className="font-medium text-gray-900 dark:text-gray-100">{v}</div>,
       },
       {
         header: 'Code',
         accessor: 'serialNumber',
-        render: (v) => <div className="text-gray-600">{v}</div>,
+        render: (v) => <div className="text-gray-600 dark:text-gray-400">{v}</div>,
       },
       {
         header: 'Address',
         accessor: 'address',
-        render: (v) => <div className="text-gray-600">{v}</div>,
+        render: (v) => <div className="text-gray-600 dark:text-gray-400">{v}</div>,
       },
       {
         header: 'Phone',
         accessor: 'phone',
-        render: (v) => <div className="text-gray-600">{v}</div>,
+        render: (v) => <div className="text-gray-600 dark:text-gray-400">{v}</div>,
       },
       {
         header: 'Email',
         accessor: 'email',
-        render: (v) => <div className="text-gray-600">{v}</div>,
+        render: (v) => <div className="text-gray-600 dark:text-gray-400">{v}</div>,
       },
       {
         header: 'Created Date',
         accessor: 'createdAt',
-        render: (v) => <div className="text-gray-600">{new Date(v).toLocaleDateString()}</div>,
+        render: (v) => <div className="text-gray-600 dark:text-gray-400">{new Date(v).toLocaleDateString()}</div>,
       },
       {
         header: 'Status',
@@ -130,12 +156,12 @@ export default function BranchesPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-800 p-6 rounded-[50px]">
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Branches</h1>
-            <p className="text-gray-600 mt-1">Manage branch locations and their report branding</p>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Branches</h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-1">Manage branch locations and their report branding</p>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
             <Link
@@ -166,48 +192,72 @@ export default function BranchesPage() {
           </div>
         </div>
 
-        <div className="mb-4 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="flex items-center bg-white p-2 rounded-lg border border-gray-200">
-              <Search className="w-5 h-5 text-gray-400 mr-2" />
+        <div className="mb-4 flex items-center justify-between gap-4 flex-wrap">
+          <div className="flex items-center gap-3 flex-wrap">
+            <div className="flex items-center bg-white dark:bg-gray-900 p-2 rounded-lg border border-gray-200 dark:border-gray-700">
               <input
                 type="text"
                 placeholder="Search branches..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="outline-none text-sm text-gray-900 placeholder:text-gray-400 bg-transparent"
+                value={draftSearch}
+                onChange={(e) => setDraftSearch(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') applyFilters(); }}
+                className="outline-none text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 bg-transparent"
               />
+              <button
+                type="button"
+                onClick={applyFilters}
+                title="Search"
+                className="ml-2 p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+              >
+                <Search className="w-5 h-5" />
+              </button>
             </div>
 
-            <div className="bg-white p-2 rounded-lg border border-gray-200 flex items-center gap-2">
-              <label className="text-sm text-gray-600">From</label>
+            <div className="bg-white dark:bg-gray-900 p-2 rounded-lg border border-gray-200 dark:border-gray-700 flex items-center gap-2">
+              <label className="text-sm text-gray-600 dark:text-gray-400">From</label>
               <input
                 type="date"
-                value={fromDate}
-                onChange={(e) => setFromDate(e.target.value)}
-                className="outline-none text-sm text-gray-900 bg-transparent"
+                value={draftFromDate}
+                onChange={(e) => setDraftFromDate(e.target.value)}
+                className="outline-none text-sm text-gray-900 dark:text-gray-100 bg-transparent"
               />
-              <label className="text-sm text-gray-600">To</label>
+              <label className="text-sm text-gray-600 dark:text-gray-400">To</label>
               <input
                 type="date"
-                value={toDate}
-                onChange={(e) => setToDate(e.target.value)}
-                className="outline-none text-sm text-gray-900 bg-transparent"
+                value={draftToDate}
+                onChange={(e) => setDraftToDate(e.target.value)}
+                className="outline-none text-sm text-gray-900 dark:text-gray-100 bg-transparent"
               />
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 flex-wrap">
             <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="bg-white px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-900 outline-none"
+              value={draftStatusFilter}
+              onChange={(e) => setDraftStatusFilter(e.target.value)}
+              className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-900 dark:text-gray-100 outline-none"
             >
               <option value="">All Status</option>
               <option value="active">Active</option>
               <option value="inactive">Inactive</option>
               <option value="disabled">Disabled</option>
             </select>
+            <button
+              type="button"
+              onClick={applyFilters}
+              className="flex items-center gap-1 px-3 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 text-sm"
+            >
+              <Search className="w-4 h-4" />
+              Search
+            </button>
+            <button
+              type="button"
+              onClick={clearFilters}
+              className="flex items-center gap-1 px-3 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 text-sm"
+            >
+              <X className="w-4 h-4" />
+              Clear
+            </button>
           </div>
         </div>
 

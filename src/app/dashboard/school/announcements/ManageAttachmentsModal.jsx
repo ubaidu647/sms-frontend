@@ -86,15 +86,15 @@ export default function ManageAttachmentsModal({ isOpen, onClose, announcement }
     >
       <div className="space-y-5">
         <div>
-          <h4 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">
+          <h4 className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2">
             Add New
           </h4>
           {file ? (
-            <div className="flex items-center justify-between p-3 border border-gray-200 rounded-lg bg-teal-50">
-              <div className="flex items-center gap-2 text-sm text-gray-800">
+            <div className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-700 rounded-lg bg-teal-50 dark:bg-teal-950/40">
+              <div className="flex items-center gap-2 text-sm text-gray-800 dark:text-gray-200">
                 <Paperclip className="w-4 h-4" />
                 <span className="font-medium">{file.name}</span>
-                <span className="text-xs text-gray-500">({formatBytes(file.size)})</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">({formatBytes(file.size)})</span>
               </div>
               <div className="flex gap-2">
                 <button
@@ -119,7 +119,7 @@ export default function ManageAttachmentsModal({ isOpen, onClose, announcement }
               </div>
             </div>
           ) : (
-            <label className="flex items-center gap-2 px-3 py-2 border border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 text-sm text-gray-700">
+            <label className="flex items-center gap-2 px-3 py-2 border border-dashed border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 text-sm text-gray-700 dark:text-gray-300">
               <Paperclip className="w-4 h-4" />
               <span>Attach file (jpg / png / webp / pdf, max 5MB)</span>
               <input
@@ -143,31 +143,31 @@ export default function ManageAttachmentsModal({ isOpen, onClose, announcement }
         </div>
 
         <div>
-          <h4 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">
+          <h4 className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2">
             Existing ({attachments.length})
           </h4>
           {isLoading ? (
-            <div className="text-sm text-gray-500">Loading...</div>
+            <div className="text-sm text-gray-500 dark:text-gray-400">Loading...</div>
           ) : attachments.length === 0 ? (
-            <p className="text-sm text-gray-500">No attachments yet.</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">No attachments yet.</p>
           ) : (
             <ul className="space-y-2">
               {attachments.map((att) => (
                 <li
                   key={att._id}
-                  className="flex items-center justify-between rounded-lg border border-gray-200 px-3 py-2"
+                  className="flex items-center justify-between rounded-lg border border-gray-200 dark:border-gray-700 px-3 py-2"
                 >
                   <div className="flex items-center gap-2 text-sm">
-                    <FileText className="w-4 h-4 text-gray-500" />
+                    <FileText className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                     <a
                       href={att.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-teal-700 hover:underline font-medium"
+                      className="text-teal-700 dark:text-teal-400 hover:underline font-medium"
                     >
                       {att.name}
                     </a>
-                    <span className="text-xs text-gray-500">{formatBytes(att.size)}</span>
+                    <span className="text-xs text-gray-500 dark:text-gray-400">{formatBytes(att.size)}</span>
                   </div>
                   <button
                     onClick={() => removeMutation.mutate(att._id)}

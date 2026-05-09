@@ -118,7 +118,7 @@ export default function GenerateStudentModal({ isOpen, onClose }) {
     >
       <div className="space-y-4">
         {submitError && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+          <div className="p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 rounded-lg text-red-700 dark:text-red-400 text-sm">
             {submitError}
           </div>
         )}
@@ -128,8 +128,8 @@ export default function GenerateStudentModal({ isOpen, onClose }) {
             Student<span className="text-red-500">*</span>
           </label>
           {studentId ? (
-            <div className="flex items-center justify-between p-2 border border-gray-200 rounded-lg bg-teal-50">
-              <span className="text-sm text-gray-900">{studentLabel}</span>
+            <div className="flex items-center justify-between p-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-teal-50 dark:bg-teal-950/40">
+              <span className="text-sm text-gray-900 dark:text-gray-100">{studentLabel}</span>
               <button
                 type="button"
                 onClick={() => {
@@ -155,11 +155,11 @@ export default function GenerateStudentModal({ isOpen, onClose }) {
                 className={inputCls}
               />
               {showResults && search.length >= 2 && students.length > 0 && (
-                <ul className="absolute z-10 left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                <ul className="absolute z-10 left-0 right-0 mt-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg max-h-60 overflow-y-auto">
                   {students.map((s) => (
                     <li
                       key={s._id}
-                      className="px-3 py-2 hover:bg-teal-50 cursor-pointer text-sm"
+                      className="px-3 py-2 hover:bg-teal-50 dark:hover:bg-teal-950/40 cursor-pointer text-sm"
                       onClick={() => {
                         setStudentId(s._id);
                         setStudentLabel(
@@ -168,8 +168,8 @@ export default function GenerateStudentModal({ isOpen, onClose }) {
                         setShowResults(false);
                       }}
                     >
-                      <div className="font-medium text-gray-900">{s.user?.name || s.name}</div>
-                      <div className="text-xs text-gray-500">
+                      <div className="font-medium text-gray-900 dark:text-gray-100">{s.user?.name || s.name}</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">
                         {s.admissionNumber} · Roll {s.rollNumber}
                       </div>
                     </li>

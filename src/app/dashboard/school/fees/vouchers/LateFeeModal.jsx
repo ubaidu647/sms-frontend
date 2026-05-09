@@ -77,7 +77,7 @@ export default function LateFeeModal({ isOpen, onClose, voucher }) {
       }
     >
       <div className="space-y-4">
-        <p className="text-xs text-gray-500">
+        <p className="text-xs text-gray-500 dark:text-gray-400">
           Sets (overwrites) the late fee. Voucher total &amp; balance auto-recalculate.
         </p>
         <div>

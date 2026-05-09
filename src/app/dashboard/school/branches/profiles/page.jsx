@@ -67,7 +67,7 @@ export default function AllBranchProfilesPage() {
   }, [profiles, branches]);
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-800 p-6 rounded-[50px]">
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
           <div className="flex items-center gap-3">
@@ -75,7 +75,7 @@ export default function AllBranchProfilesPage() {
               <>
                 <Link
                   href="/dashboard/school/branches"
-                  className="flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900"
+                  className="flex items-center gap-1 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100"
                 >
                   <ArrowLeft className="w-4 h-4" />
                   Branches
@@ -83,14 +83,14 @@ export default function AllBranchProfilesPage() {
                 <span className="text-gray-300">/</span>
               </>
             )}
-            <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
               <Building2 className="w-6 h-6 text-teal-600" />
               Branch Profiles
             </h1>
           </div>
           <Link
             href="/dashboard/school/branches/profile"
-            className="text-sm text-teal-700 hover:underline"
+            className="text-sm text-teal-700 dark:text-teal-400 hover:underline"
           >
             My branch profile →
           </Link>
@@ -99,12 +99,12 @@ export default function AllBranchProfilesPage() {
         {!canList ? (
           <div className="text-sm text-red-600">You don&apos;t have permission to view this list.</div>
         ) : isLoading ? (
-          <div className="text-sm text-gray-500">Loading profiles...</div>
+          <div className="text-sm text-gray-500 dark:text-gray-400">Loading profiles...</div>
         ) : cards.length === 0 ? (
-          <div className="bg-white rounded-2xl border border-gray-200 p-10 text-center">
+          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 p-10 text-center">
             <div className="text-5xl mb-3">🏢</div>
-            <div className="text-lg font-medium text-gray-700">No branches yet</div>
-            <p className="text-sm text-gray-500 mt-1">
+            <div className="text-lg font-medium text-gray-700 dark:text-gray-300">No branches yet</div>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
               {branchListUnavailable
                 ? 'No profiles found. To see branches that still need a profile, ask an admin to grant view-branch.'
                 : 'Create a branch first, then come back to set up its profile.'}
@@ -125,10 +125,10 @@ export default function AllBranchProfilesPage() {
               return (
                 <div
                   key={branch._id}
-                  className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow"
+                  className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-md transition-shadow"
                   style={{ borderTop: `3px solid ${accent}` }}
                 >
-                  <div className="aspect-[16/9] bg-gray-50 border-b border-gray-200 flex items-center justify-center">
+                  <div className="aspect-[16/9] bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex items-center justify-center">
                     {p?.logo ? (
                       <img
                         src={p.logo}
@@ -141,19 +141,19 @@ export default function AllBranchProfilesPage() {
                   </div>
                   <div className="p-4 space-y-2">
                     <div>
-                      <div className="font-semibold text-gray-900 truncate" title={p?.displayName || branch.name}>
+                      <div className="font-semibold text-gray-900 dark:text-gray-100 truncate" title={p?.displayName || branch.name}>
                         {p?.displayName || branch.name}
                       </div>
                       {p?.tagline && (
-                        <div className="text-xs text-gray-500 truncate" title={p.tagline}>
+                        <div className="text-xs text-gray-500 dark:text-gray-400 truncate" title={p.tagline}>
                           {p.tagline}
                         </div>
                       )}
                     </div>
                     <div className="flex items-center justify-between text-xs">
-                      <div className="text-gray-600">
+                      <div className="text-gray-600 dark:text-gray-400">
                         Branch:{' '}
-                        <span className="font-medium text-gray-800">{branch.name}</span>
+                        <span className="font-medium text-gray-800 dark:text-gray-200">{branch.name}</span>
                       </div>
                       <span
                         className={`inline-flex px-2 py-0.5 rounded-full font-medium ${
@@ -166,7 +166,7 @@ export default function AllBranchProfilesPage() {
                       </span>
                     </div>
                     {hasProfile && (p.printPhone || p.printEmail || p.website) && (
-                      <div className="text-xs text-gray-500 space-y-0.5 pt-1 border-t border-gray-100">
+                      <div className="text-xs text-gray-500 dark:text-gray-400 space-y-0.5 pt-1 border-t border-gray-100 dark:border-gray-800">
                         {p.printPhone && (
                           <div className="flex items-center gap-1">
                             <Phone className="w-3 h-3" /> {p.printPhone}

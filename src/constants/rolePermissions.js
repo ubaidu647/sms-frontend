@@ -230,6 +230,16 @@ export const ACTIONS = {
   PAY_ALL_BRANCH_PAYSLIP: 'pay-all-branch-payslip',
   CANCEL_ALL_BRANCH_PAYSLIP: 'cancel-all-branch-payslip',
 
+  // ── Staff salary policy ───────────────────────────
+  CREATE_STAFF_SALARY_POLICY: 'create-staff-salary-policy',
+  VIEW_STAFF_SALARY_POLICY: 'view-staff-salary-policy',
+  UPDATE_STAFF_SALARY_POLICY: 'update-staff-salary-policy',
+
+  // ── Staff salary policy (org-level) ───────────────
+  CREATE_ALL_BRANCH_STAFF_SALARY_POLICY: 'create-all-branch-staff-salary-policy',
+  VIEW_ALL_BRANCH_STAFF_SALARY_POLICY: 'view-all-branch-staff-salary-policy',
+  UPDATE_ALL_BRANCH_STAFF_SALARY_POLICY: 'update-all-branch-staff-salary-policy',
+
   // ── Self-scoped (own data only) ───────────────────
   VIEW_OWN_STAFF: 'view-own-staff',
   UPDATE_OWN_STAFF: 'update-own-staff',
@@ -268,6 +278,7 @@ export const AVAILABLE_MENUS = [
   { key: 'salary-dashboard', label: 'Staff Salary — Dashboard' },
   { key: 'salary-structure', label: 'Staff Salary — Structures' },
   { key: 'payslip', label: 'Staff Salary — Payslips' },
+  { key: 'salary-policy', label: 'Staff Salary — Policy' },
 ];
 
 export const AVAILABLE_ACTIONS = [
@@ -456,6 +467,14 @@ export const AVAILABLE_ACTIONS = [
   { key: ACTIONS.CREATE_ALL_BRANCH_STAFF_SALARY,             label: 'Create All Branch',     menu: 'salary-structure' },
   { key: ACTIONS.UPDATE_ALL_BRANCH_STAFF_SALARY,             label: 'Update All Branch',     menu: 'salary-structure' },
   { key: ACTIONS.DELETE_ALL_BRANCH_STAFF_SALARY,             label: 'Deactivate All Branch', menu: 'salary-structure' },
+
+  // Staff Salary — Policy
+  { key: ACTIONS.VIEW_STAFF_SALARY_POLICY,                   label: 'View',                  menu: 'salary-policy' },
+  { key: ACTIONS.CREATE_STAFF_SALARY_POLICY,                 label: 'Create',                menu: 'salary-policy' },
+  { key: ACTIONS.UPDATE_STAFF_SALARY_POLICY,                 label: 'Update',                menu: 'salary-policy' },
+  { key: ACTIONS.VIEW_ALL_BRANCH_STAFF_SALARY_POLICY,        label: 'View All Branch',       menu: 'salary-policy' },
+  { key: ACTIONS.CREATE_ALL_BRANCH_STAFF_SALARY_POLICY,      label: 'Create All Branch',     menu: 'salary-policy' },
+  { key: ACTIONS.UPDATE_ALL_BRANCH_STAFF_SALARY_POLICY,      label: 'Update All Branch',     menu: 'salary-policy' },
 
   // Staff Salary — Payslips
   { key: ACTIONS.VIEW_PAYSLIP,                               label: 'View',                  menu: 'payslip' },

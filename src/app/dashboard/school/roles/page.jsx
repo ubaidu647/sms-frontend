@@ -27,7 +27,7 @@ function MultiSelectDropdown({ label, options, selected, onChange }) {
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="flex items-center gap-1 bg-white px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700 whitespace-nowrap"
+        className="flex items-center gap-1 bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300 whitespace-nowrap"
       >
         {label}
         {selected.length > 0 && (
@@ -35,14 +35,14 @@ function MultiSelectDropdown({ label, options, selected, onChange }) {
             {selected.length}
           </span>
         )}
-        <ChevronDown className="w-4 h-4 ml-1 text-gray-400" />
+        <ChevronDown className="w-4 h-4 ml-1 text-gray-400 dark:text-gray-500" />
       </button>
       {open && (
-        <div className="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10 min-w-[180px] max-h-56 overflow-y-auto p-1">
+        <div className="absolute top-full left-0 mt-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-10 min-w-[180px] max-h-56 overflow-y-auto p-1">
           {options.map((opt) => (
             <label
               key={opt.key}
-              className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 rounded cursor-pointer"
+              className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 rounded cursor-pointer"
             >
               <input
                 type="checkbox"
@@ -110,17 +110,17 @@ export default function RolesPage() {
       {
         header: 'Role Name',
         accessor: 'name',
-        render: (v) => <div className="font-medium text-gray-900">{v}</div>,
+        render: (v) => <div className="font-medium text-gray-900 dark:text-gray-100">{v}</div>,
       },
       {
         header: 'Serial No.',
         accessor: 'serialNumber',
-        render: (v) => <div className="text-gray-600">{v}</div>,
+        render: (v) => <div className="text-gray-600 dark:text-gray-400">{v}</div>,
       },
       {
         header: 'Branch',
         accessor: 'branch',
-        render: (v) => <div className="text-gray-600">{v?.name ?? '—'}</div>,
+        render: (v) => <div className="text-gray-600 dark:text-gray-400">{v?.name ?? '—'}</div>,
       },
       {
         header: 'Menus',
@@ -141,7 +141,7 @@ export default function RolesPage() {
       {
         header: 'Actions Count',
         accessor: 'actions',
-        render: (v) => <div className="text-gray-600">{v?.length ?? 0} actions</div>,
+        render: (v) => <div className="text-gray-600 dark:text-gray-400">{v?.length ?? 0} actions</div>,
       },
       {
         header: 'Type',
@@ -172,7 +172,7 @@ export default function RolesPage() {
       {
         header: 'Created',
         accessor: 'createdAt',
-        render: (v) => <div className="text-gray-600">{new Date(v).toLocaleDateString()}</div>,
+        render: (v) => <div className="text-gray-600 dark:text-gray-400">{new Date(v).toLocaleDateString()}</div>,
       },
     ],
     [],
@@ -217,6 +217,7 @@ export default function RolesPage() {
       queryClient.setQueryData(['role-detail', id], (old) =>
         old ? { ...old, isActive: res.data.isActive } : old,
       );
+      queryClient.invalidateQueries({ queryKey: ['roles'] });
       toast.success(res.message || 'Role status updated');
     },
     onError: (err) => {
@@ -289,13 +290,13 @@ export default function RolesPage() {
   const roles = data?.data || [];
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-800 p-6 rounded-[50px]">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Roles</h1>
-            <p className="text-gray-600 mt-1">Manage staff roles and permissions</p>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Roles</h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-1">Manage staff roles and permissions</p>
           </div>
           <button
             onClick={() => setIsModalOpen(true)}
@@ -309,15 +310,15 @@ export default function RolesPage() {
         {/* Filters */}
         <div className="mb-4 flex flex-wrap items-center gap-3">
           {/* Date range — always first */}
-          <div className="flex items-center bg-white px-3 py-2 rounded-lg border border-gray-200 gap-2">
-            <label className="text-sm text-gray-500">From</label>
+          <div className="flex items-center bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 gap-2">
+            <label className="text-sm text-gray-500 dark:text-gray-400">From</label>
             <input
               type="date"
               value={fromDate}
               onChange={(e) => { setFromDate(e.target.value); setPage(1); }}
               className="text-sm outline-none"
             />
-            <label className="text-sm text-gray-500">To</label>
+            <label className="text-sm text-gray-500 dark:text-gray-400">To</label>
             <input
               type="date"
               value={toDate}
@@ -330,7 +331,7 @@ export default function RolesPage() {
           <select
             value={isActive}
             onChange={(e) => { setIsActive(e.target.value); setPage(1); }}
-            className="bg-white px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700"
+            className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
           >
             <option value="">All Status</option>
             <option value="true">Active</option>
@@ -338,8 +339,8 @@ export default function RolesPage() {
           </select>
 
           {/* Role name search */}
-          <div className="flex items-center bg-white px-3 py-2 rounded-lg border border-gray-200">
-            <Search className="w-4 h-4 text-gray-400 mr-2 shrink-0" />
+          <div className="flex items-center bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700">
+            <Search className="w-4 h-4 text-gray-400 dark:text-gray-500 mr-2 shrink-0" />
             <input
               type="text"
               placeholder="Role name..."
@@ -350,7 +351,7 @@ export default function RolesPage() {
           </div>
 
           {/* Serial number search */}
-          <div className="flex items-center bg-white px-3 py-2 rounded-lg border border-gray-200">
+          <div className="flex items-center bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700">
             <input
               type="text"
               placeholder="Serial number..."
@@ -366,7 +367,7 @@ export default function RolesPage() {
               value={branchId}
               onFocus={() => setBranchDropdownTouched(true)}
               onChange={(e) => { setBranchId(e.target.value); setPage(1); }}
-              className="bg-white px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700"
+              className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
             >
               <option value="">All Branches</option>
               {branches.map((b) => (
@@ -379,7 +380,7 @@ export default function RolesPage() {
 
           {/* Branch name search — org only */}
           {hasOrgAccess && (
-            <div className="flex items-center bg-white px-3 py-2 rounded-lg border border-gray-200">
+            <div className="flex items-center bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700">
               <input
                 type="text"
                 placeholder="Branch name..."
@@ -450,18 +451,18 @@ export default function RolesPage() {
           <>
             <div className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm" />
             <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-              <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-8 space-y-4">
-                <h3 className="text-lg font-bold text-gray-900">Delete Role</h3>
-                <p className="text-sm text-gray-600">
+              <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-sm p-8 space-y-4">
+                <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">Delete Role</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
                   Are you sure you want to delete{' '}
-                  <span className="font-semibold text-gray-900">{deleteTarget.name}</span>? This
+                  <span className="font-semibold text-gray-900 dark:text-gray-100">{deleteTarget.name}</span>? This
                   action cannot be undone.
                 </p>
                 <div className="flex gap-3 pt-2">
                   <button
                     onClick={() => setDeleteTarget(null)}
                     disabled={deleteMutation.isPending}
-                    className="flex-1 px-4 py-2 rounded-xl border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50"
+                    className="flex-1 px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
                   >
                     Cancel
                   </button>

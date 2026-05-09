@@ -105,16 +105,7 @@ export default function AddSubjectModal({ isOpen, onClose, onSuccess }) {
     mutationFn: (payload) => postData({ url: '/subject/create', payload, token }),
     onSuccess: (res) => {
       const newSubject = res?.data;
-      if (newSubject) {
-        queryClient.setQueriesData({ queryKey: ['subjects'] }, (old) => {
-          if (!old) return old;
-          return {
-            ...old,
-            data: [newSubject, ...(old.data || [])],
-            total: (old.total || 0) + 1,
-          };
-        });
-      }
+      queryClient.invalidateQueries({ queryKey: ['subjects'] });
       toast.success(res?.message || 'Subject created successfully');
       onSuccess?.(newSubject);
       setSuccessState(true);
@@ -164,11 +155,11 @@ export default function AddSubjectModal({ isOpen, onClose, onSuccess }) {
     >
       <form className="space-y-6">
         {submitError && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">{submitError}</div>
+          <div className="p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 rounded-lg text-red-700 dark:text-red-400 text-sm">{submitError}</div>
         )}
 
         <div>
-          <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Basic Info</h3>
+          <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">Basic Info</h3>
           <div className="grid grid-cols-2 gap-4">
             <Field label="Class" required error={errors.classId?.message}>
               <select {...register('classId')} className={inputCls}>
@@ -213,7 +204,7 @@ export default function AddSubjectModal({ isOpen, onClose, onSuccess }) {
         </div>
 
         <div>
-          <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Marks &amp; Credits</h3>
+          <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">Marks &amp; Credits</h3>
           <div className="grid grid-cols-2 gap-4">
             <Field label="Total Marks" required error={errors.totalMarks?.message}>
               <input {...register('totalMarks')} type="number" min="1" placeholder="100" className={inputCls} />
@@ -239,7 +230,7 @@ export default function AddSubjectModal({ isOpen, onClose, onSuccess }) {
               </select>
             </Field>
           </div>
-          <p className="text-xs text-gray-500 mt-2">
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
             If both Theory and Practical are provided, they must add up to Total Marks.
           </p>
         </div>

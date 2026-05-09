@@ -313,14 +313,14 @@ export default function AddStaffModal({ isOpen, onClose, onSuccess }) {
     >
       <form className="space-y-6">
         {submitError && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+          <div className="p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 rounded-lg text-red-700 dark:text-red-400 text-sm">
             {submitError}
           </div>
         )}
 
         {/* Account Info */}
         <div>
-          <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
+          <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">
             Account
           </h3>
           <div className="grid grid-cols-2 gap-4">
@@ -351,13 +351,13 @@ export default function AddStaffModal({ isOpen, onClose, onSuccess }) {
 
         {/* Branch & Role */}
         <div>
-          <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
+          <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">
             Branch & Role
           </h3>
           <div className="grid grid-cols-2 gap-4">
             {canCreateAllBranch ? (
               <Field label="Branch" required error={errors.branchId?.message}>
-                <select {...register('branchId')} className={`${inputCls} bg-white`}>
+                <select {...register('branchId')} className={`${inputCls} bg-white dark:bg-gray-900`}>
                   <option value="">Select branch...</option>
                   {branches.map((b) => (
                     <option key={b._id} value={b._id}>
@@ -372,7 +372,7 @@ export default function AddStaffModal({ isOpen, onClose, onSuccess }) {
             <Field label="Role" required error={errors.roleId?.message}>
               <select
                 {...register('roleId')}
-                className={`${inputCls} bg-white`}
+                className={`${inputCls} bg-white dark:bg-gray-900`}
                 disabled={!selectedBranchId}
               >
                 <option value="">
@@ -390,7 +390,7 @@ export default function AddStaffModal({ isOpen, onClose, onSuccess }) {
 
         {/* Employment Info */}
         <div>
-          <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
+          <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">
             Employment
           </h3>
           <div className="grid grid-cols-2 gap-4">
@@ -402,14 +402,14 @@ export default function AddStaffModal({ isOpen, onClose, onSuccess }) {
               />
             </Field>
             <Field label="Staff Type" required error={errors.staffType?.message}>
-              <select {...register('staffType')} className={`${inputCls} bg-white`}>
+              <select {...register('staffType')} className={`${inputCls} bg-white dark:bg-gray-900`}>
                 <option value="">Select type...</option>
                 <option value="teaching">Teaching</option>
                 <option value="non-teaching">Non-Teaching</option>
               </select>
             </Field>
             <Field label="Employment Type" required error={errors.employmentType?.message}>
-              <select {...register('employmentType')} className={`${inputCls} bg-white`}>
+              <select {...register('employmentType')} className={`${inputCls} bg-white dark:bg-gray-900`}>
                 <option value="">Select type...</option>
                 <option value="permanent">Permanent</option>
                 <option value="contract">Contract</option>
@@ -446,12 +446,12 @@ export default function AddStaffModal({ isOpen, onClose, onSuccess }) {
 
         {/* Personal Info */}
         <div>
-          <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
+          <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">
             Personal
           </h3>
           <div className="grid grid-cols-2 gap-4">
             <Field label="Gender" required error={errors.gender?.message}>
-              <select {...register('gender')} className={`${inputCls} bg-white`}>
+              <select {...register('gender')} className={`${inputCls} bg-white dark:bg-gray-900`}>
                 <option value="">Select gender...</option>
                 <option value="male">Male</option>
                 <option value="female">Female</option>
@@ -465,7 +465,7 @@ export default function AddStaffModal({ isOpen, onClose, onSuccess }) {
               <input {...register('cnic')} placeholder="35201-1234567-1" className={inputCls} />
             </Field>
             <Field label="Blood Group" error={errors.bloodGroup?.message}>
-              <select {...register('bloodGroup')} className={`${inputCls} bg-white`}>
+              <select {...register('bloodGroup')} className={`${inputCls} bg-white dark:bg-gray-900`}>
                 <option value="">Select...</option>
                 {['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map((g) => (
                   <option key={g} value={g}>
@@ -475,7 +475,7 @@ export default function AddStaffModal({ isOpen, onClose, onSuccess }) {
               </select>
             </Field>
             <Field label="Marital Status" error={errors.maritalStatus?.message}>
-              <select {...register('maritalStatus')} className={`${inputCls} bg-white`}>
+              <select {...register('maritalStatus')} className={`${inputCls} bg-white dark:bg-gray-900`}>
                 <option value="">Select...</option>
                 <option value="single">Single</option>
                 <option value="married">Married</option>
@@ -488,7 +488,7 @@ export default function AddStaffModal({ isOpen, onClose, onSuccess }) {
 
         {/* Address */}
         <div>
-          <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
+          <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">
             Address
           </h3>
           <div className="grid grid-cols-2 gap-4">
@@ -512,7 +512,7 @@ export default function AddStaffModal({ isOpen, onClose, onSuccess }) {
 
         {/* Emergency Contact */}
         <div>
-          <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
+          <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">
             Emergency Contact
           </h3>
           <div className="grid grid-cols-2 gap-4">
@@ -542,7 +542,7 @@ export default function AddStaffModal({ isOpen, onClose, onSuccess }) {
 
         {/* Photo */}
         <div>
-          <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
+          <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">
             Photo (optional)
           </h3>
           <div className="flex items-center gap-4">
@@ -550,10 +550,10 @@ export default function AddStaffModal({ isOpen, onClose, onSuccess }) {
               <img
                 src={photoPreview}
                 alt="Preview"
-                className="w-20 h-20 rounded-full object-cover border border-gray-200"
+                className="w-20 h-20 rounded-full object-cover border border-gray-200 dark:border-gray-700"
               />
             ) : (
-              <div className="w-20 h-20 rounded-full border border-dashed border-gray-300 bg-gray-50 flex items-center justify-center text-xs text-gray-400">
+              <div className="w-20 h-20 rounded-full border border-dashed border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 flex items-center justify-center text-xs text-gray-400 dark:text-gray-500">
                 {photoFile?.type === 'application/pdf' ? 'PDF' : 'No image'}
               </div>
             )}
@@ -562,13 +562,13 @@ export default function AddStaffModal({ isOpen, onClose, onSuccess }) {
                 type="file"
                 accept="image/jpeg,image/jpg,image/png,image/webp,application/pdf"
                 onChange={handlePhotoChange}
-                className="block text-sm text-gray-700 file:mr-3 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-medium file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100"
+                className="block text-sm text-gray-700 dark:text-gray-300 file:mr-3 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-medium file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100"
               />
-              <p className="text-xs text-gray-500 mt-1">JPG, PNG, WEBP or PDF — max 5 MB</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">JPG, PNG, WEBP or PDF — max 5 MB</p>
               {photoFile && (
-                <p className="text-xs text-gray-600 mt-1">
+                <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
                   {photoFile.name}{' '}
-                  <span className="text-gray-400">({(photoFile.size / 1024).toFixed(0)} KB)</span>
+                  <span className="text-gray-400 dark:text-gray-500">({(photoFile.size / 1024).toFixed(0)} KB)</span>
                 </p>
               )}
               {photoError && <p className={errorCls}>{photoError}</p>}

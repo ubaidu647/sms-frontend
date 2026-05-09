@@ -53,9 +53,19 @@ export default function AssignmentFormModal({ isOpen, onClose, assignment, locke
   useEffect(() => {
     if (!isOpen) return;
     if (isEdit) {
-      const sId = assignment.studentId?._id || assignment.studentId || '';
+      const studentObj =
+        typeof assignment.student === 'object' ? assignment.student : null;
+      const routeObj =
+        typeof assignment.route === 'object' ? assignment.route : null;
+      const sId =
+        studentObj?._id ||
+        assignment.studentId?._id ||
+        assignment.studentId ||
+        '';
       setStudentId(sId);
-      setRouteId(assignment.routeId?._id || assignment.routeId || '');
+      setRouteId(
+        routeObj?._id || assignment.routeId?._id || assignment.routeId || '',
+      );
       setStopName(assignment.stopName || '');
       setDirection(assignment.direction || 'both');
       setMonthlyFee(assignment.monthlyFee ?? '');
@@ -64,11 +74,10 @@ export default function AssignmentFormModal({ isOpen, onClose, assignment, locke
       setEndDate(toYMD(assignment.endDate));
       setStatus(assignment.status || 'active');
       setNotes(assignment.notes || '');
-      setStudentSearch(
-        assignment.studentId?.user?.name
-          ? `${assignment.studentId.user.name}${assignment.studentId.admissionNumber ? ` · ${assignment.studentId.admissionNumber}` : ''}`
-          : '',
-      );
+      const sName = studentObj?.name || assignment.studentId?.user?.name || '';
+      const sAdm =
+        studentObj?.admissionNumber || assignment.studentId?.admissionNumber || '';
+      setStudentSearch(sName ? `${sName}${sAdm ? ` · ${sAdm}` : ''}` : '');
     } else {
       setStudentId(lockedStudent?._id || '');
       setStudentSearch(
@@ -243,7 +252,7 @@ export default function AssignmentFormModal({ isOpen, onClose, assignment, locke
     >
       <div className="space-y-4">
         {submitError && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+          <div className="p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 rounded-lg text-red-700 dark:text-red-400 text-sm">
             {submitError}
           </div>
         )}
@@ -264,7 +273,7 @@ export default function AssignmentFormModal({ isOpen, onClose, assignment, locke
               className={inputCls}
             />
             {students.length > 0 && !studentId && (
-              <div className="mt-1 max-h-48 overflow-y-auto rounded-lg border border-gray-200 bg-white">
+              <div className="mt-1 max-h-48 overflow-y-auto rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
                 {students.map((s) => (
                   <button
                     key={s._id}
@@ -275,10 +284,10 @@ export default function AssignmentFormModal({ isOpen, onClose, assignment, locke
                         `${s.user?.name || ''}${s.admissionNumber ? ` · ${s.admissionNumber}` : ''}`,
                       );
                     }}
-                    className="w-full px-3 py-2 text-left text-sm hover:bg-teal-50 border-b border-gray-100 last:border-0"
+                    className="w-full px-3 py-2 text-left text-sm hover:bg-teal-50 dark:hover:bg-teal-950/40 border-b border-gray-100 dark:border-gray-800 last:border-0"
                   >
-                    <div className="font-medium text-gray-900">{s.user?.name}</div>
-                    <div className="text-xs text-gray-500">
+                    <div className="font-medium text-gray-900 dark:text-gray-100">{s.user?.name}</div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400">
                       {s.admissionNumber} · Roll {s.rollNumber} · {s.class?.name || ''}
                       {s.section?.name ? ` / ${s.section.name}` : ''}
                     </div>
@@ -290,8 +299,8 @@ export default function AssignmentFormModal({ isOpen, onClose, assignment, locke
         )}
 
         {(lockedStudent || isEdit) && (
-          <div className="p-3 bg-teal-50 border border-teal-200 rounded-lg text-sm text-teal-800">
-            <div className="text-xs uppercase tracking-wide text-teal-700">Student</div>
+          <div className="p-3 bg-teal-50 dark:bg-teal-950/40 border border-teal-200 rounded-lg text-sm text-teal-800">
+            <div className="text-xs uppercase tracking-wide text-teal-700 dark:text-teal-400">Student</div>
             <div className="font-medium">{studentSearch || studentId}</div>
           </div>
         )}
@@ -359,7 +368,7 @@ export default function AssignmentFormModal({ isOpen, onClose, assignment, locke
           <div>
             <label className={labelCls}>
               Monthly Fee
-              <span className="text-gray-400 ml-1 normal-case">(defaults to stop/route fee)</span>
+              <span className="text-gray-400 dark:text-gray-500 ml-1 normal-case">(defaults to stop/route fee)</span>
             </label>
             <input
               type="number"
@@ -422,7 +431,7 @@ export default function AssignmentFormModal({ isOpen, onClose, assignment, locke
                   onChange={(e) => setEndDate(e.target.value)}
                   className={inputCls}
                 />
-                <p className="text-xs text-gray-400 mt-1">
+                <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
                   Setting an end date deactivates the assignment.
                 </p>
               </div>

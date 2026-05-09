@@ -35,20 +35,20 @@ export default function VehicleRosterModal({ isOpen, onClose, vehicleId, vehicle
     >
       <div className="space-y-4">
         <div className="flex items-center gap-3">
-          <label className="text-xs font-semibold text-gray-700">Academic Year</label>
+          <label className="text-xs font-semibold text-gray-700 dark:text-gray-300">Academic Year</label>
           <input
             type="text"
             value={academicYear}
             onChange={(e) => setAcademicYear(e.target.value)}
             placeholder="2025-2026"
-            className="px-3 py-2 border border-gray-200 rounded-lg outline-none focus:border-teal-500 text-sm text-gray-900 w-32"
+            className="px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:border-teal-500 text-sm text-gray-900 dark:text-gray-100 w-32"
           />
         </div>
 
         {isLoading ? (
-          <p className="text-sm text-gray-500">Loading roster...</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Loading roster...</p>
         ) : !roster ? (
-          <p className="text-sm text-gray-500">No roster data.</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">No roster data.</p>
         ) : (
           <>
             <div className="grid grid-cols-3 gap-3">
@@ -65,9 +65,9 @@ export default function VehicleRosterModal({ isOpen, onClose, vehicleId, vehicle
               />
             </div>
 
-            <div className="overflow-x-auto rounded-lg border border-gray-200">
+            <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
               <table className="w-full text-sm">
-                <thead className="bg-gray-50 text-gray-600">
+                <thead className="bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
                   <tr>
                     <th className="px-3 py-2 text-left">Student</th>
                     <th className="px-3 py-2 text-left">Admission #</th>
@@ -79,24 +79,24 @@ export default function VehicleRosterModal({ isOpen, onClose, vehicleId, vehicle
                 <tbody>
                   {(roster.passengers || []).length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="px-3 py-6 text-center text-gray-500">
+                      <td colSpan={5} className="px-3 py-6 text-center text-gray-500 dark:text-gray-400">
                         No passengers yet.
                       </td>
                     </tr>
                   ) : (
                     roster.passengers.map((p) => (
-                      <tr key={p._id} className="border-t border-gray-100">
-                        <td className="px-3 py-2 font-medium text-gray-900">
+                      <tr key={p._id} className="border-t border-gray-100 dark:border-gray-800">
+                        <td className="px-3 py-2 font-medium text-gray-900 dark:text-gray-100">
                           {p.studentId?.user?.name || '—'}
                         </td>
-                        <td className="px-3 py-2 text-gray-600">
+                        <td className="px-3 py-2 text-gray-600 dark:text-gray-400">
                           {p.studentId?.admissionNumber || '—'}
                         </td>
-                        <td className="px-3 py-2 text-gray-700">{p.stopName}</td>
-                        <td className="px-3 py-2 text-gray-700">
+                        <td className="px-3 py-2 text-gray-700 dark:text-gray-300">{p.stopName}</td>
+                        <td className="px-3 py-2 text-gray-700 dark:text-gray-300">
                           {ASSIGNMENT_DIRECTION_LABELS[p.direction] || p.direction}
                         </td>
-                        <td className="px-3 py-2 text-right text-gray-900">
+                        <td className="px-3 py-2 text-right text-gray-900 dark:text-gray-100">
                           {formatMoney(p.monthlyFee)}
                         </td>
                       </tr>

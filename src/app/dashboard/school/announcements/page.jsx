@@ -12,6 +12,7 @@ import {
   Paperclip,
   BarChart3,
   Pin,
+  X,
 } from 'lucide-react';
 import { useTokenStore } from '@/store/tokenStore';
 import { useUserStore } from '@/store/userStore';
@@ -57,6 +58,16 @@ export default function AnnouncementsPage() {
 
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(20);
+  // Filters — draft state holds in-progress UI values; applied state drives the API.
+  const [draftSearch, setDraftSearch] = useState('');
+  const [draftStatus, setDraftStatus] = useState('');
+  const [draftType, setDraftType] = useState('');
+  const [draftPriority, setDraftPriority] = useState('');
+  const [draftIsPinned, setDraftIsPinned] = useState('');
+  const [draftFromDate, setDraftFromDate] = useState('');
+  const [draftToDate, setDraftToDate] = useState('');
+  const [draftBranchId, setDraftBranchId] = useState('');
+
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState('');
   const [type, setType] = useState('');
@@ -66,6 +77,38 @@ export default function AnnouncementsPage() {
   const [toDate, setToDate] = useState('');
   const [branchId, setBranchId] = useState('');
   const [branchDropdownTouched, setBranchDropdownTouched] = useState(false);
+
+  const applyFilters = () => {
+    setSearch(draftSearch);
+    setStatus(draftStatus);
+    setType(draftType);
+    setPriority(draftPriority);
+    setIsPinned(draftIsPinned);
+    setFromDate(draftFromDate);
+    setToDate(draftToDate);
+    setBranchId(draftBranchId);
+    setPage(1);
+  };
+
+  const clearFilters = () => {
+    setDraftSearch('');
+    setDraftStatus('');
+    setDraftType('');
+    setDraftPriority('');
+    setDraftIsPinned('');
+    setDraftFromDate('');
+    setDraftToDate('');
+    setDraftBranchId('');
+    setSearch('');
+    setStatus('');
+    setType('');
+    setPriority('');
+    setIsPinned('');
+    setFromDate('');
+    setToDate('');
+    setBranchId('');
+    setPage(1);
+  };
 
   const actions = user?.role?.actions || [];
   const isAdmin = !!user?.role?.isPredefined;
@@ -129,7 +172,6 @@ export default function AnnouncementsPage() {
   });
 
   const list = data?.data || [];
-  const resetPage = () => setPage(1);
 
   const deleteMutation = useMutation({
     mutationFn: (id) => deleteData({ url: `/announcement/${id}`, token }),
@@ -170,12 +212,12 @@ export default function AnnouncementsPage() {
           <div>
             <div className="flex items-center gap-2">
               {row.isPinned && <Pin className="w-3 h-3 text-amber-600" />}
-              <div className="font-medium text-gray-900">{v}</div>
+              <div className="font-medium text-gray-900 dark:text-gray-100">{v}</div>
             </div>
-            <div className="text-xs text-gray-400">
+            <div className="text-xs text-gray-400 dark:text-gray-500">
               {row.serialNumber}
               {row.attachments?.length > 0 && (
-                <span className="inline-flex items-center gap-1 ml-2 text-gray-500">
+                <span className="inline-flex items-center gap-1 ml-2 text-gray-500 dark:text-gray-400">
                   <Paperclip className="w-3 h-3" /> {row.attachments.length}
                 </span>
               )}
@@ -226,9 +268,9 @@ export default function AnnouncementsPage() {
         header: 'Audience',
         accessor: 'audience',
         render: (v) => (
-          <div className="text-xs text-gray-700">
+          <div className="text-xs text-gray-700 dark:text-gray-300">
             <div>{SCOPE_LABELS[v?.scope] || v?.scope || '—'}</div>
-            <div className="text-gray-500">
+            <div className="text-gray-500 dark:text-gray-400">
               {(v?.targetUserTypes || []).join(', ') || '—'}
             </div>
           </div>
@@ -237,12 +279,12 @@ export default function AnnouncementsPage() {
       {
         header: 'Published',
         accessor: 'publishedAt',
-        render: (v) => <span className="text-xs text-gray-600">{formatDateTime(v)}</span>,
+        render: (v) => <span className="text-xs text-gray-600 dark:text-gray-400">{formatDateTime(v)}</span>,
       },
       {
         header: 'Expires',
         accessor: 'expiresAt',
-        render: (v) => <span className="text-xs text-gray-600">{formatDateTime(v)}</span>,
+        render: (v) => <span className="text-xs text-gray-600 dark:text-gray-400">{formatDateTime(v)}</span>,
       },
     ],
     [],
@@ -282,8 +324,8 @@ export default function AnnouncementsPage() {
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Announcements</h1>
-            <p className="text-gray-600 mt-1">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Announcements</h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-1">
               Compose and manage notices, events, and urgent updates for your audience.
             </p>
           </div>
@@ -299,27 +341,21 @@ export default function AnnouncementsPage() {
         </div>
 
         <div className="mb-4 flex flex-wrap items-center gap-3">
-          <div className="flex items-center bg-white px-3 py-2 rounded-lg border border-gray-200 gap-2">
-            <Search className="w-4 h-4 text-gray-400 shrink-0" />
+          <div className="flex items-center bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 gap-2">
             <input
               type="text"
               placeholder="Search title / body..."
-              value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
-                resetPage();
-              }}
-              className="outline-none text-sm w-64 text-gray-900 placeholder:text-gray-400"
+              value={draftSearch}
+              onChange={(e) => setDraftSearch(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') applyFilters(); }}
+              className="outline-none text-sm w-64 text-gray-900 dark:text-gray-100 placeholder:text-gray-400"
             />
           </div>
 
           <select
-            value={status}
-            onChange={(e) => {
-              setStatus(e.target.value);
-              resetPage();
-            }}
-            className="bg-white px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700 capitalize"
+            value={draftStatus}
+            onChange={(e) => setDraftStatus(e.target.value)}
+            className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300 capitalize"
           >
             <option value="">All Status</option>
             {ANNOUNCEMENT_STATUSES.map((s) => (
@@ -330,12 +366,9 @@ export default function AnnouncementsPage() {
           </select>
 
           <select
-            value={type}
-            onChange={(e) => {
-              setType(e.target.value);
-              resetPage();
-            }}
-            className="bg-white px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700 capitalize"
+            value={draftType}
+            onChange={(e) => setDraftType(e.target.value)}
+            className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300 capitalize"
           >
             <option value="">All Types</option>
             {ANNOUNCEMENT_TYPES.map((t) => (
@@ -346,12 +379,9 @@ export default function AnnouncementsPage() {
           </select>
 
           <select
-            value={priority}
-            onChange={(e) => {
-              setPriority(e.target.value);
-              resetPage();
-            }}
-            className="bg-white px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700 capitalize"
+            value={draftPriority}
+            onChange={(e) => setDraftPriority(e.target.value)}
+            className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300 capitalize"
           >
             <option value="">All Priority</option>
             {ANNOUNCEMENT_PRIORITIES.map((p) => (
@@ -362,12 +392,9 @@ export default function AnnouncementsPage() {
           </select>
 
           <select
-            value={isPinned}
-            onChange={(e) => {
-              setIsPinned(e.target.value);
-              resetPage();
-            }}
-            className="bg-white px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700"
+            value={draftIsPinned}
+            onChange={(e) => setDraftIsPinned(e.target.value)}
+            className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
           >
             <option value="">All</option>
             <option value="true">Pinned only</option>
@@ -376,32 +403,23 @@ export default function AnnouncementsPage() {
 
           <input
             type="date"
-            value={fromDate}
-            onChange={(e) => {
-              setFromDate(e.target.value);
-              resetPage();
-            }}
-            className="bg-white px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700 outline-none"
+            value={draftFromDate}
+            onChange={(e) => setDraftFromDate(e.target.value)}
+            className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300 outline-none"
           />
           <input
             type="date"
-            value={toDate}
-            onChange={(e) => {
-              setToDate(e.target.value);
-              resetPage();
-            }}
-            className="bg-white px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700 outline-none"
+            value={draftToDate}
+            onChange={(e) => setDraftToDate(e.target.value)}
+            className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300 outline-none"
           />
 
           {isOrgLevel && (
             <select
-              value={branchId}
+              value={draftBranchId}
               onFocus={() => setBranchDropdownTouched(true)}
-              onChange={(e) => {
-                setBranchId(e.target.value);
-                resetPage();
-              }}
-              className="bg-white px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700"
+              onChange={(e) => setDraftBranchId(e.target.value)}
+              className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
             >
               <option value="">All Branches</option>
               {branches.map((b) => (
@@ -411,6 +429,23 @@ export default function AnnouncementsPage() {
               ))}
             </select>
           )}
+
+          <button
+            type="button"
+            onClick={applyFilters}
+            className="flex items-center gap-1 px-3 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 text-sm"
+          >
+            <Search className="w-4 h-4" />
+            Search
+          </button>
+          <button
+            type="button"
+            onClick={clearFilters}
+            className="flex items-center gap-1 px-3 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 text-sm"
+          >
+            <X className="w-4 h-4" />
+            Clear
+          </button>
         </div>
 
         <Table

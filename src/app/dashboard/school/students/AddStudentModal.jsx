@@ -450,28 +450,28 @@ export default function AddStudentModal({ isOpen, onClose, onSuccess }) {
     >
       {createdStudent ? (
         <div className="space-y-4">
-          <div className="p-5 rounded-xl bg-green-50 border border-green-200">
+          <div className="p-5 rounded-xl bg-green-50 dark:bg-green-950/40 border border-green-200">
             <h3 className="text-lg font-bold text-green-900">Student Enrolled</h3>
-            <p className="text-sm text-green-800 mt-1">
+            <p className="text-sm text-green-800 dark:text-green-300 mt-1">
               {createdStudent.name} has been successfully enrolled.
             </p>
           </div>
           <div className="grid grid-cols-2 gap-4">
-            <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
-              <div className="text-[10px] text-gray-500 uppercase tracking-wide font-semibold">Admission Number</div>
-              <div className="text-sm font-bold text-gray-900 mt-0.5">{createdStudent.admissionNumber}</div>
+            <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+              <div className="text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wide font-semibold">Admission Number</div>
+              <div className="text-sm font-bold text-gray-900 dark:text-gray-100 mt-0.5">{createdStudent.admissionNumber}</div>
             </div>
-            <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
-              <div className="text-[10px] text-gray-500 uppercase tracking-wide font-semibold">Roll Number</div>
-              <div className="text-sm font-bold text-gray-900 mt-0.5">{createdStudent.rollNumber}</div>
+            <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+              <div className="text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wide font-semibold">Roll Number</div>
+              <div className="text-sm font-bold text-gray-900 dark:text-gray-100 mt-0.5">{createdStudent.rollNumber}</div>
             </div>
-            <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
-              <div className="text-[10px] text-gray-500 uppercase tracking-wide font-semibold">Email</div>
-              <div className="text-sm font-medium text-gray-900 mt-0.5">{createdStudent.email}</div>
+            <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+              <div className="text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wide font-semibold">Email</div>
+              <div className="text-sm font-medium text-gray-900 dark:text-gray-100 mt-0.5">{createdStudent.email}</div>
             </div>
-            <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
-              <div className="text-[10px] text-gray-500 uppercase tracking-wide font-semibold">Academic Year</div>
-              <div className="text-sm font-medium text-gray-900 mt-0.5">{createdStudent.academicYear}</div>
+            <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+              <div className="text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wide font-semibold">Academic Year</div>
+              <div className="text-sm font-medium text-gray-900 dark:text-gray-100 mt-0.5">{createdStudent.academicYear}</div>
             </div>
           </div>
           {createdStudent.defaultPasswordHint && (
@@ -479,7 +479,7 @@ export default function AddStudentModal({ isOpen, onClose, onSuccess }) {
               <div className="text-xs font-bold text-amber-900 uppercase tracking-wide">Default Password</div>
               <p className="text-sm text-amber-800 mt-1">
                 The default login password is the admission number:{' '}
-                <span className="font-mono font-bold bg-white px-2 py-0.5 rounded border border-amber-300">
+                <span className="font-mono font-bold bg-white dark:bg-gray-900 px-2 py-0.5 rounded border border-amber-300">
                   {createdStudent.admissionNumber}
                 </span>
               </p>
@@ -492,14 +492,14 @@ export default function AddStudentModal({ isOpen, onClose, onSuccess }) {
       ) : (
         <form className="space-y-6">
           {submitError && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+            <div className="p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 rounded-lg text-red-700 dark:text-red-400 text-sm">
               {submitError}
             </div>
           )}
 
           {/* Account Info */}
           <div>
-            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Account</h3>
+            <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">Account</h3>
             <div className="grid grid-cols-2 gap-4">
               <Field label="Full Name" required error={errors.name?.message}>
                 <input {...register('name')} placeholder="Ahmed Khan" className={inputCls} />
@@ -528,11 +528,11 @@ export default function AddStudentModal({ isOpen, onClose, onSuccess }) {
 
           {/* Enrollment */}
           <div>
-            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Enrollment</h3>
+            <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">Enrollment</h3>
             <div className="grid grid-cols-2 gap-4">
               {canCreateAllBranch ? (
                 <Field label="Branch" required error={errors.branchId?.message}>
-                  <select {...register('branchId')} className={`${inputCls} bg-white`}>
+                  <select {...register('branchId')} className={`${inputCls} bg-white dark:bg-gray-900`}>
                     <option value="">Select branch...</option>
                     {branches.map((b) => (
                       <option key={b._id} value={b._id}>{b.name}</option>
@@ -552,7 +552,7 @@ export default function AddStudentModal({ isOpen, onClose, onSuccess }) {
               <Field label="Class" required error={errors.classId?.message}>
                 <select
                   {...register('classId')}
-                  className={`${inputCls} bg-white`}
+                  className={`${inputCls} bg-white dark:bg-gray-900`}
                   disabled={!selectedBranchId}
                 >
                   <option value="">
@@ -568,7 +568,7 @@ export default function AddStudentModal({ isOpen, onClose, onSuccess }) {
               <Field label="Section" required error={errors.sectionId?.message}>
                 <select
                   {...register('sectionId')}
-                  className={`${inputCls} bg-white`}
+                  className={`${inputCls} bg-white dark:bg-gray-900`}
                   disabled={!selectedClassId}
                 >
                   <option value="">
@@ -588,7 +588,7 @@ export default function AddStudentModal({ isOpen, onClose, onSuccess }) {
                 <input {...register('admissionDate')} type="date" className={inputCls} />
               </Field>
               <Field label="Admission Type" error={errors.admissionType?.message}>
-                <select {...register('admissionType')} className={`${inputCls} bg-white`}>
+                <select {...register('admissionType')} className={`${inputCls} bg-white dark:bg-gray-900`}>
                   <option value="new">New</option>
                   <option value="transfer">Transfer</option>
                 </select>
@@ -598,13 +598,13 @@ export default function AddStudentModal({ isOpen, onClose, onSuccess }) {
 
           {/* Personal */}
           <div>
-            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Personal</h3>
+            <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">Personal</h3>
             <div className="grid grid-cols-2 gap-4">
               <Field label="Date of Birth" required error={errors.dob?.message}>
                 <input {...register('dob')} type="date" className={inputCls} />
               </Field>
               <Field label="Gender" required error={errors.gender?.message}>
-                <select {...register('gender')} className={`${inputCls} bg-white`}>
+                <select {...register('gender')} className={`${inputCls} bg-white dark:bg-gray-900`}>
                   <option value="">Select gender...</option>
                   <option value="male">Male</option>
                   <option value="female">Female</option>
@@ -612,7 +612,7 @@ export default function AddStudentModal({ isOpen, onClose, onSuccess }) {
                 </select>
               </Field>
               <Field label="Blood Group" error={errors.bloodGroup?.message}>
-                <select {...register('bloodGroup')} className={`${inputCls} bg-white`}>
+                <select {...register('bloodGroup')} className={`${inputCls} bg-white dark:bg-gray-900`}>
                   <option value="">Select...</option>
                   {['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map((g) => (
                     <option key={g} value={g}>{g}</option>
@@ -636,7 +636,7 @@ export default function AddStudentModal({ isOpen, onClose, onSuccess }) {
 
           {/* Father */}
           <div>
-            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Father</h3>
+            <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">Father</h3>
             <div className="grid grid-cols-2 gap-4">
               <Field label="Name" required error={errors.father?.name?.message}>
                 <input {...register('father.name')} placeholder="Mr. Khan" className={inputCls} />
@@ -667,7 +667,7 @@ export default function AddStudentModal({ isOpen, onClose, onSuccess }) {
 
           {/* Mother */}
           <div>
-            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Mother</h3>
+            <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">Mother</h3>
             <div className="grid grid-cols-2 gap-4">
               <Field label="Name" required error={errors.mother?.name?.message}>
                 <input {...register('mother.name')} placeholder="Mrs. Khan" className={inputCls} />
@@ -686,7 +686,7 @@ export default function AddStudentModal({ isOpen, onClose, onSuccess }) {
 
           {/* Emergency Contact */}
           <div>
-            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
+            <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">
               Emergency Contact
             </h3>
             <div className="grid grid-cols-3 gap-4">
@@ -704,7 +704,7 @@ export default function AddStudentModal({ isOpen, onClose, onSuccess }) {
 
           {/* Address */}
           <div>
-            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Address</h3>
+            <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">Address</h3>
             <div className="grid grid-cols-2 gap-4">
               <div className="col-span-2">
                 <Field label="Street">
@@ -729,7 +729,7 @@ export default function AddStudentModal({ isOpen, onClose, onSuccess }) {
           {/* Previous School (transfer only) */}
           {admissionType === 'transfer' && (
             <div>
-              <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
+              <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">
                 Previous School
               </h3>
               <div className="grid grid-cols-2 gap-4">
@@ -754,7 +754,7 @@ export default function AddStudentModal({ isOpen, onClose, onSuccess }) {
 
           {/* Fees */}
           <div>
-            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
+            <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">
               Fees (optional)
             </h3>
             <div className="grid grid-cols-2 gap-4">
@@ -769,7 +769,7 @@ export default function AddStudentModal({ isOpen, onClose, onSuccess }) {
                 />
               </Field>
               <Field label="Full Waiver">
-                <select {...register('feeWaiver')} className={`${inputCls} bg-white`}>
+                <select {...register('feeWaiver')} className={`${inputCls} bg-white dark:bg-gray-900`}>
                   <option value={false}>No</option>
                   <option value={true}>Yes</option>
                 </select>
@@ -788,16 +788,16 @@ export default function AddStudentModal({ isOpen, onClose, onSuccess }) {
 
           {/* Photo */}
           <div>
-            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Photo (optional)</h3>
+            <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">Photo (optional)</h3>
             <div className="flex items-center gap-4">
               {photoPreview ? (
                 <img
                   src={photoPreview}
                   alt="Preview"
-                  className="w-20 h-20 rounded-full object-cover border border-gray-200"
+                  className="w-20 h-20 rounded-full object-cover border border-gray-200 dark:border-gray-700"
                 />
               ) : (
-                <div className="w-20 h-20 rounded-full border border-dashed border-gray-300 bg-gray-50 flex items-center justify-center text-xs text-gray-400">
+                <div className="w-20 h-20 rounded-full border border-dashed border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 flex items-center justify-center text-xs text-gray-400 dark:text-gray-500">
                   {photoFile?.type === 'application/pdf' ? 'PDF' : 'No image'}
                 </div>
               )}
@@ -806,13 +806,13 @@ export default function AddStudentModal({ isOpen, onClose, onSuccess }) {
                   type="file"
                   accept="image/jpeg,image/jpg,image/png,image/webp,application/pdf"
                   onChange={handlePhotoChange}
-                  className="block text-sm text-gray-700 file:mr-3 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-medium file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100"
+                  className="block text-sm text-gray-700 dark:text-gray-300 file:mr-3 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-medium file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100"
                 />
-                <p className="text-xs text-gray-500 mt-1">JPG, PNG, WEBP or PDF — max 5 MB</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">JPG, PNG, WEBP or PDF — max 5 MB</p>
                 {photoFile && (
-                  <p className="text-xs text-gray-600 mt-1">
+                  <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
                     {photoFile.name}{' '}
-                    <span className="text-gray-400">({(photoFile.size / 1024).toFixed(0)} KB)</span>
+                    <span className="text-gray-400 dark:text-gray-500">({(photoFile.size / 1024).toFixed(0)} KB)</span>
                   </p>
                 )}
                 {photoError && <p className={errorCls}>{photoError}</p>}

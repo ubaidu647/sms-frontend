@@ -57,7 +57,7 @@ export default function ConfirmModal({
         </div>
       }
     >
-      <p className="text-sm text-gray-700">{message}</p>
+      <p className="text-sm text-gray-700 dark:text-gray-300">{message}</p>
     </Modal>
   );
 }

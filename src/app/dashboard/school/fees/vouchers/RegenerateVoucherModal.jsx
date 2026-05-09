@@ -100,7 +100,7 @@ export default function RegenerateVoucherModal({ isOpen, onClose, voucher }) {
     >
       <div className="space-y-4">
         {submitError && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+          <div className="p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 rounded-lg text-red-700 dark:text-red-400 text-sm">
             {submitError}
           </div>
         )}
@@ -131,7 +131,7 @@ export default function RegenerateVoucherModal({ isOpen, onClose, voucher }) {
             onChange={(e) => setDueDate(e.target.value)}
             className={inputCls}
           />
-          <p className="text-xs text-gray-400 mt-1">Defaults to original voucher&apos;s due date.</p>
+          <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">Defaults to original voucher&apos;s due date.</p>
         </div>
       </div>
     </Modal>

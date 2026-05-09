@@ -56,19 +56,26 @@ export default function PayrollDashboardPage() {
     staleTime: 30000,
   });
 
-  const summary = data?.data ?? data;
-  const counts = summary?.counts || {};
-  const total = Object.values(counts).reduce((s, n) => s + (Number(n) || 0), 0);
+  const summary = data?.data?.summary ?? data?.summary ?? null;
+  const counts = {
+    draft: summary?.draft || 0,
+    finalized: summary?.finalized || 0,
+    paid: summary?.paid || 0,
+    cancelled: summary?.cancelled || 0,
+  };
+  const total =
+    summary?.totalCount ??
+    Object.values(counts).reduce((s, n) => s + (Number(n) || 0), 0);
 
   return (
     <div className="p-6">
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
               Payroll Dashboard
             </h1>
-            <p className="text-gray-600 mt-1">
+            <p className="text-gray-600 dark:text-gray-400 mt-1">
               Branch-level totals and payslip status for the selected month.
             </p>
           </div>
@@ -78,7 +85,7 @@ export default function PayrollDashboardPage() {
                 value={branchId}
                 onFocus={() => setBranchDropdownTouched(true)}
                 onChange={(e) => setBranchId(e.target.value)}
-                className="bg-white px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700"
+                className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
               >
                 <option value="">Select branch...</option>
                 {branches.map((b) => (
@@ -92,21 +99,21 @@ export default function PayrollDashboardPage() {
               type="month"
               value={month}
               onChange={(e) => setMonth(e.target.value)}
-              className="bg-white px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700"
+              className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
             />
           </div>
         </div>
 
         {!effectiveBranchId ? (
-          <div className="bg-white rounded-xl border border-gray-200 p-12 text-center text-sm text-gray-500">
+          <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-12 text-center text-sm text-gray-500 dark:text-gray-400">
             Pick a branch to load the dashboard.
           </div>
         ) : isFetching && !summary ? (
-          <div className="bg-white rounded-xl border border-gray-200 p-12 flex justify-center">
+          <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-12 flex justify-center">
             <div className="w-8 h-8 border-4 border-teal-600 border-t-transparent rounded-full animate-spin" />
           </div>
         ) : !summary ? (
-          <div className="bg-white rounded-xl border border-gray-200 p-12 text-center text-sm text-gray-500">
+          <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-12 text-center text-sm text-gray-500 dark:text-gray-400">
             No data for {formatMonth(month)}.
           </div>
         ) : (
@@ -141,8 +148,8 @@ export default function PayrollDashboardPage() {
             </div>
 
             {/* Status breakdown */}
-            <div className="bg-white rounded-xl border border-gray-200 p-5">
-              <h3 className="text-sm font-bold text-gray-700 uppercase tracking-widest mb-4">
+            <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
+              <h3 className="text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-widest mb-4">
                 Status Breakdown
               </h3>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -191,9 +198,9 @@ function KpiCard({ icon: Icon, label, value, subtitle, tone = 'teal' }) {
           <div className="text-xs font-semibold uppercase tracking-widest opacity-80">
             {label}
           </div>
-          <div className="text-2xl font-bold text-gray-900 mt-2">{value}</div>
+          <div className="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-2">{value}</div>
           {subtitle && (
-            <div className="text-xs text-gray-500 mt-1">{subtitle}</div>
+            <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">{subtitle}</div>
           )}
         </div>
         <div className="w-10 h-10 rounded-xl bg-white/70 flex items-center justify-center">
@@ -207,15 +214,15 @@ function KpiCard({ icon: Icon, label, value, subtitle, tone = 'teal' }) {
 function StatusTile({ status, count, icon: Icon }) {
   const cls = PAYSLIP_STATUS_COLORS[status] || 'bg-gray-100 text-gray-700';
   return (
-    <div className="border border-gray-200 rounded-xl p-4 flex items-center gap-3">
+    <div className="border border-gray-200 dark:border-gray-700 rounded-xl p-4 flex items-center gap-3">
       <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${cls}`}>
         <Icon className="w-5 h-5" />
       </div>
       <div>
-        <div className="text-xs uppercase tracking-widest text-gray-500 capitalize">
+        <div className="text-xs uppercase tracking-widest text-gray-500 dark:text-gray-400 capitalize">
           {status}
         </div>
-        <div className="text-2xl font-bold text-gray-900">{count}</div>
+        <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">{count}</div>
       </div>
     </div>
   );

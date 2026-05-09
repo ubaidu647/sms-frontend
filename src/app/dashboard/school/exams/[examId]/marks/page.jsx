@@ -179,34 +179,34 @@ export default function MarksEntryPage() {
   }, [marks, students.length]);
 
   if (examLoading) {
-    return <div className="min-h-screen bg-gray-50 p-6 text-gray-500">Loading exam…</div>;
+    return <div className="min-h-screen bg-gray-50 dark:bg-gray-800 p-6 rounded-[50px] text-gray-500 dark:text-gray-400">Loading exam…</div>;
   }
   if (!exam) {
-    return <div className="min-h-screen bg-gray-50 p-6 text-gray-500">Exam not found.</div>;
+    return <div className="min-h-screen bg-gray-50 dark:bg-gray-800 p-6 rounded-[50px] text-gray-500 dark:text-gray-400">Exam not found.</div>;
   }
   if (!canEnter) {
     return (
-      <div className="min-h-screen bg-gray-50 p-6 text-gray-500">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-800 p-6 rounded-[50px] text-gray-500 dark:text-gray-400">
         You do not have permission to enter marks.
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-800 p-6 rounded-[50px]">
       <div className="max-w-7xl mx-auto">
         <button
           onClick={() => router.push(`/dashboard/school/exams/${examId}`)}
-          className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 mb-4"
+          className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 mb-4"
         >
           <ArrowLeft className="w-4 h-4" /> Back to exam
         </button>
 
-        <div className="bg-white rounded-2xl border border-gray-200 p-6 mb-6">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 mb-6">
           <div className="flex items-start justify-between flex-wrap gap-3 mb-4">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Enter Marks</h1>
-              <p className="text-sm text-gray-500">
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Enter Marks</h1>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
                 {exam.name} · {exam.class?.name} · {exam.academicYear}
               </p>
             </div>
@@ -220,7 +220,7 @@ export default function MarksEntryPage() {
           </div>
 
           {isLocked && (
-            <div className="mb-4 p-3 bg-purple-50 border border-purple-200 rounded-lg text-purple-800 text-sm flex items-center gap-2">
+            <div className="mb-4 p-3 bg-purple-50 dark:bg-purple-950/40 border border-purple-200 rounded-lg text-purple-800 text-sm flex items-center gap-2">
               <Lock className="w-4 h-4" />
               This exam is published. Marks are locked. Unpublish to edit.
             </div>
@@ -228,13 +228,13 @@ export default function MarksEntryPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-gray-600 mb-1">
+              <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">
                 Subject Paper
               </label>
               <select
                 value={examSubjectId}
                 onChange={(e) => setExamSubjectId(e.target.value)}
-                className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg bg-white text-gray-900 outline-none focus:border-teal-500"
+                className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 outline-none focus:border-teal-500"
               >
                 <option value="">Select subject...</option>
                 {examSubjects.map((s) => (
@@ -245,11 +245,11 @@ export default function MarksEntryPage() {
               </select>
             </div>
             <div>
-              <label className="block text-xs font-semibold text-gray-600 mb-1">Section</label>
+              <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">Section</label>
               <select
                 value={sectionId}
                 onChange={(e) => setSectionId(e.target.value)}
-                className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg bg-white text-gray-900 outline-none focus:border-teal-500"
+                className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 outline-none focus:border-teal-500"
               >
                 <option value="">Select section...</option>
                 {sections.map((s) => (
@@ -272,23 +272,23 @@ export default function MarksEntryPage() {
         </div>
 
         {!examSubjectId || !sectionId ? (
-          <div className="bg-white rounded-2xl border border-gray-200 p-12 text-center text-gray-500 text-sm">
+          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 p-12 text-center text-gray-500 dark:text-gray-400 text-sm">
             Pick a subject paper and section to load the roster.
           </div>
         ) : studentsLoading || resultsLoading ? (
-          <div className="bg-white rounded-2xl border border-gray-200 p-12 text-center text-gray-500 text-sm">
+          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 p-12 text-center text-gray-500 dark:text-gray-400 text-sm">
             Loading roster…
           </div>
         ) : students.length === 0 ? (
-          <div className="bg-white rounded-2xl border border-gray-200 p-12 text-center text-gray-500 text-sm">
+          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 p-12 text-center text-gray-500 dark:text-gray-400 text-sm">
             No students in this section.
           </div>
         ) : (
-          <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-            <div className="px-6 py-3 border-b border-gray-200 flex items-center justify-between flex-wrap gap-3 bg-gray-50">
-              <div className="text-sm text-gray-600">
+          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+            <div className="px-6 py-3 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between flex-wrap gap-3 bg-gray-50 dark:bg-gray-800">
+              <div className="text-sm text-gray-600 dark:text-gray-400">
                 <strong>{counts.total}</strong> students ·{' '}
-                <span className="text-gray-500">{counts.entered} entered</span> ·{' '}
+                <span className="text-gray-500 dark:text-gray-400">{counts.entered} entered</span> ·{' '}
                 <span className="text-red-600">{counts.absent} absent</span>
               </div>
               <button
@@ -303,7 +303,7 @@ export default function MarksEntryPage() {
 
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
-                <thead className="bg-gray-50 text-xs uppercase text-gray-500">
+                <thead className="bg-gray-50 dark:bg-gray-800 text-xs uppercase text-gray-500 dark:text-gray-400">
                   <tr>
                     <th className="px-4 py-3 text-left">Roll</th>
                     <th className="px-4 py-3 text-left">Student</th>
@@ -330,11 +330,11 @@ export default function MarksEntryPage() {
                     const m = marks[s._id] || {};
                     const c = computedRow(s._id);
                     return (
-                      <tr key={s._id} className="border-t border-gray-100">
-                        <td className="px-4 py-2 text-gray-700">{s.rollNumber || '—'}</td>
-                        <td className="px-4 py-2 text-gray-900">
+                      <tr key={s._id} className="border-t border-gray-100 dark:border-gray-800">
+                        <td className="px-4 py-2 text-gray-700 dark:text-gray-300">{s.rollNumber || '—'}</td>
+                        <td className="px-4 py-2 text-gray-900 dark:text-gray-100">
                           <div className="font-medium">{s.user?.name || '—'}</div>
-                          <div className="text-xs text-gray-400">{s.admissionNumber}</div>
+                          <div className="text-xs text-gray-400 dark:text-gray-500">{s.admissionNumber}</div>
                         </td>
                         {hasTheory && (
                           <td className="px-4 py-2">
@@ -347,7 +347,7 @@ export default function MarksEntryPage() {
                               onChange={(e) =>
                                 updateMark(s._id, { theoryObtained: e.target.value })
                               }
-                              className="w-20 px-2 py-1 border border-gray-200 rounded-md text-gray-900 outline-none focus:border-teal-500 disabled:bg-gray-50"
+                              className="w-20 px-2 py-1 border border-gray-200 dark:border-gray-700 rounded-md text-gray-900 dark:text-gray-100 outline-none focus:border-teal-500 disabled:bg-gray-50"
                             />
                           </td>
                         )}
@@ -362,7 +362,7 @@ export default function MarksEntryPage() {
                               onChange={(e) =>
                                 updateMark(s._id, { practicalObtained: e.target.value })
                               }
-                              className="w-20 px-2 py-1 border border-gray-200 rounded-md text-gray-900 outline-none focus:border-teal-500 disabled:bg-gray-50"
+                              className="w-20 px-2 py-1 border border-gray-200 dark:border-gray-700 rounded-md text-gray-900 dark:text-gray-100 outline-none focus:border-teal-500 disabled:bg-gray-50"
                             />
                           </td>
                         )}
@@ -377,19 +377,19 @@ export default function MarksEntryPage() {
                               onChange={(e) =>
                                 updateMark(s._id, { theoryObtained: e.target.value })
                               }
-                              className="w-20 px-2 py-1 border border-gray-200 rounded-md text-gray-900 outline-none focus:border-teal-500 disabled:bg-gray-50"
+                              className="w-20 px-2 py-1 border border-gray-200 dark:border-gray-700 rounded-md text-gray-900 dark:text-gray-100 outline-none focus:border-teal-500 disabled:bg-gray-50"
                             />
                           </td>
                         )}
-                        <td className="px-4 py-2 font-semibold text-gray-900">
+                        <td className="px-4 py-2 font-semibold text-gray-900 dark:text-gray-100">
                           {m.isAbsent ? '—' : c.total}
                         </td>
-                        <td className="px-4 py-2 text-gray-700">
+                        <td className="px-4 py-2 text-gray-700 dark:text-gray-300">
                           {m.isAbsent ? '—' : `${c.pct}%`}
                         </td>
                         <td className="px-4 py-2">
                           {m.isAbsent ? (
-                            <span className="text-xs text-gray-400">—</span>
+                            <span className="text-xs text-gray-400 dark:text-gray-500">—</span>
                           ) : (
                             <span
                               className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${
@@ -418,7 +418,7 @@ export default function MarksEntryPage() {
                             placeholder="Optional"
                             value={m.remarks || ''}
                             onChange={(e) => updateMark(s._id, { remarks: e.target.value })}
-                            className="w-40 px-2 py-1 border border-gray-200 rounded-md text-gray-900 outline-none focus:border-teal-500 disabled:bg-gray-50"
+                            className="w-40 px-2 py-1 border border-gray-200 dark:border-gray-700 rounded-md text-gray-900 dark:text-gray-100 outline-none focus:border-teal-500 disabled:bg-gray-50"
                           />
                         </td>
                       </tr>
@@ -428,7 +428,7 @@ export default function MarksEntryPage() {
               </table>
             </div>
 
-            <div className="px-6 py-3 border-t border-gray-200 bg-gray-50 flex justify-end">
+            <div className="px-6 py-3 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 flex justify-end">
               <button
                 onClick={handleSave}
                 disabled={isLocked || enterMutation.isPending}
@@ -447,9 +447,9 @@ export default function MarksEntryPage() {
 
 function Stat({ label, value }) {
   return (
-    <div className="bg-gray-50 border border-gray-100 rounded-xl px-3 py-2">
-      <p className="text-[10px] uppercase text-gray-500 font-semibold tracking-wider">{label}</p>
-      <p className="text-sm font-semibold text-gray-900">{value ?? '—'}</p>
+    <div className="bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-xl px-3 py-2">
+      <p className="text-[10px] uppercase text-gray-500 dark:text-gray-400 font-semibold tracking-wider">{label}</p>
+      <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{value ?? '—'}</p>
     </div>
   );
 }

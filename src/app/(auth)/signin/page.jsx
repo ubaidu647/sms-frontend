@@ -5,7 +5,7 @@ import SignInForm from "./SignInForm";
 const SignInPage = () => {
 
   return (
-    <div className="min-h-screen bg-white ">
+    <div className="min-h-screen bg-white dark:bg-gray-900 ">
       <div className="min-h-screen lg:px-[6rem] lg:py-[5rem] py-[2rem] xl:!rounded-r-lg flex justify-center">
         <div className="max-w-screen flex justify-center flex-1">
 
@@ -14,10 +14,10 @@ const SignInPage = () => {
               style={{ backgroundImage: "url('https://storage.googleapis.com/devitary-image-host.appspot.com/15848031292911696601-undraw_designer_life_w96d.svg')" }}>
             </div>
           </div>
-          <div className="bg-white p-10 rounded-lg  lg:w-1/2 xl:w-5/12 lg:px-[6rem] xl:px-[8rem] lg:rounded-r-lg lg:rounded-l-none">
+          <div className="bg-white dark:bg-gray-900 p-10 rounded-lg  lg:w-1/2 xl:w-5/12 lg:px-[6rem] xl:px-[8rem] lg:rounded-r-lg lg:rounded-l-none">
             <div>
               <img src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=indigo&shade=500" alt="Your Company" className="h-10 w-auto mt-[3rem]" />
-              <header className="font-bold text-black pt-[0rem] pb-[1rem] " >Sign in to your account</header>
+              <header className="font-bold text-black dark:text-gray-100 pt-[0rem] pb-[1rem] " >Sign in to your account</header>
 
             </div>
             <div>

@@ -47,14 +47,14 @@ export default function FreeTeachersPanel() {
 
   return (
     <div className="space-y-4">
-      <div className="bg-white rounded-xl border border-gray-200 p-4">
+      <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
         <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1">Day</label>
+            <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">Day</label>
             <select
               value={day}
               onChange={(e) => setDay(e.target.value)}
-              className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg bg-white text-gray-900 outline-none focus:border-teal-500"
+              className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 outline-none focus:border-teal-500"
             >
               {DAYS.map((d) => (
                 <option key={d} value={d}>
@@ -64,7 +64,7 @@ export default function FreeTeachersPanel() {
             </select>
           </div>
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1">
+            <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">
               Period Number
             </label>
             <input
@@ -72,27 +72,27 @@ export default function FreeTeachersPanel() {
               min="1"
               value={periodNumber}
               onChange={(e) => setPeriodNumber(Number(e.target.value))}
-              className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg bg-white text-gray-900 outline-none focus:border-teal-500"
+              className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 outline-none focus:border-teal-500"
             />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1">
+            <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">
               Academic Year
             </label>
             <input
               value={academicYear}
               onChange={(e) => setAcademicYear(e.target.value)}
               placeholder="2025-2026"
-              className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg bg-white text-gray-900 outline-none focus:border-teal-500"
+              className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 outline-none focus:border-teal-500"
             />
           </div>
           {isOrgLevel && (
             <div>
-              <label className="block text-xs font-semibold text-gray-600 mb-1">Branch</label>
+              <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">Branch</label>
               <select
                 value={branchId}
                 onChange={(e) => setBranchId(e.target.value)}
-                className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg bg-white text-gray-900 outline-none focus:border-teal-500"
+                className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 outline-none focus:border-teal-500"
               >
                 <option value="">All Branches</option>
                 {branches.map((b) => (
@@ -116,26 +116,26 @@ export default function FreeTeachersPanel() {
       </div>
 
       {!touched ? (
-        <div className="bg-white rounded-xl border border-gray-200 p-12 text-center text-gray-500 text-sm">
+        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-12 text-center text-gray-500 dark:text-gray-400 text-sm">
           Pick a day and period, then hit <strong>Find</strong>.
         </div>
       ) : isFetching ? (
-        <div className="bg-white rounded-xl border border-gray-200 p-12 text-center text-gray-500 text-sm">
+        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-12 text-center text-gray-500 dark:text-gray-400 text-sm">
           Searching…
         </div>
       ) : !teachers.length ? (
-        <div className="bg-white rounded-xl border border-gray-200 p-12 text-center text-gray-500 text-sm">
+        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-12 text-center text-gray-500 dark:text-gray-400 text-sm">
           No teachers free at this time.
         </div>
       ) : (
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-          <div className="px-4 py-3 border-b border-gray-200 bg-gray-50 flex items-center gap-2">
-            <UserCheck className="w-4 h-4 text-teal-700" />
-            <p className="text-sm font-semibold text-gray-700">
+        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+          <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 flex items-center gap-2">
+            <UserCheck className="w-4 h-4 text-teal-700 dark:text-teal-400" />
+            <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">
               {teachers.length} free on {DAY_LABELS[day]}, period {periodNumber}
             </p>
           </div>
-          <div className="divide-y divide-gray-100">
+          <div className="divide-y divide-gray-100 dark:divide-gray-800">
             {teachers.map((t) => (
               <div key={t._id} className="px-4 py-3 flex items-center gap-3">
                 {t.photo ? (
@@ -143,20 +143,20 @@ export default function FreeTeachersPanel() {
                   <img
                     src={t.photo}
                     alt={t.user?.name}
-                    className="w-10 h-10 rounded-full object-cover border border-gray-200"
+                    className="w-10 h-10 rounded-full object-cover border border-gray-200 dark:border-gray-700"
                   />
                 ) : (
-                  <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-xs text-gray-600 font-semibold">
+                  <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-xs text-gray-600 dark:text-gray-400 font-semibold">
                     {(t.user?.name || '?').slice(0, 1).toUpperCase()}
                   </div>
                 )}
                 <div className="flex-1">
-                  <div className="font-medium text-gray-900">{t.user?.name || '—'}</div>
-                  <div className="text-xs text-gray-500">
+                  <div className="font-medium text-gray-900 dark:text-gray-100">{t.user?.name || '—'}</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">
                     {t.designation || '—'} · {t.serialNumber || ''}
                   </div>
                 </div>
-                <span className="text-xs text-gray-500">{t.user?.email || ''}</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">{t.user?.email || ''}</span>
               </div>
             ))}
           </div>

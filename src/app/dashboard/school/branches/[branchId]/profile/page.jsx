@@ -37,19 +37,19 @@ export default function BranchProfileEditPage() {
     '';
 
   return (
-    <div className="flex-1 overflow-y-auto bg-gray-50 p-6">
+    <div className="flex-1 overflow-y-auto bg-gray-50 dark:bg-gray-800 p-6">
       <div className="max-w-5xl mx-auto pb-6">
         <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
           <div className="flex items-center gap-3">
             <Link
               href="/dashboard/school/branches/profiles"
-              className="flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900"
+              className="flex items-center gap-1 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100"
             >
               <ArrowLeft className="w-4 h-4" />
               All Profiles
             </Link>
             <span className="text-gray-300">/</span>
-            <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
               <Building2 className="w-6 h-6 text-teal-600" />
               Branch Profile
             </h1>
@@ -57,7 +57,7 @@ export default function BranchProfileEditPage() {
         </div>
 
         {isLoading ? (
-          <div className="text-sm text-gray-500">Loading profile...</div>
+          <div className="text-sm text-gray-500 dark:text-gray-400">Loading profile...</div>
         ) : (
           <>
             {!profile && (

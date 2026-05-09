@@ -22,7 +22,7 @@ export default function StructureDetailModal({ isOpen, onClose, structureId }) {
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Fee Structure" subtitle={s?.name} size="lg">
       {isLoading || !s ? (
-        <div className="text-sm text-gray-500">Loading...</div>
+        <div className="text-sm text-gray-500 dark:text-gray-400">Loading...</div>
       ) : (
         <div className="space-y-5">
           <div className="grid grid-cols-3 gap-4 text-sm">
@@ -35,12 +35,12 @@ export default function StructureDetailModal({ isOpen, onClose, structureId }) {
           </div>
 
           <div>
-            <h4 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">
+            <h4 className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2">
               Components
             </h4>
-            <div className="overflow-x-auto rounded-lg border border-gray-200">
+            <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
               <table className="w-full text-sm">
-                <thead className="bg-gray-50 text-gray-600">
+                <thead className="bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
                   <tr>
                     <th className="px-3 py-2 text-left">Name</th>
                     <th className="px-3 py-2 text-right">Amount</th>
@@ -52,8 +52,8 @@ export default function StructureDetailModal({ isOpen, onClose, structureId }) {
                 </thead>
                 <tbody>
                   {(s.components || []).map((c, i) => (
-                    <tr key={i} className="border-t border-gray-100">
-                      <td className="px-3 py-2 font-medium text-gray-900">{c.name}</td>
+                    <tr key={i} className="border-t border-gray-100 dark:border-gray-800">
+                      <td className="px-3 py-2 font-medium text-gray-900 dark:text-gray-100">{c.name}</td>
                       <td className="px-3 py-2 text-right">{formatMoney(c.amount)}</td>
                       <td className="px-3 py-2 capitalize">{c.frequency}</td>
                       <td className="px-3 py-2">
@@ -80,8 +80,8 @@ export default function StructureDetailModal({ isOpen, onClose, structureId }) {
 function Info({ label, value }) {
   return (
     <div>
-      <div className="text-xs text-gray-500 uppercase tracking-wide">{label}</div>
-      <div className="text-sm text-gray-900 font-medium">{value}</div>
+      <div className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">{label}</div>
+      <div className="text-sm text-gray-900 dark:text-gray-100 font-medium">{value}</div>
     </div>
   );
 }

@@ -11,6 +11,7 @@ import {
   Wallet,
   UserPlus,
   RefreshCw,
+  X,
 } from 'lucide-react';
 import { useTokenStore } from '@/store/tokenStore';
 import { useUserStore } from '@/store/userStore';
@@ -52,22 +53,67 @@ export default function VouchersPage() {
 
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(20);
-  const [search, setSearch] = useState('');
+
   const initialStudentId = searchParams.get('studentId') || '';
   const initialAcademicYear = searchParams.has('academicYear')
     ? searchParams.get('academicYear') || ''
     : initialStudentId
       ? ''
       : currentAcademicYear();
-  const [classId, setClassId] = useState(searchParams.get('classId') || '');
-  const [sectionId, setSectionId] = useState(searchParams.get('sectionId') || '');
-  const [month, setMonth] = useState(searchParams.get('month') || '');
+  const initialClassId = searchParams.get('classId') || '';
+  const initialSectionId = searchParams.get('sectionId') || '';
+  const initialMonth = searchParams.get('month') || '';
+  const initialStatus = searchParams.get('status') || '';
+  const initialBranchId = searchParams.get('branchId') || '';
+
+  // Filters — draft state holds in-progress UI values; applied state drives the API.
+  const [draftSearch, setDraftSearch] = useState('');
+  const [draftClassId, setDraftClassId] = useState(initialClassId);
+  const [draftSectionId, setDraftSectionId] = useState(initialSectionId);
+  const [draftMonth, setDraftMonth] = useState(initialMonth);
+  const [draftAcademicYear, setDraftAcademicYear] = useState(initialAcademicYear);
+  const [draftStatus, setDraftStatus] = useState(initialStatus);
+  const [draftBranchId, setDraftBranchId] = useState(initialBranchId);
+
+  const [search, setSearch] = useState('');
+  const [classId, setClassId] = useState(initialClassId);
+  const [sectionId, setSectionId] = useState(initialSectionId);
+  const [month, setMonth] = useState(initialMonth);
   const [academicYear, setAcademicYear] = useState(initialAcademicYear);
-  const [status, setStatus] = useState(searchParams.get('status') || '');
-  const [branchId, setBranchId] = useState(searchParams.get('branchId') || '');
+  const [status, setStatus] = useState(initialStatus);
+  const [branchId, setBranchId] = useState(initialBranchId);
   const [studentId, setStudentId] = useState(initialStudentId);
   const [studentLabel, setStudentLabel] = useState('');
   const [branchDropdownTouched, setBranchDropdownTouched] = useState(false);
+
+  const applyFilters = () => {
+    setSearch(draftSearch);
+    setClassId(draftClassId);
+    setSectionId(draftSectionId);
+    setMonth(draftMonth);
+    setAcademicYear(draftAcademicYear);
+    setStatus(draftStatus);
+    setBranchId(draftBranchId);
+    setPage(1);
+  };
+
+  const clearFilters = () => {
+    setDraftSearch('');
+    setDraftClassId('');
+    setDraftSectionId('');
+    setDraftMonth('');
+    setDraftAcademicYear(initialAcademicYear);
+    setDraftStatus('');
+    setDraftBranchId('');
+    setSearch('');
+    setClassId('');
+    setSectionId('');
+    setMonth('');
+    setAcademicYear(initialAcademicYear);
+    setStatus('');
+    setBranchId('');
+    setPage(1);
+  };
 
   const scope = resolveScope(user?.role, 'view-fee');
   const isOrgLevel = scope === 'all';
@@ -83,7 +129,9 @@ export default function VouchersPage() {
   const canDelete =
     !isOwnOnly && hasAnyAction(user?.role, ['delete-fee', 'delete-all-branch-fee']);
   const userBranchId = user?.branchId || user?.branch?._id || '';
-  const effectiveBranchId = isOrgLevel ? branchId : userBranchId;
+  // Dropdown queries: branchId/classId use draft so picking a branch/class instantly refreshes
+  // dependent options; academicYear uses applied to avoid keystroke-storms while typing.
+  const draftEffectiveBranchId = isOrgLevel ? draftBranchId : userBranchId;
 
   const { data: branchData } = useQuery({
     queryKey: ['branches-dropdown'],
@@ -94,7 +142,7 @@ export default function VouchersPage() {
   const branches = branchData?.data || [];
 
   const { data: classData } = useQuery({
-    queryKey: ['classes-vouchers', effectiveBranchId, academicYear],
+    queryKey: ['classes-vouchers', draftEffectiveBranchId, academicYear],
     queryFn: () =>
       fetchData({
         url: '/class/list',
@@ -102,7 +150,7 @@ export default function VouchersPage() {
         limit: 200,
         token,
         academicYear,
-        branchId: effectiveBranchId || undefined,
+        branchId: draftEffectiveBranchId || undefined,
       }),
     enabled: !!token && !!academicYear,
     staleTime: 60000,
@@ -110,9 +158,9 @@ export default function VouchersPage() {
   const classes = classData?.data || [];
 
   const { data: sectionData } = useQuery({
-    queryKey: ['sections-vouchers', classId],
-    queryFn: () => fetchData({ url: `/class/${classId}/sections`, token }),
-    enabled: !!token && !!classId,
+    queryKey: ['sections-vouchers', draftClassId],
+    queryFn: () => fetchData({ url: `/class/${draftClassId}/sections`, token }),
+    enabled: !!token && !!draftClassId,
     staleTime: 60000,
   });
   const sections = sectionData?.data || [];
@@ -184,8 +232,8 @@ export default function VouchersPage() {
         accessor: 'voucherNumber',
         render: (v, row) => (
           <div>
-            <div className="font-medium text-gray-900">{v}</div>
-            <div className="text-xs text-gray-400">{formatMonth(row.month)}</div>
+            <div className="font-medium text-gray-900 dark:text-gray-100">{v}</div>
+            <div className="text-xs text-gray-400 dark:text-gray-500">{formatMonth(row.month)}</div>
           </div>
         ),
       },
@@ -194,8 +242,8 @@ export default function VouchersPage() {
         accessor: 'student',
         render: (s) => (
           <div>
-            <div className="text-sm font-medium text-gray-900">{s?.user?.name || '—'}</div>
-            <div className="text-xs text-gray-500">
+            <div className="text-sm font-medium text-gray-900 dark:text-gray-100">{s?.user?.name || '—'}</div>
+            <div className="text-xs text-gray-500 dark:text-gray-400">
               {s?.admissionNumber} · Roll {s?.rollNumber}
             </div>
           </div>
@@ -205,21 +253,21 @@ export default function VouchersPage() {
         header: 'Class / Section',
         accessor: 'class',
         render: (c, row) => (
-          <div className="text-sm text-gray-700">
+          <div className="text-sm text-gray-700 dark:text-gray-300">
             {c?.name ?? '—'}
-            {row.section?.name && <span className="text-gray-400"> · {row.section.name}</span>}
+            {row.section?.name && <span className="text-gray-400 dark:text-gray-500"> · {row.section.name}</span>}
           </div>
         ),
       },
       {
         header: 'Total',
         accessor: 'totalAmount',
-        render: (v) => <span className="text-sm text-gray-700">{formatMoney(v)}</span>,
+        render: (v) => <span className="text-sm text-gray-700 dark:text-gray-300">{formatMoney(v)}</span>,
       },
       {
         header: 'Paid',
         accessor: 'paidAmount',
-        render: (v) => <span className="text-sm text-green-700">{formatMoney(v)}</span>,
+        render: (v) => <span className="text-sm text-green-700 dark:text-green-400">{formatMoney(v)}</span>,
       },
       {
         header: 'Balance',
@@ -233,7 +281,7 @@ export default function VouchersPage() {
       {
         header: 'Due',
         accessor: 'dueDate',
-        render: (v) => <span className="text-xs text-gray-600">{formatDate(v)}</span>,
+        render: (v) => <span className="text-xs text-gray-600 dark:text-gray-400">{formatDate(v)}</span>,
       },
       {
         header: 'Status',
@@ -281,8 +329,8 @@ export default function VouchersPage() {
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Vouchers</h1>
-            <p className="text-gray-600 mt-1">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Vouchers</h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-1">
               Monthly fee vouchers — generated, paid, and tracked.
             </p>
           </div>
@@ -290,7 +338,7 @@ export default function VouchersPage() {
             {canGenerate && (
               <button
                 onClick={() => setGenStudentOpen(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-white border border-teal-200 text-teal-700 rounded-lg hover:bg-teal-50 transition-colors"
+                className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-900 border border-teal-200 text-teal-700 dark:text-teal-400 rounded-lg hover:bg-teal-50 dark:hover:bg-teal-950/40 transition-colors"
               >
                 <UserPlus className="w-4 h-4" />
                 Single Student
@@ -299,7 +347,7 @@ export default function VouchersPage() {
             {canGenerate && (
               <button
                 onClick={() => setRegenSectionOpen(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-white border border-amber-200 text-amber-700 rounded-lg hover:bg-amber-50 transition-colors"
+                className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-900 border border-amber-200 text-amber-700 rounded-lg hover:bg-amber-50 transition-colors"
               >
                 <RefreshCw className="w-4 h-4" />
                 Regenerate Section
@@ -319,11 +367,11 @@ export default function VouchersPage() {
 
         {studentId && (
           <div className="mb-3 flex items-center gap-2 flex-wrap">
-            <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-teal-50 border border-teal-200 text-sm text-teal-800">
+            <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-teal-50 dark:bg-teal-950/40 border border-teal-200 text-sm text-teal-800">
               Student: <strong>{studentLabel || studentId}</strong>
               <button
                 onClick={clearStudentFilter}
-                className="ml-1 text-teal-700 hover:text-teal-900 text-xs"
+                className="ml-1 text-teal-700 dark:text-teal-400 hover:text-teal-900 text-xs"
                 type="button"
                 title="Clear student filter"
               >
@@ -334,49 +382,37 @@ export default function VouchersPage() {
         )}
 
         <div className="mb-4 flex flex-wrap items-center gap-3">
-          <div className="flex items-center bg-white px-3 py-2 rounded-lg border border-gray-200 gap-2">
-            <Search className="w-4 h-4 text-gray-400 shrink-0" />
+          <div className="flex items-center bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 gap-2">
             <input
               type="text"
               placeholder="Search voucher / student..."
-              value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
-                resetPage();
-              }}
-              className="outline-none text-sm w-64 text-gray-900 placeholder:text-gray-400"
+              value={draftSearch}
+              onChange={(e) => setDraftSearch(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') applyFilters(); }}
+              className="outline-none text-sm w-64 text-gray-900 dark:text-gray-100 placeholder:text-gray-400"
             />
           </div>
 
           <input
             type="text"
             placeholder="2025-2026"
-            value={academicYear}
-            onChange={(e) => {
-              setAcademicYear(e.target.value);
-              resetPage();
-            }}
-            className="bg-white px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-900 w-32 outline-none"
+            value={draftAcademicYear}
+            onChange={(e) => setDraftAcademicYear(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter') applyFilters(); }}
+            className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-900 dark:text-gray-100 w-32 outline-none"
           />
 
           <input
             type="month"
-            value={month}
-            onChange={(e) => {
-              setMonth(e.target.value);
-              resetPage();
-            }}
-            className="bg-white px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-900 outline-none"
+            value={draftMonth}
+            onChange={(e) => setDraftMonth(e.target.value)}
+            className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-900 dark:text-gray-100 outline-none"
           />
 
           <select
-            value={classId}
-            onChange={(e) => {
-              setClassId(e.target.value);
-              setSectionId('');
-              resetPage();
-            }}
-            className="bg-white px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700"
+            value={draftClassId}
+            onChange={(e) => { setDraftClassId(e.target.value); setDraftSectionId(''); }}
+            className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
           >
             <option value="">All Classes</option>
             {classes.map((c) => (
@@ -387,15 +423,12 @@ export default function VouchersPage() {
           </select>
 
           <select
-            value={sectionId}
-            onChange={(e) => {
-              setSectionId(e.target.value);
-              resetPage();
-            }}
-            disabled={!classId}
-            className="bg-white px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700"
+            value={draftSectionId}
+            onChange={(e) => setDraftSectionId(e.target.value)}
+            disabled={!draftClassId}
+            className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
           >
-            <option value="">{classId ? 'All Sections' : 'Pick class'}</option>
+            <option value="">{draftClassId ? 'All Sections' : 'Pick class'}</option>
             {sections.map((s) => (
               <option key={s._id} value={s._id}>
                 {s.name}
@@ -404,12 +437,9 @@ export default function VouchersPage() {
           </select>
 
           <select
-            value={status}
-            onChange={(e) => {
-              setStatus(e.target.value);
-              resetPage();
-            }}
-            className="bg-white px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700 capitalize"
+            value={draftStatus}
+            onChange={(e) => setDraftStatus(e.target.value)}
+            className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300 capitalize"
           >
             <option value="">All Status</option>
             {VOUCHER_STATUSES.map((s) => (
@@ -421,13 +451,10 @@ export default function VouchersPage() {
 
           {isOrgLevel && (
             <select
-              value={branchId}
+              value={draftBranchId}
               onFocus={() => setBranchDropdownTouched(true)}
-              onChange={(e) => {
-                setBranchId(e.target.value);
-                resetPage();
-              }}
-              className="bg-white px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700"
+              onChange={(e) => setDraftBranchId(e.target.value)}
+              className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
             >
               <option value="">All Branches</option>
               {branches.map((b) => (
@@ -437,6 +464,23 @@ export default function VouchersPage() {
               ))}
             </select>
           )}
+
+          <button
+            type="button"
+            onClick={applyFilters}
+            className="flex items-center gap-1 px-3 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 text-sm"
+          >
+            <Search className="w-4 h-4" />
+            Search
+          </button>
+          <button
+            type="button"
+            onClick={clearFilters}
+            className="flex items-center gap-1 px-3 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 text-sm"
+          >
+            <X className="w-4 h-4" />
+            Clear
+          </button>
         </div>
 
         <Table

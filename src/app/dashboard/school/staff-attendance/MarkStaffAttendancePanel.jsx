@@ -212,15 +212,15 @@ export default function MarkStaffAttendancePanel() {
   return (
     <div className="space-y-4">
       {/* Selectors */}
-      <div className="bg-white rounded-xl border border-gray-200 p-4">
+      <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
           {isOrgLevel && (
             <div>
-              <label className="block text-xs font-semibold text-gray-600 mb-1">Branch</label>
+              <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">Branch</label>
               <select
                 value={branchId}
                 onChange={(e) => setBranchId(e.target.value)}
-                className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg bg-white text-gray-900 outline-none focus:border-teal-500"
+                className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 outline-none focus:border-teal-500"
               >
                 <option value="">Select branch...</option>
                 {branches.map((b) => (
@@ -233,11 +233,11 @@ export default function MarkStaffAttendancePanel() {
           )}
 
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1">Staff Type</label>
+            <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">Staff Type</label>
             <select
               value={staffType}
               onChange={(e) => setStaffType(e.target.value)}
-              className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg bg-white text-gray-900 outline-none focus:border-teal-500 capitalize"
+              className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 outline-none focus:border-teal-500 capitalize"
             >
               <option value="">All</option>
               {STAFF_TYPES.map((t) => (
@@ -249,15 +249,15 @@ export default function MarkStaffAttendancePanel() {
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1">Date</label>
+            <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">Date</label>
             <div className="relative">
-              <CalendarDays className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+              <CalendarDays className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500 pointer-events-none" />
               <input
                 type="date"
                 value={date}
                 max={todayISO()}
                 onChange={(e) => setDate(e.target.value)}
-                className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg bg-white text-gray-900 outline-none focus:border-teal-500"
+                className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 outline-none focus:border-teal-500"
               />
             </div>
           </div>
@@ -265,16 +265,16 @@ export default function MarkStaffAttendancePanel() {
       </div>
 
       {!effectiveBranchId && (
-        <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
-          <div className="w-14 h-14 mx-auto rounded-full bg-gray-100 flex items-center justify-center">
-            <CalendarDays className="w-7 h-7 text-gray-400" />
+        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-12 text-center">
+          <div className="w-14 h-14 mx-auto rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+            <CalendarDays className="w-7 h-7 text-gray-400 dark:text-gray-500" />
           </div>
-          <p className="text-gray-500 mt-3">Select a branch to load the staff roster.</p>
+          <p className="text-gray-500 dark:text-gray-400 mt-3">Select a branch to load the staff roster.</p>
         </div>
       )}
 
       {effectiveBranchId && dailyLoading && (
-        <div className="bg-white rounded-xl border border-gray-200 p-12 flex justify-center">
+        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-12 flex justify-center">
           <div className="w-8 h-8 border-4 border-teal-600 border-t-transparent rounded-full animate-spin" />
         </div>
       )}
@@ -282,12 +282,12 @@ export default function MarkStaffAttendancePanel() {
       {effectiveBranchId && !dailyLoading && roster.length > 0 && (
         <>
           {allHoliday && (
-            <div className="px-4 py-3 bg-gray-100 border border-gray-200 rounded-xl text-gray-700 text-sm">
+            <div className="px-4 py-3 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-700 dark:text-gray-300 text-sm">
               All staff marked <strong>holiday</strong> for {date}.
             </div>
           )}
 
-          <div className="bg-white rounded-xl border border-gray-200 p-4">
+          <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="flex flex-wrap gap-2 text-xs">
                 {STATUS_CONFIG.map((s) => (
@@ -296,13 +296,13 @@ export default function MarkStaffAttendancePanel() {
                     <span className="ml-2 font-bold">{counts[s.value] || 0}</span>
                   </div>
                 ))}
-                <div className="px-3 py-1.5 rounded-lg border bg-gray-50 border-gray-200 text-gray-700">
+                <div className="px-3 py-1.5 rounded-lg border bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300">
                   <span className="font-semibold">Total</span>
                   <span className="ml-2 font-bold">{roster.length}</span>
                 </div>
               </div>
               {summary?.unmarked === 0 && (
-                <span className="inline-flex items-center gap-1 text-xs text-green-700 font-medium">
+                <span className="inline-flex items-center gap-1 text-xs text-green-700 dark:text-green-400 font-medium">
                   <CheckCircle2 className="w-4 h-4" />
                   All marked
                 </span>
@@ -312,48 +312,48 @@ export default function MarkStaffAttendancePanel() {
 
           {canMark && (
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-xs text-gray-500 font-medium mr-1">Quick actions:</span>
+              <span className="text-xs text-gray-500 dark:text-gray-400 font-medium mr-1">Quick actions:</span>
               <button
                 onClick={() => setAllStatuses('present')}
-                className="px-3 py-1.5 text-xs font-medium bg-green-50 text-green-700 border border-green-200 rounded-lg hover:bg-green-100"
+                className="px-3 py-1.5 text-xs font-medium bg-green-50 dark:bg-green-950/40 text-green-700 dark:text-green-400 border border-green-200 rounded-lg hover:bg-green-100"
               >
                 Mark all Present
               </button>
               <button
                 onClick={() => setUnmarkedTo('present')}
-                className="px-3 py-1.5 text-xs font-medium bg-white text-green-700 border border-green-200 rounded-lg hover:bg-green-50"
+                className="px-3 py-1.5 text-xs font-medium bg-white dark:bg-gray-900 text-green-700 dark:text-green-400 border border-green-200 rounded-lg hover:bg-green-50 dark:hover:bg-green-950/40"
               >
                 Unmarked → Present
               </button>
               <button
                 onClick={() => setAllStatuses('holiday')}
-                className="px-3 py-1.5 text-xs font-medium bg-gray-100 text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-200"
+                className="px-3 py-1.5 text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700"
               >
                 Holiday Today
               </button>
               <button
                 onClick={() => setAllStatuses('absent')}
-                className="px-3 py-1.5 text-xs font-medium bg-red-50 text-red-700 border border-red-200 rounded-lg hover:bg-red-100"
+                className="px-3 py-1.5 text-xs font-medium bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-400 border border-red-200 rounded-lg hover:bg-red-100"
               >
                 Mark all Absent
               </button>
             </div>
           )}
 
-          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+          <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
             <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-200">
+              <thead className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
                 <tr>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
                     Staff
                   </th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
                     Designation
                   </th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
                     Status
                   </th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide w-96">
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide w-96">
                     Details
                   </th>
                 </tr>
@@ -374,7 +374,7 @@ export default function MarkStaffAttendancePanel() {
                   return (
                     <tr
                       key={s.staffId}
-                      className="border-b border-gray-100 last:border-b-0 hover:bg-gray-50"
+                      className="border-b border-gray-100 dark:border-gray-800 last:border-b-0 hover:bg-gray-50 dark:hover:bg-gray-800"
                     >
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-3">
@@ -382,18 +382,18 @@ export default function MarkStaffAttendancePanel() {
                             <img
                               src={s.photo}
                               alt={s.name}
-                              className="w-9 h-9 rounded-full object-cover border border-gray-200"
+                              className="w-9 h-9 rounded-full object-cover border border-gray-200 dark:border-gray-700"
                             />
                           ) : (
-                            <div className="w-9 h-9 rounded-full bg-teal-100 text-teal-700 font-semibold text-xs flex items-center justify-center">
+                            <div className="w-9 h-9 rounded-full bg-teal-100 text-teal-700 dark:text-teal-400 font-semibold text-xs flex items-center justify-center">
                               {initials}
                             </div>
                           )}
                           <div className="min-w-0">
-                            <div className="font-medium text-gray-900 text-sm truncate">
+                            <div className="font-medium text-gray-900 dark:text-gray-100 text-sm truncate">
                               {s.name}
                             </div>
-                            <div className="text-xs text-gray-400 truncate">
+                            <div className="text-xs text-gray-400 dark:text-gray-500 truncate">
                               {s.serialNumber}
                               {s.staffType && (
                                 <span className="ml-2 capitalize">· {s.staffType}</span>
@@ -402,7 +402,7 @@ export default function MarkStaffAttendancePanel() {
                           </div>
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-sm text-gray-700">{s.designation || '—'}</td>
+                      <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">{s.designation || '—'}</td>
                       <td className="px-4 py-3">
                         <div className="flex flex-wrap gap-1">
                           {STATUS_CONFIG.map((cfg) => {
@@ -435,7 +435,7 @@ export default function MarkStaffAttendancePanel() {
                                   updateEntry(s.staffId, { arrivalTime: ev.target.value })
                                 }
                                 disabled={!canMark}
-                                className="w-28 px-2 py-1 text-xs border border-gray-200 rounded text-gray-900 outline-none focus:border-teal-500"
+                                className="w-28 px-2 py-1 text-xs border border-gray-200 dark:border-gray-700 rounded text-gray-900 dark:text-gray-100 outline-none focus:border-teal-500"
                                 placeholder="Arrival"
                                 title="Arrival"
                               />
@@ -446,7 +446,7 @@ export default function MarkStaffAttendancePanel() {
                                   updateEntry(s.staffId, { departureTime: ev.target.value })
                                 }
                                 disabled={!canMark}
-                                className="w-28 px-2 py-1 text-xs border border-gray-200 rounded text-gray-900 outline-none focus:border-teal-500"
+                                className="w-28 px-2 py-1 text-xs border border-gray-200 dark:border-gray-700 rounded text-gray-900 dark:text-gray-100 outline-none focus:border-teal-500"
                                 placeholder="Departure"
                                 title="Departure"
                               />
@@ -460,7 +460,7 @@ export default function MarkStaffAttendancePanel() {
                                   updateEntry(s.staffId, { leaveType: ev.target.value })
                                 }
                                 disabled={!canMark}
-                                className="px-2 py-1 text-xs border border-gray-200 rounded text-gray-900 outline-none focus:border-teal-500 capitalize"
+                                className="px-2 py-1 text-xs border border-gray-200 dark:border-gray-700 rounded text-gray-900 dark:text-gray-100 outline-none focus:border-teal-500 capitalize"
                               >
                                 <option value="">Leave type...</option>
                                 {STAFF_LEAVE_TYPES.map((lt) => (
@@ -469,7 +469,7 @@ export default function MarkStaffAttendancePanel() {
                                   </option>
                                 ))}
                               </select>
-                              <label className="inline-flex items-center gap-1 text-xs text-gray-700">
+                              <label className="inline-flex items-center gap-1 text-xs text-gray-700 dark:text-gray-300">
                                 <input
                                   type="checkbox"
                                   checked={!!e.isPaid}
@@ -491,7 +491,7 @@ export default function MarkStaffAttendancePanel() {
                               }
                               disabled={!canMark}
                               placeholder="Reason (optional)"
-                              className="w-full px-2 py-1 text-xs border border-gray-200 rounded text-gray-900 placeholder:text-gray-400 outline-none focus:border-teal-500"
+                              className="w-full px-2 py-1 text-xs border border-gray-200 dark:border-gray-700 rounded text-gray-900 dark:text-gray-100 placeholder:text-gray-400 outline-none focus:border-teal-500"
                             />
                           )}
                         </div>
@@ -519,8 +519,8 @@ export default function MarkStaffAttendancePanel() {
       )}
 
       {effectiveBranchId && !dailyLoading && roster.length === 0 && (
-        <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
-          <p className="text-gray-500">No active staff in this branch.</p>
+        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-12 text-center">
+          <p className="text-gray-500 dark:text-gray-400">No active staff in this branch.</p>
         </div>
       )}
     </div>

@@ -1,7 +1,7 @@
 'use client';
 import React, { useState, useMemo } from 'react';
 import { Table } from '@/component/Table';
-import { Plus, Search, Eye, Edit, Power, LayoutList } from 'lucide-react';
+import { Plus, Search, Eye, Edit, Power, LayoutList, X } from 'lucide-react';
 import AddClassModal from './AddClassModal';
 import EditClassModal from './EditClassModal';
 import ClassDetailModal from './ClassDetailModal';
@@ -35,14 +35,48 @@ export default function ClassesPage() {
   const [page,  setPage]  = useState(1);
   const [limit, setLimit] = useState(20);
 
-  // Filters
+  // Filters — draft state holds in-progress UI values; applied state drives the API.
+  const defaultAcademicYear = currentAcademicYear();
+  const [draftGrade,        setDraftGrade]        = useState('');
+  const [draftClassType,    setDraftClassType]    = useState('');
+  const [draftMedium,       setDraftMedium]       = useState('');
+  const [draftAcademicYear, setDraftAcademicYear] = useState(defaultAcademicYear);
+  const [draftBranchId,     setDraftBranchId]     = useState('');
+  const [draftIsActive,     setDraftIsActive]     = useState('true');
+
   const [grade,        setGrade]        = useState('');
   const [classType,    setClassType]    = useState('');
   const [medium,       setMedium]       = useState('');
-  const [academicYear, setAcademicYear] = useState(currentAcademicYear());
+  const [academicYear, setAcademicYear] = useState(defaultAcademicYear);
   const [branchId,     setBranchId]     = useState('');
   const [isActive,     setIsActive]     = useState('true');
   const [branchDropdownTouched, setBranchDropdownTouched] = useState(false);
+
+  const applyFilters = () => {
+    setGrade(draftGrade);
+    setClassType(draftClassType);
+    setMedium(draftMedium);
+    setAcademicYear(draftAcademicYear);
+    setBranchId(draftBranchId);
+    setIsActive(draftIsActive);
+    setPage(1);
+  };
+
+  const clearFilters = () => {
+    setDraftGrade('');
+    setDraftClassType('');
+    setDraftMedium('');
+    setDraftAcademicYear(defaultAcademicYear);
+    setDraftBranchId('');
+    setDraftIsActive('true');
+    setGrade('');
+    setClassType('');
+    setMedium('');
+    setAcademicYear(defaultAcademicYear);
+    setBranchId('');
+    setIsActive('true');
+    setPage(1);
+  };
 
   // RBAC
   const actions  = user?.role?.actions || [];
@@ -73,6 +107,7 @@ export default function ClassesPage() {
           ),
         };
       });
+      queryClient.invalidateQueries({ queryKey: ['classes'] });
       const msg = res?.data?.isActive ? 'Class activated' : 'Class deactivated';
       toast.success(msg);
     },
@@ -85,8 +120,8 @@ export default function ClassesPage() {
       accessor: 'name',
       render: (v, row) => (
         <div>
-          <div className="font-medium text-gray-900">{v}</div>
-          <div className="text-xs text-gray-400">{row.serialNumber}</div>
+          <div className="font-medium text-gray-900 dark:text-gray-100">{v}</div>
+          <div className="text-xs text-gray-400 dark:text-gray-500">{row.serialNumber}</div>
         </div>
       ),
     },
@@ -94,7 +129,7 @@ export default function ClassesPage() {
       header: 'Grade',
       accessor: 'grade',
       render: (v) => (
-        <span className="inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">{v}</span>
+        <span className="inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:text-blue-300">{v}</span>
       ),
     },
     {
@@ -114,22 +149,22 @@ export default function ClassesPage() {
     {
       header: 'Year',
       accessor: 'academicYear',
-      render: (v) => <div className="text-gray-600 text-sm">{v}</div>,
+      render: (v) => <div className="text-gray-600 dark:text-gray-400 text-sm">{v}</div>,
     },
     {
       header: 'Sections',
       accessor: 'sectionCount',
-      render: (v) => <div className="text-gray-700 text-sm font-medium">{v ?? 0}</div>,
+      render: (v) => <div className="text-gray-700 dark:text-gray-300 text-sm font-medium">{v ?? 0}</div>,
     },
     {
       header: 'Capacity',
       accessor: 'totalCapacity',
-      render: (v) => <div className="text-gray-600 text-sm">{v ?? '—'}</div>,
+      render: (v) => <div className="text-gray-600 dark:text-gray-400 text-sm">{v ?? '—'}</div>,
     },
     ...(isOrgLevel ? [{
       header: 'Branch',
       accessor: 'branch',
-      render: (v) => <div className="text-gray-600 text-sm">{v?.name ?? '—'}</div>,
+      render: (v) => <div className="text-gray-600 dark:text-gray-400 text-sm">{v?.name ?? '—'}</div>,
     }] : []),
     {
       header: 'Status',
@@ -178,17 +213,16 @@ export default function ClassesPage() {
   });
 
   const classes = data?.data || [];
-  const resetPage = () => setPage(1);
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-800 p-6 rounded-[50px]">
       <div className="max-w-7xl mx-auto">
 
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Classes</h1>
-            <p className="text-gray-600 mt-1">Manage classes and their sections</p>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Classes</h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-1">Manage classes and their sections</p>
           </div>
           {canCreate && (
             <button
@@ -204,22 +238,22 @@ export default function ClassesPage() {
         {/* Filters */}
         <div className="mb-4 flex flex-wrap items-center gap-3">
           {/* Academic year */}
-          <div className="flex items-center bg-white px-3 py-2 rounded-lg border border-gray-200 gap-2">
-            <Search className="w-4 h-4 text-gray-400 shrink-0" />
+          <div className="flex items-center bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 gap-2">
             <input
               type="text"
               placeholder="2025-2026"
-              value={academicYear}
-              onChange={(e) => { setAcademicYear(e.target.value); resetPage(); }}
-              className="outline-none text-sm w-24 text-gray-900 placeholder:text-gray-400"
+              value={draftAcademicYear}
+              onChange={(e) => setDraftAcademicYear(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') applyFilters(); }}
+              className="outline-none text-sm w-24 text-gray-900 dark:text-gray-100 placeholder:text-gray-400"
             />
           </div>
 
           {/* Status */}
           <select
-            value={isActive}
-            onChange={(e) => { setIsActive(e.target.value); resetPage(); }}
-            className="bg-white px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700"
+            value={draftIsActive}
+            onChange={(e) => setDraftIsActive(e.target.value)}
+            className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
           >
             <option value="true">Active</option>
             <option value="false">Inactive</option>
@@ -228,9 +262,9 @@ export default function ClassesPage() {
 
           {/* Grade */}
           <select
-            value={grade}
-            onChange={(e) => { setGrade(e.target.value); resetPage(); }}
-            className="bg-white px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700"
+            value={draftGrade}
+            onChange={(e) => setDraftGrade(e.target.value)}
+            className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
           >
             <option value="">All Grades</option>
             {GRADES.map((g) => <option key={g} value={g}>{g}</option>)}
@@ -238,9 +272,9 @@ export default function ClassesPage() {
 
           {/* Class type */}
           <select
-            value={classType}
-            onChange={(e) => { setClassType(e.target.value); resetPage(); }}
-            className="bg-white px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700 capitalize"
+            value={draftClassType}
+            onChange={(e) => setDraftClassType(e.target.value)}
+            className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300 capitalize"
           >
             <option value="">All Types</option>
             {CLASS_TYPES.map((t) => <option key={t} value={t} className="capitalize">{t}</option>)}
@@ -248,9 +282,9 @@ export default function ClassesPage() {
 
           {/* Medium */}
           <select
-            value={medium}
-            onChange={(e) => { setMedium(e.target.value); resetPage(); }}
-            className="bg-white px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700"
+            value={draftMedium}
+            onChange={(e) => setDraftMedium(e.target.value)}
+            className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
           >
             <option value="">All Mediums</option>
             {MEDIUMS.map((m) => <option key={m} value={m} className="capitalize">{m}</option>)}
@@ -259,15 +293,32 @@ export default function ClassesPage() {
           {/* Branch — org-level only */}
           {isOrgLevel && (
             <select
-              value={branchId}
+              value={draftBranchId}
               onFocus={() => setBranchDropdownTouched(true)}
-              onChange={(e) => { setBranchId(e.target.value); resetPage(); }}
-              className="bg-white px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700"
+              onChange={(e) => setDraftBranchId(e.target.value)}
+              className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
             >
               <option value="">All Branches</option>
               {branches.map((b) => <option key={b._id} value={b._id}>{b.name}</option>)}
             </select>
           )}
+
+          <button
+            type="button"
+            onClick={applyFilters}
+            className="flex items-center gap-1 px-3 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 text-sm"
+          >
+            <Search className="w-4 h-4" />
+            Search
+          </button>
+          <button
+            type="button"
+            onClick={clearFilters}
+            className="flex items-center gap-1 px-3 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 text-sm"
+          >
+            <X className="w-4 h-4" />
+            Clear
+          </button>
         </div>
 
         <Table

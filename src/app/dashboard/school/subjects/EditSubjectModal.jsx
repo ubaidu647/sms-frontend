@@ -159,7 +159,7 @@ export default function EditSubjectModal({ isOpen, onClose, onSuccess, subject }
     >
       <form className="space-y-6">
         {submitError && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">{submitError}</div>
+          <div className="p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 rounded-lg text-red-700 dark:text-red-400 text-sm">{submitError}</div>
         )}
 
         <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg text-amber-700 text-xs">
@@ -222,7 +222,7 @@ export default function EditSubjectModal({ isOpen, onClose, onSuccess, subject }
         </div>
 
         {sumMismatch && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-xs">
+          <div className="p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 rounded-lg text-red-700 dark:text-red-400 text-xs">
             Theory + Practical must equal Total Marks.
           </div>
         )}

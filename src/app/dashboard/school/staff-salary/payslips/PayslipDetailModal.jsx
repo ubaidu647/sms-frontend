@@ -175,7 +175,7 @@ export default function PayslipDetailModal({ isOpen, onClose, payslipId }) {
           <div className="w-8 h-8 border-4 border-teal-600 border-t-transparent rounded-full animate-spin" />
         </div>
       ) : !payslip ? (
-        <p className="text-sm text-gray-500">No payslip found.</p>
+        <p className="text-sm text-gray-500 dark:text-gray-400">No payslip found.</p>
       ) : (
         <PayslipBody
           payslip={payslip}
@@ -251,13 +251,13 @@ function PayslipBody({
             {status}
           </span>
           {payslip.finalizedAt && (
-            <span className="text-xs text-gray-500 flex items-center gap-1">
+            <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
               <Lock className="w-3 h-3" />
               Finalized {formatDate(payslip.finalizedAt)}
             </span>
           )}
           {payslip.paymentDate && (
-            <span className="text-xs text-gray-500 flex items-center gap-1">
+            <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
               <DollarSign className="w-3 h-3" />
               Paid {formatDate(payslip.paymentDate)}
             </span>
@@ -272,7 +272,7 @@ function PayslipBody({
         {isDraft && !editing && (
           <button
             onClick={() => setEditing(true)}
-            className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-teal-700 hover:bg-teal-50 rounded-lg border border-teal-200"
+            className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-teal-700 dark:text-teal-400 hover:bg-teal-50 dark:hover:bg-teal-950/40 rounded-lg border border-teal-200"
           >
             <Edit3 className="w-3 h-3" />
             Edit Bonus/Tax
@@ -281,7 +281,7 @@ function PayslipBody({
       </div>
 
       {payslip.cancelReason && (
-        <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+        <div className="p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 rounded-lg text-sm text-red-700 dark:text-red-400">
           <strong>Reason:</strong> {payslip.cancelReason}
         </div>
       )}
@@ -322,12 +322,18 @@ function PayslipBody({
                       min={0}
                       value={bonus}
                       onChange={(e) => setBonus(e.target.value)}
-                      className="w-28 px-2 py-1 text-xs border border-gray-200 rounded text-gray-900 outline-none focus:border-teal-500 text-right"
+                      className="w-28 px-2 py-1 text-xs border border-gray-200 dark:border-gray-700 rounded text-gray-900 dark:text-gray-100 outline-none focus:border-teal-500 text-right"
                     />
                   }
                 />
               ) : (
                 <Row label="Bonus" value={formatMoney(payslip.bonus, cur)} />
+              )}
+              {payslip.policyBonus != null && Number(payslip.policyBonus) > 0 && (
+                <Row
+                  label="Policy Bonus"
+                  value={formatMoney(payslip.policyBonus, cur)}
+                />
               )}
               <Row
                 bold
@@ -376,7 +382,7 @@ function PayslipBody({
                       min={0}
                       value={tax}
                       onChange={(e) => setTax(e.target.value)}
-                      className="w-28 px-2 py-1 text-xs border border-gray-200 rounded text-gray-900 outline-none focus:border-teal-500 text-right"
+                      className="w-28 px-2 py-1 text-xs border border-gray-200 dark:border-gray-700 rounded text-gray-900 dark:text-gray-100 outline-none focus:border-teal-500 text-right"
                     />
                   }
                 />
@@ -402,23 +408,23 @@ function PayslipBody({
       {/* Net banner */}
       <div className="bg-gradient-to-r from-teal-50 to-blue-50 border border-teal-100 rounded-xl px-6 py-4 flex items-center justify-between">
         <div>
-          <div className="text-xs text-gray-500 uppercase tracking-widest">
+          <div className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-widest">
             Net Salary
           </div>
-          <div className="text-3xl font-bold text-teal-700 mt-1">
+          <div className="text-3xl font-bold text-teal-700 dark:text-teal-400 mt-1">
             {formatMoney(payslip.netSalary, cur)}
           </div>
         </div>
         {payslip.paidAmount != null && (
           <div className="text-right">
-            <div className="text-xs text-gray-500 uppercase tracking-widest">
+            <div className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-widest">
               Paid
             </div>
-            <div className="text-2xl font-semibold text-gray-800 mt-1">
+            <div className="text-2xl font-semibold text-gray-800 dark:text-gray-200 mt-1">
               {formatMoney(payslip.paidAmount, cur)}
             </div>
             {payslip.paymentMethod && (
-              <div className="text-xs text-gray-500 mt-0.5">
+              <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                 via {PAYMENT_METHOD_LABELS[payslip.paymentMethod] || payslip.paymentMethod}
               </div>
             )}
@@ -429,7 +435,7 @@ function PayslipBody({
       {/* Attendance snapshot */}
       {payslip.attendance && (
         <div>
-          <h4 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">
+          <h4 className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2">
             Attendance Snapshot
           </h4>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -468,6 +474,18 @@ function PayslipBody({
         </div>
       )}
 
+      {/* Policy snapshot — frozen rules applied at generation time */}
+      {payslip.policySnapshot ? (
+        <PolicySnapshotPanel snapshot={payslip.policySnapshot} />
+      ) : (
+        payslip.attendance && (
+          <div className="rounded-xl bg-amber-50 border border-amber-200 p-3 text-xs text-amber-800">
+            No salary policy was active at generation time — pro-rate fallback
+            used (basic ÷ working days × unpaid days).
+          </div>
+        )
+      )}
+
       {/* Edit notes */}
       {editing && (
         <div>
@@ -493,7 +511,7 @@ function PayslipBody({
                 setTax(payslip.tax ?? 0);
                 setNotes(payslip.notes || '');
               }}
-              className="px-4 py-1.5 bg-white border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50"
+              className="px-4 py-1.5 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800"
             >
               Cancel
             </button>
@@ -502,8 +520,8 @@ function PayslipBody({
       )}
 
       {!editing && payslip.notes && (
-        <div className="text-sm text-gray-700">
-          <span className="text-xs text-gray-500 uppercase tracking-widest">
+        <div className="text-sm text-gray-700 dark:text-gray-300">
+          <span className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-widest">
             Notes
           </span>
           <p className="mt-1">{payslip.notes}</p>
@@ -533,8 +551,8 @@ function PayslipBody({
 
 function Row({ label, value, bold, divider }) {
   return (
-    <tr className={divider ? 'border-t border-gray-200' : ''}>
-      <td className={`px-4 py-2 ${bold ? 'font-semibold' : ''} text-gray-700`}>
+    <tr className={divider ? 'border-t border-gray-200 dark:border-gray-700' : ''}>
+      <td className={`px-4 py-2 ${bold ? 'font-semibold' : ''} text-gray-700 dark:text-gray-300`}>
         {label}
       </td>
       <td
@@ -545,6 +563,50 @@ function Row({ label, value, bold, divider }) {
         {value}
       </td>
     </tr>
+  );
+}
+
+function PolicySnapshotPanel({ snapshot }) {
+  const rows = [
+    ['Working days / month', snapshot.workingDaysPerMonth],
+    ['Free absences / month', snapshot.freeAbsencesPerMonth],
+    [
+      'Absent rule',
+      snapshot.absentDeductionMode === 'fixed'
+        ? `Fixed: ${snapshot.absentDeductionAmount} per absence`
+        : `Per-day × ${snapshot.absentDeductionMultiplier}`,
+    ],
+    ['Free lates / month', snapshot.freeLatesPerMonth],
+    [
+      'Late rule',
+      `Every ${snapshot.lateGroupSize} lates = ${snapshot.lateDeductionDays} day(s)`,
+    ],
+    ['Half-day factor', snapshot.halfDayDeductionFactor],
+    ['Unpaid leave factor', snapshot.unpaidLeaveDeductionFactor],
+    ['Paid leave factor', snapshot.paidLeaveDeductionFactor],
+    ['Overtime / hour', snapshot.overtimeBonusPerHour],
+    ['Perfect attendance bonus', snapshot.perfectAttendanceBonus],
+  ];
+  return (
+    <div>
+      <h4 className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2">
+        Rules Applied
+      </h4>
+      <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50/50 overflow-hidden">
+        <table className="w-full text-xs">
+          <tbody>
+            {rows.map(([label, value]) => (
+              <tr key={label} className="border-b border-gray-200 dark:border-gray-700 last:border-b-0">
+                <td className="px-3 py-1.5 text-gray-600 dark:text-gray-400">{label}</td>
+                <td className="px-3 py-1.5 text-right font-medium text-gray-800 dark:text-gray-200">
+                  {value ?? '—'}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
   );
 }
 
@@ -617,7 +679,7 @@ function PayForm({ payslip, onClose, onDone }) {
     <div className="border border-teal-200 bg-teal-50/40 rounded-xl p-4 space-y-3">
       <h4 className="text-sm font-bold text-teal-800">Mark as Paid</h4>
       {err && (
-        <div className="p-2 bg-red-50 border border-red-200 rounded text-red-700 text-xs">
+        <div className="p-2 bg-red-50 dark:bg-red-950/40 border border-red-200 rounded text-red-700 dark:text-red-400 text-xs">
           {err}
         </div>
       )}
@@ -683,7 +745,7 @@ function PayForm({ payslip, onClose, onDone }) {
       <div className="flex gap-2 justify-end">
         <button
           onClick={onClose}
-          className="px-4 py-1.5 bg-white border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50"
+          className="px-4 py-1.5 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800"
         >
           Cancel
         </button>
@@ -730,9 +792,9 @@ function CancelForm({ payslip, onClose, onDone }) {
 
   return (
     <div className="border border-red-200 bg-red-50/40 rounded-xl p-4 space-y-3">
-      <h4 className="text-sm font-bold text-red-800">Cancel Payslip</h4>
+      <h4 className="text-sm font-bold text-red-800 dark:text-red-300">Cancel Payslip</h4>
       {err && (
-        <div className="p-2 bg-red-50 border border-red-200 rounded text-red-700 text-xs">
+        <div className="p-2 bg-red-50 dark:bg-red-950/40 border border-red-200 rounded text-red-700 dark:text-red-400 text-xs">
           {err}
         </div>
       )}
@@ -749,7 +811,7 @@ function CancelForm({ payslip, onClose, onDone }) {
       <div className="flex gap-2 justify-end">
         <button
           onClick={onClose}
-          className="px-4 py-1.5 bg-white border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50"
+          className="px-4 py-1.5 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800"
         >
           Back
         </button>

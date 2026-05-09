@@ -113,13 +113,13 @@ export default function BranchProfileForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {submitError && (
-        <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+        <div className="p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 rounded-lg text-red-700 dark:text-red-400 text-sm">
           {submitError}
         </div>
       )}
 
       {branchLabel && (
-        <div className="rounded-xl bg-teal-50 border border-teal-200 px-4 py-3 text-sm text-teal-800">
+        <div className="rounded-xl bg-teal-50 dark:bg-teal-950/40 border border-teal-200 px-4 py-3 text-sm text-teal-800">
           Editing profile for <strong>{branchLabel}</strong>
         </div>
       )}
@@ -353,7 +353,7 @@ export default function BranchProfileForm({
       </Section>
 
       {canEdit && (
-        <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
+        <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
           <Button
             label="Save Profile"
             type="submit"
@@ -376,8 +376,8 @@ export default function BranchProfileForm({
 
 function Section({ title, children }) {
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-      <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">
+    <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+      <h3 className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-4">
         {title}
       </h3>
       {children}
@@ -407,7 +407,7 @@ function ColorField({ label, value, onChange, disabled }) {
           value={/^#[0-9A-Fa-f]{6}$/.test(value) ? value : '#000000'}
           onChange={(e) => onChange(e.target.value)}
           disabled={disabled}
-          className="w-12 h-10 rounded-lg border border-gray-200 bg-white cursor-pointer disabled:opacity-50"
+          className="w-12 h-10 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 cursor-pointer disabled:opacity-50"
         />
         <input
           type="text"

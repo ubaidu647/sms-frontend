@@ -58,7 +58,7 @@ export default function ConfirmModal({
         </div>
       }
     >
-      {message && <p className="text-sm text-gray-700">{message}</p>}
+      {message && <p className="text-sm text-gray-700 dark:text-gray-300">{message}</p>}
       {children}
     </Modal>
   );

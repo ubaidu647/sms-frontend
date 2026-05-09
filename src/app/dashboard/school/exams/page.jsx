@@ -13,6 +13,7 @@ import {
   Send,
   RotateCcw,
   BarChart3,
+  X,
 } from 'lucide-react';
 import AddExamModal from './AddExamModal';
 import EditExamModal from './EditExamModal';
@@ -50,14 +51,53 @@ export default function ExamsPage() {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(20);
 
+  // Filters — draft state holds in-progress UI values; applied state drives the API.
+  const defaultAcademicYear = currentAcademicYear();
+  const [draftSearch, setDraftSearch] = useState('');
+  const [draftClassId, setDraftClassId] = useState('');
+  const [draftExamType, setDraftExamType] = useState('');
+  const [draftStatus, setDraftStatus] = useState('');
+  const [draftAcademicYear, setDraftAcademicYear] = useState(defaultAcademicYear);
+  const [draftBranchId, setDraftBranchId] = useState('');
+  const [draftIsActive, setDraftIsActive] = useState('true');
+
   const [search, setSearch] = useState('');
   const [classId, setClassId] = useState('');
   const [examType, setExamType] = useState('');
   const [status, setStatus] = useState('');
-  const [academicYear, setAcademicYear] = useState(currentAcademicYear());
+  const [academicYear, setAcademicYear] = useState(defaultAcademicYear);
   const [branchId, setBranchId] = useState('');
   const [isActive, setIsActive] = useState('true');
   const [branchDropdownTouched, setBranchDropdownTouched] = useState(false);
+
+  const applyFilters = () => {
+    setSearch(draftSearch);
+    setClassId(draftClassId);
+    setExamType(draftExamType);
+    setStatus(draftStatus);
+    setAcademicYear(draftAcademicYear);
+    setBranchId(draftBranchId);
+    setIsActive(draftIsActive);
+    setPage(1);
+  };
+
+  const clearFilters = () => {
+    setDraftSearch('');
+    setDraftClassId('');
+    setDraftExamType('');
+    setDraftStatus('');
+    setDraftAcademicYear(defaultAcademicYear);
+    setDraftBranchId('');
+    setDraftIsActive('true');
+    setSearch('');
+    setClassId('');
+    setExamType('');
+    setStatus('');
+    setAcademicYear(defaultAcademicYear);
+    setBranchId('');
+    setIsActive('true');
+    setPage(1);
+  };
 
   const examScope = resolveScope(user?.role, 'view-exam');
   const marksScope = resolveScope(user?.role, 'view-marks');
@@ -83,17 +123,19 @@ export default function ExamsPage() {
   });
   const branches = branchData?.data || [];
 
-  const effectiveBranchId = isOrgLevel ? branchId : userBranchId;
+  // Class dropdown — branchId uses draft so picking a branch instantly refreshes class options;
+  // academicYear uses applied to avoid keystroke-storms while typing.
+  const draftEffectiveBranchId = isOrgLevel ? draftBranchId : userBranchId;
 
   const { data: classData } = useQuery({
-    queryKey: ['classes-dropdown', effectiveBranchId, academicYear],
+    queryKey: ['classes-dropdown', draftEffectiveBranchId, academicYear],
     queryFn: () =>
       fetchData({
         url: '/class/list',
         page: 1,
         limit: 200,
         token,
-        branchId: effectiveBranchId || undefined,
+        branchId: draftEffectiveBranchId || undefined,
         academicYear,
       }),
     enabled: !!token && !!academicYear,
@@ -130,8 +172,8 @@ export default function ExamsPage() {
         accessor: 'name',
         render: (v, row) => (
           <div>
-            <div className="font-medium text-gray-900">{v}</div>
-            <div className="text-xs text-gray-400">{row.serialNumber}</div>
+            <div className="font-medium text-gray-900 dark:text-gray-100">{v}</div>
+            <div className="text-xs text-gray-400 dark:text-gray-500">{row.serialNumber}</div>
           </div>
         ),
       },
@@ -148,36 +190,36 @@ export default function ExamsPage() {
         header: 'Class',
         accessor: 'class',
         render: (v) => (
-          <div className="text-sm text-gray-700">
+          <div className="text-sm text-gray-700 dark:text-gray-300">
             {v?.name ?? '—'}
-            {v?.grade && <span className="text-xs text-gray-400 ml-1">(Gr {v.grade})</span>}
+            {v?.grade && <span className="text-xs text-gray-400 dark:text-gray-500 ml-1">(Gr {v.grade})</span>}
           </div>
         ),
       },
       {
         header: 'Year',
         accessor: 'academicYear',
-        render: (v) => <span className="text-sm text-gray-600">{v}</span>,
+        render: (v) => <span className="text-sm text-gray-600 dark:text-gray-400">{v}</span>,
       },
       {
         header: 'Schedule',
         accessor: 'startDate',
         render: (_v, row) => (
-          <div className="text-xs text-gray-600">
+          <div className="text-xs text-gray-600 dark:text-gray-400">
             <div>{formatDate(row.startDate)}</div>
-            <div className="text-gray-400">to {formatDate(row.endDate)}</div>
+            <div className="text-gray-400 dark:text-gray-500">to {formatDate(row.endDate)}</div>
           </div>
         ),
       },
       {
         header: 'Subjects',
         accessor: 'subjectCount',
-        render: (v) => <span className="text-sm text-gray-700">{v ?? 0}</span>,
+        render: (v) => <span className="text-sm text-gray-700 dark:text-gray-300">{v ?? 0}</span>,
       },
       {
         header: 'Total Marks',
         accessor: 'totalMarks',
-        render: (v) => <span className="text-sm text-gray-700">{v ?? 0}</span>,
+        render: (v) => <span className="text-sm text-gray-700 dark:text-gray-300">{v ?? 0}</span>,
       },
       {
         header: 'Status',
@@ -254,7 +296,6 @@ export default function ExamsPage() {
   const filtered = search
     ? exams.filter((e) => e.name?.toLowerCase().includes(search.toLowerCase()))
     : exams;
-  const resetPage = () => setPage(1);
 
   const handleRowAction = (action, row) => {
     if (action === 'view') router.push(`/dashboard/school/exams/${row._id}`);
@@ -269,12 +310,12 @@ export default function ExamsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-800 p-6 rounded-[50px]">
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Exams</h1>
-            <p className="text-gray-600 mt-1">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Exams</h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-1">
               Plan exams, schedule subjects, enter marks and publish results
             </p>
           </div>
@@ -290,40 +331,32 @@ export default function ExamsPage() {
         </div>
 
         <div className="mb-4 flex flex-wrap items-center gap-3">
-          <div className="flex items-center bg-white px-3 py-2 rounded-lg border border-gray-200 gap-2">
-            <Search className="w-4 h-4 text-gray-400 shrink-0" />
+          <div className="flex items-center bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 gap-2">
             <input
               type="text"
               placeholder="Search by name..."
-              value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
-                resetPage();
-              }}
-              className="outline-none text-sm w-56 text-gray-900 placeholder:text-gray-400"
+              value={draftSearch}
+              onChange={(e) => setDraftSearch(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') applyFilters(); }}
+              className="outline-none text-sm w-56 text-gray-900 dark:text-gray-100 placeholder:text-gray-400"
             />
           </div>
 
-          <div className="flex items-center bg-white px-3 py-2 rounded-lg border border-gray-200 gap-2">
+          <div className="flex items-center bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 gap-2">
             <input
               type="text"
               placeholder="2025-2026"
-              value={academicYear}
-              onChange={(e) => {
-                setAcademicYear(e.target.value);
-                resetPage();
-              }}
-              className="outline-none text-sm w-24 text-gray-900 placeholder:text-gray-400"
+              value={draftAcademicYear}
+              onChange={(e) => setDraftAcademicYear(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') applyFilters(); }}
+              className="outline-none text-sm w-24 text-gray-900 dark:text-gray-100 placeholder:text-gray-400"
             />
           </div>
 
           <select
-            value={classId}
-            onChange={(e) => {
-              setClassId(e.target.value);
-              resetPage();
-            }}
-            className="bg-white px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700"
+            value={draftClassId}
+            onChange={(e) => setDraftClassId(e.target.value)}
+            className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
           >
             <option value="">All Classes</option>
             {classes.map((c) => (
@@ -334,12 +367,9 @@ export default function ExamsPage() {
           </select>
 
           <select
-            value={examType}
-            onChange={(e) => {
-              setExamType(e.target.value);
-              resetPage();
-            }}
-            className="bg-white px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700 capitalize"
+            value={draftExamType}
+            onChange={(e) => setDraftExamType(e.target.value)}
+            className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300 capitalize"
           >
             <option value="">All Types</option>
             {EXAM_TYPES.map((t) => (
@@ -350,12 +380,9 @@ export default function ExamsPage() {
           </select>
 
           <select
-            value={status}
-            onChange={(e) => {
-              setStatus(e.target.value);
-              resetPage();
-            }}
-            className="bg-white px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700 capitalize"
+            value={draftStatus}
+            onChange={(e) => setDraftStatus(e.target.value)}
+            className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300 capitalize"
           >
             <option value="">All Status</option>
             {EXAM_STATUSES.map((s) => (
@@ -366,12 +393,9 @@ export default function ExamsPage() {
           </select>
 
           <select
-            value={isActive}
-            onChange={(e) => {
-              setIsActive(e.target.value);
-              resetPage();
-            }}
-            className="bg-white px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700"
+            value={draftIsActive}
+            onChange={(e) => setDraftIsActive(e.target.value)}
+            className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
           >
             <option value="true">Active</option>
             <option value="false">Inactive</option>
@@ -380,13 +404,10 @@ export default function ExamsPage() {
 
           {isOrgLevel && (
             <select
-              value={branchId}
+              value={draftBranchId}
               onFocus={() => setBranchDropdownTouched(true)}
-              onChange={(e) => {
-                setBranchId(e.target.value);
-                resetPage();
-              }}
-              className="bg-white px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700"
+              onChange={(e) => setDraftBranchId(e.target.value)}
+              className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
             >
               <option value="">All Branches</option>
               {branches.map((b) => (
@@ -396,6 +417,23 @@ export default function ExamsPage() {
               ))}
             </select>
           )}
+
+          <button
+            type="button"
+            onClick={applyFilters}
+            className="flex items-center gap-1 px-3 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 text-sm"
+          >
+            <Search className="w-4 h-4" />
+            Search
+          </button>
+          <button
+            type="button"
+            onClick={clearFilters}
+            className="flex items-center gap-1 px-3 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 text-sm"
+          >
+            <X className="w-4 h-4" />
+            Clear
+          </button>
         </div>
 
         <Table

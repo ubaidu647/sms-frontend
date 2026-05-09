@@ -1,7 +1,7 @@
 'use client';
 import React, { useMemo, useState } from 'react';
 import { Table } from '@/component/Table';
-import { Search, Eye, Ban } from 'lucide-react';
+import { Search, Eye, Ban, X } from 'lucide-react';
 import { useTokenStore } from '@/store/tokenStore';
 import { useUserStore } from '@/store/userStore';
 import { useQuery, keepPreviousData } from '@tanstack/react-query';
@@ -25,6 +25,14 @@ export default function PaymentsPage() {
 
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(20);
+  // Filters — draft state holds in-progress UI values; applied state drives the API.
+  const [draftSearch, setDraftSearch] = useState('');
+  const [draftMethod, setDraftMethod] = useState('');
+  const [draftFromDate, setDraftFromDate] = useState('');
+  const [draftToDate, setDraftToDate] = useState('');
+  const [draftIsVoid, setDraftIsVoid] = useState('false');
+  const [draftBranchId, setDraftBranchId] = useState('');
+
   const [search, setSearch] = useState('');
   const [method, setMethod] = useState('');
   const [fromDate, setFromDate] = useState('');
@@ -32,6 +40,32 @@ export default function PaymentsPage() {
   const [isVoid, setIsVoid] = useState('false');
   const [branchId, setBranchId] = useState('');
   const [branchDropdownTouched, setBranchDropdownTouched] = useState(false);
+
+  const applyFilters = () => {
+    setSearch(draftSearch);
+    setMethod(draftMethod);
+    setFromDate(draftFromDate);
+    setToDate(draftToDate);
+    setIsVoid(draftIsVoid);
+    setBranchId(draftBranchId);
+    setPage(1);
+  };
+
+  const clearFilters = () => {
+    setDraftSearch('');
+    setDraftMethod('');
+    setDraftFromDate('');
+    setDraftToDate('');
+    setDraftIsVoid('false');
+    setDraftBranchId('');
+    setSearch('');
+    setMethod('');
+    setFromDate('');
+    setToDate('');
+    setIsVoid('false');
+    setBranchId('');
+    setPage(1);
+  };
 
   const scope = resolveScope(user?.role, 'view-payment');
   const isOrgLevel = scope === 'all';
@@ -87,7 +121,6 @@ export default function PaymentsPage() {
           p.voucher?.voucherNumber?.toLowerCase().includes(search.toLowerCase()),
       )
     : list;
-  const resetPage = () => setPage(1);
 
   const columns = useMemo(
     () => [
@@ -96,8 +129,8 @@ export default function PaymentsPage() {
         accessor: 'receiptNumber',
         render: (v, row) => (
           <div>
-            <div className="font-mono text-sm text-gray-900">{v}</div>
-            <div className="text-xs text-gray-400">{formatDate(row.paymentDate)}</div>
+            <div className="font-mono text-sm text-gray-900 dark:text-gray-100">{v}</div>
+            <div className="text-xs text-gray-400 dark:text-gray-500">{formatDate(row.paymentDate)}</div>
           </div>
         ),
       },
@@ -106,8 +139,8 @@ export default function PaymentsPage() {
         accessor: 'student',
         render: (s) => (
           <div>
-            <div className="text-sm font-medium text-gray-900">{s?.user?.name || '—'}</div>
-            <div className="text-xs text-gray-500">
+            <div className="text-sm font-medium text-gray-900 dark:text-gray-100">{s?.user?.name || '—'}</div>
+            <div className="text-xs text-gray-500 dark:text-gray-400">
               {s?.admissionNumber} · Roll {s?.rollNumber}
             </div>
           </div>
@@ -118,8 +151,8 @@ export default function PaymentsPage() {
         accessor: 'voucher',
         render: (v) => (
           <div className="text-sm">
-            <div className="text-gray-900">{v?.voucherNumber || '—'}</div>
-            <div className="text-xs text-gray-500">{v?.month}</div>
+            <div className="text-gray-900 dark:text-gray-100">{v?.voucherNumber || '—'}</div>
+            <div className="text-xs text-gray-500 dark:text-gray-400">{v?.month}</div>
           </div>
         ),
       },
@@ -152,11 +185,11 @@ export default function PaymentsPage() {
         accessor: 'isVoid',
         render: (v) =>
           v ? (
-            <span className="inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">
+            <span className="inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700 dark:text-red-400">
               Void
             </span>
           ) : (
-            <span className="inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">
+            <span className="inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700 dark:text-green-400">
               Active
             </span>
           ),
@@ -184,8 +217,8 @@ export default function PaymentsPage() {
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Payments</h1>
-            <p className="text-gray-600 mt-1">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Payments</h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-1">
               Recorded fee payments &amp; receipts. Void here if a cheque bounces or a refund is
               needed.
             </p>
@@ -193,48 +226,36 @@ export default function PaymentsPage() {
         </div>
 
         <div className="mb-4 flex flex-wrap items-center gap-3">
-          <div className="flex items-center bg-white px-3 py-2 rounded-lg border border-gray-200 gap-2">
-            <Search className="w-4 h-4 text-gray-400 shrink-0" />
+          <div className="flex items-center bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 gap-2">
             <input
               type="text"
               placeholder="Search receipt / student / voucher..."
-              value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
-                resetPage();
-              }}
-              className="outline-none text-sm w-72 text-gray-900 placeholder:text-gray-400"
+              value={draftSearch}
+              onChange={(e) => setDraftSearch(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') applyFilters(); }}
+              className="outline-none text-sm w-72 text-gray-900 dark:text-gray-100 placeholder:text-gray-400"
             />
           </div>
 
           <input
             type="date"
-            value={fromDate}
-            onChange={(e) => {
-              setFromDate(e.target.value);
-              resetPage();
-            }}
+            value={draftFromDate}
+            onChange={(e) => setDraftFromDate(e.target.value)}
             placeholder="From"
-            className="bg-white px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700 outline-none"
+            className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300 outline-none"
           />
           <input
             type="date"
-            value={toDate}
-            onChange={(e) => {
-              setToDate(e.target.value);
-              resetPage();
-            }}
+            value={draftToDate}
+            onChange={(e) => setDraftToDate(e.target.value)}
             placeholder="To"
-            className="bg-white px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700 outline-none"
+            className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300 outline-none"
           />
 
           <select
-            value={method}
-            onChange={(e) => {
-              setMethod(e.target.value);
-              resetPage();
-            }}
-            className="bg-white px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700"
+            value={draftMethod}
+            onChange={(e) => setDraftMethod(e.target.value)}
+            className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
           >
             <option value="">All Methods</option>
             {PAYMENT_METHODS.map((m) => (
@@ -245,12 +266,9 @@ export default function PaymentsPage() {
           </select>
 
           <select
-            value={isVoid}
-            onChange={(e) => {
-              setIsVoid(e.target.value);
-              resetPage();
-            }}
-            className="bg-white px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700"
+            value={draftIsVoid}
+            onChange={(e) => setDraftIsVoid(e.target.value)}
+            className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
           >
             <option value="false">Active Only</option>
             <option value="true">Voided Only</option>
@@ -259,13 +277,10 @@ export default function PaymentsPage() {
 
           {isOrgLevel && (
             <select
-              value={branchId}
+              value={draftBranchId}
               onFocus={() => setBranchDropdownTouched(true)}
-              onChange={(e) => {
-                setBranchId(e.target.value);
-                resetPage();
-              }}
-              className="bg-white px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700"
+              onChange={(e) => setDraftBranchId(e.target.value)}
+              className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
             >
               <option value="">All Branches</option>
               {branches.map((b) => (
@@ -275,6 +290,23 @@ export default function PaymentsPage() {
               ))}
             </select>
           )}
+
+          <button
+            type="button"
+            onClick={applyFilters}
+            className="flex items-center gap-1 px-3 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 text-sm"
+          >
+            <Search className="w-4 h-4" />
+            Search
+          </button>
+          <button
+            type="button"
+            onClick={clearFilters}
+            className="flex items-center gap-1 px-3 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 text-sm"
+          >
+            <X className="w-4 h-4" />
+            Clear
+          </button>
         </div>
 
         <Table

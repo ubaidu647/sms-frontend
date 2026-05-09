@@ -148,16 +148,16 @@ export default function TeacherAssignmentsPage() {
               <img
                 src={v.photo}
                 alt={name}
-                className="w-9 h-9 rounded-full object-cover border border-gray-200 flex-shrink-0"
+                className="w-9 h-9 rounded-full object-cover border border-gray-200 dark:border-gray-700 flex-shrink-0"
               />
             ) : (
-              <div className="w-9 h-9 rounded-full bg-teal-100 text-teal-700 font-semibold text-xs flex items-center justify-center flex-shrink-0">
+              <div className="w-9 h-9 rounded-full bg-teal-100 text-teal-700 dark:text-teal-400 font-semibold text-xs flex items-center justify-center flex-shrink-0">
                 {initials}
               </div>
             )}
             <div className="min-w-0">
-              <div className="font-medium text-gray-900 text-sm truncate">{name}</div>
-              <div className="text-xs text-gray-400 truncate">{v?.designation}</div>
+              <div className="font-medium text-gray-900 dark:text-gray-100 text-sm truncate">{name}</div>
+              <div className="text-xs text-gray-400 dark:text-gray-500 truncate">{v?.designation}</div>
             </div>
           </div>
         );
@@ -168,8 +168,8 @@ export default function TeacherAssignmentsPage() {
       accessor: 'subject',
       render: (v) => (
         <div>
-          <div className="text-sm font-medium text-gray-900">{v?.name || '—'}</div>
-          {v?.code && <div className="text-xs text-gray-400">{v.code}</div>}
+          <div className="text-sm font-medium text-gray-900 dark:text-gray-100">{v?.name || '—'}</div>
+          {v?.code && <div className="text-xs text-gray-400 dark:text-gray-500">{v.code}</div>}
         </div>
       ),
     },
@@ -177,9 +177,9 @@ export default function TeacherAssignmentsPage() {
       header: 'Class / Section',
       accessor: 'class',
       render: (_, row) => (
-        <div className="text-sm text-gray-700">
+        <div className="text-sm text-gray-700 dark:text-gray-300">
           {row.class?.name || '—'}
-          {row.section?.name && <span className="text-gray-400"> / {row.section.name}</span>}
+          {row.section?.name && <span className="text-gray-400 dark:text-gray-500"> / {row.section.name}</span>}
         </div>
       ),
     },
@@ -207,7 +207,7 @@ export default function TeacherAssignmentsPage() {
     {
       header: 'Year',
       accessor: 'academicYear',
-      render: (v) => <div className="text-sm text-gray-600">{v}</div>,
+      render: (v) => <div className="text-sm text-gray-600 dark:text-gray-400">{v}</div>,
     },
     {
       header: 'Status',
@@ -295,16 +295,16 @@ export default function TeacherAssignmentsPage() {
   const resetPage = () => setPage(1);
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-800 p-6 rounded-[50px]">
       <div className="max-w-7xl mx-auto">
 
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
               {isOwnOnly ? 'My Teaching Assignments' : 'Teacher Assignments'}
             </h1>
-            <p className="text-gray-600 mt-1">
+            <p className="text-gray-600 dark:text-gray-400 mt-1">
               {isOwnOnly
                 ? 'The classes and subjects you are assigned to teach.'
                 : 'Map teachers to subjects across classes and sections'}
@@ -314,7 +314,7 @@ export default function TeacherAssignmentsPage() {
             <div className="flex items-center gap-2">
               <button
                 onClick={() => { setAddMode('bulk'); setIsAddOpen(true); }}
-                className="flex items-center gap-2 px-4 py-2 bg-white text-teal-700 border border-teal-300 rounded-lg hover:bg-teal-50 transition-colors"
+                className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-900 text-teal-700 dark:text-teal-400 border border-teal-300 rounded-lg hover:bg-teal-50 dark:hover:bg-teal-950/40 transition-colors"
               >
                 <Users className="w-5 h-5" />
                 Bulk Assign
@@ -337,20 +337,20 @@ export default function TeacherAssignmentsPage() {
           <select
             value={isActive}
             onChange={(e) => { setIsActive(e.target.value); resetPage(); }}
-            className="bg-white px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700"
+            className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
           >
             <option value="true">Active</option>
             <option value="false">Inactive</option>
             <option value="">All</option>
           </select>
 
-          <div className="flex items-center bg-white px-3 py-2 rounded-lg border border-gray-200">
+          <div className="flex items-center bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700">
             <input
               type="text"
               placeholder="Year (2025-2026)"
               value={academicYear}
               onChange={(e) => { setAcademicYear(e.target.value); resetPage(); }}
-              className="outline-none text-sm w-32 text-gray-900 placeholder:text-gray-400"
+              className="outline-none text-sm w-32 text-gray-900 dark:text-gray-100 placeholder:text-gray-400"
             />
           </div>
 
@@ -359,7 +359,7 @@ export default function TeacherAssignmentsPage() {
               value={branchId}
               onFocus={() => setBranchDropdownTouched(true)}
               onChange={(e) => { setBranchId(e.target.value); resetPage(); }}
-              className="bg-white px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700"
+              className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
             >
               <option value="">All Branches</option>
               {branches.map((b) => (
@@ -371,7 +371,7 @@ export default function TeacherAssignmentsPage() {
           <select
             value={classId}
             onChange={(e) => { setClassId(e.target.value); resetPage(); }}
-            className="bg-white px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700"
+            className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
           >
             <option value="">All Classes</option>
             {classes.map((c) => (
@@ -384,7 +384,7 @@ export default function TeacherAssignmentsPage() {
               <select
                 value={sectionId}
                 onChange={(e) => { setSectionId(e.target.value); resetPage(); }}
-                className="bg-white px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700"
+                className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
               >
                 <option value="">All Sections</option>
                 {sections.map((s) => (
@@ -395,7 +395,7 @@ export default function TeacherAssignmentsPage() {
               <select
                 value={subjectId}
                 onChange={(e) => { setSubjectId(e.target.value); resetPage(); }}
-                className="bg-white px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700"
+                className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
               >
                 <option value="">All Subjects</option>
                 {subjects.map((s) => (
@@ -408,7 +408,7 @@ export default function TeacherAssignmentsPage() {
           <select
             value={role}
             onChange={(e) => { setRole(e.target.value); resetPage(); }}
-            className="bg-white px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700"
+            className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
           >
             <option value="">All Roles</option>
             <option value="teacher">Teacher</option>
@@ -419,7 +419,7 @@ export default function TeacherAssignmentsPage() {
           <select
             value={isPrimary}
             onChange={(e) => { setIsPrimary(e.target.value); resetPage(); }}
-            className="bg-white px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700"
+            className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
           >
             <option value="">Primary & Co</option>
             <option value="true">Primary only</option>
@@ -427,14 +427,14 @@ export default function TeacherAssignmentsPage() {
           </select>
 
           {!isOwnOnly && (
-            <div className="flex items-center bg-white px-3 py-2 rounded-lg border border-gray-200">
-              <Search className="w-4 h-4 text-gray-400 mr-2 shrink-0" />
+            <div className="flex items-center bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700">
+              <Search className="w-4 h-4 text-gray-400 dark:text-gray-500 mr-2 shrink-0" />
               <input
                 type="text"
                 placeholder="Teacher name..."
                 value={staffSearch}
                 onChange={(e) => setStaffSearch(e.target.value)}
-                className="outline-none text-sm w-36 text-gray-900 placeholder:text-gray-400"
+                className="outline-none text-sm w-36 text-gray-900 dark:text-gray-100 placeholder:text-gray-400"
               />
             </div>
           )}
@@ -484,13 +484,13 @@ export default function TeacherAssignmentsPage() {
           <>
             <div className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm" />
             <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-              <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-8 space-y-4">
-                <h3 className="text-lg font-bold text-gray-900">Unassign Teacher</h3>
-                <p className="text-sm text-gray-600">
+              <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-sm p-8 space-y-4">
+                <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">Unassign Teacher</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
                   Are you sure you want to unassign{' '}
-                  <span className="font-semibold text-gray-900">{deleteTarget.staff?.user?.name}</span>{' '}
-                  from <span className="font-semibold text-gray-900">{deleteTarget.subject?.name}</span> in{' '}
-                  <span className="font-semibold text-gray-900">
+                  <span className="font-semibold text-gray-900 dark:text-gray-100">{deleteTarget.staff?.user?.name}</span>{' '}
+                  from <span className="font-semibold text-gray-900 dark:text-gray-100">{deleteTarget.subject?.name}</span> in{' '}
+                  <span className="font-semibold text-gray-900 dark:text-gray-100">
                     {deleteTarget.class?.name} / {deleteTarget.section?.name}
                   </span>?
                 </p>
@@ -498,7 +498,7 @@ export default function TeacherAssignmentsPage() {
                   <button
                     onClick={() => setDeleteTarget(null)}
                     disabled={deleteMutation.isPending}
-                    className="flex-1 px-4 py-2 rounded-xl border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50"
+                    className="flex-1 px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
                   >
                     Cancel
                   </button>

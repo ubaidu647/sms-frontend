@@ -141,7 +141,7 @@ export default function GenerateBulkModal({ isOpen, onClose }) {
     >
       <div className="space-y-4">
         {submitError && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+          <div className="p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 rounded-lg text-red-700 dark:text-red-400 text-sm">
             {submitError}
           </div>
         )}
@@ -167,7 +167,7 @@ export default function GenerateBulkModal({ isOpen, onClose }) {
                 </select>
               </div>
             ) : (
-              <div className="col-span-2 text-xs text-gray-500">
+              <div className="col-span-2 text-xs text-gray-500 dark:text-gray-400">
                 Branch: <strong>your branch</strong>
               </div>
             )}
@@ -219,7 +219,7 @@ export default function GenerateBulkModal({ isOpen, onClose }) {
 
             {skipped.length > 0 && (
               <div>
-                <h4 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">
+                <h4 className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2">
                   Skipped ({skipped.length})
                 </h4>
                 <div className="border border-amber-200 rounded-lg overflow-hidden">
@@ -237,10 +237,10 @@ export default function GenerateBulkModal({ isOpen, onClose }) {
                     <tbody>
                       {skipped.map((r, i) => (
                         <tr key={i} className="border-t border-amber-100">
-                          <td className="px-3 py-2 font-mono text-xs text-gray-700">
+                          <td className="px-3 py-2 font-mono text-xs text-gray-700 dark:text-gray-300">
                             {r.staffId}
                           </td>
-                          <td className="px-3 py-2 text-gray-700">
+                          <td className="px-3 py-2 text-gray-700 dark:text-gray-300">
                             {r.reason || '—'}
                           </td>
                         </tr>
@@ -253,11 +253,11 @@ export default function GenerateBulkModal({ isOpen, onClose }) {
 
             {created.length > 0 && (
               <div>
-                <h4 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 flex items-center gap-1">
+                <h4 className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2 flex items-center gap-1">
                   <CheckCircle2 className="w-3.5 h-3.5 text-green-600" />
                   Created ({created.length})
                 </h4>
-                <div className="text-xs text-gray-500">
+                <div className="text-xs text-gray-500 dark:text-gray-400">
                   Generated {created.length} draft payslips. Use the Payslips
                   list to review and finalize.
                 </div>

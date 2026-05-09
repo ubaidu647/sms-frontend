@@ -38,7 +38,7 @@ export default function MyBranchProfilePage() {
     '';
 
   return (
-    <div className="flex-1 overflow-y-auto bg-gray-50 p-6">
+    <div className="flex-1 overflow-y-auto bg-gray-50 dark:bg-gray-800 p-6">
       <div className="max-w-5xl mx-auto pb-6">
         <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
           <div className="flex items-center gap-3">
@@ -46,7 +46,7 @@ export default function MyBranchProfilePage() {
               <>
                 <Link
                   href="/dashboard/school/branches"
-                  className="flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900"
+                  className="flex items-center gap-1 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100"
                 >
                   <ArrowLeft className="w-4 h-4" />
                   Branches
@@ -55,13 +55,13 @@ export default function MyBranchProfilePage() {
               </>
             )}
             <div>
-              <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
                 <Building2 className="w-6 h-6 text-teal-600" />
                 My Branch Profile
               </h1>
               {branchName && (
-                <div className="text-sm text-gray-500 mt-1 ml-8">
-                  Branch: <span className="font-semibold text-gray-700">{branchName}</span>
+                <div className="text-sm text-gray-500 dark:text-gray-400 mt-1 ml-8">
+                  Branch: <span className="font-semibold text-gray-700 dark:text-gray-300">{branchName}</span>
                 </div>
               )}
             </div>
@@ -69,7 +69,7 @@ export default function MyBranchProfilePage() {
           {isOrgLevel && (
             <Link
               href="/dashboard/school/branches/profiles"
-              className="text-sm text-teal-700 hover:underline"
+              className="text-sm text-teal-700 dark:text-teal-400 hover:underline"
             >
               View all branch profiles →
             </Link>
@@ -77,7 +77,7 @@ export default function MyBranchProfilePage() {
         </div>
 
         {isLoading ? (
-          <div className="text-sm text-gray-500">Loading profile...</div>
+          <div className="text-sm text-gray-500 dark:text-gray-400">Loading profile...</div>
         ) : (
           <>
             {!profile && (

@@ -50,7 +50,7 @@ export default function VoidVoucherModal({ isOpen, onClose, voucher }) {
       onConfirm={submit}
     >
       <div className="space-y-3">
-        <p className="text-sm text-gray-700">
+        <p className="text-sm text-gray-700 dark:text-gray-300">
           Voiding {voucher?.voucherNumber} cannot be reversed. Vouchers with payments must have
           payments voided first.
         </p>
@@ -59,7 +59,7 @@ export default function VoidVoucherModal({ isOpen, onClose, voucher }) {
           value={reason}
           onChange={(e) => setReason(e.target.value)}
           placeholder="Reason for voiding (required)"
-          className="w-full px-3 py-2 border border-gray-200 rounded-lg outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 text-sm text-gray-900 bg-white"
+          className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 text-sm text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-900"
         />
       </div>
     </ConfirmModal>

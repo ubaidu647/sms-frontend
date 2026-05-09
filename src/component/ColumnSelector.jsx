@@ -24,7 +24,7 @@ export const ColumnSelector = ({
     <div className="relative inline-block">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 transition-colors text-sm text-gray-700 font-medium"
+        className="flex items-center gap-2 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-sm text-gray-700 dark:text-gray-200 font-medium"
       >
         <span>Columns</span>
         <ChevronDown className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
@@ -33,11 +33,11 @@ export const ColumnSelector = ({
       {isOpen && (
         <>
           <div className="fixed inset-0 z-10" onClick={() => setIsOpen(false)} />
-          <div className="absolute top-full right-0 mt-2 w-64 bg-white border border-gray-300 rounded-lg shadow-lg z-20">
-            <div className="p-4 border-b border-gray-200">
+          <div className="absolute top-full right-0 mt-2 w-64 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg shadow-lg z-20">
+            <div className="p-4 border-b border-gray-200 dark:border-gray-700">
               <button
                 onClick={handleSelectAll}
-                className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors"
+                className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
               >
                 <input
                   type="checkbox"
@@ -50,7 +50,7 @@ export const ColumnSelector = ({
                   }}
                   className="w-4 h-4 rounded cursor-pointer"
                 />
-                <span className="text-sm font-medium text-gray-700">
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
                   {allSelected ? 'Deselect All' : 'Select All'}
                 </span>
               </button>
@@ -60,7 +60,7 @@ export const ColumnSelector = ({
               {columns.map((column) => (
                 <label
                   key={column.accessor}
-                  className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
+                  className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer"
                 >
                   <input
                     type="checkbox"
@@ -68,7 +68,7 @@ export const ColumnSelector = ({
                     onChange={() => onColumnToggle(column.accessor)}
                     className="w-4 h-4 rounded cursor-pointer"
                   />
-                  <span className="text-sm text-gray-700">{column.header}</span>
+                  <span className="text-sm text-gray-700 dark:text-gray-200">{column.header}</span>
                 </label>
               ))}
             </div>

@@ -56,11 +56,11 @@ export const SystemSidebar = ({ onLogout }) => {
       <aside
         ref={sidebarRef}
         style={{ width: `${sidebarWidth}px` }}
-        className="bg-teal-600 min-h-screen p-4 flex-shrink-0 transition-none flex flex-col relative"
+        className="bg-teal-600 dark:bg-slate-900 min-h-screen p-4 flex-shrink-0 transition-none flex flex-col relative"
       >
         <div
           onMouseDown={startResizing}
-          className="absolute top-0 right-0 w-1 h-full cursor-col-resize hover:bg-teal-500 transition-colors z-50"
+          className="absolute top-0 right-0 w-1 h-full cursor-col-resize hover:bg-teal-500 dark:hover:bg-slate-700 transition-colors z-50"
         />
 
         <div className="flex items-center justify-between mb-6">
@@ -87,7 +87,7 @@ export const SystemSidebar = ({ onLogout }) => {
               setIsCollapsed(!isCollapsed);
               setSidebarWidth(isCollapsed ? 240 : 80);
             }}
-            className="w-9 h-9 flex items-center justify-center text-white hover:bg-teal-700 rounded-md transition-colors flex-shrink-0"
+            className="w-9 h-9 flex items-center justify-center text-white hover:bg-teal-700 dark:hover:bg-slate-800 rounded-md transition-colors flex-shrink-0"
           >
             {isCollapsed ? (
               <ChevronDown className="w-5 h-5 rotate-90" />
@@ -103,8 +103,8 @@ export const SystemSidebar = ({ onLogout }) => {
             return (
               <Link href={item.path} key={index} className="w-full">
                 <button
-                  className={`w-full h-14 rounded-full transition-colors hover:bg-teal-700 flex items-center ${
-                    itemIsActive ? 'bg-teal-700' : 'bg-transparent'
+                  className={`w-full h-14 rounded-full transition-colors hover:bg-teal-700 dark:hover:bg-slate-800 flex items-center ${
+                    itemIsActive ? 'bg-teal-700 dark:bg-slate-800' : 'bg-transparent'
                   }`}
                 >
                   <div
@@ -130,7 +130,7 @@ export const SystemSidebar = ({ onLogout }) => {
         <div className="mt-auto pt-4 border-t border-white/20">
           <button
             onClick={onLogout}
-            className={`w-full h-14 rounded-full transition-colors hover:bg-teal-700 bg-transparent flex items-center`}
+            className={`w-full h-14 rounded-full transition-colors hover:bg-teal-700 dark:hover:bg-slate-800 bg-transparent flex items-center`}
           >
             <div
               className={`flex items-center gap-2.5 ${isCollapsed ? 'px-10' : 'px-7'} overflow-hidden w-full`}
@@ -145,10 +145,10 @@ export const SystemSidebar = ({ onLogout }) => {
       </aside>
 
       <div
-        className="bg-teal-600 fixed top-0 h-25.5 z-0"
+        className="bg-teal-600 dark:bg-slate-900 fixed top-0 h-25.5 z-0"
         style={{ left: `${sidebarWidth}px`, right: 0 }}
       />
-      <div className="bg-teal-600 fixed top-0 right-0 w-25.5 h-full z-0" />
+      <div className="bg-teal-600 dark:bg-slate-900 fixed top-0 right-0 w-25.5 h-full z-0" />
     </>
   );
 };
