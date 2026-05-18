@@ -41,11 +41,13 @@ import {
   formatDateTime,
   SCOPE_LABELS,
 } from '@/constants/announcement';
+import { useTranslations } from 'next-intl';
 
 export default function AnnouncementsPage() {
   const { accessToken: token } = useTokenStore();
   const { user } = useUserStore();
   const queryClient = useQueryClient();
+  const t = useTranslations('announcements');
 
   const [composeOpen, setComposeOpen] = useState(false);
   const [editTarget, setEditTarget] = useState(null);
@@ -324,10 +326,8 @@ export default function AnnouncementsPage() {
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Announcements</h1>
-            <p className="text-gray-600 dark:text-gray-400 mt-1">
-              Compose and manage notices, events, and urgent updates for your audience.
-            </p>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">{t('title')}</h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-1">{t('subtitle')}</p>
           </div>
           {canCreate && (
             <button

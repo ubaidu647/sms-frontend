@@ -12,15 +12,12 @@ import { fetchData, patchData } from '@/utils/api';
 import toast from 'react-hot-toast';
 import { SUBJECT_TYPES, SUBJECT_CATEGORIES } from '@/constants/subject';
 import { resolveScope } from '@/utils/permissions';
-
-function currentAcademicYear() {
-  const y = new Date().getFullYear();
-  return `${y}-${y + 1}`;
-}
+import { useTranslations } from 'next-intl';
 
 export default function SubjectsPage() {
   const { accessToken: token } = useTokenStore();
   const { user } = useUserStore();
+  const t = useTranslations('subjects');
   const queryClient = useQueryClient();
 
   const [isAddOpen, setIsAddOpen] = useState(false);
@@ -32,12 +29,13 @@ export default function SubjectsPage() {
   const [limit, setLimit] = useState(20);
 
   // Filters — draft state holds in-progress UI values; applied state drives the API.
-  const defaultAcademicYear = currentAcademicYear();
+  // No auto academicYear filter on initial load, so newly created subjects always
+  // appear in the post-create refetch regardless of their class's academic year.
   const [draftSearch, setDraftSearch] = useState('');
   const [draftClassId, setDraftClassId] = useState('');
   const [draftSubjectType, setDraftSubjectType] = useState('');
   const [draftCategory, setDraftCategory] = useState('');
-  const [draftAcademicYear, setDraftAcademicYear] = useState(defaultAcademicYear);
+  const [draftAcademicYear, setDraftAcademicYear] = useState('');
   const [draftBranchId, setDraftBranchId] = useState('');
   const [draftIsActive, setDraftIsActive] = useState('true');
 
@@ -45,7 +43,7 @@ export default function SubjectsPage() {
   const [classId, setClassId] = useState('');
   const [subjectType, setSubjectType] = useState('');
   const [category, setCategory] = useState('');
-  const [academicYear, setAcademicYear] = useState(defaultAcademicYear);
+  const [academicYear, setAcademicYear] = useState('');
   const [branchId, setBranchId] = useState('');
   const [isActive, setIsActive] = useState('true');
   const [branchDropdownTouched, setBranchDropdownTouched] = useState(false);
@@ -66,14 +64,14 @@ export default function SubjectsPage() {
     setDraftClassId('');
     setDraftSubjectType('');
     setDraftCategory('');
-    setDraftAcademicYear(defaultAcademicYear);
+    setDraftAcademicYear('');
     setDraftBranchId('');
     setDraftIsActive('true');
     setSearch('');
     setClassId('');
     setSubjectType('');
     setCategory('');
-    setAcademicYear(defaultAcademicYear);
+    setAcademicYear('');
     setBranchId('');
     setIsActive('true');
     setPage(1);
@@ -293,12 +291,10 @@ export default function SubjectsPage() {
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
-              {isOwnOnly ? 'My Subjects' : 'Subjects'}
+              {isOwnOnly ? t('ownTitle') : t('title')}
             </h1>
             <p className="text-gray-600 dark:text-gray-400 mt-1">
-              {isOwnOnly
-                ? 'Subjects you are assigned to teach.'
-                : 'Manage subjects offered in each class'}
+              {isOwnOnly ? t('ownSubtitle') : t('subtitle')}
             </p>
           </div>
           {canCreate && (

@@ -31,6 +31,11 @@ export function middleware(req) {
     return NextResponse.redirect(new URL('/signin', req.url));
   }
 
+  // Personal pages every authenticated user can reach regardless of role.
+  if (pathname.startsWith('/dashboard/settings')) {
+    return NextResponse.next();
+  }
+
   const systemRoles = ['super-admin', 'admin', 'sub-admin'];
 
   // --- System roles

@@ -158,6 +158,10 @@ export const ACTIONS = {
   VIEW_ALL_BRANCH_PAYMENT: 'view-all-branch-payment',
   VOID_ALL_BRANCH_PAYMENT: 'void-all-branch-payment',
 
+  // ── Reports ───────────────────────────────────────
+  STUDENT_DEFAULTS_LIST_VIEW: 'student-defaults-list-view',
+  STUDENT_DEFAULTS_LIST_VIEW_ALL_BRANCH: 'student-defaults-list-view-all-branch',
+
   // ── Announcements ─────────────────────────────────
   CREATE_ANNOUNCEMENT: 'create-announcement',
   VIEW_ANNOUNCEMENT: 'view-announcement',
@@ -272,6 +276,8 @@ export const AVAILABLE_MENUS = [
   { key: 'timetable', label: 'Timetable' },
   { key: 'fee', label: 'Fees' },
   { key: 'announcement', label: 'Announcements' },
+  { key: 'report', label: 'Reports' },
+  { key: 'report-student-fee-defaulter', label: 'Reports — Student Fee Defaulter' },
   { key: 'vehicle', label: 'Transport — Vehicles' },
   { key: 'route', label: 'Transport — Routes' },
   { key: 'transport-assignment', label: 'Transport — Assignments' },
@@ -416,6 +422,10 @@ export const AVAILABLE_ACTIONS = [
   { key: ACTIONS.RECORD_ALL_BRANCH_PAYMENT,   label: 'Record Payment All Branch',   menu: 'fee' },
   { key: ACTIONS.VIEW_ALL_BRANCH_PAYMENT,     label: 'View Payment All Branch',     menu: 'fee' },
   { key: ACTIONS.VOID_ALL_BRANCH_PAYMENT,     label: 'Void Payment All Branch',     menu: 'fee' },
+
+  // Reports — Student Fee Defaulter
+  { key: ACTIONS.STUDENT_DEFAULTS_LIST_VIEW,            label: 'View Defaulters',                menu: 'report-student-fee-defaulter' },
+  { key: ACTIONS.STUDENT_DEFAULTS_LIST_VIEW_ALL_BRANCH, label: 'View Defaulters All Branch',     menu: 'report-student-fee-defaulter' },
 
   // Announcements
   { key: ACTIONS.VIEW_ANNOUNCEMENT,                label: 'View',              menu: 'announcement' },

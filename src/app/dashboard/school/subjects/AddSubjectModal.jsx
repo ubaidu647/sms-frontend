@@ -105,7 +105,19 @@ export default function AddSubjectModal({ isOpen, onClose, onSuccess }) {
     mutationFn: (payload) => postData({ url: '/subject/create', payload, token }),
     onSuccess: (res) => {
       const newSubject = res?.data;
-      queryClient.invalidateQueries({ queryKey: ['subjects'] });
+      // Push the new subject into every cached ['subjects', ...] list so the table
+      // updates without firing a /subject/list refetch. User explicitly wants no
+      // list API call after create.
+      if (newSubject) {
+        queryClient.setQueriesData({ queryKey: ['subjects'] }, (old) => {
+          if (!old) return old;
+          return {
+            ...old,
+            data: [newSubject, ...(old.data || [])],
+            total: (old.total || 0) + 1,
+          };
+        });
+      }
       toast.success(res?.message || 'Subject created successfully');
       onSuccess?.(newSubject);
       setSuccessState(true);

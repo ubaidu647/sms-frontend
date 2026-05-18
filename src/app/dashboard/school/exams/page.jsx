@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Table } from '@/component/Table';
 import {
@@ -14,6 +14,7 @@ import {
   RotateCcw,
   BarChart3,
   X,
+  Inbox,
 } from 'lucide-react';
 import AddExamModal from './AddExamModal';
 import EditExamModal from './EditExamModal';
@@ -36,12 +37,14 @@ import {
   currentAcademicYear,
   formatDate,
 } from '@/constants/exam';
+import { useTranslations } from 'next-intl';
 
 export default function ExamsPage() {
   const router = useRouter();
   const { accessToken: token } = useTokenStore();
   const { user } = useUserStore();
   const queryClient = useQueryClient();
+  const t = useTranslations('exams');
 
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [editExam, setEditExam] = useState(null);
@@ -101,8 +104,12 @@ export default function ExamsPage() {
 
   const examScope = resolveScope(user?.role, 'view-exam');
   const marksScope = resolveScope(user?.role, 'view-marks');
+  const teachingScope = resolveScope(user?.role, 'view-teaching-assignment');
   const isOrgLevel = examScope === 'all';
   const isOwnOnly = examScope === 'own' || (examScope === 'none' && marksScope === 'own');
+  // Teacher-mode: role only has self-scoped teaching assignments (no branch/all-branch grant).
+  // Backend narrows /exam/list to their assigned class/section/subject set.
+  const isTeacherMode = teachingScope === 'own' && !user?.role?.isPredefined;
   const canCreate =
     !isOwnOnly && hasAnyAction(user?.role, ['create-exam', 'create-all-branch-exam']);
   const canUpdate =
@@ -275,7 +282,7 @@ export default function ExamsPage() {
     userBranchId,
   ];
 
-  const { data } = useQuery({
+  const { data, isError, error, isLoading } = useQuery({
     queryKey,
     queryFn: async () => {
       const params = {};
@@ -292,10 +299,21 @@ export default function ExamsPage() {
     enabled: !!token && !!user,
   });
 
+  useEffect(() => {
+    if (!isError) return;
+    const msg = error?.response?.data?.message || error?.message || 'Failed to load exams';
+    toast.error(msg);
+  }, [isError, error]);
+
   const exams = data?.data || [];
   const filtered = search
     ? exams.filter((e) => e.name?.toLowerCase().includes(search.toLowerCase()))
     : exams;
+  const hasActiveFilters = !!(
+    search || classId || examType || status || branchId ||
+    academicYear !== defaultAcademicYear || isActive !== 'true'
+  );
+  const showEmptyState = !isLoading && !isError && filtered.length === 0;
 
   const handleRowAction = (action, row) => {
     if (action === 'view') router.push(`/dashboard/school/exams/${row._id}`);
@@ -314,10 +332,8 @@ export default function ExamsPage() {
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Exams</h1>
-            <p className="text-gray-600 dark:text-gray-400 mt-1">
-              Plan exams, schedule subjects, enter marks and publish results
-            </p>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">{t('title')}</h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-1">{t('subtitle')}</p>
           </div>
           {canCreate && (
             <button
@@ -436,19 +452,46 @@ export default function ExamsPage() {
           </button>
         </div>
 
-        <Table
-          columns={columns}
-          data={filtered}
-          rowActions={rowActions}
-          onRowAction={handleRowAction}
-          showImage={false}
-          visibleColumns={visibleColumns}
-          page={page}
-          limit={limit}
-          onPageChange={setPage}
-          onLimitChange={setLimit}
-          totalItems={data?.total}
-        />
+        {showEmptyState ? (
+          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 p-12 text-center">
+            <Inbox className="w-10 h-10 mx-auto text-gray-300 dark:text-gray-600 mb-3" />
+            {isTeacherMode && !hasActiveFilters ? (
+              <>
+                <p className="text-base font-semibold text-gray-700 dark:text-gray-200">
+                  No exams visible for your account
+                </p>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                  Aap kisi class ke liye assigned nahi hain. Apne admin se rabta karein.
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="text-base font-semibold text-gray-700 dark:text-gray-200">
+                  No exams found
+                </p>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                  {hasActiveFilters
+                    ? 'Try adjusting filters or clearing them.'
+                    : 'There are no exams to show yet.'}
+                </p>
+              </>
+            )}
+          </div>
+        ) : (
+          <Table
+            columns={columns}
+            data={filtered}
+            rowActions={rowActions}
+            onRowAction={handleRowAction}
+            showImage={false}
+            visibleColumns={visibleColumns}
+            page={page}
+            limit={limit}
+            onPageChange={setPage}
+            onLimitChange={setLimit}
+            totalItems={data?.total}
+          />
+        )}
 
         <AddExamModal
           isOpen={isAddOpen}

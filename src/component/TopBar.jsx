@@ -1,22 +1,25 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   Bell,
   Settings,
-  User,
   Users,
   LogOut,
   ChevronDown,
   Sun,
   Moon,
 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useThemeStore } from '@/store/themeStore';
 
 export const Topbar = ({ user = {}, userRole = {} }) => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const dropdownRef = useRef(null);
+  const router = useRouter();
   const theme = useThemeStore((s) => s.theme);
   const toggleTheme = useThemeStore((s) => s.toggleTheme);
   const isDark = theme === 'dark';
+  const t = useTranslations('topbar');
 
   const showUserManagement = ['super-admin', 'admin', 'subadmin'].includes(
     userRole?.name?.toLowerCase(),
@@ -38,7 +41,7 @@ export const Topbar = ({ user = {}, userRole = {} }) => {
       {/* Left side - User greeting */}
       <div className="flex items-center gap-2">
         <h1 className="text-xl font-semibold text-gray-800 dark:text-gray-100">
-          Hello, <span className="text-teal-600 dark:text-teal-400">{user.name}</span>
+          {t('greeting')} <span className="text-teal-600 dark:text-teal-400">{user.name}</span>
         </h1>
         <span className="text-xl">👋</span>
       </div>
@@ -48,8 +51,8 @@ export const Topbar = ({ user = {}, userRole = {} }) => {
         {/* Theme Toggle */}
         <button
           onClick={toggleTheme}
-          aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-          title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+          aria-label={isDark ? t('switchToLight') : t('switchToDark')}
+          title={isDark ? t('switchToLight') : t('switchToDark')}
           className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
         >
           {isDark ? (
@@ -85,22 +88,28 @@ export const Topbar = ({ user = {}, userRole = {} }) => {
                 <p className="text-xs text-gray-500 dark:text-gray-400 capitalize">{userRole?.name}</p>
               </div>
 
-              <button className="w-full flex items-center gap-3 px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-left">
-                <User className="w-4 h-4 text-gray-600 dark:text-gray-300" />
-                <span className="text-sm text-gray-700 dark:text-gray-200">Profile Settings</span>
+              <button
+                onClick={() => {
+                  setIsProfileOpen(false);
+                  router.push('/dashboard/settings');
+                }}
+                className="w-full flex items-center gap-3 px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-left"
+              >
+                <Settings className="w-4 h-4 text-gray-600 dark:text-gray-300" />
+                <span className="text-sm text-gray-700 dark:text-gray-200">{t('settings')}</span>
               </button>
 
               {showUserManagement && (
                 <button className="w-full flex items-center gap-3 px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-left">
                   <Users className="w-4 h-4 text-gray-600 dark:text-gray-300" />
-                  <span className="text-sm text-gray-700 dark:text-gray-200">User Management</span>
+                  <span className="text-sm text-gray-700 dark:text-gray-200">{t('userManagement')}</span>
                 </button>
               )}
 
               <div className="border-t border-gray-200 dark:border-gray-700 mt-2 pt-2">
                 <button className="w-full flex items-center gap-3 px-4 py-2 hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors text-left">
                   <LogOut className="w-4 h-4 text-red-600" />
-                  <span className="text-sm text-red-600">Logout</span>
+                  <span className="text-sm text-red-600">{t('logout')}</span>
                 </button>
               </div>
             </div>

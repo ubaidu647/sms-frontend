@@ -1,7 +1,7 @@
 'use client';
 import React, { useState, useMemo, useEffect } from 'react';
 import { Table } from '@/component/Table';
-import { Plus, Search, Eye, Edit, Trash2, Star, Users } from 'lucide-react';
+import { Plus, Search, Eye, Edit, Trash2, Star, Users, X } from 'lucide-react';
 import AddAssignmentModal from './AddAssignmentModal';
 import EditAssignmentModal from './EditAssignmentModal';
 import AssignmentDetailModal from './AssignmentDetailModal';
@@ -11,6 +11,7 @@ import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tansta
 import { fetchData, deleteData } from '@/utils/api';
 import toast from 'react-hot-toast';
 import { resolveScope, hasAnyAction } from '@/utils/permissions';
+import { useTranslations } from 'next-intl';
 
 function currentAcademicYear() {
   const y = new Date().getFullYear();
@@ -21,6 +22,7 @@ export default function TeacherAssignmentsPage() {
   const { accessToken: token } = useTokenStore();
   const { user } = useUserStore();
   const queryClient = useQueryClient();
+  const t = useTranslations('teacherAssignments');
 
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [addMode, setAddMode] = useState('single');
@@ -32,7 +34,17 @@ export default function TeacherAssignmentsPage() {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(20);
 
-  // Filters
+  // Filters — draft state holds in-progress UI values; applied state drives the list query.
+  const [draftAcademicYear, setDraftAcademicYear] = useState(currentAcademicYear());
+  const [draftClassId, setDraftClassId] = useState('');
+  const [draftSectionId, setDraftSectionId] = useState('');
+  const [draftSubjectId, setDraftSubjectId] = useState('');
+  const [draftRole, setDraftRole] = useState('');
+  const [draftIsPrimary, setDraftIsPrimary] = useState('');
+  const [draftBranchId, setDraftBranchId] = useState('');
+  const [draftIsActive, setDraftIsActive] = useState('true');
+  const [draftStaffSearch, setDraftStaffSearch] = useState('');
+
   const [academicYear, setAcademicYear] = useState(currentAcademicYear());
   const [classId, setClassId] = useState('');
   const [sectionId, setSectionId] = useState('');
@@ -43,6 +55,42 @@ export default function TeacherAssignmentsPage() {
   const [branchId, setBranchId] = useState('');
   const [isActive, setIsActive] = useState('true');
   const [staffSearch, setStaffSearch] = useState('');
+
+  const applyFilters = () => {
+    setAcademicYear(draftAcademicYear);
+    setClassId(draftClassId);
+    setSectionId(draftSectionId);
+    setSubjectId(draftSubjectId);
+    setRole(draftRole);
+    setIsPrimary(draftIsPrimary);
+    setBranchId(draftBranchId);
+    setIsActive(draftIsActive);
+    setStaffSearch(draftStaffSearch);
+    setPage(1);
+  };
+
+  const clearFilters = () => {
+    const ay = currentAcademicYear();
+    setDraftAcademicYear(ay);
+    setDraftClassId('');
+    setDraftSectionId('');
+    setDraftSubjectId('');
+    setDraftRole('');
+    setDraftIsPrimary('');
+    setDraftBranchId('');
+    setDraftIsActive('true');
+    setDraftStaffSearch('');
+    setAcademicYear(ay);
+    setClassId('');
+    setSectionId('');
+    setSubjectId('');
+    setRole('');
+    setIsPrimary('');
+    setBranchId('');
+    setIsActive('true');
+    setStaffSearch('');
+    setPage(1);
+  };
 
   // RBAC
   const scope = resolveScope(user?.role, 'view-teaching-assignment');
@@ -82,53 +130,54 @@ export default function TeacherAssignmentsPage() {
   const branches = branchData?.data || [];
 
   const effectiveBranchId = isOrgLevel ? branchId : userBranchId;
+  const draftEffectiveBranchId = isOrgLevel ? draftBranchId : userBranchId;
 
-  // Classes for filter
+  // Classes — cascade off draftBranchId + draftAcademicYear for instant dropdown refresh.
   const { data: classData } = useQuery({
-    queryKey: ['classes-dropdown', effectiveBranchId, academicYear],
+    queryKey: ['classes-dropdown', draftEffectiveBranchId, draftAcademicYear],
     queryFn: () =>
       fetchData({
         url: '/class/list',
         page: 1,
         limit: 200,
         token,
-        branchId: effectiveBranchId || undefined,
-        academicYear,
+        branchId: draftEffectiveBranchId || undefined,
+        academicYear: draftAcademicYear,
       }),
-    enabled: !!token && !!academicYear,
+    enabled: !!token && !!draftAcademicYear,
     staleTime: 60000,
   });
   const classes = classData?.data || [];
 
-  // Sections for filter (depends on class)
+  // Sections — driven by draftClassId.
   const { data: sectionData } = useQuery({
-    queryKey: ['sections-dropdown', classId],
-    queryFn: () => fetchData({ url: `/class/${classId}/sections`, token }),
-    enabled: !!token && !!classId,
+    queryKey: ['sections-dropdown', draftClassId],
+    queryFn: () => fetchData({ url: `/class/${draftClassId}/sections`, token }),
+    enabled: !!token && !!draftClassId,
     staleTime: 60000,
   });
   const sections = sectionData?.data || [];
 
-  // Subjects for filter (depends on class)
+  // Subjects — driven by draftClassId + draftAcademicYear.
   const { data: subjectData } = useQuery({
-    queryKey: ['subjects-dropdown', classId, academicYear],
+    queryKey: ['subjects-dropdown', draftClassId, draftAcademicYear],
     queryFn: () =>
       fetchData({
         url: '/subject/list',
         page: 1,
         limit: 200,
         token,
-        classId,
-        academicYear,
+        classId: draftClassId,
+        academicYear: draftAcademicYear,
       }),
-    enabled: !!token && !!classId,
+    enabled: !!token && !!draftClassId,
     staleTime: 60000,
   });
   const subjects = subjectData?.data || [];
 
-  // Reset cascading filters
-  useEffect(() => { setClassId(''); setSectionId(''); setSubjectId(''); }, [academicYear, branchId]);
-  useEffect(() => { setSectionId(''); setSubjectId(''); }, [classId]);
+  // Reset cascading filters on the draft side.
+  useEffect(() => { setDraftClassId(''); setDraftSectionId(''); setDraftSubjectId(''); }, [draftAcademicYear, draftBranchId]);
+  useEffect(() => { setDraftSectionId(''); setDraftSubjectId(''); }, [draftClassId]);
 
   const columns = useMemo(() => [
     {
@@ -292,8 +341,6 @@ export default function TeacherAssignmentsPage() {
     return assignments.filter((a) => a.staff?.user?.name?.toLowerCase().includes(q));
   }, [assignments, staffSearch]);
 
-  const resetPage = () => setPage(1);
-
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-800 p-6 rounded-[50px]">
       <div className="max-w-7xl mx-auto">
@@ -302,12 +349,10 @@ export default function TeacherAssignmentsPage() {
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
-              {isOwnOnly ? 'My Teaching Assignments' : 'Teacher Assignments'}
+              {isOwnOnly ? t('ownTitle') : t('title')}
             </h1>
             <p className="text-gray-600 dark:text-gray-400 mt-1">
-              {isOwnOnly
-                ? 'The classes and subjects you are assigned to teach.'
-                : 'Map teachers to subjects across classes and sections'}
+              {isOwnOnly ? t('ownSubtitle') : t('subtitle')}
             </p>
           </div>
           {canCreate && (
@@ -330,13 +375,11 @@ export default function TeacherAssignmentsPage() {
           )}
         </div>
 
-        {/* Filters — own-scope keeps these (year/class/section/subject/role/etc.)
-            The backend silently pins staffId + branchId to self, so only the
-            "Teacher name" search is hidden below. */}
+        {/* Filters — inputs bind to draft state; Search applies. */}
         <div className="mb-4 flex flex-wrap items-center gap-3">
           <select
-            value={isActive}
-            onChange={(e) => { setIsActive(e.target.value); resetPage(); }}
+            value={draftIsActive}
+            onChange={(e) => setDraftIsActive(e.target.value)}
             className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
           >
             <option value="true">Active</option>
@@ -348,17 +391,17 @@ export default function TeacherAssignmentsPage() {
             <input
               type="text"
               placeholder="Year (2025-2026)"
-              value={academicYear}
-              onChange={(e) => { setAcademicYear(e.target.value); resetPage(); }}
+              value={draftAcademicYear}
+              onChange={(e) => setDraftAcademicYear(e.target.value)}
               className="outline-none text-sm w-32 text-gray-900 dark:text-gray-100 placeholder:text-gray-400"
             />
           </div>
 
           {isOrgLevel && (
             <select
-              value={branchId}
+              value={draftBranchId}
               onFocus={() => setBranchDropdownTouched(true)}
-              onChange={(e) => { setBranchId(e.target.value); resetPage(); }}
+              onChange={(e) => setDraftBranchId(e.target.value)}
               className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
             >
               <option value="">All Branches</option>
@@ -369,8 +412,8 @@ export default function TeacherAssignmentsPage() {
           )}
 
           <select
-            value={classId}
-            onChange={(e) => { setClassId(e.target.value); resetPage(); }}
+            value={draftClassId}
+            onChange={(e) => setDraftClassId(e.target.value)}
             className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
           >
             <option value="">All Classes</option>
@@ -379,11 +422,11 @@ export default function TeacherAssignmentsPage() {
             ))}
           </select>
 
-          {classId && (
+          {draftClassId && (
             <>
               <select
-                value={sectionId}
-                onChange={(e) => { setSectionId(e.target.value); resetPage(); }}
+                value={draftSectionId}
+                onChange={(e) => setDraftSectionId(e.target.value)}
                 className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
               >
                 <option value="">All Sections</option>
@@ -393,8 +436,8 @@ export default function TeacherAssignmentsPage() {
               </select>
 
               <select
-                value={subjectId}
-                onChange={(e) => { setSubjectId(e.target.value); resetPage(); }}
+                value={draftSubjectId}
+                onChange={(e) => setDraftSubjectId(e.target.value)}
                 className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
               >
                 <option value="">All Subjects</option>
@@ -406,8 +449,8 @@ export default function TeacherAssignmentsPage() {
           )}
 
           <select
-            value={role}
-            onChange={(e) => { setRole(e.target.value); resetPage(); }}
+            value={draftRole}
+            onChange={(e) => setDraftRole(e.target.value)}
             className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
           >
             <option value="">All Roles</option>
@@ -417,8 +460,8 @@ export default function TeacherAssignmentsPage() {
           </select>
 
           <select
-            value={isPrimary}
-            onChange={(e) => { setIsPrimary(e.target.value); resetPage(); }}
+            value={draftIsPrimary}
+            onChange={(e) => setDraftIsPrimary(e.target.value)}
             className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
           >
             <option value="">Primary & Co</option>
@@ -432,12 +475,29 @@ export default function TeacherAssignmentsPage() {
               <input
                 type="text"
                 placeholder="Teacher name..."
-                value={staffSearch}
-                onChange={(e) => setStaffSearch(e.target.value)}
+                value={draftStaffSearch}
+                onChange={(e) => setDraftStaffSearch(e.target.value)}
                 className="outline-none text-sm w-36 text-gray-900 dark:text-gray-100 placeholder:text-gray-400"
               />
             </div>
           )}
+
+          <button
+            type="button"
+            onClick={applyFilters}
+            className="flex items-center gap-1 px-3 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 text-sm"
+          >
+            <Search className="w-4 h-4" />
+            Search
+          </button>
+          <button
+            type="button"
+            onClick={clearFilters}
+            className="flex items-center gap-1 px-3 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 text-sm"
+          >
+            <X className="w-4 h-4" />
+            Clear
+          </button>
         </div>
 
         <Table

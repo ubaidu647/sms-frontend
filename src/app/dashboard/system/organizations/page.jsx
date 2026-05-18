@@ -9,6 +9,7 @@ import { AddOrganizationModal } from '@/component/AddOrganizationModal';
 import { useTokenStore } from '@/store/tokenStore';
 import { useOrganizations } from './hooks/useOrganization';
 import { useOrganizationStore } from './store/organizationStore';
+import { useTranslations } from 'next-intl';
 
 const mockDisabledOrganizations = [
   {
@@ -26,6 +27,7 @@ const mockDisabledOrganizations = [
 export default function organization() {
   const { accessToken: token } = useTokenStore();
   const { data, isLoading } = useOrganizations({ token });
+  const t = useTranslations('organizations');
   const mockOrganizations = useOrganizationStore((state) => state.organizations);
   const [activeTab, setActiveTab] = useState('active');
   const [filters, setFilters] = useState({
@@ -195,8 +197,8 @@ export default function organization() {
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Organizations</h1>
-            <p className="text-gray-600 dark:text-gray-400 mt-1">Manage all your organizations</p>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">{t('title')}</h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-1">{t('subtitle')}</p>
           </div>
           <button
             onClick={() => setIsModalOpen(true)}

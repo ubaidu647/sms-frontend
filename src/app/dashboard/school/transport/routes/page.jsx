@@ -21,11 +21,13 @@ import {
   ROUTE_STATUS_COLORS,
 } from '@/constants/transport';
 import { formatMoney } from '@/constants/fee';
+import { useTranslations } from 'next-intl';
 
 export default function RoutesPage() {
   const { accessToken: token } = useTokenStore();
   const { user } = useUserStore();
   const queryClient = useQueryClient();
+  const t = useTranslations('routes');
 
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [editTarget, setEditTarget] = useState(null);
@@ -239,10 +241,8 @@ export default function RoutesPage() {
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Routes</h1>
-            <p className="text-gray-600 dark:text-gray-400 mt-1">
-              Define pickup/drop routes with stops, fees, and an assigned vehicle.
-            </p>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">{t('title')}</h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-1">{t('subtitle')}</p>
           </div>
           {canCreate && (
             <button

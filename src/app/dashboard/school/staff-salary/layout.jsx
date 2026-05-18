@@ -4,18 +4,16 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useUserStore } from '@/store/userStore';
 import { LayoutDashboard, ListTree, Receipt, Scale } from 'lucide-react';
-import { canSee, resolveScope } from '@/utils/permissions';
+import { canSee, canEditScope } from '@/utils/permissions';
 
 const TABS = [
   {
     label: 'Dashboard',
     href: '/dashboard/school/staff-salary/dashboard',
     icon: LayoutDashboard,
-    // Dashboard is a branch-aggregate view — own-scope users shouldn't see it.
-    canAccess: (role) => {
-      const scope = resolveScope(role, 'view-payslip');
-      return scope === 'all' || scope === 'branch';
-    },
+    // Branch-aggregate view — needs the menu AND a non-own payslip grant.
+    canAccess: (role, menus) =>
+      menus.includes('salary-dashboard') && canEditScope(role, 'view-payslip'),
   },
   {
     label: 'Salary Structures',
@@ -40,11 +38,15 @@ const TABS = [
 export default function StaffSalaryLayout({ children }) {
   const pathname = usePathname();
   const { user } = useUserStore();
+  const menus = user?.role?.menus || [];
 
-  const visibleTabs = TABS.filter((t) => t.canAccess(user?.role));
+  const isPredefined = !!user?.role?.isPredefined;
+  const visibleTabs = TABS.filter(
+    (t) => isPredefined || t.canAccess(user?.role, menus),
+  );
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden bg-gray-50 dark:bg-gray-800">
+    <div className="flex-1 flex flex-col overflow-hidden bg-gray-50 dark:bg-gray-800 rounded-[20px]">
       <div className="max-w-7xl mx-auto px-6 pt-6 w-full">
         <div className="flex items-center gap-1 border-b border-gray-200 dark:border-gray-700 overflow-x-auto scrollbar-hide">
           {visibleTabs.map((tab) => {

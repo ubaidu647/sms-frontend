@@ -5,7 +5,7 @@ import { useUserStore } from '@/store/userStore';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { fetchData, postData } from '@/utils/api';
 import toast from 'react-hot-toast';
-import { Save, CheckCircle2, CalendarDays } from 'lucide-react';
+import { Save, CheckCircle2, CalendarDays, Search, X } from 'lucide-react';
 import {
   STATUS_CONFIG,
   STAFF_LEAVE_TYPES,
@@ -36,9 +36,31 @@ export default function MarkStaffAttendancePanel() {
     actions.includes('mark-all-branch-staff-attendance');
   const userBranchId = user?.branchId || user?.branch?._id || '';
 
+  // Filters — draft state holds in-progress UI values; applied state drives the roster query.
+  const [draftDate, setDraftDate] = useState(todayISO());
+  const [draftBranchId, setDraftBranchId] = useState(isOrgLevel ? '' : userBranchId);
+  const [draftStaffType, setDraftStaffType] = useState('');
+
   const [date, setDate] = useState(todayISO());
   const [branchId, setBranchId] = useState(isOrgLevel ? '' : userBranchId);
   const [staffType, setStaffType] = useState('');
+
+  const applyFilters = () => {
+    setDate(draftDate);
+    setBranchId(draftBranchId);
+    setStaffType(draftStaffType);
+  };
+
+  const clearFilters = () => {
+    const t = todayISO();
+    const bId = isOrgLevel ? '' : userBranchId;
+    setDraftDate(t);
+    setDraftBranchId(bId);
+    setDraftStaffType('');
+    setDate(t);
+    setBranchId(bId);
+    setStaffType('');
+  };
 
   const [entries, setEntries] = useState({});
 
@@ -218,8 +240,8 @@ export default function MarkStaffAttendancePanel() {
             <div>
               <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">Branch</label>
               <select
-                value={branchId}
-                onChange={(e) => setBranchId(e.target.value)}
+                value={draftBranchId}
+                onChange={(e) => setDraftBranchId(e.target.value)}
                 className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 outline-none focus:border-teal-500"
               >
                 <option value="">Select branch...</option>
@@ -235,8 +257,8 @@ export default function MarkStaffAttendancePanel() {
           <div>
             <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">Staff Type</label>
             <select
-              value={staffType}
-              onChange={(e) => setStaffType(e.target.value)}
+              value={draftStaffType}
+              onChange={(e) => setDraftStaffType(e.target.value)}
               className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 outline-none focus:border-teal-500 capitalize"
             >
               <option value="">All</option>
@@ -254,13 +276,32 @@ export default function MarkStaffAttendancePanel() {
               <CalendarDays className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500 pointer-events-none" />
               <input
                 type="date"
-                value={date}
+                value={draftDate}
                 max={todayISO()}
-                onChange={(e) => setDate(e.target.value)}
+                onChange={(e) => setDraftDate(e.target.value)}
                 className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 outline-none focus:border-teal-500"
               />
             </div>
           </div>
+        </div>
+
+        <div className="flex flex-wrap gap-2 mt-3">
+          <button
+            type="button"
+            onClick={applyFilters}
+            className="flex items-center gap-1 px-3 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 text-sm"
+          >
+            <Search className="w-4 h-4" />
+            Search
+          </button>
+          <button
+            type="button"
+            onClick={clearFilters}
+            className="flex items-center gap-1 px-3 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 text-sm"
+          >
+            <X className="w-4 h-4" />
+            Clear
+          </button>
         </div>
       </div>
 

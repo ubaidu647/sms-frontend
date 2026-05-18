@@ -11,6 +11,7 @@ import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tansta
 import { fetchData, deleteData, patchData } from '@/utils/api';
 import { AVAILABLE_MENUS, AVAILABLE_ACTIONS } from '@/constants/rolePermissions';
 import toast from 'react-hot-toast';
+import { useTranslations } from 'next-intl';
 
 function twoMonthsBeforeISO() {
   const d = new Date();
@@ -63,6 +64,7 @@ export default function RolesPage() {
   const { accessToken: token } = useTokenStore();
   const { user } = useUserStore();
   const queryClient = useQueryClient();
+  const t = useTranslations('roles');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [detailRoleId, setDetailRoleId] = useState(null);
   const [editRole, setEditRole] = useState(null);
@@ -295,8 +297,8 @@ export default function RolesPage() {
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Roles</h1>
-            <p className="text-gray-600 dark:text-gray-400 mt-1">Manage staff roles and permissions</p>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">{t('title')}</h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-1">{t('subtitle')}</p>
           </div>
           <button
             onClick={() => setIsModalOpen(true)}

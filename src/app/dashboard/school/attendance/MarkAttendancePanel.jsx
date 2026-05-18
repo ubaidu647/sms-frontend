@@ -5,7 +5,7 @@ import { useUserStore } from '@/store/userStore';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { fetchData, postData } from '@/utils/api';
 import toast from 'react-hot-toast';
-import { Save, CheckCircle2, CalendarDays } from 'lucide-react';
+import { Save, CheckCircle2, CalendarDays, Search, X } from 'lucide-react';
 
 const STATUS_CONFIG = [
   { value: 'present',  label: 'Present',  color: 'bg-green-100 text-green-800 border-green-300',   activeColor: 'bg-green-600 text-white border-green-700' },
@@ -36,11 +36,42 @@ export default function MarkAttendancePanel() {
   const isOrgLevel = isAdmin || actions.includes('view-all-branch-attendance') || actions.includes('mark-all-branch-attendance');
   const userBranchId = user?.branchId || user?.branch?._id || '';
 
+  // Filters — draft state holds in-progress UI values; applied state drives the roster query.
+  const [draftDate, setDraftDate] = useState(todayISO());
+  const [draftAcademicYear, setDraftAcademicYear] = useState(currentAcademicYear());
+  const [draftBranchId, setDraftBranchId] = useState(isOrgLevel ? '' : userBranchId);
+  const [draftClassId, setDraftClassId] = useState('');
+  const [draftSectionId, setDraftSectionId] = useState('');
+
   const [date, setDate] = useState(todayISO());
   const [academicYear, setAcademicYear] = useState(currentAcademicYear());
   const [branchId, setBranchId] = useState(isOrgLevel ? '' : userBranchId);
   const [classId, setClassId] = useState('');
   const [sectionId, setSectionId] = useState('');
+
+  const applyFilters = () => {
+    setDate(draftDate);
+    setAcademicYear(draftAcademicYear);
+    setBranchId(draftBranchId);
+    setClassId(draftClassId);
+    setSectionId(draftSectionId);
+  };
+
+  const clearFilters = () => {
+    const t = todayISO();
+    const ay = currentAcademicYear();
+    const bId = isOrgLevel ? '' : userBranchId;
+    setDraftDate(t);
+    setDraftAcademicYear(ay);
+    setDraftBranchId(bId);
+    setDraftClassId('');
+    setDraftSectionId('');
+    setDate(t);
+    setAcademicYear(ay);
+    setBranchId(bId);
+    setClassId('');
+    setSectionId('');
+  };
 
   // Per-student state — keyed by studentId
   const [entries, setEntries] = useState({});
@@ -55,36 +86,38 @@ export default function MarkAttendancePanel() {
   const branches = branchData?.data || [];
 
   const effectiveBranchId = isOrgLevel ? branchId : userBranchId;
+  const draftEffectiveBranchId = isOrgLevel ? draftBranchId : userBranchId;
 
-  // Classes
+  // Classes — cascade off both draftBranchId and draftAcademicYear so the dropdown
+  // refreshes immediately when either changes (no Search click required).
   const { data: classData } = useQuery({
-    queryKey: ['classes-dropdown', effectiveBranchId, academicYear],
+    queryKey: ['classes-dropdown', draftEffectiveBranchId, draftAcademicYear],
     queryFn: () =>
       fetchData({
         url: '/class/list',
         page: 1,
         limit: 200,
         token,
-        branchId: effectiveBranchId,
-        academicYear,
+        branchId: draftEffectiveBranchId,
+        academicYear: draftAcademicYear,
       }),
-    enabled: !!token && !!effectiveBranchId && !!academicYear,
+    enabled: !!token && !!draftEffectiveBranchId && !!draftAcademicYear,
     staleTime: 60000,
   });
   const classes = classData?.data || [];
 
-  // Sections
+  // Sections — driven by draftClassId so it cascades on selection without waiting for Search.
   const { data: sectionData } = useQuery({
-    queryKey: ['sections-dropdown', classId],
-    queryFn: () => fetchData({ url: `/class/${classId}/sections`, token }),
-    enabled: !!token && !!classId,
+    queryKey: ['sections-dropdown', draftClassId],
+    queryFn: () => fetchData({ url: `/class/${draftClassId}/sections`, token }),
+    enabled: !!token && !!draftClassId,
     staleTime: 60000,
   });
   const sections = sectionData?.data || [];
 
-  // Reset cascade
-  useEffect(() => { setClassId(''); setSectionId(''); }, [effectiveBranchId, academicYear]);
-  useEffect(() => { setSectionId(''); }, [classId]);
+  // Reset cascade on draft side — clear class/section when branch or academic year changes.
+  useEffect(() => { setDraftClassId(''); setDraftSectionId(''); }, [draftEffectiveBranchId, draftAcademicYear]);
+  useEffect(() => { setDraftSectionId(''); }, [draftClassId]);
 
   // Daily roster
   const dailyKey = ['attendance-daily', classId, sectionId, date];
@@ -193,8 +226,8 @@ export default function MarkAttendancePanel() {
             <div>
               <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">Branch</label>
               <select
-                value={branchId}
-                onChange={(e) => setBranchId(e.target.value)}
+                value={draftBranchId}
+                onChange={(e) => setDraftBranchId(e.target.value)}
                 className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 outline-none focus:border-teal-500"
               >
                 <option value="">Select branch...</option>
@@ -208,8 +241,8 @@ export default function MarkAttendancePanel() {
           <div>
             <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">Academic Year</label>
             <input
-              value={academicYear}
-              onChange={(e) => setAcademicYear(e.target.value)}
+              value={draftAcademicYear}
+              onChange={(e) => setDraftAcademicYear(e.target.value)}
               placeholder="2025-2026"
               className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder:text-gray-400 outline-none focus:border-teal-500"
             />
@@ -218,12 +251,12 @@ export default function MarkAttendancePanel() {
           <div>
             <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">Class</label>
             <select
-              value={classId}
-              onChange={(e) => setClassId(e.target.value)}
-              disabled={!effectiveBranchId}
+              value={draftClassId}
+              onChange={(e) => setDraftClassId(e.target.value)}
+              disabled={!draftEffectiveBranchId}
               className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 outline-none focus:border-teal-500 disabled:bg-gray-50"
             >
-              <option value="">{effectiveBranchId ? 'Select class...' : 'Select branch first'}</option>
+              <option value="">{draftEffectiveBranchId ? 'Select class...' : 'Select branch first'}</option>
               {classes.map((c) => (
                 <option key={c._id} value={c._id}>
                   {c.name} {c.grade ? `(Grade ${c.grade})` : ''}
@@ -235,12 +268,12 @@ export default function MarkAttendancePanel() {
           <div>
             <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">Section</label>
             <select
-              value={sectionId}
-              onChange={(e) => setSectionId(e.target.value)}
-              disabled={!classId}
+              value={draftSectionId}
+              onChange={(e) => setDraftSectionId(e.target.value)}
+              disabled={!draftClassId}
               className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 outline-none focus:border-teal-500 disabled:bg-gray-50"
             >
-              <option value="">{classId ? 'Select section...' : 'Select class first'}</option>
+              <option value="">{draftClassId ? 'Select section...' : 'Select class first'}</option>
               {sections.map((s) => (
                 <option key={s._id} value={s._id}>
                   {s.name} ({s.currentStrength}/{s.capacity})
@@ -255,13 +288,32 @@ export default function MarkAttendancePanel() {
               <CalendarDays className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500 pointer-events-none" />
               <input
                 type="date"
-                value={date}
+                value={draftDate}
                 max={todayISO()}
-                onChange={(e) => setDate(e.target.value)}
+                onChange={(e) => setDraftDate(e.target.value)}
                 className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 outline-none focus:border-teal-500"
               />
             </div>
           </div>
+        </div>
+
+        <div className="flex flex-wrap gap-2 mt-3">
+          <button
+            type="button"
+            onClick={applyFilters}
+            className="flex items-center gap-1 px-3 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 text-sm"
+          >
+            <Search className="w-4 h-4" />
+            Search
+          </button>
+          <button
+            type="button"
+            onClick={clearFilters}
+            className="flex items-center gap-1 px-3 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 text-sm"
+          >
+            <X className="w-4 h-4" />
+            Clear
+          </button>
         </div>
       </div>
 

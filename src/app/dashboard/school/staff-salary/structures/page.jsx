@@ -16,11 +16,13 @@ import StructureFormModal from './StructureFormModal';
 import ConfirmModal from '../../fees/ConfirmModal';
 import { formatMoney, formatDate } from '@/constants/staffSalary';
 import { resolveScope, hasAnyAction } from '@/utils/permissions';
+import { useTranslations } from 'next-intl';
 
 export default function StructuresPage() {
   const { accessToken: token } = useTokenStore();
   const { user } = useUserStore();
   const queryClient = useQueryClient();
+  const t = useTranslations('salaryStructures');
 
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [editTarget, setEditTarget] = useState(null);
@@ -225,12 +227,8 @@ export default function StructuresPage() {
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
-              Salary Structures
-            </h1>
-            <p className="text-gray-600 dark:text-gray-400 mt-1">
-              Define basic salary, allowances, and deductions per staff member.
-            </p>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">{t('title')}</h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-1">{t('subtitle')}</p>
           </div>
           {canCreate && (
             <button

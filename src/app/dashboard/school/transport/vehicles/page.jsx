@@ -20,11 +20,13 @@ import {
   VEHICLE_STATUS_COLORS,
   VEHICLE_TYPES,
 } from '@/constants/transport';
+import { useTranslations } from 'next-intl';
 
 export default function VehiclesPage() {
   const { accessToken: token } = useTokenStore();
   const { user } = useUserStore();
   const queryClient = useQueryClient();
+  const t = useTranslations('vehicles');
 
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [editTarget, setEditTarget] = useState(null);
@@ -210,10 +212,8 @@ export default function VehiclesPage() {
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Vehicles</h1>
-            <p className="text-gray-600 dark:text-gray-400 mt-1">
-              Buses, vans and other vehicles available for student transport.
-            </p>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">{t('title')}</h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-1">{t('subtitle')}</p>
           </div>
           {canCreate && (
             <button

@@ -10,10 +10,12 @@ import {
   todayYMD,
 } from '@/constants/fee';
 import { TrendingUp } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 export default function CollectionReportPage() {
   const { accessToken: token } = useTokenStore();
   const { user } = useUserStore();
+  const t = useTranslations('collectionReport');
 
   const [from, setFrom] = useState(todayYMD());
   const [to, setTo] = useState(todayYMD());
@@ -53,9 +55,9 @@ export default function CollectionReportPage() {
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-              <TrendingUp className="w-7 h-7 text-teal-600" /> Collection Report
+              <TrendingUp className="w-7 h-7 text-teal-600" /> {t('title')}
             </h1>
-            <p className="text-gray-600 dark:text-gray-400 mt-1">Daily / monthly cashbook by payment method.</p>
+            <p className="text-gray-600 dark:text-gray-400 mt-1">{t('subtitle')}</p>
           </div>
         </div>
 

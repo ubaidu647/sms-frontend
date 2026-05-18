@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { useState } from "react";
 import ThemeInit from "@/component/ThemeInit";
+import IntlProvider from "@/component/IntlProvider";
 
 export default function Providers({ children }) {
     // Create query client only once
@@ -22,7 +23,7 @@ export default function Providers({ children }) {
     return (
         <QueryClientProvider client={queryClient}>
             <ThemeInit />
-            {children}
+            <IntlProvider>{children}</IntlProvider>
             <ReactQueryDevtools initialIsOpen={false} />
         </QueryClientProvider>
     );

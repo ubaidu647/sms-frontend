@@ -1,7 +1,7 @@
 'use client';
 import React, { useState, useMemo } from 'react';
 import { Table } from '@/component/Table';
-import { Plus, Search, Eye, Edit, Trash2, Ban, CheckCircle } from 'lucide-react';
+import { Plus, Search, Eye, Edit, Trash2, Ban, CheckCircle, X } from 'lucide-react';
 import AddStaffModal from './AddStaffModal';
 import EditStaffModal from './EditStaffModal';
 import StaffDetailModal from './StaffDetailModal';
@@ -11,15 +11,11 @@ import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tansta
 import { fetchData, deleteData, patchData } from '@/utils/api';
 import toast from 'react-hot-toast';
 import { resolveScope, hasAnyAction } from '@/utils/permissions';
-
-function twoMonthsBeforeISO() {
-  const d = new Date();
-  d.setMonth(d.getMonth() - 2);
-  return d.toISOString().slice(0, 10);
-}
+import { useTranslations } from 'next-intl';
 
 export default function StaffPage() {
   const { accessToken: token } = useTokenStore();
+  const t = useTranslations('staff');
   const { user } = useUserStore();
   const queryClient = useQueryClient();
 
@@ -32,7 +28,20 @@ export default function StaffPage() {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(20);
 
-  // Filters
+  // Filters — draft state holds in-progress UI values; applied state drives the API.
+  // Match classes pattern: no auto date-range filter on initial load, so newly
+  // created records always appear after invalidate. User can opt-in via pickers.
+  const [draftName, setDraftName] = useState('');
+  const [draftSerialNumber, setDraftSerialNumber] = useState('');
+  const [draftDesignation, setDraftDesignation] = useState('');
+  const [draftStaffType, setDraftStaffType] = useState('');
+  const [draftEmploymentType, setDraftEmploymentType] = useState('');
+  const [draftGender, setDraftGender] = useState('');
+  const [draftBranchId, setDraftBranchId] = useState('');
+  const [draftFromDate, setDraftFromDate] = useState('');
+  const [draftToDate, setDraftToDate] = useState('');
+  const [draftIsActive, setDraftIsActive] = useState('true');
+
   const [name, setName] = useState('');
   const [serialNumber, setSerialNumber] = useState('');
   const [designation, setDesignation] = useState('');
@@ -40,9 +49,47 @@ export default function StaffPage() {
   const [employmentType, setEmploymentType] = useState('');
   const [gender, setGender] = useState('');
   const [branchId, setBranchId] = useState('');
-  const [fromDate, setFromDate] = useState(twoMonthsBeforeISO());
-  const [toDate, setToDate] = useState(new Date().toISOString().slice(0, 10));
+  const [fromDate, setFromDate] = useState('');
+  const [toDate, setToDate] = useState('');
   const [isActive, setIsActive] = useState('true');
+
+  const applyFilters = () => {
+    setName(draftName);
+    setSerialNumber(draftSerialNumber);
+    setDesignation(draftDesignation);
+    setStaffType(draftStaffType);
+    setEmploymentType(draftEmploymentType);
+    setGender(draftGender);
+    setBranchId(draftBranchId);
+    setFromDate(draftFromDate);
+    setToDate(draftToDate);
+    setIsActive(draftIsActive);
+    setPage(1);
+  };
+
+  const clearFilters = () => {
+    setDraftName('');
+    setDraftSerialNumber('');
+    setDraftDesignation('');
+    setDraftStaffType('');
+    setDraftEmploymentType('');
+    setDraftGender('');
+    setDraftBranchId('');
+    setDraftFromDate('');
+    setDraftToDate('');
+    setDraftIsActive('true');
+    setName('');
+    setSerialNumber('');
+    setDesignation('');
+    setStaffType('');
+    setEmploymentType('');
+    setGender('');
+    setBranchId('');
+    setFromDate('');
+    setToDate('');
+    setIsActive('true');
+    setPage(1);
+  };
 
   // RBAC
   const scope = resolveScope(user?.role, 'view-staff');
@@ -252,8 +299,6 @@ export default function StaffPage() {
 
   const staff = data?.data || [];
 
-  const resetPage = () => setPage(1);
-
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-800 p-6 rounded-[50px]">
       <div className="max-w-7xl mx-auto">
@@ -262,12 +307,10 @@ export default function StaffPage() {
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
-              {isOwnOnly ? 'My Profile' : 'Staff'}
+              {isOwnOnly ? t('ownTitle') : t('title')}
             </h1>
             <p className="text-gray-600 dark:text-gray-400 mt-1">
-              {isOwnOnly
-                ? 'Your own staff profile.'
-                : 'Manage staff members and their accounts'}
+              {isOwnOnly ? t('ownSubtitle') : t('subtitle')}
             </p>
           </div>
           {canCreate && !isOwnOnly && (
@@ -289,15 +332,25 @@ export default function StaffPage() {
           {/* Date range */}
           <div className="flex items-center bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 gap-2">
             <label className="text-sm text-gray-500 dark:text-gray-400">From</label>
-            <input type="date" value={fromDate} onChange={(e) => { setFromDate(e.target.value); resetPage(); }} className="text-sm outline-none text-gray-900 dark:text-gray-100" />
+            <input
+              type="date"
+              value={draftFromDate}
+              onChange={(e) => setDraftFromDate(e.target.value)}
+              className="text-sm outline-none text-gray-900 dark:text-gray-100"
+            />
             <label className="text-sm text-gray-500 dark:text-gray-400">To</label>
-            <input type="date" value={toDate} onChange={(e) => { setToDate(e.target.value); resetPage(); }} className="text-sm outline-none text-gray-900 dark:text-gray-100" />
+            <input
+              type="date"
+              value={draftToDate}
+              onChange={(e) => setDraftToDate(e.target.value)}
+              className="text-sm outline-none text-gray-900 dark:text-gray-100"
+            />
           </div>
 
           {/* Active / Blocked toggle */}
           <select
-            value={isActive}
-            onChange={(e) => { setIsActive(e.target.value); resetPage(); }}
+            value={draftIsActive}
+            onChange={(e) => setDraftIsActive(e.target.value)}
             className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
           >
             <option value="true">Active</option>
@@ -311,8 +364,9 @@ export default function StaffPage() {
             <input
               type="text"
               placeholder="Name..."
-              value={name}
-              onChange={(e) => { setName(e.target.value); resetPage(); }}
+              value={draftName}
+              onChange={(e) => setDraftName(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') applyFilters(); }}
               className="outline-none text-sm w-32 text-gray-900 dark:text-gray-100 placeholder:text-gray-400"
             />
           </div>
@@ -322,8 +376,9 @@ export default function StaffPage() {
             <input
               type="text"
               placeholder="Designation..."
-              value={designation}
-              onChange={(e) => { setDesignation(e.target.value); resetPage(); }}
+              value={draftDesignation}
+              onChange={(e) => setDraftDesignation(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') applyFilters(); }}
               className="outline-none text-sm w-32 text-gray-900 dark:text-gray-100 placeholder:text-gray-400"
             />
           </div>
@@ -333,16 +388,17 @@ export default function StaffPage() {
             <input
               type="text"
               placeholder="Serial no..."
-              value={serialNumber}
-              onChange={(e) => { setSerialNumber(e.target.value); resetPage(); }}
+              value={draftSerialNumber}
+              onChange={(e) => setDraftSerialNumber(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') applyFilters(); }}
               className="outline-none text-sm w-28 text-gray-900 dark:text-gray-100 placeholder:text-gray-400"
             />
           </div>
 
           {/* Staff type */}
           <select
-            value={staffType}
-            onChange={(e) => { setStaffType(e.target.value); resetPage(); }}
+            value={draftStaffType}
+            onChange={(e) => setDraftStaffType(e.target.value)}
             className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
           >
             <option value="">All Types</option>
@@ -352,8 +408,8 @@ export default function StaffPage() {
 
           {/* Employment type */}
           <select
-            value={employmentType}
-            onChange={(e) => { setEmploymentType(e.target.value); resetPage(); }}
+            value={draftEmploymentType}
+            onChange={(e) => setDraftEmploymentType(e.target.value)}
             className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
           >
             <option value="">All Employment</option>
@@ -365,8 +421,8 @@ export default function StaffPage() {
 
           {/* Gender */}
           <select
-            value={gender}
-            onChange={(e) => { setGender(e.target.value); resetPage(); }}
+            value={draftGender}
+            onChange={(e) => setDraftGender(e.target.value)}
             className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
           >
             <option value="">All Genders</option>
@@ -378,9 +434,9 @@ export default function StaffPage() {
           {/* Branch filter — org-level only */}
           {isOrgLevel && (
             <select
-              value={branchId}
+              value={draftBranchId}
               onFocus={() => setBranchDropdownTouched(true)}
-              onChange={(e) => { setBranchId(e.target.value); resetPage(); }}
+              onChange={(e) => setDraftBranchId(e.target.value)}
               className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
             >
               <option value="">All Branches</option>
@@ -389,6 +445,23 @@ export default function StaffPage() {
               ))}
             </select>
           )}
+
+          <button
+            type="button"
+            onClick={applyFilters}
+            className="flex items-center gap-1 px-3 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 text-sm"
+          >
+            <Search className="w-4 h-4" />
+            Search
+          </button>
+          <button
+            type="button"
+            onClick={clearFilters}
+            className="flex items-center gap-1 px-3 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 text-sm"
+          >
+            <X className="w-4 h-4" />
+            Clear
+          </button>
         </div>
 
         <Table

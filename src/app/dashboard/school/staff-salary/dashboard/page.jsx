@@ -18,10 +18,12 @@ import {
   FileText,
   TrendingUp,
 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 export default function PayrollDashboardPage() {
   const { accessToken: token } = useTokenStore();
   const { user } = useUserStore();
+  const t = useTranslations('payrollDashboard');
 
   const actions = user?.role?.actions || [];
   const isAdmin = !!user?.role?.isPredefined;
@@ -72,12 +74,8 @@ export default function PayrollDashboardPage() {
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
-              Payroll Dashboard
-            </h1>
-            <p className="text-gray-600 dark:text-gray-400 mt-1">
-              Branch-level totals and payslip status for the selected month.
-            </p>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">{t('title')}</h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-1">{t('subtitle')}</p>
           </div>
           <div className="flex flex-wrap gap-2">
             {isOrgLevel && (

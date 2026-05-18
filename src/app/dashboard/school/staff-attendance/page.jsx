@@ -8,9 +8,11 @@ import UnmarkedBranchesPanel from './UnmarkedBranchesPanel';
 import CalendarViewPanel from './CalendarViewPanel';
 import OwnAttendancePanel from './OwnAttendancePanel';
 import { resolveScope, hasAnyAction } from '@/utils/permissions';
+import { useTranslations } from 'next-intl';
 
 export default function StaffAttendancePage() {
   const { user } = useUserStore();
+  const t = useTranslations('staffAttendance');
 
   const scope = resolveScope(user?.role, 'view-staff-attendance');
   const isOrgLevel = scope === 'all';
@@ -27,8 +29,8 @@ export default function StaffAttendancePage() {
       <div className="min-h-screen bg-gray-50 dark:bg-gray-800 p-6 rounded-[50px]">
         <div className="max-w-7xl mx-auto">
           <div className="mb-6">
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Staff Attendance</h1>
-            <p className="text-gray-600 dark:text-gray-400 mt-1">Your own attendance history.</p>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">{t('ownTitle')}</h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-1">{t('ownSubtitle')}</p>
           </div>
           <OwnAttendancePanel />
         </div>
@@ -53,10 +55,8 @@ export default function StaffAttendancePage() {
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Staff Attendance</h1>
-            <p className="text-gray-600 dark:text-gray-400 mt-1">
-              Mark and review daily staff attendance for payroll
-            </p>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">{t('title')}</h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-1">{t('subtitle')}</p>
           </div>
         </div>
 

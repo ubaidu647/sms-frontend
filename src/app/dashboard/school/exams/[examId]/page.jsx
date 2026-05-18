@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import {
   ArrowLeft,
@@ -44,6 +44,8 @@ export default function ExamDetailPage() {
   const [publishTarget, setPublishTarget] = useState(null);
 
   const isOwnOnly = resolveScope(user?.role, 'view-exam') === 'own';
+  const teachingScope = resolveScope(user?.role, 'view-teaching-assignment');
+  const isTeacherMode = teachingScope === 'own' && !user?.role?.isPredefined;
   const canUpdate =
     !isOwnOnly && hasAnyAction(user?.role, ['update-exam', 'update-all-branch-exam']);
   const canPublish = !isOwnOnly && hasAnyAction(user?.role, ['publish-exam']);
@@ -51,14 +53,30 @@ export default function ExamDetailPage() {
     !isOwnOnly && hasAnyAction(user?.role, ['enter-marks', 'enter-all-branch-marks']);
   const canViewMarks = resolveScope(user?.role, 'view-marks') !== 'none';
 
-  const { data: examRes, isLoading } = useQuery({
+  const { data: examRes, isLoading, isError, error } = useQuery({
     queryKey: ['exam-detail', examId],
     queryFn: () => fetchData({ url: `/exam/${examId}`, token }),
     enabled: !!token && !!examId,
+    retry: false,
   });
   const exam = examRes?.data;
   const isLocked = exam?.status === 'published';
   const subjects = exam?.subjects || [];
+
+  const forbiddenMsg = useMemo(() => {
+    if (!isError) return null;
+    if (error?.response?.status === 403) {
+      return error?.response?.data?.message || 'You are not assigned to this exam class';
+    }
+    return null;
+  }, [isError, error]);
+
+  useEffect(() => {
+    if (!isError) return;
+    const msg =
+      error?.response?.data?.message || error?.message || 'Failed to load exam';
+    toast.error(msg);
+  }, [isError, error]);
 
   const deleteSubjectMutation = useMutation({
     mutationFn: (id) => deleteData({ url: `/exam/${examId}/subjects/${id}`, token }),
@@ -181,7 +199,26 @@ export default function ExamDetailPage() {
   if (!exam) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-800 p-6 rounded-[50px]">
-        <div className="max-w-7xl mx-auto text-gray-500 dark:text-gray-400">Exam not found.</div>
+        <div className="max-w-7xl mx-auto">
+          <button
+            onClick={() => router.push('/dashboard/school/exams')}
+            className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 mb-4"
+          >
+            <ArrowLeft className="w-4 h-4" /> Back to exams
+          </button>
+          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 p-12 text-center text-gray-500 dark:text-gray-400">
+            {forbiddenMsg ? (
+              <>
+                <p className="text-base font-semibold text-gray-700 dark:text-gray-200">
+                  Access restricted
+                </p>
+                <p className="text-sm mt-1">{forbiddenMsg}</p>
+              </>
+            ) : (
+              'Exam not found.'
+            )}
+          </div>
+        </div>
       </div>
     );
   }
@@ -303,7 +340,15 @@ export default function ExamDetailPage() {
 
           {subjects.length === 0 ? (
             <div className="text-center py-12 text-gray-500 dark:text-gray-400 text-sm">
-              No subjects added yet. Click <strong>Add Subject</strong> to schedule one.
+              {isTeacherMode ? (
+                'Is exam mein aapka koi assigned subject nahi hai.'
+              ) : canUpdate && !isLocked ? (
+                <>
+                  No subjects added yet. Click <strong>Add Subject</strong> to schedule one.
+                </>
+              ) : (
+                'No subjects scheduled for this exam.'
+              )}
             </div>
           ) : (
             <Table

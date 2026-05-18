@@ -16,11 +16,13 @@ import FeeStructureFormModal from './FeeStructureFormModal';
 import StructureDetailModal from './StructureDetailModal';
 import ConfirmModal from '../ConfirmModal';
 import { currentAcademicYear, formatMoney } from '@/constants/fee';
+import { useTranslations } from 'next-intl';
 
 export default function FeeStructuresPage() {
   const { accessToken: token } = useTokenStore();
   const { user } = useUserStore();
   const queryClient = useQueryClient();
+  const t = useTranslations('feeStructures');
 
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [editTarget, setEditTarget] = useState(null);
@@ -227,11 +229,8 @@ export default function FeeStructuresPage() {
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Fee Structures</h1>
-            <p className="text-gray-600 dark:text-gray-400 mt-1">
-              One structure per class per academic year. Define monthly, one-time, annual, and
-              quarterly components.
-            </p>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">{t('title')}</h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-1">{t('subtitle')}</p>
           </div>
           {canCreate && (
             <button

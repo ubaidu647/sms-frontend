@@ -9,6 +9,7 @@ import { useTokenStore } from '@/store/tokenStore';
 import { useUserStore } from '@/store/userStore';
 import { useQuery } from '@tanstack/react-query';
 import { fetchData } from '@/utils/api';
+import { useTranslations } from 'next-intl';
 
 function twoMonthsBeforeISO() {
   const d = new Date();
@@ -20,6 +21,7 @@ export default function BranchesPage() {
   const router = useRouter();
   const { accessToken: token } = useTokenStore();
   const { user } = useUserStore();
+  const t = useTranslations('branches');
   const isAdmin = !!user?.role?.isPredefined;
   const actions = user?.role?.actions || [];
   const canViewAllProfiles =
@@ -160,8 +162,8 @@ export default function BranchesPage() {
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Branches</h1>
-            <p className="text-gray-600 dark:text-gray-400 mt-1">Manage branch locations and their report branding</p>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">{t('title')}</h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-1">{t('subtitle')}</p>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
             <Link

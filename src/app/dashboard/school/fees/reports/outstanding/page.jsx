@@ -11,10 +11,12 @@ import {
   formatMoney,
 } from '@/constants/fee';
 import { TrendingDown } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 export default function OutstandingReportPage() {
   const { accessToken: token } = useTokenStore();
   const { user } = useUserStore();
+  const t = useTranslations('outstandingFees');
 
   const [classId, setClassId] = useState('');
   const [sectionId, setSectionId] = useState('');
@@ -91,9 +93,9 @@ export default function OutstandingReportPage() {
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-              <TrendingDown className="w-7 h-7 text-red-500" /> Outstanding Fees
+              <TrendingDown className="w-7 h-7 text-red-500" /> {t('title')}
             </h1>
-            <p className="text-gray-600 dark:text-gray-400 mt-1">Defaulters ranked by outstanding amount.</p>
+            <p className="text-gray-600 dark:text-gray-400 mt-1">{t('subtitle')}</p>
           </div>
         </div>
 

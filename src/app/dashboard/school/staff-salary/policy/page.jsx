@@ -12,6 +12,7 @@ import {
   canSee,
 } from '@/utils/permissions';
 import { STAFF_TYPES } from '@/constants/staffSalary';
+import { useTranslations } from 'next-intl';
 
 const inputCls =
   'w-full px-3 py-2 border border-gray-200 rounded-lg outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 text-sm text-gray-900 bg-white placeholder:text-gray-400 disabled:bg-gray-50 disabled:text-gray-500';
@@ -82,6 +83,7 @@ export default function StaffSalaryPolicyPage() {
   const { accessToken: token } = useTokenStore();
   const { user } = useUserStore();
   const queryClient = useQueryClient();
+  const t = useTranslations('salaryPolicy');
 
   const scope = resolveScope(user?.role, 'view-staff-salary-policy');
   const isOrgLevel = scope === 'all';
@@ -188,12 +190,9 @@ export default function StaffSalaryPolicyPage() {
           <div>
             <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
               <Scale className="w-7 h-7 text-teal-600" />
-              Salary Policy
+              {t('title')}
             </h1>
-            <p className="text-gray-600 dark:text-gray-400 mt-1 text-sm">
-              Define attendance-driven deduction and bonus rules. One policy per
-              staff type, applied automatically when payslips are generated.
-            </p>
+            <p className="text-gray-600 dark:text-gray-400 mt-1 text-sm">{t('subtitle')}</p>
           </div>
         </div>
 

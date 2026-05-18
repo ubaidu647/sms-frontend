@@ -11,6 +11,7 @@ import { useUserStore } from '@/store/userStore';
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { fetchData, patchData } from '@/utils/api';
 import toast from 'react-hot-toast';
+import { useTranslations } from 'next-intl';
 
 const GRADES      = ['nursery','kg-1','kg-2','1','2','3','4','5','6','7','8','9','10','11','12'];
 const CLASS_TYPES = ['pre-primary','primary','middle','secondary','higher-secondary'];
@@ -25,6 +26,7 @@ export default function ClassesPage() {
   const { accessToken: token } = useTokenStore();
   const { user } = useUserStore();
   const queryClient = useQueryClient();
+  const t = useTranslations('classes');
 
   const [isAddOpen,      setIsAddOpen]      = useState(false);
   const [editClass,      setEditClass]      = useState(null);
@@ -221,8 +223,8 @@ export default function ClassesPage() {
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Classes</h1>
-            <p className="text-gray-600 dark:text-gray-400 mt-1">Manage classes and their sections</p>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">{t('title')}</h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-1">{t('subtitle')}</p>
           </div>
           {canCreate && (
             <button

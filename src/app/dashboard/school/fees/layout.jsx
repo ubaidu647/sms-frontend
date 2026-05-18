@@ -58,7 +58,7 @@ export default function FeesLayout({ children }) {
   const visibleTabs = TABS.filter((t) => t.canAccess(user?.role));
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden bg-gray-50 dark:bg-gray-800">
+    <div className="flex-1 flex flex-col overflow-hidden bg-gray-50 dark:bg-gray-800 rounded-[20px]">
       <div className="max-w-7xl mx-auto px-6 pt-6 w-full print:hidden">
         <div className="flex items-center gap-1 border-b border-gray-200 dark:border-gray-700 overflow-x-auto scrollbar-hide">
           {visibleTabs.map((tab) => {

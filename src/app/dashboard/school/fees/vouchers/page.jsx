@@ -12,6 +12,7 @@ import {
   UserPlus,
   RefreshCw,
   X,
+  FileStack,
 } from 'lucide-react';
 import { useTokenStore } from '@/store/tokenStore';
 import { useUserStore } from '@/store/userStore';
@@ -28,6 +29,7 @@ import LateFeeModal from './LateFeeModal';
 import RegenerateVoucherModal from './RegenerateVoucherModal';
 import RegenerateSectionModal from './RegenerateSectionModal';
 import RecordPaymentModal from '../payments/RecordPaymentModal';
+import StudentPickerModal from './consolidated/StudentPickerModal';
 import {
   VOUCHER_STATUSES,
   VOUCHER_STATUS_COLORS,
@@ -36,12 +38,14 @@ import {
   formatMoney,
   formatMonth,
 } from '@/constants/fee';
+import { useTranslations } from 'next-intl';
 
 export default function VouchersPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { accessToken: token } = useTokenStore();
   const { user } = useUserStore();
+  const t = useTranslations('vouchers');
 
   const [genSectionOpen, setGenSectionOpen] = useState(false);
   const [genStudentOpen, setGenStudentOpen] = useState(false);
@@ -50,6 +54,7 @@ export default function VouchersPage() {
   const [lateFeeTarget, setLateFeeTarget] = useState(null);
   const [regenTarget, setRegenTarget] = useState(null);
   const [paymentTarget, setPaymentTarget] = useState(null);
+  const [consolidatedPickerOpen, setConsolidatedPickerOpen] = useState(false);
 
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(20);
@@ -313,6 +318,8 @@ export default function VouchersPage() {
       items.push({ label: 'Regenerate', value: 'regenerate', icon: RefreshCw });
     if (canDelete && row.status !== 'void' && row.status !== 'paid')
       items.push({ label: 'Void', value: 'void', icon: Ban });
+    if (!isOwnOnly)
+      items.push({ label: 'Consolidated Slip', value: 'consolidated', icon: FileStack });
     return items;
   };
 
@@ -322,6 +329,10 @@ export default function VouchersPage() {
     if (action === 'late-fee') setLateFeeTarget(row);
     if (action === 'regenerate') setRegenTarget(row);
     if (action === 'void') setVoidTarget(row);
+    if (action === 'consolidated') {
+      const sid = row.studentId?._id || row.studentId || row.student?._id;
+      if (sid) router.push(`/dashboard/school/fees/vouchers/consolidated/${sid}`);
+    }
   };
 
   return (
@@ -329,12 +340,19 @@ export default function VouchersPage() {
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Vouchers</h1>
-            <p className="text-gray-600 dark:text-gray-400 mt-1">
-              Monthly fee vouchers — generated, paid, and tracked.
-            </p>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">{t('title')}</h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-1">{t('subtitle')}</p>
           </div>
           <div className="flex gap-2">
+            {!isOwnOnly && (
+              <button
+                onClick={() => setConsolidatedPickerOpen(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-900 border border-indigo-200 text-indigo-700 dark:text-indigo-400 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-950/40 transition-colors"
+              >
+                <FileStack className="w-4 h-4" />
+                Consolidated Slip
+              </button>
+            )}
             {canGenerate && (
               <button
                 onClick={() => setGenStudentOpen(true)}
@@ -522,6 +540,10 @@ export default function VouchersPage() {
           isOpen={!!paymentTarget}
           onClose={() => setPaymentTarget(null)}
           voucher={paymentTarget}
+        />
+        <StudentPickerModal
+          isOpen={consolidatedPickerOpen}
+          onClose={() => setConsolidatedPickerOpen(false)}
         />
       </div>
     </div>

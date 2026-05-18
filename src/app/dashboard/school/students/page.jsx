@@ -21,6 +21,7 @@ import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tansta
 import { fetchData, patchData } from '@/utils/api';
 import toast from 'react-hot-toast';
 import { resolveScope, hasAnyAction } from '@/utils/permissions';
+import { useTranslations } from 'next-intl';
 
 const ACADEMIC_STATUSES = [
   'enrolled',
@@ -40,6 +41,7 @@ export default function StudentsPage() {
   const { accessToken: token } = useTokenStore();
   const { user } = useUserStore();
   const queryClient = useQueryClient();
+  const t = useTranslations('students');
 
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [editStudent, setEditStudent] = useState(null);
@@ -348,12 +350,10 @@ export default function StudentsPage() {
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
-              {isOwnOnly ? 'My Profile' : 'Students'}
+              {isOwnOnly ? t('ownTitle') : t('title')}
             </h1>
             <p className="text-gray-600 dark:text-gray-400 mt-1">
-              {isOwnOnly
-                ? 'Your own student profile.'
-                : 'Manage student enrollments and records'}
+              {isOwnOnly ? t('ownSubtitle') : t('subtitle')}
             </p>
           </div>
           {canCreate && !isOwnOnly && (

@@ -213,7 +213,8 @@ export default function VoucherDetailPage() {
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mb-6">
-              <Info label="Student" value={voucher.studentId?.user?.name || voucher.studentId?.admissionNumber} />
+              <Info label="Student Name" value={voucher.studentId?.user?.name} />
+              <Info label="Father Name" value={voucher.studentId?.father?.name} />
               <Info label="Admission #" value={voucher.studentId?.admissionNumber} />
               <Info label="Roll" value={voucher.studentId?.rollNumber} />
               <Info label="Class" value={`${voucher.classId?.name || ''} ${voucher.sectionId?.name ? `· ${voucher.sectionId.name}` : ''}`} />
@@ -279,10 +280,21 @@ export default function VoucherDetailPage() {
               </table>
             </div>
 
-            <div className="flex flex-col items-end gap-1 text-sm">
-              <Total label="Total" value={voucher.totalAmount} />
-              <Total label="Paid" value={voucher.paidAmount} tone="text-green-700" />
-              <Total label="Balance" value={voucher.balanceAmount} tone="text-red-700" big />
+            <div className="flex items-end justify-between gap-4">
+              {voucher.status === 'paid' && profile?.stamp ? (
+                <img
+                  src={profile.stamp}
+                  alt="Paid stamp"
+                  className="h-28 w-28 object-contain opacity-90 -rotate-12"
+                />
+              ) : (
+                <div />
+              )}
+              <div className="flex flex-col items-end gap-1 text-sm">
+                <Total label="Total" value={voucher.totalAmount} />
+                <Total label="Paid" value={voucher.paidAmount} tone="text-green-700" />
+                <Total label="Balance" value={voucher.balanceAmount} tone="text-red-700" big />
+              </div>
             </div>
           </div>
 

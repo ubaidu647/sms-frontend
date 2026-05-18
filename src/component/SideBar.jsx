@@ -18,10 +18,13 @@ import {
   UserCheck,
   CalendarCheck,
   BadgeDollarSign,
+  BarChart3,
+  TrendingDown,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { canSee } from '@/utils/permissions';
+import { useTranslations } from 'next-intl';
+import { canSee, canEditScope } from '@/utils/permissions';
 
 // `key` controls which menus appear in the role form / are stored on the role.
 // `base` is the view action used by canSee() — when set, sidebar visibility falls
@@ -29,7 +32,7 @@ import { canSee } from '@/utils/permissions';
 // only granted them view-own-X.
 const navigationItems = [
   {
-    label: 'Branches',
+    labelKey: 'branches',
     icon: 'https://c.animaapp.com/mi4xjeskxZrnLa/img/frame-1.svg',
     key: 'branch',
     base: 'view-branch',
@@ -37,7 +40,7 @@ const navigationItems = [
     path: '/dashboard/school/branches',
   },
   {
-    label: 'Staff',
+    labelKey: 'staff',
     icon: 'https://c.animaapp.com/mi4xjeskxZrnLa/img/layer-18.svg',
     key: 'staff',
     base: 'view-staff',
@@ -45,7 +48,7 @@ const navigationItems = [
     path: '/dashboard/school/staff',
   },
   {
-    label: 'Role',
+    labelKey: 'role',
     icon: 'https://c.animaapp.com/mi4xjeskxZrnLa/img/frame-3.svg',
     key: 'role',
     base: 'view-role',
@@ -53,7 +56,7 @@ const navigationItems = [
     path: '/dashboard/school/roles',
   },
   {
-    label: 'Classes',
+    labelKey: 'classes',
     iconComponent: GraduationCap,
     key: 'class',
     base: 'view-class',
@@ -61,7 +64,7 @@ const navigationItems = [
     path: '/dashboard/school/classes',
   },
   {
-    label: 'Subjects',
+    labelKey: 'subjects',
     iconComponent: BookOpen,
     key: 'subject',
     base: 'view-subject',
@@ -69,7 +72,7 @@ const navigationItems = [
     path: '/dashboard/school/subjects',
   },
   {
-    label: 'Students',
+    labelKey: 'students',
     iconComponent: Users,
     key: 'student',
     base: 'view-student',
@@ -77,7 +80,7 @@ const navigationItems = [
     path: '/dashboard/school/students',
   },
   {
-    label: 'Attendance',
+    labelKey: 'attendance',
     iconComponent: ClipboardCheck,
     key: 'attendance',
     base: 'view-attendance',
@@ -85,7 +88,7 @@ const navigationItems = [
     path: '/dashboard/school/attendance',
   },
   {
-    label: 'Staff Attendance',
+    labelKey: 'staffAttendance',
     iconComponent: CalendarCheck,
     key: 'staff-attendance',
     base: 'view-staff-attendance',
@@ -93,35 +96,37 @@ const navigationItems = [
     path: '/dashboard/school/staff-attendance',
   },
   {
-    label: 'Staff Salary',
+    labelKey: 'staffSalary',
     iconComponent: BadgeDollarSign,
     key: 'staff-salary',
     hasSubmenu: true,
     path: '/dashboard/school/staff-salary',
     submenu: [
       {
-        label: 'Dashboard',
+        labelKey: 'salaryDashboard',
         iconComponent: BadgeDollarSign,
         key: 'salary-dashboard',
-        base: 'view-payslip',
         path: '/dashboard/school/staff-salary/dashboard',
+        // Branch-aggregate view — needs the menu AND a non-own payslip grant.
+        canAccess: (role, menus) =>
+          menus.includes('salary-dashboard') && canEditScope(role, 'view-payslip'),
       },
       {
-        label: 'Salary Structures',
+        labelKey: 'salaryStructures',
         iconComponent: BadgeDollarSign,
         key: 'salary-structure',
         base: 'view-staff-salary',
         path: '/dashboard/school/staff-salary/structures',
       },
       {
-        label: 'Payslips',
+        labelKey: 'payslips',
         iconComponent: BadgeDollarSign,
         key: 'payslip',
         base: 'view-payslip',
         path: '/dashboard/school/staff-salary/payslips',
       },
       {
-        label: 'Policy',
+        labelKey: 'policy',
         iconComponent: BadgeDollarSign,
         key: 'salary-policy',
         base: 'view-staff-salary-policy',
@@ -130,7 +135,7 @@ const navigationItems = [
     ],
   },
   {
-    label: 'Teacher Assignments',
+    labelKey: 'teacherAssignments',
     iconComponent: BookUser,
     key: 'teaching-assignment',
     base: 'view-teaching-assignment',
@@ -138,7 +143,7 @@ const navigationItems = [
     path: '/dashboard/school/teacher-assignments',
   },
   {
-    label: 'Exams',
+    labelKey: 'exams',
     iconComponent: FileText,
     key: 'exam',
     base: 'view-exam',
@@ -146,7 +151,7 @@ const navigationItems = [
     path: '/dashboard/school/exams',
   },
   {
-    label: 'Timetable',
+    labelKey: 'timetable',
     iconComponent: CalendarClock,
     key: 'timetable',
     base: 'view-timetable',
@@ -154,7 +159,7 @@ const navigationItems = [
     path: '/dashboard/school/timetable',
   },
   {
-    label: 'Fees',
+    labelKey: 'fees',
     iconComponent: Wallet,
     key: 'fee',
     base: 'view-fee',
@@ -162,7 +167,7 @@ const navigationItems = [
     path: '/dashboard/school/fees',
   },
   {
-    label: 'Announcements',
+    labelKey: 'announcements',
     iconComponent: Megaphone,
     key: 'announcement',
     base: 'view-announcement',
@@ -170,28 +175,28 @@ const navigationItems = [
     path: '/dashboard/school/announcements',
   },
   {
-    label: 'Transport',
+    labelKey: 'transport',
     iconComponent: Bus,
     key: 'transport',
     hasSubmenu: true,
     path: '/dashboard/school/transport',
     submenu: [
       {
-        label: 'Vehicles',
+        labelKey: 'vehicles',
         iconComponent: Bus,
         key: 'vehicle',
         base: 'view-vehicle',
         path: '/dashboard/school/transport/vehicles',
       },
       {
-        label: 'Routes',
+        labelKey: 'routes',
         iconComponent: Map,
         key: 'route',
         base: 'view-route',
         path: '/dashboard/school/transport/routes',
       },
       {
-        label: 'Assignments',
+        labelKey: 'assignments',
         iconComponent: UserCheck,
         key: 'transport-assignment',
         base: 'view-transport-assignment',
@@ -200,12 +205,27 @@ const navigationItems = [
     ],
   },
   {
-    label: 'Branch Profile',
+    labelKey: 'branchProfile',
     iconComponent: Building2,
     key: 'branch-profile',
     base: 'view-branch-profile',
     hasSubmenu: false,
     path: '/dashboard/school/branches/profile',
+  },
+  {
+    labelKey: 'reports',
+    iconComponent: BarChart3,
+    key: 'report',
+    hasSubmenu: true,
+    path: '/dashboard/school/reports',
+    submenu: [
+      {
+        labelKey: 'reportStudentFeeDefaulter',
+        iconComponent: TrendingDown,
+        key: 'report-student-fee-defaulter',
+        path: '/dashboard/school/reports/defaulters',
+      },
+    ],
   },
 ];
 
@@ -216,6 +236,7 @@ export const Sidebar = ({ user = {}, menus = [], actions = [] }) => {
   const [isResizing, setIsResizing] = useState(false);
   const sidebarRef = useRef(null);
   const pathname = usePathname();
+  const t = useTranslations('sidebar');
 
   const toggleExpand = (index) => {
     const newExpanded = new Set(expandedItems);
@@ -242,8 +263,11 @@ export const Sidebar = ({ user = {}, menus = [], actions = [] }) => {
   // Visibility = (admin) OR (menu key granted) OR (any scope of base action granted).
   // Falling back to canSee(base) means own-scope users see the menu even if the
   // admin only ticked view-own-X without ticking the base menu.
-  const subVisible = (sub) =>
-    menus.includes(sub.key) || (sub.base && canSee(user?.role, sub.base));
+  // A submenu can supply its own canAccess(role, menus) for stricter rules.
+  const subVisible = (sub) => {
+    if (sub.canAccess) return sub.canAccess(user?.role, menus);
+    return menus.includes(sub.key) || (sub.base && canSee(user?.role, sub.base));
+  };
 
   const isItemVisible = (item) => {
     if (user?.role?.isPredefined) return true;
@@ -306,7 +330,7 @@ export const Sidebar = ({ user = {}, menus = [], actions = [] }) => {
 
         <div className="flex items-center justify-between mb-6">
           {!isCollapsed ? (
-            <div className="flex items-center gap-3">
+            <Link href="/dashboard/school" className="flex items-center gap-3 no-underline">
               <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center flex-shrink-0">
                 <svg
                   width="24"
@@ -319,10 +343,13 @@ export const Sidebar = ({ user = {}, menus = [], actions = [] }) => {
                   <path d="M2 17L12 22L22 17V12L12 17L2 12V17Z" fill="#00918e" />
                 </svg>
               </div>
-              <h2 className="text-white font-bold text-xl truncate">School Portal</h2>
-            </div>
+              <h2 className="text-white font-bold text-xl truncate">{t('schoolPortal')}</h2>
+            </Link>
           ) : (
-            <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
+            <Link
+              href="/dashboard/school"
+              className="w-10 h-10 bg-white rounded-lg flex items-center justify-center"
+            >
               <svg
                 width="24"
                 height="24"
@@ -333,7 +360,7 @@ export const Sidebar = ({ user = {}, menus = [], actions = [] }) => {
                 <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="#00918e" />
                 <path d="M2 17L12 22L22 17V12L12 17L2 12V17Z" fill="#00918e" />
               </svg>
-            </div>
+            </Link>
           )}
           <button
             onClick={() => {
@@ -356,6 +383,7 @@ export const Sidebar = ({ user = {}, menus = [], actions = [] }) => {
             const itemIsActive = item.hasSubmenu
               ? isParentActive(item)
               : isActive(item.path);
+            const itemLabel = t(item.labelKey);
             return (
               <div key={index} className="w-full">
                 {item.hasSubmenu ? (
@@ -378,7 +406,7 @@ export const Sidebar = ({ user = {}, menus = [], actions = [] }) => {
                       ) : (
                         <img
                           className="w-5 h-5 flex-shrink-0"
-                          alt={item.label}
+                          alt={itemLabel}
                           src={item.icon}
                           style={
                             itemIsActive
@@ -395,9 +423,9 @@ export const Sidebar = ({ user = {}, menus = [], actions = [] }) => {
                           <span
                             className="flex-1 text-left font-medium text-base truncate"
                             style={{ color: itemIsActive ? '#FFDC34' : '#ffffff' }}
-                            title={item.label}
+                            title={itemLabel}
                           >
-                            {item.label}
+                            {itemLabel}
                           </span>
                           <span className="text-white flex-shrink-0">
                             {expandedItems.has(index) ? (
@@ -430,7 +458,7 @@ export const Sidebar = ({ user = {}, menus = [], actions = [] }) => {
                       ) : (
                         <img
                           className="w-5 h-5 flex-shrink-0"
-                          alt={item.label}
+                          alt={itemLabel}
                           src={item.icon}
                           style={
                             itemIsActive
@@ -447,9 +475,9 @@ export const Sidebar = ({ user = {}, menus = [], actions = [] }) => {
                           className={`flex-1 text-left font-medium text-base truncate ${
                             itemIsActive ? 'text-yellow-300' : 'text-white'
                           }`}
-                          title={item.label}
+                          title={itemLabel}
                         >
-                          {item.label}
+                          {itemLabel}
                         </span>
                       )}
                     </div>
@@ -465,6 +493,7 @@ export const Sidebar = ({ user = {}, menus = [], actions = [] }) => {
                           pathname === sub.path ||
                           pathname.startsWith(sub.path + '/');
                         const SubIcon = sub.iconComponent;
+                        const subLabel = t(sub.labelKey);
                         return (
                           <Link
                             key={sub.path}
@@ -485,12 +514,12 @@ export const Sidebar = ({ user = {}, menus = [], actions = [] }) => {
                             )}
                             <span
                               className="truncate text-sm"
-                              title={sub.label}
+                              title={subLabel}
                               style={{
                                 color: subActive ? '#FFDC34' : '#ffffff',
                               }}
                             >
-                              {sub.label}
+                              {subLabel}
                             </span>
                           </Link>
                         );
@@ -514,7 +543,7 @@ export const Sidebar = ({ user = {}, menus = [], actions = [] }) => {
             >
               <LogOut className="w-5 h-5 flex-shrink-0 text-white" />
               {!isCollapsed && (
-                <span className="font-medium text-base text-white truncate">Logout</span>
+                <span className="font-medium text-base text-white truncate">{t('logout')}</span>
               )}
             </div>
           </button>

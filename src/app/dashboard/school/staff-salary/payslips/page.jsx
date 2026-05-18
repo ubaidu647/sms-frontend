@@ -17,10 +17,12 @@ import {
   currentMonth,
 } from '@/constants/staffSalary';
 import { resolveScope, hasAnyAction } from '@/utils/permissions';
+import { useTranslations } from 'next-intl';
 
 export default function PayslipsPage() {
   const { accessToken: token } = useTokenStore();
   const { user } = useUserStore();
+  const t = useTranslations('payslips');
 
   const [genOpen, setGenOpen] = useState(false);
   const [bulkOpen, setBulkOpen] = useState(false);
@@ -197,10 +199,8 @@ export default function PayslipsPage() {
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Payslips</h1>
-            <p className="text-gray-600 dark:text-gray-400 mt-1">
-              Generate, edit, and pay monthly payslips for staff.
-            </p>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">{t('title')}</h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-1">{t('subtitle')}</p>
           </div>
           {canGenerate && !isOwnOnly && (
             <div className="flex gap-2">

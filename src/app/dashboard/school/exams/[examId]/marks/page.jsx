@@ -13,6 +13,7 @@ import {
   formatDate,
   gradeFromPercentage,
 } from '@/constants/exam';
+import { resolveScope } from '@/utils/permissions';
 
 export default function MarksEntryPage() {
   const params = useParams();
@@ -29,15 +30,25 @@ export default function MarksEntryPage() {
   const isAdmin = !!user?.role?.isPredefined;
   const canEnter =
     isAdmin || actions.includes('enter-marks') || actions.includes('enter-all-branch-marks');
+  // Teacher-mode: role only carries `view-own-teaching-assignment`. Backend already blocks
+  // section/subject mismatches; we narrow the section dropdown so it doesn't even appear.
+  const teachingScope = resolveScope(user?.role, 'view-teaching-assignment');
+  const isTeacherMode = teachingScope === 'own' && !isAdmin;
 
   const [examSubjectId, setExamSubjectId] = useState(initialExamSubjectId);
   const [sectionId, setSectionId] = useState('');
   const [marks, setMarks] = useState({});
 
-  const { data: examRes, isLoading: examLoading } = useQuery({
+  const {
+    data: examRes,
+    isLoading: examLoading,
+    isError: examIsError,
+    error: examError,
+  } = useQuery({
     queryKey: ['exam-detail', examId],
     queryFn: () => fetchData({ url: `/exam/${examId}`, token }),
     enabled: !!token && !!examId,
+    retry: false,
   });
   const exam = examRes?.data;
   const examSubjects = exam?.subjects || [];
@@ -47,14 +58,63 @@ export default function MarksEntryPage() {
   const classId = exam?.class?._id || exam?.classId;
   const hasTheory = examSubject?.theoryMarks != null;
   const hasPractical = examSubject?.practicalMarks != null;
+  const examSubjectSubjectId =
+    typeof examSubject?.subject === 'object' ? examSubject?.subject?._id : examSubject?.subject;
 
-  const { data: sectionData } = useQuery({
+  useEffect(() => {
+    if (!examIsError) return;
+    const msg =
+      examError?.response?.data?.message || examError?.message || 'Failed to load exam';
+    toast.error(msg);
+  }, [examIsError, examError]);
+
+  // Admin / branch users: list every section in the class.
+  const { data: allSectionsData } = useQuery({
     queryKey: ['sections-dropdown', classId],
     queryFn: () => fetchData({ url: `/class/${classId}/sections`, token }),
-    enabled: !!token && !!classId,
+    enabled: !!token && !!classId && !isTeacherMode,
     staleTime: 60000,
   });
-  const sections = sectionData?.data || [];
+
+  // Teachers: only show sections from their own teaching assignments for the picked subject
+  // in this exam's class. Backend's `view-own-teaching-assignment` scope pins staffId to self.
+  const { data: teacherAssignData } = useQuery({
+    queryKey: ['teacher-sections', classId, examSubjectSubjectId],
+    queryFn: () =>
+      fetchData({
+        url: '/teaching-assignment/list',
+        page: 1,
+        limit: 200,
+        token,
+        classId,
+        subjectId: examSubjectSubjectId,
+        isActive: true,
+      }),
+    enabled: !!token && isTeacherMode && !!classId && !!examSubjectSubjectId,
+    staleTime: 60000,
+  });
+
+  const sections = useMemo(() => {
+    if (isTeacherMode) {
+      const assignments = teacherAssignData?.data || [];
+      const seen = new Map();
+      for (const a of assignments) {
+        const sec = a.section;
+        if (!sec?._id || seen.has(sec._id)) continue;
+        seen.set(sec._id, { _id: sec._id, name: sec.name });
+      }
+      return Array.from(seen.values());
+    }
+    return allSectionsData?.data || [];
+  }, [isTeacherMode, teacherAssignData, allSectionsData]);
+
+  // If the previously-chosen section is no longer in the narrowed list (e.g. teacher
+  // switched subjects), clear it so the user is forced to pick a valid one.
+  useEffect(() => {
+    if (!sectionId) return;
+    if (!sections.length) return;
+    if (!sections.some((s) => s._id === sectionId)) setSectionId('');
+  }, [sections, sectionId]);
 
   const { data: studentRes, isFetching: studentsLoading } = useQuery({
     queryKey: ['students-by-section', sectionId],
@@ -72,7 +132,12 @@ export default function MarksEntryPage() {
   });
   const students = studentRes?.data || [];
 
-  const { data: resultsRes, isFetching: resultsLoading } = useQuery({
+  const {
+    data: resultsRes,
+    isFetching: resultsLoading,
+    isError: resultsIsError,
+    error: resultsError,
+  } = useQuery({
     queryKey: ['exam-results', examId, examSubjectId, sectionId],
     queryFn: () =>
       fetchData({
@@ -83,8 +148,18 @@ export default function MarksEntryPage() {
       }),
     enabled: !!token && !!examId && !!examSubjectId && !!sectionId,
     staleTime: 0,
+    retry: false,
   });
   const existingResults = resultsRes?.data || [];
+
+  useEffect(() => {
+    if (!resultsIsError) return;
+    const msg =
+      resultsError?.response?.data?.message ||
+      resultsError?.message ||
+      'Failed to load results';
+    toast.error(msg);
+  }, [resultsIsError, resultsError]);
 
   useEffect(() => {
     if (!students.length) {
@@ -182,7 +257,24 @@ export default function MarksEntryPage() {
     return <div className="min-h-screen bg-gray-50 dark:bg-gray-800 p-6 rounded-[50px] text-gray-500 dark:text-gray-400">Loading exam…</div>;
   }
   if (!exam) {
-    return <div className="min-h-screen bg-gray-50 dark:bg-gray-800 p-6 rounded-[50px] text-gray-500 dark:text-gray-400">Exam not found.</div>;
+    const forbidden = examError?.response?.status === 403;
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-800 p-6 rounded-[50px]">
+        <div className="max-w-7xl mx-auto">
+          <button
+            onClick={() => router.push('/dashboard/school/exams')}
+            className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 mb-4"
+          >
+            <ArrowLeft className="w-4 h-4" /> Back to exams
+          </button>
+          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 p-12 text-center text-gray-500 dark:text-gray-400">
+            {forbidden
+              ? examError?.response?.data?.message || 'You are not assigned to this exam class'
+              : 'Exam not found.'}
+          </div>
+        </div>
+      </div>
+    );
   }
   if (!canEnter) {
     return (
@@ -234,7 +326,8 @@ export default function MarksEntryPage() {
               <select
                 value={examSubjectId}
                 onChange={(e) => setExamSubjectId(e.target.value)}
-                className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 outline-none focus:border-teal-500"
+                disabled={examSubjects.length === 0}
+                className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 outline-none focus:border-teal-500 disabled:bg-gray-50 dark:disabled:bg-gray-800"
               >
                 <option value="">Select subject...</option>
                 {examSubjects.map((s) => (
@@ -243,13 +336,21 @@ export default function MarksEntryPage() {
                   </option>
                 ))}
               </select>
+              {examSubjects.length === 0 && (
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  {isTeacherMode
+                    ? 'Is exam mein aapka koi assigned subject nahi hai.'
+                    : 'No subjects scheduled for this exam yet.'}
+                </p>
+              )}
             </div>
             <div>
               <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">Section</label>
               <select
                 value={sectionId}
                 onChange={(e) => setSectionId(e.target.value)}
-                className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 outline-none focus:border-teal-500"
+                disabled={isTeacherMode && (!examSubjectId || sections.length === 0)}
+                className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 outline-none focus:border-teal-500 disabled:bg-gray-50 dark:disabled:bg-gray-800"
               >
                 <option value="">Select section...</option>
                 {sections.map((s) => (
@@ -258,6 +359,16 @@ export default function MarksEntryPage() {
                   </option>
                 ))}
               </select>
+              {isTeacherMode && examSubjectId && sections.length === 0 && (
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  Aap is subject ke liye kisi section ko assigned nahi hain.
+                </p>
+              )}
+              {isTeacherMode && !examSubjectId && (
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  Pehle subject chunein — sirf wahi sections dikhayi denge jin mein aap parhate hain.
+                </p>
+              )}
             </div>
           </div>
 
