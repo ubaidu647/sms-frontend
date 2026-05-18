@@ -19,7 +19,7 @@
     "html2canvas-pro": "^2.0.2",
     "jspdf": "^4.2.1",
     "lucide-react": "^0.545.0",
-    "next": "15.5.5",
+    "next": "^15.5.18",
     "next-intl": "^4.12.0",
     "react": "19.1.0",
     "react-dom": "19.1.0",
