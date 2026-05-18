@@ -87,10 +87,7 @@ function Sparkline({ data, stroke, fill, height = 100 }) {
   const range = max - min || 1;
   const w = 100;
   const h = 40;
-  const pts = data.map((v, i) => [
-    (i / (data.length - 1)) * w,
-    h - ((v - min) / range) * h,
-  ]);
+  const pts = data.map((v, i) => [(i / (data.length - 1)) * w, h - ((v - min) / range) * h]);
   const line = pts.map(([x, y]) => `${x},${y}`).join(' ');
   const area = `0,${h} ${line} ${w},${h}`;
   return (
@@ -129,7 +126,14 @@ function StatCard({ title, value, percent, trend, bg }) {
 
       <div className="relative w-20 h-20 shrink-0">
         <svg className="w-full h-full -rotate-90" viewBox="0 0 64 64">
-          <circle cx="32" cy="32" r={radius} fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="6" />
+          <circle
+            cx="32"
+            cy="32"
+            r={radius}
+            fill="none"
+            stroke="rgba(255,255,255,0.25)"
+            strokeWidth="6"
+          />
           <circle
             cx="32"
             cy="32"
@@ -314,20 +318,29 @@ function GeneralView2() {
             Attendance Aurora
           </div>
           <div className="mt-4">
-            <Sparkline data={[40, 55, 50, 62, 68, 72, 26]} stroke="#a855f7" fill="rgba(168,85,247,0.18)" height={140} />
+            <Sparkline
+              data={[40, 55, 50, 62, 68, 72, 26]}
+              stroke="#a855f7"
+              fill="rgba(168,85,247,0.18)"
+              height={140}
+            />
           </div>
         </div>
         <div className="rounded-3xl p-6 bg-gradient-to-br from-cyan-50 to-blue-50 dark:from-slate-800 dark:to-slate-900 border border-white/60 dark:border-slate-700">
           <div className="text-[11px] uppercase tracking-widest text-cyan-700 dark:text-cyan-300">
             Calm Notes
           </div>
-          <div className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3">
-            Today
-          </div>
+          <div className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3">Today</div>
           <ul className="space-y-2.5 text-sm text-gray-700 dark:text-gray-300">
-            <li className="flex items-center gap-2"><Star className="w-4 h-4 text-amber-500" /> Class 5 leading at 85%</li>
-            <li className="flex items-center gap-2"><Heart className="w-4 h-4 text-rose-500" /> 2 new admissions</li>
-            <li className="flex items-center gap-2"><Clock className="w-4 h-4 text-blue-500" /> 9 fee vouchers due</li>
+            <li className="flex items-center gap-2">
+              <Star className="w-4 h-4 text-amber-500" /> Class 5 leading at 85%
+            </li>
+            <li className="flex items-center gap-2">
+              <Heart className="w-4 h-4 text-rose-500" /> 2 new admissions
+            </li>
+            <li className="flex items-center gap-2">
+              <Clock className="w-4 h-4 text-blue-500" /> 9 fee vouchers due
+            </li>
           </ul>
         </div>
       </div>
@@ -339,12 +352,18 @@ function GeneralView2() {
 
 function GeneralView3() {
   return (
-    <div className="bg-[#fbf6ec] dark:bg-slate-900 border-2 border-stone-300 dark:border-slate-700 rounded-2xl p-8 max-w-5xl mx-auto" style={{ fontFamily: 'Georgia, serif' }}>
+    <div
+      className="bg-[#fbf6ec] dark:bg-slate-900 border-2 border-stone-300 dark:border-slate-700 rounded-2xl p-8 max-w-5xl mx-auto"
+      style={{ fontFamily: 'Georgia, serif' }}
+    >
       <div className="text-center pb-3 border-b-4 border-double border-stone-700 dark:border-stone-500">
         <div className="text-[10px] uppercase tracking-[0.5em] text-stone-600 dark:text-stone-400">
           Vol. I · Wednesday, 16th May 2026 · Price: Free
         </div>
-        <h1 className="text-5xl md:text-6xl font-bold text-stone-900 dark:text-stone-100 mt-1" style={{ letterSpacing: '0.02em' }}>
+        <h1
+          className="text-5xl md:text-6xl font-bold text-stone-900 dark:text-stone-100 mt-1"
+          style={{ letterSpacing: '0.02em' }}
+        >
           The School Chronicle
         </h1>
         <div className="text-xs italic text-stone-600 dark:text-stone-400 mt-1">
@@ -358,9 +377,24 @@ function GeneralView3() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-stone-300 dark:divide-slate-700 py-5">
         {[
-          { headline: 'Attendance Holds', stat: '15 of 58', lede: 'Pupils answered the morning bell. A gentle dip from yesterday, attributable to seasonal flu.', tag: 'Page A1' },
-          { headline: 'Coffers Half-Filled', stat: '9 Vouchers', lede: 'Outstanding fees remain across all branches. Bursar urges parents to settle by Friday.', tag: 'Finance' },
-          { headline: 'Two New Pupils', stat: '+2', lede: 'Admissions desk welcomes two new students this week. Welcome notices posted on the board.', tag: 'Admissions' },
+          {
+            headline: 'Attendance Holds',
+            stat: '15 of 58',
+            lede: 'Pupils answered the morning bell. A gentle dip from yesterday, attributable to seasonal flu.',
+            tag: 'Page A1',
+          },
+          {
+            headline: 'Coffers Half-Filled',
+            stat: '9 Vouchers',
+            lede: 'Outstanding fees remain across all branches. Bursar urges parents to settle by Friday.',
+            tag: 'Finance',
+          },
+          {
+            headline: 'Two New Pupils',
+            stat: '+2',
+            lede: 'Admissions desk welcomes two new students this week. Welcome notices posted on the board.',
+            tag: 'Admissions',
+          },
         ].map((c, i) => (
           <div key={i} className="px-4 py-3">
             <div className="text-[10px] uppercase tracking-[0.3em] text-stone-500 dark:text-stone-400">
@@ -369,7 +403,9 @@ function GeneralView3() {
             <h3 className="text-2xl font-bold text-stone-900 dark:text-stone-100 mt-1 leading-tight">
               {c.headline}
             </h3>
-            <div className="my-3 text-4xl font-bold text-amber-700 dark:text-amber-400">{c.stat}</div>
+            <div className="my-3 text-4xl font-bold text-amber-700 dark:text-amber-400">
+              {c.stat}
+            </div>
             <p className="text-sm text-stone-700 dark:text-stone-300 leading-relaxed italic">
               {c.lede}
             </p>
@@ -402,10 +438,38 @@ function GeneralView3() {
 
 function GeneralView4() {
   const stats = [
-    { l: 'Students', v: '58', sub: 'on the roster', from: 'from-orange-400', to: 'to-pink-500', icon: Users },
-    { l: 'Present', v: '15', sub: 'today', from: 'from-emerald-400', to: 'to-teal-500', icon: CalendarCheck },
-    { l: 'Fees Due', v: '9', sub: 'vouchers', from: 'from-amber-400', to: 'to-orange-500', icon: Wallet },
-    { l: 'New Leads', v: '2', sub: 'this week', from: 'from-sky-400', to: 'to-violet-500', icon: Sparkles },
+    {
+      l: 'Students',
+      v: '58',
+      sub: 'on the roster',
+      from: 'from-orange-400',
+      to: 'to-pink-500',
+      icon: Users,
+    },
+    {
+      l: 'Present',
+      v: '15',
+      sub: 'today',
+      from: 'from-emerald-400',
+      to: 'to-teal-500',
+      icon: CalendarCheck,
+    },
+    {
+      l: 'Fees Due',
+      v: '9',
+      sub: 'vouchers',
+      from: 'from-amber-400',
+      to: 'to-orange-500',
+      icon: Wallet,
+    },
+    {
+      l: 'New Leads',
+      v: '2',
+      sub: 'this week',
+      from: 'from-sky-400',
+      to: 'to-violet-500',
+      icon: Sparkles,
+    },
   ];
   return (
     <div className="relative space-y-6">
@@ -460,7 +524,10 @@ function GeneralView4() {
         <div className="flex items-end gap-3 h-36">
           {[68, 72, 70, 78, 85, 60, 26].map((v, i) => (
             <div key={i} className="flex-1 flex flex-col items-center gap-2">
-              <div className="w-full rounded-full bg-pink-100 dark:bg-slate-700 overflow-hidden flex items-end" style={{ height: '110px' }}>
+              <div
+                className="w-full rounded-full bg-pink-100 dark:bg-slate-700 overflow-hidden flex items-end"
+                style={{ height: '110px' }}
+              >
                 <div
                   className="w-full rounded-full bg-gradient-to-t from-pink-400 via-orange-400 to-amber-300"
                   style={{ height: `${v}%` }}
@@ -494,7 +561,9 @@ function GeneralView5() {
           <div className="text-[10px] tracking-[0.3em] mt-1 text-gray-500">16 / 05 / 2026</div>
         </div>
         <div className="text-[10px] tracking-[0.3em] text-right">
-          KIRAN MODEL<br />SCHOOL · KARACHI
+          KIRAN MODEL
+          <br />
+          SCHOOL · KARACHI
         </div>
       </div>
 
@@ -527,7 +596,9 @@ function GeneralView5() {
         {[68, 72, 70, 78, 85, 60, 26].map((v, i) => (
           <div key={i} className="flex flex-col items-center gap-1">
             <div className="w-full bg-gray-900 dark:bg-gray-200" style={{ height: `${v}px` }} />
-            <div className="text-[9px] tracking-widest">{['M', 'T', 'W', 'T', 'F', 'S', 'S'][i]}</div>
+            <div className="text-[9px] tracking-widest">
+              {['M', 'T', 'W', 'T', 'F', 'S', 'S'][i]}
+            </div>
           </div>
         ))}
       </div>
@@ -543,22 +614,63 @@ function GeneralView5() {
 
 function GeneralView6() {
   const cards = [
-    { l: 'Students Today', v: '15/58', tag: 'Karachi · Main', tone: 'bg-amber-50', stripe: 'bg-amber-500', rot: '-rotate-2', icon: Users },
-    { l: 'Fees Cleared', v: '50/59', tag: 'Finance Desk', tone: 'bg-emerald-50', stripe: 'bg-emerald-500', rot: 'rotate-1', icon: Wallet },
-    { l: 'New Admissions', v: '2', tag: 'This Week', tone: 'bg-rose-50', stripe: 'bg-rose-500', rot: '-rotate-1', icon: Sparkles },
-    { l: 'Staff On Duty', v: '0/8', tag: 'Reminder', tone: 'bg-sky-50', stripe: 'bg-sky-500', rot: 'rotate-2', icon: GraduationCap },
+    {
+      l: 'Students Today',
+      v: '15/58',
+      tag: 'Karachi · Main',
+      tone: 'bg-amber-50',
+      stripe: 'bg-amber-500',
+      rot: '-rotate-2',
+      icon: Users,
+    },
+    {
+      l: 'Fees Cleared',
+      v: '50/59',
+      tag: 'Finance Desk',
+      tone: 'bg-emerald-50',
+      stripe: 'bg-emerald-500',
+      rot: 'rotate-1',
+      icon: Wallet,
+    },
+    {
+      l: 'New Admissions',
+      v: '2',
+      tag: 'This Week',
+      tone: 'bg-rose-50',
+      stripe: 'bg-rose-500',
+      rot: '-rotate-1',
+      icon: Sparkles,
+    },
+    {
+      l: 'Staff On Duty',
+      v: '0/8',
+      tag: 'Reminder',
+      tone: 'bg-sky-50',
+      stripe: 'bg-sky-500',
+      rot: 'rotate-2',
+      icon: GraduationCap,
+    },
   ];
   return (
     <div className="space-y-8 px-4">
-      <div className="relative bg-stone-100 dark:bg-slate-800 rounded-3xl p-7 border border-stone-200 dark:border-slate-700 max-w-3xl mx-auto" style={{ backgroundImage: 'radial-gradient(rgba(0,0,0,0.04) 1px, transparent 1px)', backgroundSize: '20px 20px' }}>
+      <div
+        className="relative bg-stone-100 dark:bg-slate-800 rounded-3xl p-7 border border-stone-200 dark:border-slate-700 max-w-3xl mx-auto"
+        style={{
+          backgroundImage: 'radial-gradient(rgba(0,0,0,0.04) 1px, transparent 1px)',
+          backgroundSize: '20px 20px',
+        }}
+      >
         <div className="flex items-center gap-3">
           <Pin className="w-5 h-5 text-rose-500" />
           <div>
             <div className="text-[10px] uppercase tracking-[0.3em] text-stone-500 dark:text-stone-400">
               The School Pinboard
             </div>
-            <h2 className="text-3xl font-bold text-stone-900 dark:text-stone-100 mt-1" style={{ fontFamily: '"Caveat", "Comic Sans MS", cursive' }}>
-              Today's notes & numbers
+            <h2
+              className="text-3xl font-bold text-stone-900 dark:text-stone-100 mt-1"
+              style={{ fontFamily: '"Caveat", "Comic Sans MS", cursive' }}
+            >
+              Today&apos;s notes &amp; numbers
             </h2>
           </div>
         </div>
@@ -570,7 +682,9 @@ function GeneralView6() {
             key={l}
             className={`relative ${tone} dark:bg-slate-800 rounded-md p-5 pt-7 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.3)] border border-stone-200 dark:border-slate-700 transform ${rot} hover:rotate-0 transition-transform`}
           >
-            <div className={`absolute left-1/2 -translate-x-1/2 -top-2 w-10 h-3 ${stripe} rounded-sm shadow-md`} />
+            <div
+              className={`absolute left-1/2 -translate-x-1/2 -top-2 w-10 h-3 ${stripe} rounded-sm shadow-md`}
+            />
             <div className="flex items-start justify-between">
               <div className="text-[10px] uppercase tracking-[0.3em] text-stone-500 dark:text-stone-400">
                 {tag}
@@ -578,10 +692,15 @@ function GeneralView6() {
               <I className="w-4 h-4 text-stone-400" />
             </div>
             <div className="mt-4 text-stone-900 dark:text-stone-100">
-              <div className="text-[11px] uppercase tracking-widest text-stone-600 dark:text-stone-400">{l}</div>
+              <div className="text-[11px] uppercase tracking-widest text-stone-600 dark:text-stone-400">
+                {l}
+              </div>
               <div className="text-4xl font-bold mt-1 tracking-tight">{v}</div>
             </div>
-            <div className="mt-3 text-xs italic text-stone-500 dark:text-stone-400" style={{ fontFamily: '"Caveat", cursive' }}>
+            <div
+              className="mt-3 text-xs italic text-stone-500 dark:text-stone-400"
+              style={{ fontFamily: '"Caveat", cursive' }}
+            >
               keep going ✨
             </div>
           </div>
@@ -604,14 +723,19 @@ function GeneralView7() {
             <Sun className="w-3.5 h-3.5" /> Daylight
           </div>
           <h2 className="text-4xl font-bold mt-4">Live Numbers</h2>
-          <p className="text-stone-700 text-sm mt-1 max-w-sm">What's happening right now in the school.</p>
+          <p className="text-stone-700 text-sm mt-1 max-w-sm">
+            What&apos;s happening right now in the school.
+          </p>
           <div className="mt-6 space-y-4">
             {[
               { l: 'Students Present', v: '15 / 58', i: Users },
               { l: 'Staff On Duty', v: '0 / 8', i: GraduationCap },
               { l: 'Open Classes', v: '6', i: Activity },
             ].map(({ l, v, i: I }) => (
-              <div key={l} className="flex items-center justify-between bg-white/40 backdrop-blur rounded-2xl px-4 py-3">
+              <div
+                key={l}
+                className="flex items-center justify-between bg-white/40 backdrop-blur rounded-2xl px-4 py-3"
+              >
                 <div className="flex items-center gap-3">
                   <span className="inline-flex w-9 h-9 rounded-xl bg-white/60 items-center justify-center">
                     <I className="w-4 h-4 text-stone-700" />
@@ -633,7 +757,7 @@ function GeneralView7() {
             style={{
               top: `${(i * 53) % 100}%`,
               left: `${(i * 37) % 100}%`,
-              opacity: 0.5 + ((i % 3) * 0.15),
+              opacity: 0.5 + (i % 3) * 0.15,
             }}
           />
         ))}
@@ -649,14 +773,22 @@ function GeneralView7() {
               { l: 'Leads to Follow', v: '8 / 10', i: Sparkles, c: '#a78bfa' },
               { l: 'Reports Due', v: '3', i: Bookmark, c: '#22d3ee' },
             ].map(({ l, v, i: I, c }) => (
-              <div key={l} className="flex items-center justify-between bg-white/5 backdrop-blur rounded-2xl px-4 py-3 border border-white/10">
+              <div
+                key={l}
+                className="flex items-center justify-between bg-white/5 backdrop-blur rounded-2xl px-4 py-3 border border-white/10"
+              >
                 <div className="flex items-center gap-3">
-                  <span className="inline-flex w-9 h-9 rounded-xl items-center justify-center" style={{ backgroundColor: `${c}22`, color: c }}>
+                  <span
+                    className="inline-flex w-9 h-9 rounded-xl items-center justify-center"
+                    style={{ backgroundColor: `${c}22`, color: c }}
+                  >
                     <I className="w-4 h-4" />
                   </span>
                   <span className="text-sm font-semibold">{l}</span>
                 </div>
-                <span className="text-2xl font-bold tabular-nums" style={{ color: c }}>{v}</span>
+                <span className="text-2xl font-bold tabular-nums" style={{ color: c }}>
+                  {v}
+                </span>
               </div>
             ))}
           </div>
@@ -671,10 +803,34 @@ function GeneralView7() {
 function ClassView({ cls }) {
   const stats = cls;
   const cards = [
-    { title: 'Total Students', value: String(stats.students), sub: 'Enrolled this term', icon: Users, bg: 'bg-[#2E6BE6]' },
-    { title: 'Present Today', value: `${stats.present}/${stats.students}`, sub: `${Math.round((stats.present / stats.students) * 100)}% attendance`, icon: CalendarCheck, bg: 'bg-[#2F8F7A]' },
-    { title: 'Average Marks', value: `${stats.avgMarks}%`, sub: 'Last exam cycle', icon: BookOpen, bg: 'bg-[#E0A328]' },
-    { title: 'Fees Pending', value: `${stats.feesPending}/${stats.students}`, sub: 'Students with dues', icon: Wallet, bg: 'bg-[#D94A2A]' },
+    {
+      title: 'Total Students',
+      value: String(stats.students),
+      sub: 'Enrolled this term',
+      icon: Users,
+      bg: 'bg-[#2E6BE6]',
+    },
+    {
+      title: 'Present Today',
+      value: `${stats.present}/${stats.students}`,
+      sub: `${Math.round((stats.present / stats.students) * 100)}% attendance`,
+      icon: CalendarCheck,
+      bg: 'bg-[#2F8F7A]',
+    },
+    {
+      title: 'Average Marks',
+      value: `${stats.avgMarks}%`,
+      sub: 'Last exam cycle',
+      icon: BookOpen,
+      bg: 'bg-[#E0A328]',
+    },
+    {
+      title: 'Fees Pending',
+      value: `${stats.feesPending}/${stats.students}`,
+      sub: 'Students with dues',
+      icon: Wallet,
+      bg: 'bg-[#D94A2A]',
+    },
   ];
   return (
     <div className="space-y-4">
@@ -686,7 +842,10 @@ function ClassView({ cls }) {
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         {cards.map(({ title, value, sub, icon: Icon, bg }) => (
-          <div key={title} className={`${bg} rounded-2xl p-5 text-white shadow-sm flex items-start justify-between`}>
+          <div
+            key={title}
+            className={`${bg} rounded-2xl p-5 text-white shadow-sm flex items-start justify-between`}
+          >
             <div className="flex flex-col gap-2">
               <p className="text-sm font-medium text-white/90">{title}</p>
               <p className="text-3xl font-bold leading-none">{value}</p>
@@ -730,7 +889,10 @@ function ClassView2({ cls }) {
             <div className="text-[10px] tracking-[0.3em] text-emerald-400">{s.l}</div>
             <div
               className={`text-6xl md:text-7xl font-bold tracking-tighter mt-2 tabular-nums ${s.c}`}
-              style={{ textShadow: '0 0 20px currentColor', fontFamily: '"Courier New", monospace' }}
+              style={{
+                textShadow: '0 0 20px currentColor',
+                fontFamily: '"Courier New", monospace',
+              }}
             >
               {s.v}
             </div>
@@ -741,7 +903,10 @@ function ClassView2({ cls }) {
       <div className="bg-black/50 rounded-2xl border border-emerald-700/30 p-5 grid grid-cols-12 items-center gap-4">
         <div className="col-span-12 md:col-span-4">
           <div className="text-[10px] tracking-[0.3em] text-emerald-400">ATTENDANCE %</div>
-          <div className="text-5xl font-bold text-emerald-300 mt-1" style={{ textShadow: '0 0 25px #10b981' }}>
+          <div
+            className="text-5xl font-bold text-emerald-300 mt-1"
+            style={{ textShadow: '0 0 25px #10b981' }}
+          >
             {attendancePct}%
           </div>
         </div>
@@ -761,7 +926,10 @@ function ClassView2({ cls }) {
                 >
                   <div
                     className="w-full bg-emerald-500 shadow-[0_0_8px_#10b981]"
-                    style={{ height: `${[60, 70, 80, 85, 92, 0, 0][i]}%`, opacity: i < 5 ? 1 : 0.2 }}
+                    style={{
+                      height: `${[60, 70, 80, 85, 92, 0, 0][i]}%`,
+                      opacity: i < 5 ? 1 : 0.2,
+                    }}
                   />
                 </div>
                 <span className="text-[9px] tracking-widest text-emerald-400">{d}</span>
@@ -811,7 +979,9 @@ function ClassView3({ cls }) {
             className="relative rounded-2xl border-2 border-gray-900 dark:border-gray-100 bg-white dark:bg-slate-800 p-4 hover:-translate-y-1 transition-transform shadow-[4px_4px_0px_0px_rgba(0,0,0,0.9)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.2)]"
           >
             <div className="flex items-start justify-between">
-              <span className="text-xs font-mono text-gray-500">{String(e.num).padStart(2, '0')}</span>
+              <span className="text-xs font-mono text-gray-500">
+                {String(e.num).padStart(2, '0')}
+              </span>
               <span className={`inline-block w-3 h-3 rounded-full ${e.color}`} />
             </div>
             <div className="text-5xl font-bold text-gray-900 dark:text-gray-100 text-center my-3 tracking-tight">
@@ -835,18 +1005,55 @@ function ClassView3({ cls }) {
 function ClassView4({ cls }) {
   const attendancePct = Math.round((cls.present / cls.students) * 100);
   const cards = [
-    { l: 'Students', v: cls.students, sub: 'enrolled', rot: '-rotate-3', color: '#3b82f6', icon: Users },
-    { l: 'Present', v: `${attendancePct}%`, sub: 'attendance', rot: 'rotate-2', color: '#10b981', icon: CalendarCheck },
-    { l: 'Marks', v: `${cls.avgMarks}%`, sub: 'class avg', rot: '-rotate-1', color: '#f59e0b', icon: BookOpen },
-    { l: 'Fees Due', v: cls.feesPending, sub: 'pending', rot: 'rotate-3', color: '#ef4444', icon: Wallet },
+    {
+      l: 'Students',
+      v: cls.students,
+      sub: 'enrolled',
+      rot: '-rotate-3',
+      color: '#3b82f6',
+      icon: Users,
+    },
+    {
+      l: 'Present',
+      v: `${attendancePct}%`,
+      sub: 'attendance',
+      rot: 'rotate-2',
+      color: '#10b981',
+      icon: CalendarCheck,
+    },
+    {
+      l: 'Marks',
+      v: `${cls.avgMarks}%`,
+      sub: 'class avg',
+      rot: '-rotate-1',
+      color: '#f59e0b',
+      icon: BookOpen,
+    },
+    {
+      l: 'Fees Due',
+      v: cls.feesPending,
+      sub: 'pending',
+      rot: 'rotate-3',
+      color: '#ef4444',
+      icon: Wallet,
+    },
   ];
   return (
-    <div className="space-y-8 p-4" style={{ backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(0,0,0,0.02) 35px, rgba(0,0,0,0.02) 70px)' }}>
+    <div
+      className="space-y-8 p-4"
+      style={{
+        backgroundImage:
+          'repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(0,0,0,0.02) 35px, rgba(0,0,0,0.02) 70px)',
+      }}
+    >
       <div className="text-center">
         <div className="text-[11px] uppercase tracking-[0.3em] text-gray-500 dark:text-gray-400">
           The Class Album
         </div>
-        <h2 className="text-3xl text-gray-900 dark:text-gray-100 mt-1" style={{ fontFamily: '"Caveat", cursive' }}>
+        <h2
+          className="text-3xl text-gray-900 dark:text-gray-100 mt-1"
+          style={{ fontFamily: '"Caveat", cursive' }}
+        >
           {cls.name} — moments & numbers
         </h2>
       </div>
@@ -905,7 +1112,10 @@ function ClassView5({ cls }) {
         <div className="text-sm italic text-stone-600 dark:text-stone-400 mt-1">
           Awarded with pride to
         </div>
-        <div className="text-3xl text-amber-700 dark:text-amber-400 mt-3" style={{ fontFamily: '"Brush Script MT", "Lucida Handwriting", cursive' }}>
+        <div
+          className="text-3xl text-amber-700 dark:text-amber-400 mt-3"
+          style={{ fontFamily: '"Brush Script MT", "Lucida Handwriting", cursive' }}
+        >
           {cls.name}
         </div>
       </div>
@@ -927,7 +1137,9 @@ function ClassView5({ cls }) {
       </div>
 
       <div className="relative text-center text-sm italic text-stone-700 dark:text-stone-300 max-w-2xl mx-auto leading-relaxed">
-        In recognition of consistent effort, an attendance rate of <strong>{attendancePct}%</strong>, and an academic average of <strong>{cls.avgMarks}%</strong> this term. May this momentum continue.
+        In recognition of consistent effort, an attendance rate of <strong>{attendancePct}%</strong>
+        , and an academic average of <strong>{cls.avgMarks}%</strong> this term. May this momentum
+        continue.
       </div>
 
       <div className="relative flex items-end justify-between mt-10 pt-6 border-t border-dashed border-amber-600/40">
@@ -937,7 +1149,9 @@ function ClassView5({ cls }) {
           </div>
         </div>
         <div className="w-20 h-20 rounded-full border-4 border-double border-amber-700 dark:border-amber-500 flex items-center justify-center text-amber-700 dark:text-amber-400 text-[10px] tracking-widest font-bold">
-          KMS<br />SEAL
+          KMS
+          <br />
+          SEAL
         </div>
         <div className="text-center">
           <div className="border-t border-stone-700 dark:border-stone-300 w-40 pt-1 text-[10px] uppercase tracking-widest text-stone-600 dark:text-stone-400">
@@ -963,11 +1177,19 @@ function ClassView6({ cls }) {
   ];
   return (
     <div className="rounded-3xl bg-gradient-to-br from-slate-900 via-indigo-900 to-purple-900 text-white p-10 relative overflow-hidden">
-      <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at center, white 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
+      <div
+        className="absolute inset-0 opacity-10"
+        style={{
+          backgroundImage: 'radial-gradient(circle at center, white 1px, transparent 1px)',
+          backgroundSize: '40px 40px',
+        }}
+      />
       <div className="absolute -bottom-32 -right-32 w-96 h-96 rounded-full bg-fuchsia-500/20 blur-3xl" />
 
       <div className="relative flex flex-col items-center">
-        <div className="text-[11px] uppercase tracking-[0.4em] text-indigo-200">Class Spotlight</div>
+        <div className="text-[11px] uppercase tracking-[0.4em] text-indigo-200">
+          Class Spotlight
+        </div>
         <h2 className="text-3xl font-bold mt-1">{cls.name}</h2>
 
         <div className="relative w-[420px] h-[420px] mt-8">
@@ -980,7 +1202,10 @@ function ClassView6({ cls }) {
             style={{ borderStyle: 'dashed' }}
           />
 
-          <div className="absolute inset-1/2 -translate-x-1/2 -translate-y-1/2 w-44 h-44 -ml-22 -mt-22 rounded-full bg-gradient-to-br from-fuchsia-500 to-violet-600 shadow-[0_0_60px_rgba(217,70,239,0.6)] flex flex-col items-center justify-center" style={{ marginLeft: '-88px', marginTop: '-88px' }}>
+          <div
+            className="absolute inset-1/2 -translate-x-1/2 -translate-y-1/2 w-44 h-44 -ml-22 -mt-22 rounded-full bg-gradient-to-br from-fuchsia-500 to-violet-600 shadow-[0_0_60px_rgba(217,70,239,0.6)] flex flex-col items-center justify-center"
+            style={{ marginLeft: '-88px', marginTop: '-88px' }}
+          >
             <div className="text-[10px] uppercase tracking-widest text-white/80">Attendance</div>
             <div className="text-6xl font-bold leading-none mt-1">{attendancePct}%</div>
             <div className="text-xs text-white/80 mt-1">today</div>
@@ -1036,7 +1261,10 @@ function ClassView7({ cls }) {
         </div>
         <div className="flex overflow-hidden" style={{ animation: 'ticker 30s linear infinite' }}>
           {[...tickers, ...tickers].map((t, i) => (
-            <div key={i} className="flex items-center gap-3 px-5 py-3 whitespace-nowrap border-r border-emerald-800/40">
+            <div
+              key={i}
+              className="flex items-center gap-3 px-5 py-3 whitespace-nowrap border-r border-emerald-800/40"
+            >
               <span className="text-emerald-400 text-xs tracking-widest">{t.l}</span>
               <span className="text-white text-xl font-bold">{t.v}</span>
               <span className={`text-xs ${t.up ? 'text-emerald-400' : 'text-red-400'}`}>
@@ -1047,8 +1275,12 @@ function ClassView7({ cls }) {
         </div>
         <style jsx>{`
           @keyframes ticker {
-            from { transform: translateX(0); }
-            to { transform: translateX(-50%); }
+            from {
+              transform: translateX(0);
+            }
+            to {
+              transform: translateX(-50%);
+            }
           }
         `}</style>
       </div>
@@ -1069,11 +1301,20 @@ function ClassView7({ cls }) {
               <span className="text-xs font-mono text-emerald-600 dark:text-emerald-400">LIVE</span>
             </div>
           </div>
-          <Sparkline data={[60, 65, 72, 68, 75, 80, 78, 82, 85, 88, 84, attendancePct]} stroke="#10b981" fill="rgba(16,185,129,0.15)" height={160} />
+          <Sparkline
+            data={[60, 65, 72, 68, 75, 80, 78, 82, 85, 88, 84, attendancePct]}
+            stroke="#10b981"
+            fill="rgba(16,185,129,0.15)"
+            height={160}
+          />
         </div>
         <div className="col-span-12 lg:col-span-4 bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 p-5">
-          <div className="text-[10px] uppercase tracking-widest text-gray-500 dark:text-gray-400">Quote</div>
-          <div className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-3">Best Performers</div>
+          <div className="text-[10px] uppercase tracking-widest text-gray-500 dark:text-gray-400">
+            Quote
+          </div>
+          <div className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-3">
+            Best Performers
+          </div>
           <table className="w-full text-sm">
             <tbody>
               {[
@@ -1082,11 +1323,18 @@ function ClassView7({ cls }) {
                 { n: 'Hina S.', s: '85%', up: false },
                 { n: 'Usman T.', s: '80%', up: true },
               ].map((s) => (
-                <tr key={s.n} className="border-t border-gray-100 dark:border-slate-700 first:border-t-0">
+                <tr
+                  key={s.n}
+                  className="border-t border-gray-100 dark:border-slate-700 first:border-t-0"
+                >
                   <td className="py-2 text-gray-700 dark:text-gray-300">{s.n}</td>
-                  <td className="py-2 text-right font-bold text-gray-900 dark:text-gray-100">{s.s}</td>
+                  <td className="py-2 text-right font-bold text-gray-900 dark:text-gray-100">
+                    {s.s}
+                  </td>
                   <td className="py-2 pl-2 text-right">
-                    <span className={`text-xs font-mono ${s.up ? 'text-emerald-600' : 'text-rose-600'}`}>
+                    <span
+                      className={`text-xs font-mono ${s.up ? 'text-emerald-600' : 'text-rose-600'}`}
+                    >
                       {s.up ? '▲' : '▼'}
                     </span>
                   </td>
@@ -1099,7 +1347,9 @@ function ClassView7({ cls }) {
 
       <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 p-5">
         <div className="flex items-center justify-between mb-3">
-          <div className="text-base font-semibold text-gray-900 dark:text-gray-100">Subject Index</div>
+          <div className="text-base font-semibold text-gray-900 dark:text-gray-100">
+            Subject Index
+          </div>
           <div className="text-[10px] uppercase tracking-widest text-gray-500">Volume × Score</div>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
@@ -1110,7 +1360,11 @@ function ClassView7({ cls }) {
             { n: 'URD', v: 71, c: '#ef4444' },
             { n: 'SST', v: 79, c: '#a855f7' },
           ].map((s) => (
-            <div key={s.n} className="bg-gray-50 dark:bg-slate-900 rounded-lg p-3 border-l-4" style={{ borderLeftColor: s.c }}>
+            <div
+              key={s.n}
+              className="bg-gray-50 dark:bg-slate-900 rounded-lg p-3 border-l-4"
+              style={{ borderLeftColor: s.c }}
+            >
               <div className="text-[10px] font-mono text-gray-500">{s.n}</div>
               <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">{s.v}</div>
               <div className="text-[10px] text-gray-500">avg %</div>
@@ -1164,8 +1418,14 @@ export default function SchoolDashboard() {
 
       <style jsx global>{`
         @keyframes slideUp {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
         }
       `}</style>
     </div>

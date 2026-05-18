@@ -10,19 +10,24 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { fetchData, putData } from '@/utils/api';
 import { useTokenStore } from '@/store/tokenStore';
 
-const CLASS_TYPES = ['pre-primary','primary','middle','secondary','higher-secondary'];
-const MEDIUMS = ['english','urdu','arabic','other'];
+const CLASS_TYPES = ['pre-primary', 'primary', 'middle', 'secondary', 'higher-secondary'];
+const MEDIUMS = ['english', 'urdu', 'arabic', 'other'];
 
 const schema = yup.object().shape({
-  name:          yup.string().optional(),
-  classType:     yup.string().optional(),
-  medium:        yup.string().optional(),
-  classTeacher:  yup.string().optional(),
-  totalCapacity: yup.number().nullable().transform((v, o) => (o === '' ? null : v)).optional(),
-  status:        yup.string().optional(),
+  name: yup.string().optional(),
+  classType: yup.string().optional(),
+  medium: yup.string().optional(),
+  classTeacher: yup.string().optional(),
+  totalCapacity: yup
+    .number()
+    .nullable()
+    .transform((v, o) => (o === '' ? null : v))
+    .optional(),
+  status: yup.string().optional(),
 });
 
-const inputCls = 'w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 text-sm text-gray-900 bg-white placeholder:text-gray-400';
+const inputCls =
+  'w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 text-sm text-gray-900 bg-white placeholder:text-gray-400';
 const labelCls = 'block text-sm font-semibold text-gray-700 mb-1';
 const errorCls = 'text-red-500 text-xs mt-1';
 
@@ -42,30 +47,40 @@ export default function EditClassModal({ isOpen, onClose, onSuccess, cls }) {
   const [submitError, setSubmitError] = useState('');
   const [successState, setSuccessState] = useState(false);
 
-  const { register, handleSubmit, reset, formState: { errors } } = useForm({
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm({
     resolver: yupResolver(schema),
   });
 
   useEffect(() => {
     if (cls && isOpen) {
       reset({
-        name:          cls.name || '',
-        classType:     cls.classType || '',
-        medium:        cls.medium || 'english',
-        classTeacher:  cls.classTeacherInfo?._id || '',
+        name: cls.name || '',
+        classType: cls.classType || '',
+        medium: cls.medium || 'english',
+        classTeacher: cls.classTeacherInfo?._id || '',
         totalCapacity: cls.totalCapacity ?? '',
-        status:        cls.status || 'active',
+        status: cls.status || 'active',
       });
     }
   }, [cls, isOpen, reset]);
 
   useEffect(() => {
-    if (!isOpen) { reset(); setSubmitError(''); setSuccessState(false); }
+    if (!isOpen) {
+      reset();
+      setSubmitError('');
+      setSuccessState(false);
+    }
   }, [isOpen, reset]);
 
   const { data: staffData } = useQuery({
     queryKey: ['teaching-staff-dropdown'],
-    queryFn: () => fetchData({ url: '/staff/list', page: 1, limit: 200, token, staffType: 'teaching' }),
+    queryFn: () =>
+      fetchData({ url: '/staff/list', page: 1, limit: 200, token, staffType: 'teaching' }),
     enabled: !!token && isOpen,
     staleTime: 30000,
   });
@@ -79,7 +94,10 @@ export default function EditClassModal({ isOpen, onClose, onSuccess, cls }) {
       toast.success(res?.message || 'Class updated successfully');
       onSuccess?.(res?.data);
       setSuccessState(true);
-      setTimeout(() => { setSuccessState(false); onClose(); }, 1000);
+      setTimeout(() => {
+        setSuccessState(false);
+        onClose();
+      }, 1000);
     },
     onError: (err) => {
       const msg = err.message || 'Failed to update class';
@@ -113,11 +131,23 @@ export default function EditClassModal({ isOpen, onClose, onSuccess, cls }) {
             label="Cancel"
             handleClick={onClose}
             type="button"
-            styleObject={{ baseColor: 'bg-white border border-gray-300', hoverColor: 'hover:bg-gray-50', rounded: 'rounded-full', size: 'px-10 py-3 text-md min-h-[3rem]', textColor: 'text-gray-700' }}
+            styleObject={{
+              baseColor: 'bg-white border border-gray-300',
+              hoverColor: 'hover:bg-gray-50',
+              rounded: 'rounded-full',
+              size: 'px-10 py-3 text-md min-h-[3rem]',
+              textColor: 'text-gray-700',
+            }}
           />
           <Button
             label="Save Changes"
-            styleObject={{ baseColor: 'bg-teal-600', hoverColor: 'hover:bg-teal-700', rounded: 'rounded-full', size: 'px-10 py-3 text-md min-h-[3rem]', textColor: 'text-white' }}
+            styleObject={{
+              baseColor: 'bg-teal-600',
+              hoverColor: 'hover:bg-teal-700',
+              rounded: 'rounded-full',
+              size: 'px-10 py-3 text-md min-h-[3rem]',
+              textColor: 'text-white',
+            }}
             loading={mutation.isPending}
             success={successState}
             handleClick={handleSubmit(onSubmit)}
@@ -127,7 +157,9 @@ export default function EditClassModal({ isOpen, onClose, onSuccess, cls }) {
     >
       <form className="space-y-6">
         {submitError && (
-          <div className="p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 rounded-lg text-red-700 dark:text-red-400 text-sm">{submitError}</div>
+          <div className="p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 rounded-lg text-red-700 dark:text-red-400 text-sm">
+            {submitError}
+          </div>
         )}
 
         <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg text-amber-700 text-xs">
@@ -141,12 +173,20 @@ export default function EditClassModal({ isOpen, onClose, onSuccess, cls }) {
           <Field label="Class Type" error={errors.classType?.message}>
             <select {...register('classType')} className={inputCls}>
               <option value="">Select type...</option>
-              {CLASS_TYPES.map((t) => <option key={t} value={t} className="capitalize">{t}</option>)}
+              {CLASS_TYPES.map((t) => (
+                <option key={t} value={t} className="capitalize">
+                  {t}
+                </option>
+              ))}
             </select>
           </Field>
           <Field label="Medium" error={errors.medium?.message}>
             <select {...register('medium')} className={inputCls}>
-              {MEDIUMS.map((m) => <option key={m} value={m} className="capitalize">{m}</option>)}
+              {MEDIUMS.map((m) => (
+                <option key={m} value={m} className="capitalize">
+                  {m}
+                </option>
+              ))}
             </select>
           </Field>
           <Field label="Status" error={errors.status?.message}>
@@ -156,13 +196,21 @@ export default function EditClassModal({ isOpen, onClose, onSuccess, cls }) {
             </select>
           </Field>
           <Field label="Total Capacity" error={errors.totalCapacity?.message}>
-            <input {...register('totalCapacity')} type="number" min="1" placeholder="120" className={inputCls} />
+            <input
+              {...register('totalCapacity')}
+              type="number"
+              min="1"
+              placeholder="120"
+              className={inputCls}
+            />
           </Field>
           <Field label="Class Teacher" error={errors.classTeacher?.message}>
             <select {...register('classTeacher')} className={inputCls}>
               <option value="">None</option>
               {teachingStaff.map((s) => (
-                <option key={s._id} value={s._id}>{s.user?.name} — {s.designation}</option>
+                <option key={s._id} value={s._id}>
+                  {s.user?.name} — {s.designation}
+                </option>
               ))}
             </select>
           </Field>

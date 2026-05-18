@@ -73,10 +73,8 @@ export const SCOPE_MAP = {
   },
   'result-card': {
     base: 'view-marks',
-    branchUrl: ({ examId, studentId } = {}) =>
-      `/exam/${examId}/result-card/${studentId}`,
-    ownUrl: ({ examId, user } = {}) =>
-      `/exam/${examId}/result-card/${user?.studentId}`,
+    branchUrl: ({ examId, studentId } = {}) => `/exam/${examId}/result-card/${studentId}`,
+    ownUrl: ({ examId, user } = {}) => `/exam/${examId}/result-card/${user?.studentId}`,
   },
 };
 

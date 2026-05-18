@@ -21,12 +21,7 @@ import EditExamModal from './EditExamModal';
 import ConfirmModal from './ConfirmModal';
 import { useTokenStore } from '@/store/tokenStore';
 import { useUserStore } from '@/store/userStore';
-import {
-  useQuery,
-  useMutation,
-  useQueryClient,
-  keepPreviousData,
-} from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { fetchData, deleteData, patchData } from '@/utils/api';
 import toast from 'react-hot-toast';
 import { resolveScope, hasAnyAction } from '@/utils/permissions';
@@ -199,7 +194,9 @@ export default function ExamsPage() {
         render: (v) => (
           <div className="text-sm text-gray-700 dark:text-gray-300">
             {v?.name ?? '—'}
-            {v?.grade && <span className="text-xs text-gray-400 dark:text-gray-500 ml-1">(Gr {v.grade})</span>}
+            {v?.grade && (
+              <span className="text-xs text-gray-400 dark:text-gray-500 ml-1">(Gr {v.grade})</span>
+            )}
           </div>
         ),
       },
@@ -251,8 +248,7 @@ export default function ExamsPage() {
     const items = [{ label: 'View Details', value: 'view', icon: Eye }];
     items.push({ label: 'Manage Subjects', value: 'subjects', icon: ListChecks });
     if (canEnterMarks) items.push({ label: 'Enter Marks', value: 'marks', icon: Pencil });
-    if (canViewMarks)
-      items.push({ label: 'Section Summary', value: 'summary', icon: BarChart3 });
+    if (canViewMarks) items.push({ label: 'Section Summary', value: 'summary', icon: BarChart3 });
     if (canUpdate && row.status !== 'published')
       items.push({ label: 'Edit', value: 'edit', icon: Edit });
     if (canPublish) {
@@ -310,8 +306,13 @@ export default function ExamsPage() {
     ? exams.filter((e) => e.name?.toLowerCase().includes(search.toLowerCase()))
     : exams;
   const hasActiveFilters = !!(
-    search || classId || examType || status || branchId ||
-    academicYear !== defaultAcademicYear || isActive !== 'true'
+    search ||
+    classId ||
+    examType ||
+    status ||
+    branchId ||
+    academicYear !== defaultAcademicYear ||
+    isActive !== 'true'
   );
   const showEmptyState = !isLoading && !isError && filtered.length === 0;
 
@@ -322,8 +323,7 @@ export default function ExamsPage() {
     if (action === 'summary') router.push(`/dashboard/school/exams/${row._id}/section-summary`);
     if (action === 'edit') setEditExam(row);
     if (action === 'publish') setPublishTarget({ id: row._id, name: row.name, publish: true });
-    if (action === 'unpublish')
-      setPublishTarget({ id: row._id, name: row.name, publish: false });
+    if (action === 'unpublish') setPublishTarget({ id: row._id, name: row.name, publish: false });
     if (action === 'delete') setDeleteTarget(row);
   };
 
@@ -353,7 +353,9 @@ export default function ExamsPage() {
               placeholder="Search by name..."
               value={draftSearch}
               onChange={(e) => setDraftSearch(e.target.value)}
-              onKeyDown={(e) => { if (e.key === 'Enter') applyFilters(); }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') applyFilters();
+              }}
               className="outline-none text-sm w-56 text-gray-900 dark:text-gray-100 placeholder:text-gray-400"
             />
           </div>
@@ -364,7 +366,9 @@ export default function ExamsPage() {
               placeholder="2025-2026"
               value={draftAcademicYear}
               onChange={(e) => setDraftAcademicYear(e.target.value)}
-              onKeyDown={(e) => { if (e.key === 'Enter') applyFilters(); }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') applyFilters();
+              }}
               className="outline-none text-sm w-24 text-gray-900 dark:text-gray-100 placeholder:text-gray-400"
             />
           </div>

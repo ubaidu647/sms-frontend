@@ -11,7 +11,6 @@ import * as yup from 'yup';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { postData } from '@/utils/api';
 import { useOrganizationStore } from '../app/dashboard/system/organizations/store/organizationStore';
-import { generateObjectId } from '@/utils/generateObjectId';
 // Validation schema
 const organizationSchema = yup.object().shape({
   name: yup.string().required('School name is required'),
@@ -31,7 +30,7 @@ export const AddOrganizationModal = ({ isOpen, onClose, token, onSuccess = null 
     handleSubmit,
     watch,
     reset,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm({
     resolver: yupResolver(organizationSchema),
     defaultValues: {

@@ -2,11 +2,7 @@
 import React, { useState } from 'react';
 import { Modal } from '@/component/Modal';
 import Button from '@/component/Button';
-import {
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { fetchData, postData, putData } from '@/utils/api';
 import { useTokenStore } from '@/store/tokenStore';
 import { useUserStore } from '@/store/userStore';
@@ -37,22 +33,15 @@ export default function PayslipDetailModal({ isOpen, onClose, payslipId }) {
   const actions = user?.role?.actions || [];
   const isAdmin = !!user?.role?.isPredefined;
   const canUpdate =
-    isAdmin ||
-    actions.includes('update-payslip') ||
-    actions.includes('update-all-branch-payslip');
+    isAdmin || actions.includes('update-payslip') || actions.includes('update-all-branch-payslip');
   const canPay =
-    isAdmin ||
-    actions.includes('pay-payslip') ||
-    actions.includes('pay-all-branch-payslip');
+    isAdmin || actions.includes('pay-payslip') || actions.includes('pay-all-branch-payslip');
   const canCancel =
-    isAdmin ||
-    actions.includes('cancel-payslip') ||
-    actions.includes('cancel-all-branch-payslip');
+    isAdmin || actions.includes('cancel-payslip') || actions.includes('cancel-all-branch-payslip');
 
   const { data, isFetching } = useQuery({
     queryKey: ['payslip-detail', payslipId],
-    queryFn: () =>
-      fetchData({ url: `/staff-salary/payslip/${payslipId}`, token }),
+    queryFn: () => fetchData({ url: `/staff-salary/payslip/${payslipId}`, token }),
     enabled: !!token && isOpen && !!payslipId,
     staleTime: 0,
   });
@@ -94,9 +83,7 @@ export default function PayslipDetailModal({ isOpen, onClose, payslipId }) {
         setShowCancel(false);
         onClose();
       }}
-      title={`Payslip${
-        payslip?.serialNumber ? ` — ${payslip.serialNumber}` : ''
-      }`}
+      title={`Payslip${payslip?.serialNumber ? ` — ${payslip.serialNumber}` : ''}`}
       subtitle={
         payslip
           ? `${
@@ -189,13 +176,7 @@ export default function PayslipDetailModal({ isOpen, onClose, payslipId }) {
   );
 }
 
-function PayslipBody({
-  payslip,
-  showPay,
-  setShowPay,
-  showCancel,
-  setShowCancel,
-}) {
+function PayslipBody({ payslip, showPay, setShowPay, showCancel, setShowCancel }) {
   const { accessToken: token } = useTokenStore();
   const queryClient = useQueryClient();
 
@@ -298,15 +279,11 @@ function PayslipBody({
               {(payslip.allowances || []).map((a, i) => (
                 <Row
                   key={i}
-                  label={`${a.name}${
-                    a.type === 'percent' ? ` (${a.amount}%)` : ''
-                  }`}
+                  label={`${a.name}${a.type === 'percent' ? ` (${a.amount}%)` : ''}`}
                   value={
                     a.type === 'percent'
                       ? formatMoney(
-                          ((Number(payslip.basicSalary) || 0) *
-                            (Number(a.amount) || 0)) /
-                            100,
+                          ((Number(payslip.basicSalary) || 0) * (Number(a.amount) || 0)) / 100,
                           cur,
                         )
                       : formatMoney(a.amount, cur)
@@ -330,17 +307,9 @@ function PayslipBody({
                 <Row label="Bonus" value={formatMoney(payslip.bonus, cur)} />
               )}
               {payslip.policyBonus != null && Number(payslip.policyBonus) > 0 && (
-                <Row
-                  label="Policy Bonus"
-                  value={formatMoney(payslip.policyBonus, cur)}
-                />
+                <Row label="Policy Bonus" value={formatMoney(payslip.policyBonus, cur)} />
               )}
-              <Row
-                bold
-                label="Gross"
-                value={formatMoney(payslip.gross, cur)}
-                divider
-              />
+              <Row bold label="Gross" value={formatMoney(payslip.gross, cur)} divider />
             </tbody>
           </table>
         </div>
@@ -354,15 +323,11 @@ function PayslipBody({
               {(payslip.deductions || []).map((d, i) => (
                 <Row
                   key={i}
-                  label={`${d.name}${
-                    d.type === 'percent' ? ` (${d.amount}%)` : ''
-                  }`}
+                  label={`${d.name}${d.type === 'percent' ? ` (${d.amount}%)` : ''}`}
                   value={
                     d.type === 'percent'
                       ? formatMoney(
-                          ((Number(payslip.basicSalary) || 0) *
-                            (Number(d.amount) || 0)) /
-                            100,
+                          ((Number(payslip.basicSalary) || 0) * (Number(d.amount) || 0)) / 100,
                           cur,
                         )
                       : formatMoney(d.amount, cur)
@@ -439,37 +404,19 @@ function PayslipBody({
             Attendance Snapshot
           </h4>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-            <SnapStat
-              label="Working"
-              value={payslip.attendance.workingDays}
-            />
-            <SnapStat
-              label="Present"
-              value={payslip.attendance.presentDays}
-              tone="success"
-            />
+            <SnapStat label="Working" value={payslip.attendance.workingDays} />
+            <SnapStat label="Present" value={payslip.attendance.presentDays} tone="success" />
             <SnapStat label="Late" value={payslip.attendance.lateDays} />
             <SnapStat label="Half" value={payslip.attendance.halfDays} />
-            <SnapStat
-              label="Paid Leave"
-              value={payslip.attendance.paidLeaveDays}
-            />
+            <SnapStat label="Paid Leave" value={payslip.attendance.paidLeaveDays} />
             <SnapStat
               label="Unpaid Leave"
               value={payslip.attendance.unpaidLeaveDays}
               tone="danger"
             />
-            <SnapStat
-              label="Absent"
-              value={payslip.attendance.absentDays}
-              tone="danger"
-            />
+            <SnapStat label="Absent" value={payslip.attendance.absentDays} tone="danger" />
             <SnapStat label="Holiday" value={payslip.attendance.holidayDays} />
-            <SnapStat
-              label="Days Paid"
-              value={payslip.attendance.daysPaid}
-              tone="success"
-            />
+            <SnapStat label="Days Paid" value={payslip.attendance.daysPaid} tone="success" />
           </div>
         </div>
       )}
@@ -480,8 +427,8 @@ function PayslipBody({
       ) : (
         payslip.attendance && (
           <div className="rounded-xl bg-amber-50 border border-amber-200 p-3 text-xs text-amber-800">
-            No salary policy was active at generation time — pro-rate fallback
-            used (basic ÷ working days × unpaid days).
+            No salary policy was active at generation time — pro-rate fallback used (basic ÷ working
+            days × unpaid days).
           </div>
         )
       )}
@@ -530,20 +477,12 @@ function PayslipBody({
 
       {/* Pay form */}
       {showPay && (
-        <PayForm
-          payslip={payslip}
-          onClose={() => setShowPay(false)}
-          onDone={invalidate}
-        />
+        <PayForm payslip={payslip} onClose={() => setShowPay(false)} onDone={invalidate} />
       )}
 
       {/* Cancel form */}
       {showCancel && (
-        <CancelForm
-          payslip={payslip}
-          onClose={() => setShowCancel(false)}
-          onDone={invalidate}
-        />
+        <CancelForm payslip={payslip} onClose={() => setShowCancel(false)} onDone={invalidate} />
       )}
     </div>
   );
@@ -555,11 +494,7 @@ function Row({ label, value, bold, divider }) {
       <td className={`px-4 py-2 ${bold ? 'font-semibold' : ''} text-gray-700 dark:text-gray-300`}>
         {label}
       </td>
-      <td
-        className={`px-4 py-2 text-right ${
-          bold ? 'font-bold text-gray-900' : 'text-gray-700'
-        }`}
-      >
+      <td className={`px-4 py-2 text-right ${bold ? 'font-bold text-gray-900' : 'text-gray-700'}`}>
         {value}
       </td>
     </tr>
@@ -577,10 +512,7 @@ function PolicySnapshotPanel({ snapshot }) {
         : `Per-day × ${snapshot.absentDeductionMultiplier}`,
     ],
     ['Free lates / month', snapshot.freeLatesPerMonth],
-    [
-      'Late rule',
-      `Every ${snapshot.lateGroupSize} lates = ${snapshot.lateDeductionDays} day(s)`,
-    ],
+    ['Late rule', `Every ${snapshot.lateGroupSize} lates = ${snapshot.lateDeductionDays} day(s)`],
     ['Half-day factor', snapshot.halfDayDeductionFactor],
     ['Unpaid leave factor', snapshot.unpaidLeaveDeductionFactor],
     ['Paid leave factor', snapshot.paidLeaveDeductionFactor],
@@ -596,7 +528,10 @@ function PolicySnapshotPanel({ snapshot }) {
         <table className="w-full text-xs">
           <tbody>
             {rows.map(([label, value]) => (
-              <tr key={label} className="border-b border-gray-200 dark:border-gray-700 last:border-b-0">
+              <tr
+                key={label}
+                className="border-b border-gray-200 dark:border-gray-700 last:border-b-0"
+              >
                 <td className="px-3 py-1.5 text-gray-600 dark:text-gray-400">{label}</td>
                 <td className="px-3 py-1.5 text-right font-medium text-gray-800 dark:text-gray-200">
                   {value ?? '—'}
@@ -621,9 +556,7 @@ function SnapStat({ label, value, tone }) {
         map[tone] || 'border-gray-200 bg-gray-50 text-gray-800'
       }`}
     >
-      <div className="text-[10px] uppercase tracking-widest opacity-70">
-        {label}
-      </div>
+      <div className="text-[10px] uppercase tracking-widest opacity-70">{label}</div>
       <div className="text-lg font-bold mt-0.5">{value ?? 0}</div>
     </div>
   );
@@ -631,9 +564,7 @@ function SnapStat({ label, value, tone }) {
 
 function PayForm({ payslip, onClose, onDone }) {
   const { accessToken: token } = useTokenStore();
-  const [paymentDate, setPaymentDate] = useState(
-    new Date().toISOString().slice(0, 10),
-  );
+  const [paymentDate, setPaymentDate] = useState(new Date().toISOString().slice(0, 10));
   const [paymentMethod, setPaymentMethod] = useState('bank-transfer');
   const [paymentReference, setPaymentReference] = useState('');
   const [paidAmount, setPaidAmount] = useState(payslip.netSalary ?? '');
@@ -662,10 +593,7 @@ function PayForm({ payslip, onClose, onDone }) {
     setErr('');
     if (!paymentDate) return setErr('Payment date is required');
     if (!paymentMethod) return setErr('Payment method is required');
-    if (
-      REFERENCE_REQUIRED_METHODS.includes(paymentMethod) &&
-      !paymentReference?.trim()
-    )
+    if (REFERENCE_REQUIRED_METHODS.includes(paymentMethod) && !paymentReference?.trim())
       return setErr('Reference is required for this payment method');
     const payload = { paymentDate, paymentMethod };
     if (paymentReference?.trim()) payload.paymentReference = paymentReference.trim();

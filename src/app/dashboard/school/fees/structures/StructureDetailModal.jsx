@@ -26,7 +26,10 @@ export default function StructureDetailModal({ isOpen, onClose, structureId }) {
       ) : (
         <div className="space-y-5">
           <div className="grid grid-cols-3 gap-4 text-sm">
-            <Info label="Class" value={`${s.classId?.name ?? '—'}${s.classId?.grade ? ` (Gr ${s.classId.grade})` : ''}`} />
+            <Info
+              label="Class"
+              value={`${s.classId?.name ?? '—'}${s.classId?.grade ? ` (Gr ${s.classId.grade})` : ''}`}
+            />
             <Info label="Year" value={s.academicYear} />
             <Info label="Status" value={s.isActive ? 'Active' : 'Inactive'} />
             <Info label="Default Due Day" value={s.defaultDueDay ?? '—'} />
@@ -53,7 +56,9 @@ export default function StructureDetailModal({ isOpen, onClose, structureId }) {
                 <tbody>
                   {(s.components || []).map((c, i) => (
                     <tr key={i} className="border-t border-gray-100 dark:border-gray-800">
-                      <td className="px-3 py-2 font-medium text-gray-900 dark:text-gray-100">{c.name}</td>
+                      <td className="px-3 py-2 font-medium text-gray-900 dark:text-gray-100">
+                        {c.name}
+                      </td>
                       <td className="px-3 py-2 text-right">{formatMoney(c.amount)}</td>
                       <td className="px-3 py-2 capitalize">{c.frequency}</td>
                       <td className="px-3 py-2">
@@ -80,7 +85,9 @@ export default function StructureDetailModal({ isOpen, onClose, structureId }) {
 function Info({ label, value }) {
   return (
     <div>
-      <div className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">{label}</div>
+      <div className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+        {label}
+      </div>
       <div className="text-sm text-gray-900 dark:text-gray-100 font-medium">{value}</div>
     </div>
   );

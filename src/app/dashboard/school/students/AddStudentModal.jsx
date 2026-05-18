@@ -48,10 +48,7 @@ const schema = yup.object().shape({
     .matches(ACADEMIC_YEAR_REGEX, 'Academic year must be in format YYYY-YYYY')
     .required('Academic year is required'),
   admissionDate: yup.string().required('Admission date is required'),
-  admissionType: yup
-    .string()
-    .oneOf(['new', 'transfer'], 'Select admission type')
-    .optional(),
+  admissionType: yup.string().oneOf(['new', 'transfer'], 'Select admission type').optional(),
 
   // Personal
   dob: yup.string().required('Date of birth is required'),
@@ -156,7 +153,8 @@ export default function AddStudentModal({ isOpen, onClose, onSuccess }) {
   const [createdStudent, setCreatedStudent] = useState(null);
 
   const isAdmin = !!user?.role?.isPredefined;
-  const canCreateAllBranch = isAdmin || !!user?.role?.actions?.includes('create-all-branch-student');
+  const canCreateAllBranch =
+    isAdmin || !!user?.role?.actions?.includes('create-all-branch-student');
   const userBranchId = user?.branchId || user?.branch?._id || '';
 
   const {
@@ -333,38 +331,50 @@ export default function AddStudentModal({ isOpen, onClose, onSuccess }) {
     });
 
     // Father — required name + optional rest
-    fd.append('father', JSON.stringify({
-      name: data.father?.name,
-      cnic: data.father?.cnic || undefined,
-      phone: data.father?.phone || undefined,
-      email: data.father?.email || undefined,
-      occupation: data.father?.occupation || undefined,
-      monthlyIncome: data.father?.monthlyIncome ?? undefined,
-    }));
+    fd.append(
+      'father',
+      JSON.stringify({
+        name: data.father?.name,
+        cnic: data.father?.cnic || undefined,
+        phone: data.father?.phone || undefined,
+        email: data.father?.email || undefined,
+        occupation: data.father?.occupation || undefined,
+        monthlyIncome: data.father?.monthlyIncome ?? undefined,
+      }),
+    );
 
     // Mother — required name + optional rest
-    fd.append('mother', JSON.stringify({
-      name: data.mother?.name,
-      cnic: data.mother?.cnic || undefined,
-      phone: data.mother?.phone || undefined,
-      occupation: data.mother?.occupation || undefined,
-    }));
+    fd.append(
+      'mother',
+      JSON.stringify({
+        name: data.mother?.name,
+        cnic: data.mother?.cnic || undefined,
+        phone: data.mother?.phone || undefined,
+        occupation: data.mother?.occupation || undefined,
+      }),
+    );
 
     // Emergency Contact — all required
-    fd.append('emergencyContact', JSON.stringify({
-      name: data.emergencyContact?.name,
-      phone: data.emergencyContact?.phone,
-      relation: data.emergencyContact?.relation,
-    }));
+    fd.append(
+      'emergencyContact',
+      JSON.stringify({
+        name: data.emergencyContact?.name,
+        phone: data.emergencyContact?.phone,
+        relation: data.emergencyContact?.relation,
+      }),
+    );
 
     // Address — object must be present, sub-fields optional
-    fd.append('address', JSON.stringify({
-      street: data.address?.street || undefined,
-      city: data.address?.city || undefined,
-      state: data.address?.state || undefined,
-      postalCode: data.address?.postalCode || undefined,
-      country: data.address?.country || undefined,
-    }));
+    fd.append(
+      'address',
+      JSON.stringify({
+        street: data.address?.street || undefined,
+        city: data.address?.city || undefined,
+        state: data.address?.state || undefined,
+        postalCode: data.address?.postalCode || undefined,
+        country: data.address?.country || undefined,
+      }),
+    );
 
     // Previous school — transfer admission only
     if (data.admissionType === 'transfer') {
@@ -405,9 +415,7 @@ export default function AddStudentModal({ isOpen, onClose, onSuccess }) {
             section: selectedSection
               ? { _id: selectedSection._id, name: selectedSection.name }
               : null,
-            branch: selectedBranch
-              ? { _id: selectedBranch._id, name: selectedBranch.name }
-              : null,
+            branch: selectedBranch ? { _id: selectedBranch._id, name: selectedBranch.name } : null,
             father: data.father?.name ? { name: data.father.name } : null,
           };
           queryClient.setQueriesData({ queryKey: ['students'] }, (old) => {
@@ -495,25 +503,43 @@ export default function AddStudentModal({ isOpen, onClose, onSuccess }) {
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-              <div className="text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wide font-semibold">Admission Number</div>
-              <div className="text-sm font-bold text-gray-900 dark:text-gray-100 mt-0.5">{createdStudent.admissionNumber}</div>
+              <div className="text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wide font-semibold">
+                Admission Number
+              </div>
+              <div className="text-sm font-bold text-gray-900 dark:text-gray-100 mt-0.5">
+                {createdStudent.admissionNumber}
+              </div>
             </div>
             <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-              <div className="text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wide font-semibold">Roll Number</div>
-              <div className="text-sm font-bold text-gray-900 dark:text-gray-100 mt-0.5">{createdStudent.rollNumber}</div>
+              <div className="text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wide font-semibold">
+                Roll Number
+              </div>
+              <div className="text-sm font-bold text-gray-900 dark:text-gray-100 mt-0.5">
+                {createdStudent.rollNumber}
+              </div>
             </div>
             <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-              <div className="text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wide font-semibold">Email</div>
-              <div className="text-sm font-medium text-gray-900 dark:text-gray-100 mt-0.5">{createdStudent.email}</div>
+              <div className="text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wide font-semibold">
+                Email
+              </div>
+              <div className="text-sm font-medium text-gray-900 dark:text-gray-100 mt-0.5">
+                {createdStudent.email}
+              </div>
             </div>
             <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-              <div className="text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wide font-semibold">Academic Year</div>
-              <div className="text-sm font-medium text-gray-900 dark:text-gray-100 mt-0.5">{createdStudent.academicYear}</div>
+              <div className="text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wide font-semibold">
+                Academic Year
+              </div>
+              <div className="text-sm font-medium text-gray-900 dark:text-gray-100 mt-0.5">
+                {createdStudent.academicYear}
+              </div>
             </div>
           </div>
           {createdStudent.defaultPasswordHint && (
             <div className="p-4 rounded-xl bg-amber-50 border border-amber-200">
-              <div className="text-xs font-bold text-amber-900 uppercase tracking-wide">Default Password</div>
+              <div className="text-xs font-bold text-amber-900 uppercase tracking-wide">
+                Default Password
+              </div>
               <p className="text-sm text-amber-800 mt-1">
                 The default login password is the admission number:{' '}
                 <span className="font-mono font-bold bg-white dark:bg-gray-900 px-2 py-0.5 rounded border border-amber-300">
@@ -521,7 +547,8 @@ export default function AddStudentModal({ isOpen, onClose, onSuccess }) {
                 </span>
               </p>
               <p className="text-xs text-amber-700 mt-1">
-                Please share this with the student/guardian and ask them to change it on first login.
+                Please share this with the student/guardian and ask them to change it on first
+                login.
               </p>
             </div>
           )}
@@ -536,7 +563,9 @@ export default function AddStudentModal({ isOpen, onClose, onSuccess }) {
 
           {/* Account Info */}
           <div>
-            <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">Account</h3>
+            <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">
+              Account
+            </h3>
             <div className="grid grid-cols-2 gap-4">
               <Field label="Full Name" required error={errors.name?.message}>
                 <input {...register('name')} placeholder="Ahmed Khan" className={inputCls} />
@@ -565,14 +594,21 @@ export default function AddStudentModal({ isOpen, onClose, onSuccess }) {
 
           {/* Enrollment */}
           <div>
-            <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">Enrollment</h3>
+            <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">
+              Enrollment
+            </h3>
             <div className="grid grid-cols-2 gap-4">
               {canCreateAllBranch ? (
                 <Field label="Branch" required error={errors.branchId?.message}>
-                  <select {...register('branchId')} className={`${inputCls} bg-white dark:bg-gray-900`}>
+                  <select
+                    {...register('branchId')}
+                    className={`${inputCls} bg-white dark:bg-gray-900`}
+                  >
                     <option value="">Select branch...</option>
                     {branches.map((b) => (
-                      <option key={b._id} value={b._id}>{b.name}</option>
+                      <option key={b._id} value={b._id}>
+                        {b.name}
+                      </option>
                     ))}
                   </select>
                 </Field>
@@ -580,11 +616,7 @@ export default function AddStudentModal({ isOpen, onClose, onSuccess }) {
                 <input type="hidden" {...register('branchId')} />
               )}
               <Field label="Academic Year" required error={errors.academicYear?.message}>
-                <input
-                  {...register('academicYear')}
-                  placeholder="2025-2026"
-                  className={inputCls}
-                />
+                <input {...register('academicYear')} placeholder="2025-2026" className={inputCls} />
               </Field>
               <Field label="Class" required error={errors.classId?.message}>
                 <select
@@ -625,7 +657,10 @@ export default function AddStudentModal({ isOpen, onClose, onSuccess }) {
                 <input {...register('admissionDate')} type="date" className={inputCls} />
               </Field>
               <Field label="Admission Type" error={errors.admissionType?.message}>
-                <select {...register('admissionType')} className={`${inputCls} bg-white dark:bg-gray-900`}>
+                <select
+                  {...register('admissionType')}
+                  className={`${inputCls} bg-white dark:bg-gray-900`}
+                >
                   <option value="new">New</option>
                   <option value="transfer">Transfer</option>
                 </select>
@@ -635,7 +670,9 @@ export default function AddStudentModal({ isOpen, onClose, onSuccess }) {
 
           {/* Personal */}
           <div>
-            <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">Personal</h3>
+            <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">
+              Personal
+            </h3>
             <div className="grid grid-cols-2 gap-4">
               <Field label="Date of Birth" required error={errors.dob?.message}>
                 <input {...register('dob')} type="date" className={inputCls} />
@@ -649,10 +686,15 @@ export default function AddStudentModal({ isOpen, onClose, onSuccess }) {
                 </select>
               </Field>
               <Field label="Blood Group" error={errors.bloodGroup?.message}>
-                <select {...register('bloodGroup')} className={`${inputCls} bg-white dark:bg-gray-900`}>
+                <select
+                  {...register('bloodGroup')}
+                  className={`${inputCls} bg-white dark:bg-gray-900`}
+                >
                   <option value="">Select...</option>
                   {['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map((g) => (
-                    <option key={g} value={g}>{g}</option>
+                    <option key={g} value={g}>
+                      {g}
+                    </option>
                   ))}
                 </select>
               </Field>
@@ -673,22 +715,41 @@ export default function AddStudentModal({ isOpen, onClose, onSuccess }) {
 
           {/* Father */}
           <div>
-            <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">Father</h3>
+            <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">
+              Father
+            </h3>
             <div className="grid grid-cols-2 gap-4">
               <Field label="Name" required error={errors.father?.name?.message}>
                 <input {...register('father.name')} placeholder="Mr. Khan" className={inputCls} />
               </Field>
               <Field label="CNIC" error={errors.father?.cnic?.message}>
-                <input {...register('father.cnic')} placeholder="12345-1234567-1" className={inputCls} />
+                <input
+                  {...register('father.cnic')}
+                  placeholder="12345-1234567-1"
+                  className={inputCls}
+                />
               </Field>
               <Field label="Phone" error={errors.father?.phone?.message}>
-                <input {...register('father.phone')} placeholder="+923001234567" className={inputCls} />
+                <input
+                  {...register('father.phone')}
+                  placeholder="+923001234567"
+                  className={inputCls}
+                />
               </Field>
               <Field label="Email" error={errors.father?.email?.message}>
-                <input {...register('father.email')} type="email" placeholder="father@example.com" className={inputCls} />
+                <input
+                  {...register('father.email')}
+                  type="email"
+                  placeholder="father@example.com"
+                  className={inputCls}
+                />
               </Field>
               <Field label="Occupation" error={errors.father?.occupation?.message}>
-                <input {...register('father.occupation')} placeholder="Engineer" className={inputCls} />
+                <input
+                  {...register('father.occupation')}
+                  placeholder="Engineer"
+                  className={inputCls}
+                />
               </Field>
               <Field label="Monthly Income" error={errors.father?.monthlyIncome?.message}>
                 <input
@@ -704,19 +765,33 @@ export default function AddStudentModal({ isOpen, onClose, onSuccess }) {
 
           {/* Mother */}
           <div>
-            <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">Mother</h3>
+            <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">
+              Mother
+            </h3>
             <div className="grid grid-cols-2 gap-4">
               <Field label="Name" required error={errors.mother?.name?.message}>
                 <input {...register('mother.name')} placeholder="Mrs. Khan" className={inputCls} />
               </Field>
               <Field label="CNIC" error={errors.mother?.cnic?.message}>
-                <input {...register('mother.cnic')} placeholder="12345-7654321-1" className={inputCls} />
+                <input
+                  {...register('mother.cnic')}
+                  placeholder="12345-7654321-1"
+                  className={inputCls}
+                />
               </Field>
               <Field label="Phone" error={errors.mother?.phone?.message}>
-                <input {...register('mother.phone')} placeholder="+923001234567" className={inputCls} />
+                <input
+                  {...register('mother.phone')}
+                  placeholder="+923001234567"
+                  className={inputCls}
+                />
               </Field>
               <Field label="Occupation" error={errors.mother?.occupation?.message}>
-                <input {...register('mother.occupation')} placeholder="Teacher" className={inputCls} />
+                <input
+                  {...register('mother.occupation')}
+                  placeholder="Teacher"
+                  className={inputCls}
+                />
               </Field>
             </div>
           </div>
@@ -728,24 +803,42 @@ export default function AddStudentModal({ isOpen, onClose, onSuccess }) {
             </h3>
             <div className="grid grid-cols-3 gap-4">
               <Field label="Name" required error={errors.emergencyContact?.name?.message}>
-                <input {...register('emergencyContact.name')} placeholder="Uncle Ahmed" className={inputCls} />
+                <input
+                  {...register('emergencyContact.name')}
+                  placeholder="Uncle Ahmed"
+                  className={inputCls}
+                />
               </Field>
               <Field label="Phone" required error={errors.emergencyContact?.phone?.message}>
-                <input {...register('emergencyContact.phone')} placeholder="+923001234567" className={inputCls} />
+                <input
+                  {...register('emergencyContact.phone')}
+                  placeholder="+923001234567"
+                  className={inputCls}
+                />
               </Field>
               <Field label="Relation" required error={errors.emergencyContact?.relation?.message}>
-                <input {...register('emergencyContact.relation')} placeholder="Uncle" className={inputCls} />
+                <input
+                  {...register('emergencyContact.relation')}
+                  placeholder="Uncle"
+                  className={inputCls}
+                />
               </Field>
             </div>
           </div>
 
           {/* Address */}
           <div>
-            <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">Address</h3>
+            <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">
+              Address
+            </h3>
             <div className="grid grid-cols-2 gap-4">
               <div className="col-span-2">
                 <Field label="Street">
-                  <input {...register('address.street')} placeholder="House 5, Block A" className={inputCls} />
+                  <input
+                    {...register('address.street')}
+                    placeholder="House 5, Block A"
+                    className={inputCls}
+                  />
                 </Field>
               </div>
               <Field label="City">
@@ -755,10 +848,18 @@ export default function AddStudentModal({ isOpen, onClose, onSuccess }) {
                 <input {...register('address.state')} placeholder="Sindh" className={inputCls} />
               </Field>
               <Field label="Postal Code">
-                <input {...register('address.postalCode')} placeholder="75500" className={inputCls} />
+                <input
+                  {...register('address.postalCode')}
+                  placeholder="75500"
+                  className={inputCls}
+                />
               </Field>
               <Field label="Country">
-                <input {...register('address.country')} placeholder="Pakistan" className={inputCls} />
+                <input
+                  {...register('address.country')}
+                  placeholder="Pakistan"
+                  className={inputCls}
+                />
               </Field>
             </div>
           </div>
@@ -771,10 +872,18 @@ export default function AddStudentModal({ isOpen, onClose, onSuccess }) {
               </h3>
               <div className="grid grid-cols-2 gap-4">
                 <Field label="School Name">
-                  <input {...register('previousSchool.name')} placeholder="ABC School" className={inputCls} />
+                  <input
+                    {...register('previousSchool.name')}
+                    placeholder="ABC School"
+                    className={inputCls}
+                  />
                 </Field>
                 <Field label="Last Class">
-                  <input {...register('previousSchool.lastClass')} placeholder="Grade 4" className={inputCls} />
+                  <input
+                    {...register('previousSchool.lastClass')}
+                    placeholder="Grade 4"
+                    className={inputCls}
+                  />
                 </Field>
                 <div className="col-span-2">
                   <Field label="Reason for Leaving">
@@ -806,7 +915,10 @@ export default function AddStudentModal({ isOpen, onClose, onSuccess }) {
                 />
               </Field>
               <Field label="Full Waiver">
-                <select {...register('feeWaiver')} className={`${inputCls} bg-white dark:bg-gray-900`}>
+                <select
+                  {...register('feeWaiver')}
+                  className={`${inputCls} bg-white dark:bg-gray-900`}
+                >
                   <option value={false}>No</option>
                   <option value={true}>Yes</option>
                 </select>
@@ -825,7 +937,9 @@ export default function AddStudentModal({ isOpen, onClose, onSuccess }) {
 
           {/* Photo */}
           <div>
-            <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">Photo (optional)</h3>
+            <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">
+              Photo (optional)
+            </h3>
             <div className="flex items-center gap-4">
               {photoPreview ? (
                 <img
@@ -845,11 +959,15 @@ export default function AddStudentModal({ isOpen, onClose, onSuccess }) {
                   onChange={handlePhotoChange}
                   className="block text-sm text-gray-700 dark:text-gray-300 file:mr-3 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-medium file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100"
                 />
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">JPG, PNG, WEBP or PDF — max 5 MB</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  JPG, PNG, WEBP or PDF — max 5 MB
+                </p>
                 {photoFile && (
                   <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
                     {photoFile.name}{' '}
-                    <span className="text-gray-400 dark:text-gray-500">({(photoFile.size / 1024).toFixed(0)} KB)</span>
+                    <span className="text-gray-400 dark:text-gray-500">
+                      ({(photoFile.size / 1024).toFixed(0)} KB)
+                    </span>
                   </p>
                 )}
                 {photoError && <p className={errorCls}>{photoError}</p>}

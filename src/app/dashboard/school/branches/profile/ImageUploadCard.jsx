@@ -84,11 +84,7 @@ export default function ImageUploadCard({
               <span className="text-xs">View PDF</span>
             </a>
           ) : (
-            <img
-              src={src}
-              alt={label}
-              className="max-h-full max-w-full object-contain"
-            />
+            <img src={src} alt={label} className="max-h-full max-w-full object-contain" />
           )
         ) : (
           <div className="flex flex-col items-center text-gray-400 dark:text-gray-500">

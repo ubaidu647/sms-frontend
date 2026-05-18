@@ -145,8 +145,14 @@ export default function EditStudentModal({ isOpen, onClose, onSuccess, student }
   }, [isOpen, reset]);
 
   useEffect(() => {
-    if (!photoFile) { setPhotoPreview(''); return; }
-    if (photoFile.type === 'application/pdf') { setPhotoPreview(''); return; }
+    if (!photoFile) {
+      setPhotoPreview('');
+      return;
+    }
+    if (photoFile.type === 'application/pdf') {
+      setPhotoPreview('');
+      return;
+    }
     const url = URL.createObjectURL(photoFile);
     setPhotoPreview(url);
     return () => URL.revokeObjectURL(url);
@@ -155,7 +161,10 @@ export default function EditStudentModal({ isOpen, onClose, onSuccess, student }
   const handlePhotoChange = (e) => {
     const file = e.target.files?.[0];
     setPhotoError('');
-    if (!file) { setPhotoFile(null); return; }
+    if (!file) {
+      setPhotoFile(null);
+      return;
+    }
     if (!ALLOWED_PHOTO_TYPES.includes(file.type)) {
       setPhotoError(`File type not allowed (${file.type}). Allowed: jpg, png, webp, pdf`);
       e.target.value = '';
@@ -194,9 +203,20 @@ export default function EditStudentModal({ isOpen, onClose, onSuccess, student }
 
     const fd = new FormData();
     const scalarFields = [
-      'name', 'dob', 'gender', 'bloodGroup', 'nationality', 'religion',
-      'bForm', 'placeOfBirth', 'phone', 'academicStatus', 'isActive',
-      'feeDiscount', 'feeWaiver', 'feeNotes',
+      'name',
+      'dob',
+      'gender',
+      'bloodGroup',
+      'nationality',
+      'religion',
+      'bForm',
+      'placeOfBirth',
+      'phone',
+      'academicStatus',
+      'isActive',
+      'feeDiscount',
+      'feeWaiver',
+      'feeNotes',
     ];
     scalarFields.forEach((k) => {
       const v = data[k];
@@ -217,7 +237,14 @@ export default function EditStudentModal({ isOpen, onClose, onSuccess, student }
       return hasAny ? obj : null;
     };
 
-    const father = buildNested('father', ['name', 'cnic', 'phone', 'email', 'occupation', 'monthlyIncome']);
+    const father = buildNested('father', [
+      'name',
+      'cnic',
+      'phone',
+      'email',
+      'occupation',
+      'monthlyIncome',
+    ]);
     if (father) fd.append('father', JSON.stringify(father));
 
     const mother = buildNested('mother', ['name', 'cnic', 'phone', 'occupation']);
@@ -283,12 +310,15 @@ export default function EditStudentModal({ isOpen, onClose, onSuccess, student }
         )}
 
         <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg text-amber-700 text-xs">
-          Email, password, class, section, admission number, roll number and academic year cannot be changed here. Use the Transfer action to change class or section.
+          Email, password, class, section, admission number, roll number and academic year cannot be
+          changed here. Use the Transfer action to change class or section.
         </div>
 
         {/* Basic */}
         <div>
-          <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">Basic Info</h3>
+          <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">
+            Basic Info
+          </h3>
           <div className="grid grid-cols-2 gap-4">
             <Field label="Full Name" error={errors.name?.message}>
               <input {...register('name')} placeholder="Ahmed Khan" className={inputCls} />
@@ -308,10 +338,15 @@ export default function EditStudentModal({ isOpen, onClose, onSuccess, student }
               </select>
             </Field>
             <Field label="Blood Group" error={errors.bloodGroup?.message}>
-              <select {...register('bloodGroup')} className={`${inputCls} bg-white dark:bg-gray-900`}>
+              <select
+                {...register('bloodGroup')}
+                className={`${inputCls} bg-white dark:bg-gray-900`}
+              >
                 <option value="">Select...</option>
-                {['A+','A-','B+','B-','AB+','AB-','O+','O-'].map((g) => (
-                  <option key={g} value={g}>{g}</option>
+                {['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map((g) => (
+                  <option key={g} value={g}>
+                    {g}
+                  </option>
                 ))}
               </select>
             </Field>
@@ -328,10 +363,15 @@ export default function EditStudentModal({ isOpen, onClose, onSuccess, student }
               <input {...register('placeOfBirth')} placeholder="Karachi" className={inputCls} />
             </Field>
             <Field label="Academic Status" error={errors.academicStatus?.message}>
-              <select {...register('academicStatus')} className={`${inputCls} bg-white dark:bg-gray-900`}>
+              <select
+                {...register('academicStatus')}
+                className={`${inputCls} bg-white dark:bg-gray-900`}
+              >
                 <option value="">Select...</option>
                 {ACADEMIC_STATUSES.map((s) => (
-                  <option key={s} value={s} className="capitalize">{s}</option>
+                  <option key={s} value={s} className="capitalize">
+                    {s}
+                  </option>
                 ))}
               </select>
             </Field>
@@ -346,7 +386,9 @@ export default function EditStudentModal({ isOpen, onClose, onSuccess, student }
 
         {/* Father */}
         <div>
-          <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">Father</h3>
+          <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">
+            Father
+          </h3>
           <div className="grid grid-cols-2 gap-4">
             <Field label="Name">
               <input {...register('father.name')} className={inputCls} />
@@ -364,14 +406,21 @@ export default function EditStudentModal({ isOpen, onClose, onSuccess, student }
               <input {...register('father.occupation')} className={inputCls} />
             </Field>
             <Field label="Monthly Income">
-              <input {...register('father.monthlyIncome')} type="number" min="0" className={inputCls} />
+              <input
+                {...register('father.monthlyIncome')}
+                type="number"
+                min="0"
+                className={inputCls}
+              />
             </Field>
           </div>
         </div>
 
         {/* Mother */}
         <div>
-          <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">Mother</h3>
+          <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">
+            Mother
+          </h3>
           <div className="grid grid-cols-2 gap-4">
             <Field label="Name">
               <input {...register('mother.name')} className={inputCls} />
@@ -390,7 +439,9 @@ export default function EditStudentModal({ isOpen, onClose, onSuccess, student }
 
         {/* Emergency Contact */}
         <div>
-          <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">Emergency Contact</h3>
+          <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">
+            Emergency Contact
+          </h3>
           <div className="grid grid-cols-3 gap-4">
             <Field label="Name">
               <input {...register('emergencyContact.name')} className={inputCls} />
@@ -406,7 +457,9 @@ export default function EditStudentModal({ isOpen, onClose, onSuccess, student }
 
         {/* Address */}
         <div>
-          <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">Address</h3>
+          <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">
+            Address
+          </h3>
           <div className="grid grid-cols-2 gap-4">
             <div className="col-span-2">
               <Field label="Street">
@@ -430,13 +483,24 @@ export default function EditStudentModal({ isOpen, onClose, onSuccess, student }
 
         {/* Fees */}
         <div>
-          <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">Fees</h3>
+          <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">
+            Fees
+          </h3>
           <div className="grid grid-cols-2 gap-4">
             <Field label="Discount (%)" error={errors.feeDiscount?.message}>
-              <input {...register('feeDiscount')} type="number" min="0" max="100" className={inputCls} />
+              <input
+                {...register('feeDiscount')}
+                type="number"
+                min="0"
+                max="100"
+                className={inputCls}
+              />
             </Field>
             <Field label="Full Waiver">
-              <select {...register('feeWaiver')} className={`${inputCls} bg-white dark:bg-gray-900`}>
+              <select
+                {...register('feeWaiver')}
+                className={`${inputCls} bg-white dark:bg-gray-900`}
+              >
                 <option value="false">No</option>
                 <option value="true">Yes</option>
               </select>
@@ -451,12 +515,22 @@ export default function EditStudentModal({ isOpen, onClose, onSuccess, student }
 
         {/* Photo */}
         <div>
-          <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">Photo</h3>
+          <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">
+            Photo
+          </h3>
           <div className="flex items-center gap-4">
             {photoPreview ? (
-              <img src={photoPreview} alt="Preview" className="w-20 h-20 rounded-full object-cover border border-gray-200 dark:border-gray-700" />
+              <img
+                src={photoPreview}
+                alt="Preview"
+                className="w-20 h-20 rounded-full object-cover border border-gray-200 dark:border-gray-700"
+              />
             ) : currentPhoto ? (
-              <img src={currentPhoto} alt="Current" className="w-20 h-20 rounded-full object-cover border border-gray-200 dark:border-gray-700" />
+              <img
+                src={currentPhoto}
+                alt="Current"
+                className="w-20 h-20 rounded-full object-cover border border-gray-200 dark:border-gray-700"
+              />
             ) : (
               <div className="w-20 h-20 rounded-full border border-dashed border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 flex items-center justify-center text-xs text-gray-400 dark:text-gray-500">
                 {photoFile?.type === 'application/pdf' ? 'PDF' : 'No image'}
@@ -474,7 +548,10 @@ export default function EditStudentModal({ isOpen, onClose, onSuccess, student }
               </p>
               {photoFile && (
                 <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
-                  {photoFile.name} <span className="text-gray-400 dark:text-gray-500">({(photoFile.size / 1024).toFixed(0)} KB)</span>
+                  {photoFile.name}{' '}
+                  <span className="text-gray-400 dark:text-gray-500">
+                    ({(photoFile.size / 1024).toFixed(0)} KB)
+                  </span>
                 </p>
               )}
               {photoError && <p className={errorCls}>{photoError}</p>}

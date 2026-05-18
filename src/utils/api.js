@@ -6,7 +6,7 @@ export const fetchData = async ({
   limit = 20,
   columnFilters = [],
   columnFiltersOr = [],
-  token, // kept for call-site compatibility, interceptor handles auth
+  token: _token, // kept for call-site compatibility, interceptor handles auth
   ...extraParams
 }) => {
   const { data } = await apiClient.get(url, {

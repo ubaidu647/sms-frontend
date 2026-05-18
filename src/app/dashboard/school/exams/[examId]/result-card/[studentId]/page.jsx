@@ -19,8 +19,7 @@ export default function ResultCardPage() {
 
   const { data, isLoading } = useQuery({
     queryKey: ['result-card', examId, studentId],
-    queryFn: () =>
-      fetchData({ url: `/exam/${examId}/result-card/${studentId}`, token }),
+    queryFn: () => fetchData({ url: `/exam/${examId}/result-card/${studentId}`, token }),
     enabled: !!token && !!examId && !!studentId,
   });
   const card = data?.data;
@@ -67,11 +66,17 @@ export default function ResultCardPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
             <div className="md:col-span-2 grid grid-cols-2 gap-4">
               <Info label="Student Name" value={student.name} />
-              <Info label="Class" value={`${student.class?.name || ''}${student.section?.name ? ' - ' + student.section.name : ''}`} />
+              <Info
+                label="Class"
+                value={`${student.class?.name || ''}${student.section?.name ? ' - ' + student.section.name : ''}`}
+              />
               <Info label="Roll Number" value={student.rollNumber} />
               <Info label="Admission No." value={student.admissionNumber} />
               <Info label="Exam Type" value={exam.type} className="capitalize" />
-              <Info label="Schedule" value={`${formatDate(exam.startDate)} → ${formatDate(exam.endDate)}`} />
+              <Info
+                label="Schedule"
+                value={`${formatDate(exam.startDate)} → ${formatDate(exam.endDate)}`}
+              />
             </div>
             <div className="flex justify-center md:justify-end">
               {student.photo ? (
@@ -174,9 +179,7 @@ export default function ResultCardPage() {
                 <td className="border border-gray-300 px-2 py-2 text-center">
                   <span
                     className={`inline-flex px-2 py-0.5 rounded-full text-xs font-semibold ${
-                      summary.isPassed
-                        ? 'bg-green-100 text-green-700'
-                        : 'bg-red-100 text-red-700'
+                      summary.isPassed ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
                     }`}
                   >
                     {summary.isPassed ? 'PASSED' : 'FAILED'}
@@ -187,14 +190,15 @@ export default function ResultCardPage() {
           </table>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 text-sm">
-            <Info label="Total Obtained" value={`${summary.totalObtained} / ${summary.totalMarks}`} />
+            <Info
+              label="Total Obtained"
+              value={`${summary.totalObtained} / ${summary.totalMarks}`}
+            />
             <Info label="Percentage" value={`${summary.percentage}%`} />
             <Info
               label="Position"
               value={
-                summary.position
-                  ? `${summary.position} of ${summary.totalStudentsInSection}`
-                  : '—'
+                summary.position ? `${summary.position} of ${summary.totalStudentsInSection}` : '—'
               }
             />
             <Info label="Failed Subjects" value={summary.failedSubjectsCount ?? 0} />

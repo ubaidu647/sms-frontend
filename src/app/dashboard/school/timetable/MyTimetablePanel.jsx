@@ -5,12 +5,7 @@ import { useUserStore } from '@/store/userStore';
 import { useQuery } from '@tanstack/react-query';
 import { fetchData } from '@/utils/api';
 import { MapPin } from 'lucide-react';
-import {
-  DAYS,
-  DAY_LABELS,
-  PERIOD_TYPE_COLORS,
-  currentAcademicYear,
-} from '@/constants/timetable';
+import { DAYS, DAY_LABELS, PERIOD_TYPE_COLORS, currentAcademicYear } from '@/constants/timetable';
 
 export default function MyTimetablePanel() {
   const { accessToken: token } = useTokenStore();
@@ -57,8 +52,7 @@ export default function MyTimetablePanel() {
 
   const { data: ttRes, isFetching } = useQuery({
     queryKey: ['teacher-timetable', staffId, academicYear],
-    queryFn: () =>
-      fetchData({ url: `/timetable/teacher/${staffId}`, token, academicYear }),
+    queryFn: () => fetchData({ url: `/timetable/teacher/${staffId}`, token, academicYear }),
     enabled: !!token && !!staffId,
     staleTime: 30000,
   });
@@ -67,7 +61,7 @@ export default function MyTimetablePanel() {
   const schedule = ttRes?.data?.periods?.[0];
   const schedulePeriods = schedule?.periods || [];
   const workingDays = (schedule?.workingDays?.length ? schedule.workingDays : DAYS).filter((d) =>
-    DAYS.includes(d)
+    DAYS.includes(d),
   );
 
   return (
@@ -77,7 +71,9 @@ export default function MyTimetablePanel() {
           {canPickOther && (
             <>
               <div>
-                <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">Branch</label>
+                <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">
+                  Branch
+                </label>
                 <select
                   value={branchId}
                   onChange={(e) => setBranchId(e.target.value)}
@@ -92,7 +88,9 @@ export default function MyTimetablePanel() {
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">Teacher</label>
+                <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">
+                  Teacher
+                </label>
                 <select
                   value={staffId}
                   onChange={(e) => setStaffId(e.target.value)}
@@ -159,7 +157,10 @@ export default function MyTimetablePanel() {
                 const isLesson = p.type === 'lesson';
                 const typeColor = PERIOD_TYPE_COLORS[p.type] || PERIOD_TYPE_COLORS.other;
                 return (
-                  <tr key={p.number} className="border-t border-gray-100 dark:border-gray-800 align-top">
+                  <tr
+                    key={p.number}
+                    className="border-t border-gray-100 dark:border-gray-800 align-top"
+                  >
                     <td className="px-3 py-3 text-gray-900 dark:text-gray-100 text-sm">
                       <div className="font-semibold">{p.name}</div>
                       <div className="text-xs text-gray-500 dark:text-gray-400">
@@ -177,7 +178,10 @@ export default function MyTimetablePanel() {
                       workingDays.map((d) => {
                         const slot = grid?.[d]?.[p.number];
                         return (
-                          <td key={d} className="px-3 py-3 border-l border-gray-100 dark:border-gray-800">
+                          <td
+                            key={d}
+                            className="px-3 py-3 border-l border-gray-100 dark:border-gray-800"
+                          >
                             {slot ? (
                               <div>
                                 <div className="font-semibold text-gray-900 dark:text-gray-100">
@@ -194,7 +198,9 @@ export default function MyTimetablePanel() {
                                 )}
                               </div>
                             ) : (
-                              <span className="text-xs text-gray-400 dark:text-gray-500 italic">Free</span>
+                              <span className="text-xs text-gray-400 dark:text-gray-500 italic">
+                                Free
+                              </span>
                             )}
                           </td>
                         );

@@ -7,12 +7,8 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { fetchData, postData } from '@/utils/api';
 import { useTokenStore } from '@/store/tokenStore';
 import { useUserStore } from '@/store/userStore';
-import {
-  STAFF_TYPES,
-  currentMonth,
-  previousMonth,
-} from '@/constants/staffSalary';
-import { CheckCircle2, AlertCircle } from 'lucide-react';
+import { STAFF_TYPES, currentMonth, previousMonth } from '@/constants/staffSalary';
+import { CheckCircle2 } from 'lucide-react';
 
 const inputCls =
   'w-full px-3 py-2 border border-gray-200 rounded-lg outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 text-sm text-gray-900 bg-white placeholder:text-gray-400';
@@ -24,8 +20,7 @@ export default function GenerateBulkModal({ isOpen, onClose }) {
   const queryClient = useQueryClient();
 
   const isAdmin = !!user?.role?.isPredefined;
-  const canAllBranch =
-    isAdmin || !!user?.role?.actions?.includes('generate-all-branch-payslip');
+  const canAllBranch = isAdmin || !!user?.role?.actions?.includes('generate-all-branch-payslip');
   const userBranchId = user?.branchId || user?.branch?._id || '';
 
   const [branchId, setBranchId] = useState('');
@@ -45,8 +40,7 @@ export default function GenerateBulkModal({ isOpen, onClose }) {
 
   const { data: branchData } = useQuery({
     queryKey: ['branches-dropdown'],
-    queryFn: () =>
-      fetchData({ url: '/branch/list', page: 1, limit: 100, token }),
+    queryFn: () => fetchData({ url: '/branch/list', page: 1, limit: 100, token }),
     enabled: !!token && isOpen && canAllBranch,
     staleTime: Infinity,
   });
@@ -63,9 +57,7 @@ export default function GenerateBulkModal({ isOpen, onClose }) {
       const data = res?.data ?? res;
       setResult(data);
       toast.success(
-        `Bulk run complete — created ${data?.created || 0}, skipped ${
-          data?.skipped || 0
-        }`,
+        `Bulk run complete — created ${data?.created || 0}, skipped ${data?.skipped || 0}`,
       );
       queryClient.invalidateQueries({ queryKey: ['payslips'] });
       queryClient.invalidateQueries({ queryKey: ['payslip-summary'] });
@@ -205,16 +197,8 @@ export default function GenerateBulkModal({ isOpen, onClose }) {
           <div className="space-y-4">
             <div className="grid grid-cols-3 gap-3">
               <Stat label="Total" value={result.total ?? 0} />
-              <Stat
-                label="Created"
-                value={result.created ?? 0}
-                tone="success"
-              />
-              <Stat
-                label="Skipped"
-                value={result.skipped ?? 0}
-                tone="warning"
-              />
+              <Stat label="Created" value={result.created ?? 0} tone="success" />
+              <Stat label="Skipped" value={result.skipped ?? 0} tone="warning" />
             </div>
 
             {skipped.length > 0 && (
@@ -226,12 +210,8 @@ export default function GenerateBulkModal({ isOpen, onClose }) {
                   <table className="w-full text-sm">
                     <thead className="bg-amber-50 text-amber-900">
                       <tr>
-                        <th className="px-3 py-2 text-left font-semibold">
-                          Staff ID
-                        </th>
-                        <th className="px-3 py-2 text-left font-semibold">
-                          Reason
-                        </th>
+                        <th className="px-3 py-2 text-left font-semibold">Staff ID</th>
+                        <th className="px-3 py-2 text-left font-semibold">Reason</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -258,8 +238,8 @@ export default function GenerateBulkModal({ isOpen, onClose }) {
                   Created ({created.length})
                 </h4>
                 <div className="text-xs text-gray-500 dark:text-gray-400">
-                  Generated {created.length} draft payslips. Use the Payslips
-                  list to review and finalize.
+                  Generated {created.length} draft payslips. Use the Payslips list to review and
+                  finalize.
                 </div>
               </div>
             )}
@@ -281,9 +261,7 @@ function Stat({ label, value, tone }) {
         map[tone] || 'bg-gray-50 border-gray-200 text-gray-800'
       }`}
     >
-      <div className="text-xs uppercase tracking-widest opacity-70">
-        {label}
-      </div>
+      <div className="text-xs uppercase tracking-widest opacity-70">{label}</div>
       <div className="text-2xl font-bold mt-1">{value}</div>
     </div>
   );

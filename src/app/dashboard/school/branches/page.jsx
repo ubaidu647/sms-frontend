@@ -25,9 +25,7 @@ export default function BranchesPage() {
   const isAdmin = !!user?.role?.isPredefined;
   const actions = user?.role?.actions || [];
   const canViewAllProfiles =
-    isAdmin ||
-    actions.includes('view-all-branch-profile') ||
-    actions.includes('view-branch');
+    isAdmin || actions.includes('view-all-branch-profile') || actions.includes('view-branch');
   const canCreateBranch = isAdmin || actions.includes('create-branch');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const defaultFromDate = twoMonthsBeforeISO();
@@ -93,7 +91,9 @@ export default function BranchesPage() {
       {
         header: 'Created Date',
         accessor: 'createdAt',
-        render: (v) => <div className="text-gray-600 dark:text-gray-400">{new Date(v).toLocaleDateString()}</div>,
+        render: (v) => (
+          <div className="text-gray-600 dark:text-gray-400">{new Date(v).toLocaleDateString()}</div>
+        ),
       },
       {
         header: 'Status',
@@ -143,9 +143,7 @@ export default function BranchesPage() {
 
   const branches = data?.data || [];
 
-  const handleAddBranchSuccess = (newBranch) => {
-    // optionally refetch or update cache
-  };
+  const handleAddBranchSuccess = () => {};
 
   const handleRowAction = (action, row) => {
     if (action === 'profile') router.push(`/dashboard/school/branches/${row._id}/profile`);
@@ -202,7 +200,9 @@ export default function BranchesPage() {
                 placeholder="Search branches..."
                 value={draftSearch}
                 onChange={(e) => setDraftSearch(e.target.value)}
-                onKeyDown={(e) => { if (e.key === 'Enter') applyFilters(); }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') applyFilters();
+                }}
                 className="outline-none text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 bg-transparent"
               />
               <button

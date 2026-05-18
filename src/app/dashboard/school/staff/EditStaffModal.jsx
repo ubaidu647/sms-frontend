@@ -15,11 +15,22 @@ import { useTokenStore } from '@/store/tokenStore';
 // is rejected with a 403 — so we hide those sections and strip them from the
 // payload when isSelf is true.
 const SELF_ALLOWED_SCALARS = [
-  'name', 'phone', 'dob', 'cnic', 'bloodGroup',
-  'qualification', 'maritalStatus',
+  'name',
+  'phone',
+  'dob',
+  'cnic',
+  'bloodGroup',
+  'qualification',
+  'maritalStatus',
 ];
 
-const ALLOWED_PHOTO_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'application/pdf'];
+const ALLOWED_PHOTO_TYPES = [
+  'image/jpeg',
+  'image/jpg',
+  'image/png',
+  'image/webp',
+  'application/pdf',
+];
 const MAX_PHOTO_SIZE = 5 * 1024 * 1024; // 5 MB
 
 const schema = yup.object().shape({
@@ -34,15 +45,24 @@ const schema = yup.object().shape({
   dob: yup.string().optional(),
   phone: yup.string().optional(),
   qualification: yup.string().optional(),
-  experienceYears: yup.number().nullable().transform((v, o) => (o === '' ? null : v)).optional(),
-  salary: yup.number().nullable().transform((v, o) => (o === '' ? null : v)).optional(),
+  experienceYears: yup
+    .number()
+    .nullable()
+    .transform((v, o) => (o === '' ? null : v))
+    .optional(),
+  salary: yup
+    .number()
+    .nullable()
+    .transform((v, o) => (o === '' ? null : v))
+    .optional(),
   joiningDate: yup.string().optional(),
   leavingDate: yup.string().optional(),
   leavingReason: yup.string().optional(),
   isActive: yup.string().optional(),
 });
 
-const inputCls = 'w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 text-sm text-gray-900 bg-white placeholder:text-gray-400';
+const inputCls =
+  'w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 text-sm text-gray-900 bg-white placeholder:text-gray-400';
 const labelCls = 'block text-sm font-semibold text-gray-700 mb-1';
 const errorCls = 'text-red-500 text-xs mt-1';
 
@@ -65,7 +85,12 @@ export default function EditStaffModal({ isOpen, onClose, onSuccess, staff, isSe
   const [photoPreview, setPhotoPreview] = useState('');
   const [photoError, setPhotoError] = useState('');
 
-  const { register, handleSubmit, reset, formState: { errors } } = useForm({
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm({
     resolver: yupResolver(schema),
   });
 
@@ -115,8 +140,14 @@ export default function EditStaffModal({ isOpen, onClose, onSuccess, staff, isSe
   }, [isOpen, reset]);
 
   useEffect(() => {
-    if (!photoFile) { setPhotoPreview(''); return; }
-    if (photoFile.type === 'application/pdf') { setPhotoPreview(''); return; }
+    if (!photoFile) {
+      setPhotoPreview('');
+      return;
+    }
+    if (photoFile.type === 'application/pdf') {
+      setPhotoPreview('');
+      return;
+    }
     const url = URL.createObjectURL(photoFile);
     setPhotoPreview(url);
     return () => URL.revokeObjectURL(url);
@@ -125,7 +156,10 @@ export default function EditStaffModal({ isOpen, onClose, onSuccess, staff, isSe
   const handlePhotoChange = (e) => {
     const file = e.target.files?.[0];
     setPhotoError('');
-    if (!file) { setPhotoFile(null); return; }
+    if (!file) {
+      setPhotoFile(null);
+      return;
+    }
     if (!ALLOWED_PHOTO_TYPES.includes(file.type)) {
       setPhotoError(`File type not allowed (${file.type}). Allowed: jpg, png, webp, pdf`);
       e.target.value = '';
@@ -166,10 +200,23 @@ export default function EditStaffModal({ isOpen, onClose, onSuccess, staff, isSe
     const scalarFields = isSelf
       ? SELF_ALLOWED_SCALARS
       : [
-          'name', 'designation', 'staffType', 'employmentType',
-          'gender', 'maritalStatus', 'bloodGroup', 'cnic', 'dob',
-          'phone', 'qualification', 'experienceYears', 'salary',
-          'joiningDate', 'leavingDate', 'leavingReason', 'isActive',
+          'name',
+          'designation',
+          'staffType',
+          'employmentType',
+          'gender',
+          'maritalStatus',
+          'bloodGroup',
+          'cnic',
+          'dob',
+          'phone',
+          'qualification',
+          'experienceYears',
+          'salary',
+          'joiningDate',
+          'leavingDate',
+          'leavingReason',
+          'isActive',
         ];
     scalarFields.forEach((k) => {
       const v = data[k];
@@ -187,9 +234,14 @@ export default function EditStaffModal({ isOpen, onClose, onSuccess, staff, isSe
     const ecPhone = data['emergencyContact.phone'];
     const ecRelation = data['emergencyContact.relation'];
     if (ecName || ecPhone || ecRelation) {
-      fd.append('emergencyContact', JSON.stringify({
-        name: ecName, phone: ecPhone, relation: ecRelation,
-      }));
+      fd.append(
+        'emergencyContact',
+        JSON.stringify({
+          name: ecName,
+          phone: ecPhone,
+          relation: ecRelation,
+        }),
+      );
     }
 
     if (photoFile) fd.append('photo', photoFile);
@@ -255,7 +307,9 @@ export default function EditStaffModal({ isOpen, onClose, onSuccess, staff, isSe
 
         {/* Basic Info */}
         <div>
-          <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">Basic Info</h3>
+          <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">
+            Basic Info
+          </h3>
           <div className="grid grid-cols-2 gap-4">
             <Field label="Full Name" error={errors.name?.message}>
               <input {...register('name')} placeholder="Ahmed Ali" className={inputCls} />
@@ -278,15 +332,23 @@ export default function EditStaffModal({ isOpen, onClose, onSuccess, staff, isSe
               <input {...register('cnic')} placeholder="35201-1234567-1" className={inputCls} />
             </Field>
             <Field label="Blood Group" error={errors.bloodGroup?.message}>
-              <select {...register('bloodGroup')} className={`${inputCls} bg-white dark:bg-gray-900`}>
+              <select
+                {...register('bloodGroup')}
+                className={`${inputCls} bg-white dark:bg-gray-900`}
+              >
                 <option value="">Select...</option>
-                {['A+','A-','B+','B-','AB+','AB-','O+','O-'].map((g) => (
-                  <option key={g} value={g}>{g}</option>
+                {['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map((g) => (
+                  <option key={g} value={g}>
+                    {g}
+                  </option>
                 ))}
               </select>
             </Field>
             <Field label="Marital Status" error={errors.maritalStatus?.message}>
-              <select {...register('maritalStatus')} className={`${inputCls} bg-white dark:bg-gray-900`}>
+              <select
+                {...register('maritalStatus')}
+                className={`${inputCls} bg-white dark:bg-gray-900`}
+              >
                 <option value="">Select...</option>
                 <option value="single">Single</option>
                 <option value="married">Married</option>
@@ -296,7 +358,10 @@ export default function EditStaffModal({ isOpen, onClose, onSuccess, staff, isSe
             </Field>
             {!isSelf && (
               <Field label="Status" error={errors.isActive?.message}>
-                <select {...register('isActive')} className={`${inputCls} bg-white dark:bg-gray-900`}>
+                <select
+                  {...register('isActive')}
+                  className={`${inputCls} bg-white dark:bg-gray-900`}
+                >
                   <option value="true">Active</option>
                   <option value="false">Inactive</option>
                 </select>
@@ -307,68 +372,104 @@ export default function EditStaffModal({ isOpen, onClose, onSuccess, staff, isSe
 
         {/* Employment — HR-only, hidden on self-update */}
         {!isSelf && (
-        <div>
-          <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">Employment</h3>
-          <div className="grid grid-cols-2 gap-4">
-            <Field label="Designation" error={errors.designation?.message}>
-              <input {...register('designation')} placeholder="Class Teacher" className={inputCls} />
-            </Field>
-            <Field label="Staff Type" error={errors.staffType?.message}>
-              <select {...register('staffType')} className={`${inputCls} bg-white dark:bg-gray-900`}>
-                <option value="">Select type...</option>
-                <option value="teaching">Teaching</option>
-                <option value="non-teaching">Non-Teaching</option>
-              </select>
-            </Field>
-            <Field label="Employment Type" error={errors.employmentType?.message}>
-              <select {...register('employmentType')} className={`${inputCls} bg-white dark:bg-gray-900`}>
-                <option value="">Select type...</option>
-                <option value="permanent">Permanent</option>
-                <option value="contract">Contract</option>
-                <option value="part-time">Part-Time</option>
-                <option value="visiting">Visiting</option>
-              </select>
-            </Field>
-            <Field label="Qualification" error={errors.qualification?.message}>
-              <input {...register('qualification')} placeholder="M.Ed" className={inputCls} />
-            </Field>
-            <Field label="Experience (Years)" error={errors.experienceYears?.message}>
-              <input {...register('experienceYears')} type="number" min="0" placeholder="5" className={inputCls} />
-            </Field>
-            <Field label="Salary" error={errors.salary?.message}>
-              <input {...register('salary')} type="number" min="0" placeholder="35000" className={inputCls} />
-            </Field>
-            <Field label="Joining Date" error={errors.joiningDate?.message}>
-              <input {...register('joiningDate')} type="date" className={inputCls} />
-            </Field>
+          <div>
+            <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">
+              Employment
+            </h3>
+            <div className="grid grid-cols-2 gap-4">
+              <Field label="Designation" error={errors.designation?.message}>
+                <input
+                  {...register('designation')}
+                  placeholder="Class Teacher"
+                  className={inputCls}
+                />
+              </Field>
+              <Field label="Staff Type" error={errors.staffType?.message}>
+                <select
+                  {...register('staffType')}
+                  className={`${inputCls} bg-white dark:bg-gray-900`}
+                >
+                  <option value="">Select type...</option>
+                  <option value="teaching">Teaching</option>
+                  <option value="non-teaching">Non-Teaching</option>
+                </select>
+              </Field>
+              <Field label="Employment Type" error={errors.employmentType?.message}>
+                <select
+                  {...register('employmentType')}
+                  className={`${inputCls} bg-white dark:bg-gray-900`}
+                >
+                  <option value="">Select type...</option>
+                  <option value="permanent">Permanent</option>
+                  <option value="contract">Contract</option>
+                  <option value="part-time">Part-Time</option>
+                  <option value="visiting">Visiting</option>
+                </select>
+              </Field>
+              <Field label="Qualification" error={errors.qualification?.message}>
+                <input {...register('qualification')} placeholder="M.Ed" className={inputCls} />
+              </Field>
+              <Field label="Experience (Years)" error={errors.experienceYears?.message}>
+                <input
+                  {...register('experienceYears')}
+                  type="number"
+                  min="0"
+                  placeholder="5"
+                  className={inputCls}
+                />
+              </Field>
+              <Field label="Salary" error={errors.salary?.message}>
+                <input
+                  {...register('salary')}
+                  type="number"
+                  min="0"
+                  placeholder="35000"
+                  className={inputCls}
+                />
+              </Field>
+              <Field label="Joining Date" error={errors.joiningDate?.message}>
+                <input {...register('joiningDate')} type="date" className={inputCls} />
+              </Field>
+            </div>
           </div>
-        </div>
         )}
 
         {/* Leaving (optional) — HR-only */}
         {!isSelf && (
-        <div>
-          <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">Leaving (optional)</h3>
-          <div className="grid grid-cols-2 gap-4">
-            <Field label="Leaving Date" error={errors.leavingDate?.message}>
-              <input {...register('leavingDate')} type="date" className={inputCls} />
-            </Field>
-            <div className="col-span-2">
-              <Field label="Leaving Reason" error={errors.leavingReason?.message}>
-                <input {...register('leavingReason')} placeholder="Resigned / transferred..." className={inputCls} />
+          <div>
+            <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">
+              Leaving (optional)
+            </h3>
+            <div className="grid grid-cols-2 gap-4">
+              <Field label="Leaving Date" error={errors.leavingDate?.message}>
+                <input {...register('leavingDate')} type="date" className={inputCls} />
               </Field>
+              <div className="col-span-2">
+                <Field label="Leaving Reason" error={errors.leavingReason?.message}>
+                  <input
+                    {...register('leavingReason')}
+                    placeholder="Resigned / transferred..."
+                    className={inputCls}
+                  />
+                </Field>
+              </div>
             </div>
           </div>
-        </div>
         )}
 
         {/* Address */}
         <div>
-          <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">Address</h3>
+          <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">
+            Address
+          </h3>
           <div className="grid grid-cols-2 gap-4">
             <div className="col-span-2">
               <Field label="Street">
-                <input {...register('address.street')} placeholder="House 12 Block A" className={inputCls} />
+                <input
+                  {...register('address.street')}
+                  placeholder="House 12 Block A"
+                  className={inputCls}
+                />
               </Field>
             </div>
             <Field label="City">
@@ -382,28 +483,52 @@ export default function EditStaffModal({ isOpen, onClose, onSuccess, staff, isSe
 
         {/* Emergency Contact */}
         <div>
-          <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">Emergency Contact</h3>
+          <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">
+            Emergency Contact
+          </h3>
           <div className="grid grid-cols-2 gap-4">
             <Field label="Name">
-              <input {...register('emergencyContact.name')} placeholder="Ali Hassan" className={inputCls} />
+              <input
+                {...register('emergencyContact.name')}
+                placeholder="Ali Hassan"
+                className={inputCls}
+              />
             </Field>
             <Field label="Phone">
-              <input {...register('emergencyContact.phone')} placeholder="03001234567" className={inputCls} />
+              <input
+                {...register('emergencyContact.phone')}
+                placeholder="03001234567"
+                className={inputCls}
+              />
             </Field>
             <Field label="Relation">
-              <input {...register('emergencyContact.relation')} placeholder="Brother" className={inputCls} />
+              <input
+                {...register('emergencyContact.relation')}
+                placeholder="Brother"
+                className={inputCls}
+              />
             </Field>
           </div>
         </div>
 
         {/* Photo */}
         <div>
-          <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">Photo</h3>
+          <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">
+            Photo
+          </h3>
           <div className="flex items-center gap-4">
             {photoPreview ? (
-              <img src={photoPreview} alt="Preview" className="w-20 h-20 rounded-full object-cover border border-gray-200 dark:border-gray-700" />
+              <img
+                src={photoPreview}
+                alt="Preview"
+                className="w-20 h-20 rounded-full object-cover border border-gray-200 dark:border-gray-700"
+              />
             ) : currentPhoto ? (
-              <img src={currentPhoto} alt="Current" className="w-20 h-20 rounded-full object-cover border border-gray-200 dark:border-gray-700" />
+              <img
+                src={currentPhoto}
+                alt="Current"
+                className="w-20 h-20 rounded-full object-cover border border-gray-200 dark:border-gray-700"
+              />
             ) : (
               <div className="w-20 h-20 rounded-full border border-dashed border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 flex items-center justify-center text-xs text-gray-400 dark:text-gray-500">
                 {photoFile?.type === 'application/pdf' ? 'PDF' : 'No image'}
@@ -421,7 +546,10 @@ export default function EditStaffModal({ isOpen, onClose, onSuccess, staff, isSe
               </p>
               {photoFile && (
                 <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
-                  {photoFile.name} <span className="text-gray-400 dark:text-gray-500">({(photoFile.size / 1024).toFixed(0)} KB)</span>
+                  {photoFile.name}{' '}
+                  <span className="text-gray-400 dark:text-gray-500">
+                    ({(photoFile.size / 1024).toFixed(0)} KB)
+                  </span>
                 </p>
               )}
               {photoError && <p className={errorCls}>{photoError}</p>}

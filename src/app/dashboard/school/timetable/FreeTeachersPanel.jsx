@@ -50,7 +50,9 @@ export default function FreeTeachersPanel() {
       <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
         <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
           <div>
-            <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">Day</label>
+            <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">
+              Day
+            </label>
             <select
               value={day}
               onChange={(e) => setDay(e.target.value)}
@@ -88,7 +90,9 @@ export default function FreeTeachersPanel() {
           </div>
           {isOrgLevel && (
             <div>
-              <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">Branch</label>
+              <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">
+                Branch
+              </label>
               <select
                 value={branchId}
                 onChange={(e) => setBranchId(e.target.value)}
@@ -151,12 +155,16 @@ export default function FreeTeachersPanel() {
                   </div>
                 )}
                 <div className="flex-1">
-                  <div className="font-medium text-gray-900 dark:text-gray-100">{t.user?.name || '—'}</div>
+                  <div className="font-medium text-gray-900 dark:text-gray-100">
+                    {t.user?.name || '—'}
+                  </div>
                   <div className="text-xs text-gray-500 dark:text-gray-400">
                     {t.designation || '—'} · {t.serialNumber || ''}
                   </div>
                 </div>
-                <span className="text-xs text-gray-500 dark:text-gray-400">{t.user?.email || ''}</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">
+                  {t.user?.email || ''}
+                </span>
               </div>
             ))}
           </div>

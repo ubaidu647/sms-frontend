@@ -1,25 +1,16 @@
 'use client';
 import React, { useMemo, useState } from 'react';
 import { Table } from '@/component/Table';
-import { Plus, Search, Edit, Trash2, Eye, Users, X } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, Users, X } from 'lucide-react';
 import { useTokenStore } from '@/store/tokenStore';
 import { useUserStore } from '@/store/userStore';
-import {
-  useQuery,
-  useMutation,
-  useQueryClient,
-  keepPreviousData,
-} from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { fetchData, deleteData } from '@/utils/api';
 import toast from 'react-hot-toast';
 import VehicleFormModal from './VehicleFormModal';
 import VehicleRosterModal from './VehicleRosterModal';
 import ConfirmModal from '../ConfirmModal';
-import {
-  VEHICLE_STATUSES,
-  VEHICLE_STATUS_COLORS,
-  VEHICLE_TYPES,
-} from '@/constants/transport';
+import { VEHICLE_STATUSES, VEHICLE_STATUS_COLORS, VEHICLE_TYPES } from '@/constants/transport';
 import { useTranslations } from 'next-intl';
 
 export default function VehiclesPage() {
@@ -140,7 +131,9 @@ export default function VehiclesPage() {
         render: (v, row) => (
           <div>
             <div className="font-medium text-gray-900 dark:text-gray-100">{v}</div>
-            <div className="text-xs text-gray-400 dark:text-gray-500 capitalize">{row.vehicleType}</div>
+            <div className="text-xs text-gray-400 dark:text-gray-500 capitalize">
+              {row.vehicleType}
+            </div>
           </div>
         ),
       },
@@ -150,7 +143,9 @@ export default function VehiclesPage() {
         render: (v, row) => (
           <div className="text-sm text-gray-700 dark:text-gray-300">
             {v || '—'}
-            {row.modelName && <span className="text-gray-400 dark:text-gray-500"> · {row.modelName}</span>}
+            {row.modelName && (
+              <span className="text-gray-400 dark:text-gray-500"> · {row.modelName}</span>
+            )}
           </div>
         ),
       },
@@ -164,7 +159,9 @@ export default function VehiclesPage() {
         accessor: 'driver',
         render: (v) => (
           <div>
-            <div className="text-sm font-medium text-gray-900 dark:text-gray-100">{v?.name || '—'}</div>
+            <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
+              {v?.name || '—'}
+            </div>
             <div className="text-xs text-gray-500 dark:text-gray-400">{v?.phone || ''}</div>
           </div>
         ),
@@ -172,7 +169,9 @@ export default function VehiclesPage() {
       {
         header: 'Branch',
         accessor: 'branchId',
-        render: (v) => <span className="text-sm text-gray-600 dark:text-gray-400">{v?.name || '—'}</span>,
+        render: (v) => (
+          <span className="text-sm text-gray-600 dark:text-gray-400">{v?.name || '—'}</span>
+        ),
       },
       {
         header: 'Status',
@@ -233,7 +232,9 @@ export default function VehiclesPage() {
               placeholder="Registration number..."
               value={draftSearch}
               onChange={(e) => setDraftSearch(e.target.value)}
-              onKeyDown={(e) => { if (e.key === 'Enter') applyFilters(); }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') applyFilters();
+              }}
               className="outline-none text-sm w-56 text-gray-900 dark:text-gray-100 placeholder:text-gray-400"
             />
           </div>

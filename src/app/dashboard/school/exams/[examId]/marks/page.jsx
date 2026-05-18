@@ -63,8 +63,7 @@ export default function MarksEntryPage() {
 
   useEffect(() => {
     if (!examIsError) return;
-    const msg =
-      examError?.response?.data?.message || examError?.message || 'Failed to load exam';
+    const msg = examError?.response?.data?.message || examError?.message || 'Failed to load exam';
     toast.error(msg);
   }, [examIsError, examError]);
 
@@ -155,9 +154,7 @@ export default function MarksEntryPage() {
   useEffect(() => {
     if (!resultsIsError) return;
     const msg =
-      resultsError?.response?.data?.message ||
-      resultsError?.message ||
-      'Failed to load results';
+      resultsError?.response?.data?.message || resultsError?.message || 'Failed to load results';
     toast.error(msg);
   }, [resultsIsError, resultsError]);
 
@@ -187,8 +184,7 @@ export default function MarksEntryPage() {
   };
 
   const enterMutation = useMutation({
-    mutationFn: (payload) =>
-      postData({ url: `/exam/${examId}/results/enter`, payload, token }),
+    mutationFn: (payload) => postData({ url: `/exam/${examId}/results/enter`, payload, token }),
     onSuccess: (res) => {
       const { created = 0, updated = 0 } = res?.data || {};
       toast.success(`Saved — ${created} created, ${updated} updated`);
@@ -254,7 +250,11 @@ export default function MarksEntryPage() {
   }, [marks, students.length]);
 
   if (examLoading) {
-    return <div className="min-h-screen bg-gray-50 dark:bg-gray-800 p-6 rounded-[50px] text-gray-500 dark:text-gray-400">Loading exam…</div>;
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-800 p-6 rounded-[50px] text-gray-500 dark:text-gray-400">
+        Loading exam…
+      </div>
+    );
   }
   if (!exam) {
     const forbidden = examError?.response?.status === 403;
@@ -345,7 +345,9 @@ export default function MarksEntryPage() {
               )}
             </div>
             <div>
-              <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">Section</label>
+              <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">
+                Section
+              </label>
               <select
                 value={sectionId}
                 onChange={(e) => setSectionId(e.target.value)}
@@ -366,7 +368,8 @@ export default function MarksEntryPage() {
               )}
               {isTeacherMode && !examSubjectId && (
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  Pehle subject chunein — sirf wahi sections dikhayi denge jin mein aap parhate hain.
+                  Pehle subject chunein — sirf wahi sections dikhayi denge jin mein aap parhate
+                  hain.
                 </p>
               )}
             </div>
@@ -442,10 +445,14 @@ export default function MarksEntryPage() {
                     const c = computedRow(s._id);
                     return (
                       <tr key={s._id} className="border-t border-gray-100 dark:border-gray-800">
-                        <td className="px-4 py-2 text-gray-700 dark:text-gray-300">{s.rollNumber || '—'}</td>
+                        <td className="px-4 py-2 text-gray-700 dark:text-gray-300">
+                          {s.rollNumber || '—'}
+                        </td>
                         <td className="px-4 py-2 text-gray-900 dark:text-gray-100">
                           <div className="font-medium">{s.user?.name || '—'}</div>
-                          <div className="text-xs text-gray-400 dark:text-gray-500">{s.admissionNumber}</div>
+                          <div className="text-xs text-gray-400 dark:text-gray-500">
+                            {s.admissionNumber}
+                          </div>
                         </td>
                         {hasTheory && (
                           <td className="px-4 py-2">
@@ -516,9 +523,7 @@ export default function MarksEntryPage() {
                             type="checkbox"
                             disabled={isLocked}
                             checked={!!m.isAbsent}
-                            onChange={(e) =>
-                              updateMark(s._id, { isAbsent: e.target.checked })
-                            }
+                            onChange={(e) => updateMark(s._id, { isAbsent: e.target.checked })}
                             className="w-4 h-4 accent-teal-600"
                           />
                         </td>
@@ -559,7 +564,9 @@ export default function MarksEntryPage() {
 function Stat({ label, value }) {
   return (
     <div className="bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-xl px-3 py-2">
-      <p className="text-[10px] uppercase text-gray-500 dark:text-gray-400 font-semibold tracking-wider">{label}</p>
+      <p className="text-[10px] uppercase text-gray-500 dark:text-gray-400 font-semibold tracking-wider">
+        {label}
+      </p>
       <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{value ?? '—'}</p>
     </div>
   );

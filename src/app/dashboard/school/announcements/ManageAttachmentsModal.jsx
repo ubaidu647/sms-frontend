@@ -31,8 +31,7 @@ export default function ManageAttachmentsModal({ isOpen, onClose, announcement }
   };
 
   const addMutation = useMutation({
-    mutationFn: (fd) =>
-      postData({ url: `/announcement/${id}/attachments`, payload: fd, token }),
+    mutationFn: (fd) => postData({ url: `/announcement/${id}/attachments`, payload: fd, token }),
     onSuccess: () => {
       toast.success('Attachment added');
       setFile(null);
@@ -94,7 +93,9 @@ export default function ManageAttachmentsModal({ isOpen, onClose, announcement }
               <div className="flex items-center gap-2 text-sm text-gray-800 dark:text-gray-200">
                 <Paperclip className="w-4 h-4" />
                 <span className="font-medium">{file.name}</span>
-                <span className="text-xs text-gray-500 dark:text-gray-400">({formatBytes(file.size)})</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">
+                  ({formatBytes(file.size)})
+                </span>
               </div>
               <div className="flex gap-2">
                 <button
@@ -167,7 +168,9 @@ export default function ManageAttachmentsModal({ isOpen, onClose, announcement }
                     >
                       {att.name}
                     </a>
-                    <span className="text-xs text-gray-500 dark:text-gray-400">{formatBytes(att.size)}</span>
+                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                      {formatBytes(att.size)}
+                    </span>
                   </div>
                   <button
                     onClick={() => removeMutation.mutate(att._id)}

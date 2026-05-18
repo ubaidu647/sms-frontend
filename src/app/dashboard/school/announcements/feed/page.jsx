@@ -1,10 +1,6 @@
 'use client';
 import React, { useEffect, useRef } from 'react';
-import {
-  useInfiniteQuery,
-  useMutation,
-  useQueryClient,
-} from '@tanstack/react-query';
+import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { fetchData, postData } from '@/utils/api';
 import { useTokenStore } from '@/store/tokenStore';
 import toast from 'react-hot-toast';
@@ -26,20 +22,19 @@ export default function AnnouncementFeedPage() {
   const queryClient = useQueryClient();
   const t = useTranslations('announcementsFeed');
 
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
-    useInfiniteQuery({
-      queryKey: ['announcement-feed'],
-      initialPageParam: 1,
-      queryFn: ({ pageParam = 1 }) =>
-        fetchData({ url: '/announcement/feed', page: pageParam, limit: PAGE_SIZE, token }),
-      getNextPageParam: (last, allPages) => {
-        const total = last?.total ?? 0;
-        const loaded = allPages.reduce((s, p) => s + (p?.data?.length || 0), 0);
-        return loaded < total ? allPages.length + 1 : undefined;
-      },
-      enabled: !!token,
-      staleTime: 30_000,
-    });
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useInfiniteQuery({
+    queryKey: ['announcement-feed'],
+    initialPageParam: 1,
+    queryFn: ({ pageParam = 1 }) =>
+      fetchData({ url: '/announcement/feed', page: pageParam, limit: PAGE_SIZE, token }),
+    getNextPageParam: (last, allPages) => {
+      const total = last?.total ?? 0;
+      const loaded = allPages.reduce((s, p) => s + (p?.data?.length || 0), 0);
+      return loaded < total ? allPages.length + 1 : undefined;
+    },
+    enabled: !!token,
+    staleTime: 30_000,
+  });
 
   const items = (data?.pages || []).flatMap((p) => p?.data || []);
 
@@ -93,7 +88,9 @@ export default function AnnouncementFeedPage() {
         ) : items.length === 0 ? (
           <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 p-10 text-center">
             <div className="text-5xl mb-3">📭</div>
-            <div className="text-lg font-medium text-gray-700 dark:text-gray-300">No announcements yet</div>
+            <div className="text-lg font-medium text-gray-700 dark:text-gray-300">
+              No announcements yet
+            </div>
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
               When something is posted for your audience, it will appear here.
             </p>
@@ -216,7 +213,9 @@ function FeedCard({ a, onMarkRead, onAcknowledge }) {
               <FileText className="w-4 h-4 text-gray-500 dark:text-gray-400" />
               <span className="text-teal-700 dark:text-teal-400 font-medium">{att.name}</span>
               {att.size != null && (
-                <span className="text-xs text-gray-500 dark:text-gray-400 ml-auto">{formatBytes(att.size)}</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400 ml-auto">
+                  {formatBytes(att.size)}
+                </span>
               )}
             </a>
           ))}

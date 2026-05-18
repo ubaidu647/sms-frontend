@@ -131,7 +131,9 @@ export default function RegenerateVoucherModal({ isOpen, onClose, voucher }) {
             onChange={(e) => setDueDate(e.target.value)}
             className={inputCls}
           />
-          <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">Defaults to original voucher&apos;s due date.</p>
+          <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+            Defaults to original voucher&apos;s due date.
+          </p>
         </div>
       </div>
     </Modal>

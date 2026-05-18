@@ -103,8 +103,7 @@ export default function TransferStudentModal({ isOpen, onClose, onSuccess, stude
   const sections = sectionData?.data || [];
 
   const mutation = useMutation({
-    mutationFn: (payload) =>
-      patchData({ url: `/student/${student._id}/transfer`, payload, token }),
+    mutationFn: (payload) => patchData({ url: `/student/${student._id}/transfer`, payload, token }),
     onSuccess: (res) => {
       queryClient.invalidateQueries({ queryKey: ['students'] });
       queryClient.invalidateQueries({ queryKey: ['student-detail', student._id] });
@@ -181,11 +180,13 @@ export default function TransferStudentModal({ isOpen, onClose, onSuccess, stude
         <div className="p-3 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 rounded-lg text-blue-800 dark:text-blue-300 text-xs">
           <div className="font-semibold mb-1">Current placement</div>
           <div>
-            {student.class?.name}{student.section?.name ? ` / ${student.section.name}` : ''} ·{' '}
-            {student.academicYear} · Roll {student.rollNumber}
+            {student.class?.name}
+            {student.section?.name ? ` / ${student.section.name}` : ''} · {student.academicYear} ·
+            Roll {student.rollNumber}
           </div>
           <div className="mt-1 text-blue-700 dark:text-blue-400">
-            Transferring will assign a new roll number and reset academic status to "enrolled".
+            Transferring will assign a new roll number and reset academic status to
+            &quot;enrolled&quot;.
           </div>
         </div>
 
@@ -216,9 +217,7 @@ export default function TransferStudentModal({ isOpen, onClose, onSuccess, stude
             className={`${inputCls} bg-white dark:bg-gray-900`}
             disabled={!selectedClassId}
           >
-            <option value="">
-              {selectedClassId ? 'Select section...' : 'Select class first'}
-            </option>
+            <option value="">{selectedClassId ? 'Select section...' : 'Select class first'}</option>
             {sections.map((s) => {
               const isFull = s.currentStrength >= s.capacity;
               return (

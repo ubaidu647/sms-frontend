@@ -94,9 +94,7 @@ export default function StudentPickerModal({ isOpen, onClose }) {
           </label>
           {studentId ? (
             <div className="flex items-center justify-between p-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-teal-50 dark:bg-teal-950/40">
-              <span className="text-sm text-gray-900 dark:text-gray-100">
-                {studentLabel}
-              </span>
+              <span className="text-sm text-gray-900 dark:text-gray-100">{studentLabel}</span>
               <button
                 type="button"
                 onClick={() => {
@@ -130,9 +128,7 @@ export default function StudentPickerModal({ isOpen, onClose }) {
                       onClick={() => {
                         setStudentId(s._id);
                         setStudentLabel(
-                          `${s.user?.name || s.name || 'Student'} — ${
-                            s.admissionNumber || ''
-                          }`,
+                          `${s.user?.name || s.name || 'Student'} — ${s.admissionNumber || ''}`,
                         );
                         setShowResults(false);
                       }}

@@ -115,99 +115,118 @@ export default function StaffPage() {
   });
   const branches = branchData?.data || [];
 
-  const columns = useMemo(() => [
-    {
-      header: 'Name',
-      accessor: 'user',
-      render: (v, row) => {
-        const name = v?.name || '';
-        const initials = name
-          .split(' ')
-          .filter(Boolean)
-          .slice(0, 2)
-          .map((n) => n[0]?.toUpperCase())
-          .join('') || '?';
-        return (
-          <div className="flex items-center gap-3">
-            {row.photo ? (
-              <img
-                src={row.photo}
-                alt={name}
-                className="w-10 h-10 rounded-full object-cover border border-gray-200 dark:border-gray-700 flex-shrink-0"
-                onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.nextSibling.style.display = 'flex'; }}
-              />
-            ) : null}
-            <div
-              className="w-10 h-10 rounded-full bg-teal-100 text-teal-700 dark:text-teal-400 font-semibold text-sm items-center justify-center flex-shrink-0"
-              style={{ display: row.photo ? 'none' : 'flex' }}
-            >
-              {initials}
+  const columns = useMemo(
+    () => [
+      {
+        header: 'Name',
+        accessor: 'user',
+        render: (v, row) => {
+          const name = v?.name || '';
+          const initials =
+            name
+              .split(' ')
+              .filter(Boolean)
+              .slice(0, 2)
+              .map((n) => n[0]?.toUpperCase())
+              .join('') || '?';
+          return (
+            <div className="flex items-center gap-3">
+              {row.photo ? (
+                <img
+                  src={row.photo}
+                  alt={name}
+                  className="w-10 h-10 rounded-full object-cover border border-gray-200 dark:border-gray-700 flex-shrink-0"
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                    e.currentTarget.nextSibling.style.display = 'flex';
+                  }}
+                />
+              ) : null}
+              <div
+                className="w-10 h-10 rounded-full bg-teal-100 text-teal-700 dark:text-teal-400 font-semibold text-sm items-center justify-center flex-shrink-0"
+                style={{ display: row.photo ? 'none' : 'flex' }}
+              >
+                {initials}
+              </div>
+              <div className="min-w-0">
+                <div className="font-medium text-gray-900 dark:text-gray-100 truncate">{name}</div>
+                <div className="text-xs text-gray-400 dark:text-gray-500 truncate">{v?.email}</div>
+              </div>
             </div>
-            <div className="min-w-0">
-              <div className="font-medium text-gray-900 dark:text-gray-100 truncate">{name}</div>
-              <div className="text-xs text-gray-400 dark:text-gray-500 truncate">{v?.email}</div>
-            </div>
-          </div>
-        );
+          );
+        },
       },
-    },
-    {
-      header: 'Serial No.',
-      accessor: 'serialNumber',
-      render: (v) => <div className="text-gray-600 dark:text-gray-400 text-sm">{v}</div>,
-    },
-    {
-      header: 'Designation',
-      accessor: 'designation',
-      render: (v) => <div className="text-gray-700 dark:text-gray-300 text-sm">{v}</div>,
-    },
-    {
-      header: 'Type',
-      accessor: 'staffType',
-      render: (v) => (
-        <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${
-          v === 'teaching' ? 'bg-teal-100 text-teal-800' : 'bg-yellow-100 text-yellow-800'
-        }`}>
-          {v === 'teaching' ? 'Teaching' : 'Non-Teaching'}
-        </span>
-      ),
-    },
-    {
-      header: 'Employment',
-      accessor: 'employmentType',
-      render: (v) => (
-        <span className="inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:text-blue-300 capitalize">
-          {v}
-        </span>
-      ),
-    },
-    {
-      header: 'Branch',
-      accessor: 'branch',
-      render: (v) => <div className="text-gray-600 dark:text-gray-400 text-sm">{v?.name ?? '—'}</div>,
-    },
-    {
-      header: 'Role',
-      accessor: 'role',
-      render: (v) => <div className="text-gray-600 dark:text-gray-400 text-sm">{v?.name ?? '—'}</div>,
-    },
-    {
-      header: 'Joining Date',
-      accessor: 'joiningDate',
-      render: (v) => <div className="text-gray-500 dark:text-gray-400 text-sm">{v ? new Date(v).toLocaleDateString() : '—'}</div>,
-    },
-    {
-      header: 'Status',
-      accessor: 'isActive',
-      render: (v) => (
-        <span className={`inline-flex px-3 py-1 rounded-full text-xs font-medium ${
-          v ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-        }`}>
-          {v ? 'Active' : 'Blocked'}
-        </span>
-      ),
-    },
-  ], []);
+      {
+        header: 'Serial No.',
+        accessor: 'serialNumber',
+        render: (v) => <div className="text-gray-600 dark:text-gray-400 text-sm">{v}</div>,
+      },
+      {
+        header: 'Designation',
+        accessor: 'designation',
+        render: (v) => <div className="text-gray-700 dark:text-gray-300 text-sm">{v}</div>,
+      },
+      {
+        header: 'Type',
+        accessor: 'staffType',
+        render: (v) => (
+          <span
+            className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${
+              v === 'teaching' ? 'bg-teal-100 text-teal-800' : 'bg-yellow-100 text-yellow-800'
+            }`}
+          >
+            {v === 'teaching' ? 'Teaching' : 'Non-Teaching'}
+          </span>
+        ),
+      },
+      {
+        header: 'Employment',
+        accessor: 'employmentType',
+        render: (v) => (
+          <span className="inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:text-blue-300 capitalize">
+            {v}
+          </span>
+        ),
+      },
+      {
+        header: 'Branch',
+        accessor: 'branch',
+        render: (v) => (
+          <div className="text-gray-600 dark:text-gray-400 text-sm">{v?.name ?? '—'}</div>
+        ),
+      },
+      {
+        header: 'Role',
+        accessor: 'role',
+        render: (v) => (
+          <div className="text-gray-600 dark:text-gray-400 text-sm">{v?.name ?? '—'}</div>
+        ),
+      },
+      {
+        header: 'Joining Date',
+        accessor: 'joiningDate',
+        render: (v) => (
+          <div className="text-gray-500 dark:text-gray-400 text-sm">
+            {v ? new Date(v).toLocaleDateString() : '—'}
+          </div>
+        ),
+      },
+      {
+        header: 'Status',
+        accessor: 'isActive',
+        render: (v) => (
+          <span
+            className={`inline-flex px-3 py-1 rounded-full text-xs font-medium ${
+              v ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+            }`}
+          >
+            {v ? 'Active' : 'Blocked'}
+          </span>
+        ),
+      },
+    ],
+    [],
+  );
 
   const visibleColumns = useMemo(() => columns.map((c) => c.accessor), [columns]);
 
@@ -263,8 +282,21 @@ export default function StaffPage() {
   });
 
   const queryKey = [
-    'staff', page, limit, name, serialNumber, designation, staffType,
-    employmentType, gender, branchId, fromDate, toDate, isActive, isOrgLevel, userBranchId,
+    'staff',
+    page,
+    limit,
+    name,
+    serialNumber,
+    designation,
+    staffType,
+    employmentType,
+    gender,
+    branchId,
+    fromDate,
+    toDate,
+    isActive,
+    isOrgLevel,
+    userBranchId,
   ];
 
   const { data } = useQuery({
@@ -302,7 +334,6 @@ export default function StaffPage() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-800 p-6 rounded-[50px]">
       <div className="max-w-7xl mx-auto">
-
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div>
@@ -366,7 +397,9 @@ export default function StaffPage() {
               placeholder="Name..."
               value={draftName}
               onChange={(e) => setDraftName(e.target.value)}
-              onKeyDown={(e) => { if (e.key === 'Enter') applyFilters(); }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') applyFilters();
+              }}
               className="outline-none text-sm w-32 text-gray-900 dark:text-gray-100 placeholder:text-gray-400"
             />
           </div>
@@ -378,7 +411,9 @@ export default function StaffPage() {
               placeholder="Designation..."
               value={draftDesignation}
               onChange={(e) => setDraftDesignation(e.target.value)}
-              onKeyDown={(e) => { if (e.key === 'Enter') applyFilters(); }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') applyFilters();
+              }}
               className="outline-none text-sm w-32 text-gray-900 dark:text-gray-100 placeholder:text-gray-400"
             />
           </div>
@@ -390,7 +425,9 @@ export default function StaffPage() {
               placeholder="Serial no..."
               value={draftSerialNumber}
               onChange={(e) => setDraftSerialNumber(e.target.value)}
-              onKeyDown={(e) => { if (e.key === 'Enter') applyFilters(); }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') applyFilters();
+              }}
               className="outline-none text-sm w-28 text-gray-900 dark:text-gray-100 placeholder:text-gray-400"
             />
           </div>
@@ -441,7 +478,9 @@ export default function StaffPage() {
             >
               <option value="">All Branches</option>
               {branches.map((b) => (
-                <option key={b._id} value={b._id}>{b.name}</option>
+                <option key={b._id} value={b._id}>
+                  {b.name}
+                </option>
               ))}
             </select>
           )}
@@ -513,8 +552,10 @@ export default function StaffPage() {
                 <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">Delete Staff</h3>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
                   Are you sure you want to permanently delete{' '}
-                  <span className="font-semibold text-gray-900 dark:text-gray-100">{deleteTarget.user?.name}</span>?
-                  This will also remove their login account and cannot be undone.
+                  <span className="font-semibold text-gray-900 dark:text-gray-100">
+                    {deleteTarget.user?.name}
+                  </span>
+                  ? This will also remove their login account and cannot be undone.
                 </p>
                 <div className="flex gap-3 pt-2">
                   <button

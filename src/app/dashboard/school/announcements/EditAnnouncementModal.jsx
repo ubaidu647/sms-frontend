@@ -8,11 +8,7 @@ import { putData } from '@/utils/api';
 import { useTokenStore } from '@/store/tokenStore';
 import { useUserStore } from '@/store/userStore';
 import AudiencePicker from './AudiencePicker';
-import {
-  ANNOUNCEMENT_TYPES,
-  ANNOUNCEMENT_PRIORITIES,
-  toYMD,
-} from '@/constants/announcement';
+import { ANNOUNCEMENT_TYPES, ANNOUNCEMENT_PRIORITIES } from '@/constants/announcement';
 
 const inputCls =
   'w-full px-3 py-2 border border-gray-200 rounded-lg outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 text-sm text-gray-900 bg-white';
@@ -45,8 +41,7 @@ export default function EditAnnouncementModal({ isOpen, onClose, announcement })
   const queryClient = useQueryClient();
 
   const isAdmin = !!user?.role?.isPredefined;
-  const isOrgLevel =
-    isAdmin || !!user?.role?.actions?.includes('update-all-branch-announcement');
+  const isOrgLevel = isAdmin || !!user?.role?.actions?.includes('update-all-branch-announcement');
 
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
@@ -73,7 +68,9 @@ export default function EditAnnouncementModal({ isOpen, onClose, announcement })
       classIds: idsOf(a.classIds),
       sectionIds: idsOf(a.sectionIds),
       staffIds: idsOf(a.staffIds),
-      targetUserTypes: a.targetUserTypes?.length ? a.targetUserTypes : ['staff', 'student', 'parent'],
+      targetUserTypes: a.targetUserTypes?.length
+        ? a.targetUserTypes
+        : ['staff', 'student', 'parent'],
     });
     setPublishedAt(toLocalDateTime(announcement.publishedAt));
     setExpiresAt(toLocalDateTime(announcement.expiresAt));
@@ -84,8 +81,7 @@ export default function EditAnnouncementModal({ isOpen, onClose, announcement })
   }, [isOpen, announcement]);
 
   const mutation = useMutation({
-    mutationFn: (payload) =>
-      putData({ url: `/announcement/${announcement._id}`, payload, token }),
+    mutationFn: (payload) => putData({ url: `/announcement/${announcement._id}`, payload, token }),
     onSuccess: (res) => {
       toast.success(res?.message || 'Announcement updated');
       queryClient.invalidateQueries({ queryKey: ['announcements'] });

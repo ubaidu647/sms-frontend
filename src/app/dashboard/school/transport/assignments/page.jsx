@@ -4,12 +4,7 @@ import { Table } from '@/component/Table';
 import { Plus, Search, Edit, Trash2, X } from 'lucide-react';
 import { useTokenStore } from '@/store/tokenStore';
 import { useUserStore } from '@/store/userStore';
-import {
-  useQuery,
-  useMutation,
-  useQueryClient,
-  keepPreviousData,
-} from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { fetchData, deleteData } from '@/utils/api';
 import toast from 'react-hot-toast';
 import AssignmentFormModal from './AssignmentFormModal';
@@ -87,11 +82,7 @@ export default function AssignmentsPage() {
   const isOrgLevel = scope === 'all';
   const isOwnOnly = scope === 'own';
   const canCreate =
-    !isOwnOnly &&
-    hasAnyAction(user?.role, [
-      'assign-transport',
-      'assign-all-branch-transport',
-    ]);
+    !isOwnOnly && hasAnyAction(user?.role, ['assign-transport', 'assign-all-branch-transport']);
   const canUpdate =
     !isOwnOnly &&
     hasAnyAction(user?.role, [
@@ -232,7 +223,9 @@ export default function AssignmentsPage() {
         header: 'Vehicle',
         accessor: 'vehicle',
         render: (v) => (
-          <span className="text-sm text-gray-700 dark:text-gray-300">{v?.registrationNumber || '—'}</span>
+          <span className="text-sm text-gray-700 dark:text-gray-300">
+            {v?.registrationNumber || '—'}
+          </span>
         ),
       },
       {
@@ -247,7 +240,11 @@ export default function AssignmentsPage() {
       {
         header: 'Monthly Fee',
         accessor: 'monthlyFee',
-        render: (v) => <span className="text-sm font-medium text-teal-700 dark:text-teal-400">{formatMoney(v)}</span>,
+        render: (v) => (
+          <span className="text-sm font-medium text-teal-700 dark:text-teal-400">
+            {formatMoney(v)}
+          </span>
+        ),
       },
       {
         header: 'Year',
@@ -312,7 +309,9 @@ export default function AssignmentsPage() {
               placeholder="Search student / route / stop..."
               value={draftSearch}
               onChange={(e) => setDraftSearch(e.target.value)}
-              onKeyDown={(e) => { if (e.key === 'Enter') applyFilters(); }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') applyFilters();
+              }}
               className="outline-none text-sm w-64 text-gray-900 dark:text-gray-100 placeholder:text-gray-400"
             />
           </div>
@@ -322,7 +321,9 @@ export default function AssignmentsPage() {
             placeholder="2025-2026"
             value={draftAcademicYear}
             onChange={(e) => setDraftAcademicYear(e.target.value)}
-            onKeyDown={(e) => { if (e.key === 'Enter') applyFilters(); }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') applyFilters();
+            }}
             className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-900 dark:text-gray-100 w-32 outline-none"
           />
 

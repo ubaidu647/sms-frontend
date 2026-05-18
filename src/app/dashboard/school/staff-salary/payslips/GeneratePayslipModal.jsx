@@ -7,11 +7,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { fetchData, postData } from '@/utils/api';
 import { useTokenStore } from '@/store/tokenStore';
 import { useUserStore } from '@/store/userStore';
-import {
-  currentMonth,
-  formatMoney,
-  previousMonth,
-} from '@/constants/staffSalary';
+import { currentMonth, formatMoney, previousMonth } from '@/constants/staffSalary';
 
 const inputCls =
   'w-full px-3 py-2 border border-gray-200 rounded-lg outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 text-sm text-gray-900 bg-white placeholder:text-gray-400';
@@ -23,9 +19,7 @@ export default function GeneratePayslipModal({ isOpen, onClose }) {
   const queryClient = useQueryClient();
 
   const isAdmin = !!user?.role?.isPredefined;
-  const canAllBranch =
-    isAdmin ||
-    !!user?.role?.actions?.includes('generate-all-branch-payslip');
+  const canAllBranch = isAdmin || !!user?.role?.actions?.includes('generate-all-branch-payslip');
   const userBranchId = user?.branchId || user?.branch?._id || '';
 
   const [staffId, setStaffId] = useState('');
@@ -72,8 +66,7 @@ export default function GeneratePayslipModal({ isOpen, onClose }) {
   const struct = activeStruct?.data ?? activeStruct;
 
   const mutation = useMutation({
-    mutationFn: (payload) =>
-      postData({ url: '/staff-salary/payslip/generate', payload, token }),
+    mutationFn: (payload) => postData({ url: '/staff-salary/payslip/generate', payload, token }),
     onSuccess: (res) => {
       toast.success(res?.message || 'Payslip generated');
       queryClient.invalidateQueries({ queryKey: ['payslips'] });
@@ -102,8 +95,7 @@ export default function GeneratePayslipModal({ isOpen, onClose }) {
       return;
     }
     const payload = { staffId, month };
-    if (bonus !== '' && !Number.isNaN(Number(bonus)))
-      payload.bonus = Number(bonus);
+    if (bonus !== '' && !Number.isNaN(Number(bonus))) payload.bonus = Number(bonus);
     if (tax !== '' && !Number.isNaN(Number(tax))) payload.tax = Number(tax);
     if (notes?.trim()) payload.notes = notes.trim();
     mutation.mutate(payload);
@@ -167,11 +159,7 @@ export default function GeneratePayslipModal({ isOpen, onClose }) {
             >
               <option value="">Select staff...</option>
               {staffList.map((s) => {
-                const label =
-                  s.user?.name ||
-                  s.userId?.name ||
-                  s.name ||
-                  'Staff';
+                const label = s.user?.name || s.userId?.name || s.name || 'Staff';
                 const ref = s.serialNumber || s.employeeId;
                 return (
                   <option key={s._id} value={s._id}>
@@ -188,24 +176,19 @@ export default function GeneratePayslipModal({ isOpen, onClose }) {
                 <div className="text-xs text-gray-500 dark:text-gray-400">Loading structure…</div>
               ) : noStruct ? (
                 <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg text-amber-800 text-sm">
-                  No active salary structure for this staff. Define one in
-                  Salary Structures before generating a payslip.
+                  No active salary structure for this staff. Define one in Salary Structures before
+                  generating a payslip.
                 </div>
               ) : struct ? (
                 <div className="p-3 bg-teal-50 dark:bg-teal-950/40 border border-teal-100 rounded-lg text-sm text-gray-700 dark:text-gray-300 flex flex-wrap gap-x-6 gap-y-1">
                   <span>
-                    Basic:{' '}
-                    <strong>
-                      {formatMoney(struct.basicSalary, struct.currency)}
-                    </strong>
+                    Basic: <strong>{formatMoney(struct.basicSalary, struct.currency)}</strong>
                   </span>
                   <span>
-                    Allowances:{' '}
-                    <strong>{(struct.allowances || []).length}</strong>
+                    Allowances: <strong>{(struct.allowances || []).length}</strong>
                   </span>
                   <span>
-                    Deductions:{' '}
-                    <strong>{(struct.deductions || []).length}</strong>
+                    Deductions: <strong>{(struct.deductions || []).length}</strong>
                   </span>
                 </div>
               ) : null}

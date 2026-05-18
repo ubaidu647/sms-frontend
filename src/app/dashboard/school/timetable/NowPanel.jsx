@@ -108,8 +108,7 @@ export default function NowPanel() {
                   </div>
                   <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                     {s.class?.name}
-                    {s.section?.name ? ` - ${s.section.name}` : ''} ·{' '}
-                    {s.staff?.user?.name || '—'}
+                    {s.section?.name ? ` - ${s.section.name}` : ''} · {s.staff?.user?.name || '—'}
                   </div>
                 </div>
                 {s.room && (

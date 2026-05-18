@@ -64,7 +64,9 @@ export default function MonthlyStaffSummaryPanel() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
           {isOrgLevel && (
             <div>
-              <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">Branch</label>
+              <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">
+                Branch
+              </label>
               <select
                 value={branchId}
                 onChange={(e) => setBranchId(e.target.value)}
@@ -80,7 +82,9 @@ export default function MonthlyStaffSummaryPanel() {
             </div>
           )}
           <div>
-            <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">Month</label>
+            <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">
+              Month
+            </label>
             <input
               type="month"
               value={month}
@@ -89,7 +93,9 @@ export default function MonthlyStaffSummaryPanel() {
             />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">Staff Type</label>
+            <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">
+              Staff Type
+            </label>
             <select
               value={staffType}
               onChange={(e) => setStaffType(e.target.value)}
@@ -108,7 +114,9 @@ export default function MonthlyStaffSummaryPanel() {
 
       {!effectiveBranchId && (
         <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-12 text-center">
-          <p className="text-gray-500 dark:text-gray-400">Pick a branch and month to load the summary.</p>
+          <p className="text-gray-500 dark:text-gray-400">
+            Pick a branch and month to load the summary.
+          </p>
         </div>
       )}
 
@@ -168,29 +176,47 @@ export default function MonthlyStaffSummaryPanel() {
                   className="border-b border-gray-100 dark:border-gray-800 last:border-b-0 hover:bg-gray-50 dark:hover:bg-gray-800"
                 >
                   <td className="px-4 py-3">
-                    <div className="text-sm font-medium text-gray-900 dark:text-gray-100">{s.name}</div>
+                    <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                      {s.name}
+                    </div>
                     <div className="text-xs text-gray-400 dark:text-gray-500">
                       {s.serialNumber}
-                      {s.staffType && (
-                        <span className="ml-2 capitalize">· {s.staffType}</span>
-                      )}
+                      {s.staffType && <span className="ml-2 capitalize">· {s.staffType}</span>}
                     </div>
                   </td>
-                  <td className="px-3 py-3 text-sm text-gray-700 dark:text-gray-300">{s.designation || '—'}</td>
+                  <td className="px-3 py-3 text-sm text-gray-700 dark:text-gray-300">
+                    {s.designation || '—'}
+                  </td>
                   <td className="px-3 py-3 text-right text-sm text-gray-700 dark:text-gray-300">
                     {s.salary != null ? formatMoney(s.salary) : '—'}
                   </td>
-                  <td className="px-3 py-3 text-center text-sm text-gray-700 dark:text-gray-300">{s.present}</td>
-                  <td className="px-3 py-3 text-center text-sm text-gray-700 dark:text-gray-300">{s.late}</td>
-                  <td className="px-3 py-3 text-center text-sm text-gray-700 dark:text-gray-300">{s.halfDay}</td>
-                  <td className="px-3 py-3 text-center text-sm text-gray-700 dark:text-gray-300">{s.absent}</td>
-                  <td className="px-3 py-3 text-center text-sm text-gray-700 dark:text-gray-300">{s.leave}</td>
                   <td className="px-3 py-3 text-center text-sm text-gray-700 dark:text-gray-300">
-                    <span className="text-green-700 dark:text-green-400 font-medium">{s.paidLeave ?? 0}</span>
-                    <span className="text-gray-400 dark:text-gray-500"> / </span>
-                    <span className="text-red-700 dark:text-red-400 font-medium">{s.unpaidLeave ?? 0}</span>
+                    {s.present}
                   </td>
-                  <td className="px-3 py-3 text-center text-sm text-gray-700 dark:text-gray-300">{s.holiday}</td>
+                  <td className="px-3 py-3 text-center text-sm text-gray-700 dark:text-gray-300">
+                    {s.late}
+                  </td>
+                  <td className="px-3 py-3 text-center text-sm text-gray-700 dark:text-gray-300">
+                    {s.halfDay}
+                  </td>
+                  <td className="px-3 py-3 text-center text-sm text-gray-700 dark:text-gray-300">
+                    {s.absent}
+                  </td>
+                  <td className="px-3 py-3 text-center text-sm text-gray-700 dark:text-gray-300">
+                    {s.leave}
+                  </td>
+                  <td className="px-3 py-3 text-center text-sm text-gray-700 dark:text-gray-300">
+                    <span className="text-green-700 dark:text-green-400 font-medium">
+                      {s.paidLeave ?? 0}
+                    </span>
+                    <span className="text-gray-400 dark:text-gray-500"> / </span>
+                    <span className="text-red-700 dark:text-red-400 font-medium">
+                      {s.unpaidLeave ?? 0}
+                    </span>
+                  </td>
+                  <td className="px-3 py-3 text-center text-sm text-gray-700 dark:text-gray-300">
+                    {s.holiday}
+                  </td>
                   <td className="px-3 py-3 text-center text-sm text-gray-700 dark:text-gray-300">
                     {formatWorkedMinutes(s.totalWorkedMinutes)}
                   </td>

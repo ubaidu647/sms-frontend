@@ -69,7 +69,8 @@ export default function AddAssignmentModal({ isOpen, mode = 'single', onClose, o
   const [selectedSectionIds, setSelectedSectionIds] = useState([]);
 
   const isAdmin = !!user?.role?.isPredefined;
-  const canCreateAllBranch = isAdmin || !!user?.role?.actions?.includes('create-all-branch-teaching-assignment');
+  const canCreateAllBranch =
+    isAdmin || !!user?.role?.actions?.includes('create-all-branch-teaching-assignment');
   const userBranchId = user?.branchId || user?.branch?._id || '';
 
   const isBulk = mode === 'bulk';
@@ -229,7 +230,9 @@ export default function AddAssignmentModal({ isOpen, mode = 'single', onClose, o
     onSuccess: (res) => {
       queryClient.invalidateQueries({ queryKey: ['teacher-assignments'] });
       const { createdCount = 0, skippedCount = 0 } = res?.data || {};
-      toast.success(`Assigned ${createdCount} sections${skippedCount ? `, ${skippedCount} skipped` : ''}`);
+      toast.success(
+        `Assigned ${createdCount} sections${skippedCount ? `, ${skippedCount} skipped` : ''}`,
+      );
       setBulkResult(res?.data);
     },
     onError: (err) => {
@@ -342,15 +345,22 @@ export default function AddAssignmentModal({ isOpen, mode = 'single', onClose, o
 
           {bulkResult.created?.length > 0 && (
             <div>
-              <h4 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-2">Created</h4>
+              <h4 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-2">
+                Created
+              </h4>
               <ul className="space-y-1">
                 {bulkResult.created.map((c) => {
                   const sec = sections.find((s) => s._id === c.sectionId);
                   return (
-                    <li key={c._id} className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                    <li
+                      key={c._id}
+                      className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300"
+                    >
                       <CheckCircle2 className="w-4 h-4 text-green-600 flex-shrink-0" />
                       <span>Section {sec?.name || c.sectionId}</span>
-                      <span className="text-xs text-gray-400 dark:text-gray-500">{c.serialNumber}</span>
+                      <span className="text-xs text-gray-400 dark:text-gray-500">
+                        {c.serialNumber}
+                      </span>
                     </li>
                   );
                 })}
@@ -360,16 +370,23 @@ export default function AddAssignmentModal({ isOpen, mode = 'single', onClose, o
 
           {bulkResult.skipped?.length > 0 && (
             <div>
-              <h4 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-2">Skipped</h4>
+              <h4 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-2">
+                Skipped
+              </h4>
               <ul className="space-y-1">
                 {bulkResult.skipped.map((s, i) => {
                   const sec = sections.find((sec) => sec._id === s.sectionId);
                   return (
-                    <li key={i} className="flex items-start gap-2 text-sm text-gray-700 dark:text-gray-300">
+                    <li
+                      key={i}
+                      className="flex items-start gap-2 text-sm text-gray-700 dark:text-gray-300"
+                    >
                       <AlertTriangle className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
                       <div>
                         <span>Section {sec?.name || s.sectionId}</span>
-                        <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">— {s.reason}</span>
+                        <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">
+                          — {s.reason}
+                        </span>
                       </div>
                     </li>
                   );
@@ -388,14 +405,21 @@ export default function AddAssignmentModal({ isOpen, mode = 'single', onClose, o
 
           {/* Scope */}
           <div>
-            <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">Scope</h3>
+            <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">
+              Scope
+            </h3>
             <div className="grid grid-cols-2 gap-4">
               {canCreateAllBranch ? (
                 <Field label="Branch" required error={errors.branchId?.message}>
-                  <select {...register('branchId')} className={`${inputCls} bg-white dark:bg-gray-900`}>
+                  <select
+                    {...register('branchId')}
+                    className={`${inputCls} bg-white dark:bg-gray-900`}
+                  >
                     <option value="">Select branch...</option>
                     {branches.map((b) => (
-                      <option key={b._id} value={b._id}>{b.name}</option>
+                      <option key={b._id} value={b._id}>
+                        {b.name}
+                      </option>
                     ))}
                   </select>
                 </Field>
@@ -445,9 +469,13 @@ export default function AddAssignmentModal({ isOpen, mode = 'single', onClose, o
                 Sections to Assign ({selectedSectionIds.length} selected)
               </h3>
               {!classId ? (
-                <p className="text-sm text-gray-400 dark:text-gray-500 italic">Select a class to load sections.</p>
+                <p className="text-sm text-gray-400 dark:text-gray-500 italic">
+                  Select a class to load sections.
+                </p>
               ) : sections.length === 0 ? (
-                <p className="text-sm text-gray-400 dark:text-gray-500 italic">No sections in this class.</p>
+                <p className="text-sm text-gray-400 dark:text-gray-500 italic">
+                  No sections in this class.
+                </p>
               ) : (
                 <div className="space-y-2 max-h-56 overflow-y-auto p-3 bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
                   <div className="flex items-center justify-end gap-2 pb-2 border-b border-gray-200 dark:border-gray-700">
@@ -473,7 +501,9 @@ export default function AddAssignmentModal({ isOpen, mode = 'single', onClose, o
                       <label
                         key={s._id}
                         className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-colors ${
-                          checked ? 'bg-teal-50 border border-teal-200' : 'bg-white border border-gray-200 hover:bg-gray-50'
+                          checked
+                            ? 'bg-teal-50 border border-teal-200'
+                            : 'bg-white border border-gray-200 hover:bg-gray-50'
                         }`}
                       >
                         <input
@@ -482,7 +512,9 @@ export default function AddAssignmentModal({ isOpen, mode = 'single', onClose, o
                           onChange={() => toggleSectionSelection(s._id)}
                           className="w-4 h-4 accent-teal-600"
                         />
-                        <span className="text-sm font-medium text-gray-900 dark:text-gray-100">Section {s.name}</span>
+                        <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                          Section {s.name}
+                        </span>
                         <span className="text-xs text-gray-500 dark:text-gray-400 ml-auto">
                           {s.currentStrength}/{s.capacity}
                         </span>
@@ -533,7 +565,9 @@ export default function AddAssignmentModal({ isOpen, mode = 'single', onClose, o
 
           {/* Role */}
           <div>
-            <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">Role</h3>
+            <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">
+              Role
+            </h3>
             <div className="grid grid-cols-2 gap-4">
               <Field label="Role" error={errors.role?.message}>
                 <select {...register('role')} className={`${inputCls} bg-white dark:bg-gray-900`}>
@@ -543,7 +577,10 @@ export default function AddAssignmentModal({ isOpen, mode = 'single', onClose, o
                 </select>
               </Field>
               <Field label="Primary Teacher?" error={errors.isPrimary?.message}>
-                <select {...register('isPrimary')} className={`${inputCls} bg-white dark:bg-gray-900`}>
+                <select
+                  {...register('isPrimary')}
+                  className={`${inputCls} bg-white dark:bg-gray-900`}
+                >
                   <option value="true">Yes — primary (will demote any existing primary)</option>
                   <option value="false">No</option>
                 </select>

@@ -16,12 +16,7 @@ import {
 } from 'lucide-react';
 import { useTokenStore } from '@/store/tokenStore';
 import { useUserStore } from '@/store/userStore';
-import {
-  useQuery,
-  useMutation,
-  useQueryClient,
-  keepPreviousData,
-} from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { fetchData, deleteData, patchData } from '@/utils/api';
 import toast from 'react-hot-toast';
 import ComposeAnnouncementModal from './ComposeAnnouncementModal';
@@ -281,12 +276,16 @@ export default function AnnouncementsPage() {
       {
         header: 'Published',
         accessor: 'publishedAt',
-        render: (v) => <span className="text-xs text-gray-600 dark:text-gray-400">{formatDateTime(v)}</span>,
+        render: (v) => (
+          <span className="text-xs text-gray-600 dark:text-gray-400">{formatDateTime(v)}</span>
+        ),
       },
       {
         header: 'Expires',
         accessor: 'expiresAt',
-        render: (v) => <span className="text-xs text-gray-600 dark:text-gray-400">{formatDateTime(v)}</span>,
+        render: (v) => (
+          <span className="text-xs text-gray-600 dark:text-gray-400">{formatDateTime(v)}</span>
+        ),
       },
     ],
     [],
@@ -347,7 +346,9 @@ export default function AnnouncementsPage() {
               placeholder="Search title / body..."
               value={draftSearch}
               onChange={(e) => setDraftSearch(e.target.value)}
-              onKeyDown={(e) => { if (e.key === 'Enter') applyFilters(); }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') applyFilters();
+              }}
               className="outline-none text-sm w-64 text-gray-900 dark:text-gray-100 placeholder:text-gray-400"
             />
           </div>
@@ -462,10 +463,7 @@ export default function AnnouncementsPage() {
           totalItems={data?.total}
         />
 
-        <ComposeAnnouncementModal
-          isOpen={composeOpen}
-          onClose={() => setComposeOpen(false)}
-        />
+        <ComposeAnnouncementModal isOpen={composeOpen} onClose={() => setComposeOpen(false)} />
         <EditAnnouncementModal
           isOpen={!!editTarget}
           onClose={() => setEditTarget(null)}

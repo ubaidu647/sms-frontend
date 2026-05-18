@@ -64,8 +64,7 @@ export default function AddExamModal({ isOpen, onClose, onSuccess }) {
   const [successState, setSuccessState] = useState(false);
 
   const isAdmin = !!user?.role?.isPredefined;
-  const canCreateAllBranch =
-    isAdmin || !!user?.role?.actions?.includes('create-all-branch-exam');
+  const canCreateAllBranch = isAdmin || !!user?.role?.actions?.includes('create-all-branch-exam');
   const userBranchId = user?.branchId || user?.branch?._id || '';
 
   const {

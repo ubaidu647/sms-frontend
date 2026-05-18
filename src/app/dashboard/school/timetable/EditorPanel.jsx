@@ -1,16 +1,12 @@
 'use client';
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTokenStore } from '@/store/tokenStore';
 import { useUserStore } from '@/store/userStore';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { fetchData, postData } from '@/utils/api';
 import toast from 'react-hot-toast';
 import { Save, AlertCircle } from 'lucide-react';
-import {
-  DAY_LABELS,
-  PERIOD_TYPE_COLORS,
-  currentAcademicYear,
-} from '@/constants/timetable';
+import { DAY_LABELS, PERIOD_TYPE_COLORS, currentAcademicYear } from '@/constants/timetable';
 
 export default function EditorPanel() {
   const { accessToken: token } = useTokenStore();
@@ -78,8 +74,7 @@ export default function EditorPanel() {
 
   const { data: timetableRes, isFetching: timetableLoading } = useQuery({
     queryKey: ['section-timetable', sectionId, academicYear],
-    queryFn: () =>
-      fetchData({ url: `/timetable/section/${sectionId}`, token, academicYear }),
+    queryFn: () => fetchData({ url: `/timetable/section/${sectionId}`, token, academicYear }),
     enabled: !!token && !!sectionId,
     staleTime: 0,
   });
@@ -133,14 +128,8 @@ export default function EditorPanel() {
         if (cell) {
           next[d][p.number] = {
             slotType: cell.slotType,
-            subjectId:
-              typeof cell.subject === 'object'
-                ? cell.subject?._id
-                : cell.subjectId || '',
-            staffId:
-              typeof cell.staff === 'object'
-                ? cell.staff?._id
-                : cell.staffId || '',
+            subjectId: typeof cell.subject === 'object' ? cell.subject?._id : cell.subjectId || '',
+            staffId: typeof cell.staff === 'object' ? cell.staff?._id : cell.staffId || '',
             customLabel: cell.customLabel || '',
             room: cell.room || '',
             notes: cell.notes || '',
@@ -154,7 +143,10 @@ export default function EditorPanel() {
   const updateCell = (day, periodNumber, patch) => {
     setGrid((prev) => ({
       ...prev,
-      [day]: { ...(prev[day] || {}), [periodNumber]: { ...(prev[day]?.[periodNumber] || {}), ...patch } },
+      [day]: {
+        ...(prev[day] || {}),
+        [periodNumber]: { ...(prev[day]?.[periodNumber] || {}), ...patch },
+      },
     }));
   };
 
@@ -220,11 +212,16 @@ export default function EditorPanel() {
               label="Branch"
               value={branchId}
               onChange={setBranchId}
-              options={[{ value: '', label: 'Select branch...' }, ...branches.map((b) => ({ value: b._id, label: b.name }))]}
+              options={[
+                { value: '', label: 'Select branch...' },
+                ...branches.map((b) => ({ value: b._id, label: b.name })),
+              ]}
             />
           )}
           <div>
-            <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">Academic Year</label>
+            <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">
+              Academic Year
+            </label>
             <input
               value={academicYear}
               onChange={(e) => setAcademicYear(e.target.value)}
@@ -239,7 +236,10 @@ export default function EditorPanel() {
             disabled={!effectiveBranchId}
             options={[
               { value: '', label: effectiveBranchId ? 'Select class...' : 'Pick branch first' },
-              ...classes.map((c) => ({ value: c._id, label: `${c.name}${c.grade ? ` (Gr ${c.grade})` : ''}` })),
+              ...classes.map((c) => ({
+                value: c._id,
+                label: `${c.name}${c.grade ? ` (Gr ${c.grade})` : ''}`,
+              })),
             ]}
           />
           <Select
@@ -279,9 +279,8 @@ export default function EditorPanel() {
           <div>
             <p className="font-semibold">No period config</p>
             <p>
-              This branch has no default period config yet. Open the{' '}
-              <strong>Period Configs</strong> tab and create one before building
-              section timetables.
+              This branch has no default period config yet. Open the <strong>Period Configs</strong>{' '}
+              tab and create one before building section timetables.
             </p>
           </div>
         </div>
@@ -305,9 +304,14 @@ export default function EditorPanel() {
             </thead>
             <tbody>
               {periodConfig.periods.map((p) => (
-                <tr key={p.number} className="border-t border-gray-100 dark:border-gray-800 align-top">
+                <tr
+                  key={p.number}
+                  className="border-t border-gray-100 dark:border-gray-800 align-top"
+                >
                   <td className="px-3 py-3 border-r border-gray-200 dark:border-gray-700 sticky left-0 bg-white dark:bg-gray-900">
-                    <div className="font-semibold text-gray-900 dark:text-gray-100 text-sm">{p.name}</div>
+                    <div className="font-semibold text-gray-900 dark:text-gray-100 text-sm">
+                      {p.name}
+                    </div>
                     <div className="text-xs text-gray-500 dark:text-gray-400">
                       {p.startTime} – {p.endTime}
                     </div>
@@ -344,7 +348,9 @@ export default function EditorPanel() {
       )}
 
       {!canEdit && sectionId && (
-        <p className="text-xs text-gray-500 dark:text-gray-400">You have read-only access to timetables.</p>
+        <p className="text-xs text-gray-500 dark:text-gray-400">
+          You have read-only access to timetables.
+        </p>
       )}
     </div>
   );
@@ -353,7 +359,9 @@ export default function EditorPanel() {
 function Select({ label, value, onChange, options, disabled }) {
   return (
     <div>
-      <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">{label}</label>
+      <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">
+        {label}
+      </label>
       <select
         value={value}
         disabled={disabled}

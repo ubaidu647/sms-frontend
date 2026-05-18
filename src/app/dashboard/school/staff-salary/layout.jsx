@@ -41,9 +41,7 @@ export default function StaffSalaryLayout({ children }) {
   const menus = user?.role?.menus || [];
 
   const isPredefined = !!user?.role?.isPredefined;
-  const visibleTabs = TABS.filter(
-    (t) => isPredefined || t.canAccess(user?.role, menus),
-  );
+  const visibleTabs = TABS.filter((t) => isPredefined || t.canAccess(user?.role, menus));
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-gray-50 dark:bg-gray-800 rounded-[20px]">
@@ -52,8 +50,7 @@ export default function StaffSalaryLayout({ children }) {
           {visibleTabs.map((tab) => {
             const isActive =
               pathname === tab.href ||
-              (tab.href !== '/dashboard/school/staff-salary' &&
-                pathname.startsWith(tab.href));
+              (tab.href !== '/dashboard/school/staff-salary' && pathname.startsWith(tab.href));
             const Icon = tab.icon;
             return (
               <Link

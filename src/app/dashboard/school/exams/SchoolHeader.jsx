@@ -3,16 +3,9 @@ import React from 'react';
 
 export default function SchoolHeader({ user, title, subtitle }) {
   const schoolName =
-    user?.school?.name ||
-    user?.schoolName ||
-    user?.branch?.school?.name ||
-    'School Portal';
+    user?.school?.name || user?.schoolName || user?.branch?.school?.name || 'School Portal';
   const branchName = user?.branch?.name || user?.branchName || '';
-  const address =
-    user?.school?.address ||
-    user?.branch?.address ||
-    user?.schoolAddress ||
-    '';
+  const address = user?.school?.address || user?.branch?.address || user?.schoolAddress || '';
   const phone = user?.school?.phone || user?.branch?.phone || user?.schoolPhone || '';
   const email = user?.school?.email || user?.branch?.email || user?.schoolEmail || '';
   const logo = user?.school?.logo || user?.branch?.logo || user?.schoolLogo || '';
@@ -33,9 +26,7 @@ export default function SchoolHeader({ user, title, subtitle }) {
         </div>
         <div className="flex-1">
           <h1 className="text-2xl font-extrabold text-gray-900 leading-tight">{schoolName}</h1>
-          {branchName && (
-            <p className="text-sm text-gray-700 font-medium">Branch: {branchName}</p>
-          )}
+          {branchName && <p className="text-sm text-gray-700 font-medium">Branch: {branchName}</p>}
           <p className="text-xs text-gray-500">
             {[address, phone, email].filter(Boolean).join(' · ')}
           </p>

@@ -6,11 +6,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { fetchData, postData } from '@/utils/api';
 import toast from 'react-hot-toast';
 import { Save, CheckCircle2, CalendarDays, Search, X } from 'lucide-react';
-import {
-  STATUS_CONFIG,
-  STAFF_LEAVE_TYPES,
-  STAFF_TYPES,
-} from '@/constants/staffAttendance';
+import { STATUS_CONFIG, STAFF_LEAVE_TYPES, STAFF_TYPES } from '@/constants/staffAttendance';
 
 function todayISO() {
   return new Date().toISOString().slice(0, 10);
@@ -136,9 +132,7 @@ export default function MarkStaffAttendancePanel() {
           ...next[id],
           status,
           ...(status !== 'leave' ? { leaveType: '' } : {}),
-          ...(ALLOWS_TIMES.includes(status)
-            ? {}
-            : { arrivalTime: '', departureTime: '' }),
+          ...(ALLOWS_TIMES.includes(status) ? {} : { arrivalTime: '', departureTime: '' }),
         };
       });
       return next;
@@ -154,9 +148,7 @@ export default function MarkStaffAttendancePanel() {
             ...next[s.staffId],
             status,
             ...(status !== 'leave' ? { leaveType: '' } : {}),
-            ...(ALLOWS_TIMES.includes(status)
-              ? {}
-              : { arrivalTime: '', departureTime: '' }),
+            ...(ALLOWS_TIMES.includes(status) ? {} : { arrivalTime: '', departureTime: '' }),
           };
         }
       });
@@ -207,11 +199,7 @@ export default function MarkStaffAttendancePanel() {
       if (ALLOWS_TIMES.includes(e.status)) {
         if (e.arrivalTime) entry.arrivalTime = e.arrivalTime;
         if (e.departureTime) entry.departureTime = e.departureTime;
-        if (
-          entry.arrivalTime &&
-          entry.departureTime &&
-          entry.departureTime <= entry.arrivalTime
-        ) {
+        if (entry.arrivalTime && entry.departureTime && entry.departureTime <= entry.arrivalTime) {
           toast.error(`Departure must be after arrival for ${s.name}`);
           return;
         }
@@ -238,7 +226,9 @@ export default function MarkStaffAttendancePanel() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
           {isOrgLevel && (
             <div>
-              <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">Branch</label>
+              <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">
+                Branch
+              </label>
               <select
                 value={draftBranchId}
                 onChange={(e) => setDraftBranchId(e.target.value)}
@@ -255,7 +245,9 @@ export default function MarkStaffAttendancePanel() {
           )}
 
           <div>
-            <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">Staff Type</label>
+            <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">
+              Staff Type
+            </label>
             <select
               value={draftStaffType}
               onChange={(e) => setDraftStaffType(e.target.value)}
@@ -271,7 +263,9 @@ export default function MarkStaffAttendancePanel() {
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">Date</label>
+            <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">
+              Date
+            </label>
             <div className="relative">
               <CalendarDays className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500 pointer-events-none" />
               <input
@@ -310,7 +304,9 @@ export default function MarkStaffAttendancePanel() {
           <div className="w-14 h-14 mx-auto rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
             <CalendarDays className="w-7 h-7 text-gray-400 dark:text-gray-500" />
           </div>
-          <p className="text-gray-500 dark:text-gray-400 mt-3">Select a branch to load the staff roster.</p>
+          <p className="text-gray-500 dark:text-gray-400 mt-3">
+            Select a branch to load the staff roster.
+          </p>
         </div>
       )}
 
@@ -353,7 +349,9 @@ export default function MarkStaffAttendancePanel() {
 
           {canMark && (
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-xs text-gray-500 dark:text-gray-400 font-medium mr-1">Quick actions:</span>
+              <span className="text-xs text-gray-500 dark:text-gray-400 font-medium mr-1">
+                Quick actions:
+              </span>
               <button
                 onClick={() => setAllStatuses('present')}
                 className="px-3 py-1.5 text-xs font-medium bg-green-50 dark:bg-green-950/40 text-green-700 dark:text-green-400 border border-green-200 rounded-lg hover:bg-green-100"
@@ -443,7 +441,9 @@ export default function MarkStaffAttendancePanel() {
                           </div>
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">{s.designation || '—'}</td>
+                      <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
+                        {s.designation || '—'}
+                      </td>
                       <td className="px-4 py-3">
                         <div className="flex flex-wrap gap-1">
                           {STATUS_CONFIG.map((cfg) => {
@@ -527,9 +527,7 @@ export default function MarkStaffAttendancePanel() {
                             <input
                               type="text"
                               value={e.reason || ''}
-                              onChange={(ev) =>
-                                updateEntry(s.staffId, { reason: ev.target.value })
-                              }
+                              onChange={(ev) => updateEntry(s.staffId, { reason: ev.target.value })}
                               disabled={!canMark}
                               placeholder="Reason (optional)"
                               className="w-full px-2 py-1 text-xs border border-gray-200 dark:border-gray-700 rounded text-gray-900 dark:text-gray-100 placeholder:text-gray-400 outline-none focus:border-teal-500"

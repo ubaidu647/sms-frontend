@@ -33,10 +33,8 @@ function formatRange(start, end) {
   const em = end.toLocaleString('en', { month: 'short' });
   const sy = start.getFullYear();
   const ey = end.getFullYear();
-  if (sy === ey && sm === em)
-    return `${sm} ${start.getDate()} – ${end.getDate()}, ${sy}`;
-  if (sy === ey)
-    return `${sm} ${start.getDate()} – ${em} ${end.getDate()}, ${sy}`;
+  if (sy === ey && sm === em) return `${sm} ${start.getDate()} – ${end.getDate()}, ${sy}`;
+  if (sy === ey) return `${sm} ${start.getDate()} – ${em} ${end.getDate()}, ${sy}`;
   return `${sm} ${start.getDate()}, ${sy} – ${em} ${end.getDate()}, ${ey}`;
 }
 
@@ -71,17 +69,14 @@ export default function CalendarViewPanel() {
 
   const actions = user?.role?.actions || [];
   const isAdmin = !!user?.role?.isPredefined;
-  const isOrgLevel =
-    isAdmin || actions.includes('view-all-branch-attendance');
+  const isOrgLevel = isAdmin || actions.includes('view-all-branch-attendance');
   const userBranchId = user?.branchId || user?.branch?._id || '';
 
   const [academicYear, setAcademicYear] = useState(currentAcademicYear());
   const [branchId, setBranchId] = useState(isOrgLevel ? '' : userBranchId);
   const [classId, setClassId] = useState('');
   const [sectionId, setSectionId] = useState('');
-  const [weekStart, setWeekStart] = useState(() =>
-    startOfWeekMonday(new Date()),
-  );
+  const [weekStart, setWeekStart] = useState(() => startOfWeekMonday(new Date()));
   const [view, setView] = useState('Week');
 
   const days = useMemo(
@@ -92,8 +87,7 @@ export default function CalendarViewPanel() {
 
   const { data: branchData } = useQuery({
     queryKey: ['branches-dropdown'],
-    queryFn: () =>
-      fetchData({ url: '/branch/list', page: 1, limit: 100, token }),
+    queryFn: () => fetchData({ url: '/branch/list', page: 1, limit: 100, token }),
     enabled: !!token && isOrgLevel,
     staleTime: Infinity,
   });
@@ -246,9 +240,7 @@ export default function CalendarViewPanel() {
               disabled={!classId}
               className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 outline-none focus:border-teal-500 disabled:bg-gray-50"
             >
-              <option value="">
-                {classId ? 'Select section...' : 'Select class first'}
-              </option>
+              <option value="">{classId ? 'Select section...' : 'Select class first'}</option>
               {sections.map((s) => (
                 <option key={s._id} value={s._id}>
                   {s.name} ({s.currentStrength}/{s.capacity})
@@ -310,7 +302,7 @@ export default function CalendarViewPanel() {
 
         {/* Grid */}
         <div className="overflow-auto scrollbar-hide border-t border-gray-100 dark:border-gray-800 max-h-[calc(100vh-420px)]">
-          {(!classId || !sectionId) ? (
+          {!classId || !sectionId ? (
             <div className="p-12 text-center text-gray-500 dark:text-gray-400 text-sm">
               Pick a class and section to load the week.
             </div>
@@ -348,9 +340,7 @@ export default function CalendarViewPanel() {
                 {students.map((s) => (
                   <tr key={s.studentId} className="hover:bg-gray-50/40">
                     <td className="sticky left-0 bg-white dark:bg-gray-900 hover:bg-gray-50/40 border-b border-r border-gray-100 dark:border-gray-800 px-4 py-3 align-middle">
-                      <div className="text-xs font-semibold text-teal-600">
-                        Roll {s.rollNumber}
-                      </div>
+                      <div className="text-xs font-semibold text-teal-600">Roll {s.rollNumber}</div>
                       <div className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate max-w-[160px]">
                         {s.name}
                       </div>

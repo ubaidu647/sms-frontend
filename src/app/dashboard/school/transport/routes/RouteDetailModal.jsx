@@ -7,14 +7,54 @@ import { fetchData } from '@/utils/api';
 import { useTokenStore } from '@/store/tokenStore';
 
 const PIN_PALETTES = [
-  { text: 'text-emerald-500', border: 'border-emerald-500', borderT: 'border-t-emerald-500', borderB: 'border-b-emerald-500' },
-  { text: 'text-teal-700',    border: 'border-teal-700',    borderT: 'border-t-teal-700',    borderB: 'border-b-teal-700' },
-  { text: 'text-emerald-700', border: 'border-emerald-700', borderT: 'border-t-emerald-700', borderB: 'border-b-emerald-700' },
-  { text: 'text-blue-600',    border: 'border-blue-600',    borderT: 'border-t-blue-600',    borderB: 'border-b-blue-600' },
-  { text: 'text-cyan-700',    border: 'border-cyan-700',    borderT: 'border-t-cyan-700',    borderB: 'border-b-cyan-700' },
-  { text: 'text-indigo-600',  border: 'border-indigo-600',  borderT: 'border-t-indigo-600',  borderB: 'border-b-indigo-600' },
-  { text: 'text-purple-600',  border: 'border-purple-600',  borderT: 'border-t-purple-600',  borderB: 'border-b-purple-600' },
-  { text: 'text-rose-500',    border: 'border-rose-500',    borderT: 'border-t-rose-500',    borderB: 'border-b-rose-500' },
+  {
+    text: 'text-emerald-500',
+    border: 'border-emerald-500',
+    borderT: 'border-t-emerald-500',
+    borderB: 'border-b-emerald-500',
+  },
+  {
+    text: 'text-teal-700',
+    border: 'border-teal-700',
+    borderT: 'border-t-teal-700',
+    borderB: 'border-b-teal-700',
+  },
+  {
+    text: 'text-emerald-700',
+    border: 'border-emerald-700',
+    borderT: 'border-t-emerald-700',
+    borderB: 'border-b-emerald-700',
+  },
+  {
+    text: 'text-blue-600',
+    border: 'border-blue-600',
+    borderT: 'border-t-blue-600',
+    borderB: 'border-b-blue-600',
+  },
+  {
+    text: 'text-cyan-700',
+    border: 'border-cyan-700',
+    borderT: 'border-t-cyan-700',
+    borderB: 'border-b-cyan-700',
+  },
+  {
+    text: 'text-indigo-600',
+    border: 'border-indigo-600',
+    borderT: 'border-t-indigo-600',
+    borderB: 'border-b-indigo-600',
+  },
+  {
+    text: 'text-purple-600',
+    border: 'border-purple-600',
+    borderT: 'border-t-purple-600',
+    borderB: 'border-b-purple-600',
+  },
+  {
+    text: 'text-rose-500',
+    border: 'border-rose-500',
+    borderT: 'border-t-rose-500',
+    borderB: 'border-b-rose-500',
+  },
 ];
 
 function InfoCell({ label, value }) {
@@ -32,24 +72,17 @@ export default function RouteDetailModal({ isOpen, onClose, route }) {
   const { accessToken: token } = useTokenStore();
 
   const populatedVehicle =
-    route?.vehicleId && typeof route.vehicleId === 'object'
-      ? route.vehicleId
-      : null;
+    route?.vehicleId && typeof route.vehicleId === 'object' ? route.vehicleId : null;
   const vehicleId =
-    typeof route?.vehicleId === 'string'
-      ? route.vehicleId
-      : populatedVehicle?._id || '';
+    typeof route?.vehicleId === 'string' ? route.vehicleId : populatedVehicle?._id || '';
 
   const needsFullFetch =
     !!vehicleId &&
-    (!populatedVehicle ||
-      !populatedVehicle.driver ||
-      !populatedVehicle.manufactureYear);
+    (!populatedVehicle || !populatedVehicle.driver || !populatedVehicle.manufactureYear);
 
   const { data: vehicleData } = useQuery({
     queryKey: ['vehicle-detail', vehicleId],
-    queryFn: () =>
-      fetchData({ url: `/transport/vehicle/${vehicleId}`, token }),
+    queryFn: () => fetchData({ url: `/transport/vehicle/${vehicleId}`, token }),
     enabled: !!token && isOpen && needsFullFetch,
     staleTime: 30000,
     retry: false,
@@ -59,16 +92,11 @@ export default function RouteDetailModal({ isOpen, onClose, route }) {
   const vehicle = fetchedVehicle || populatedVehicle;
 
   const stops = useMemo(
-    () =>
-      [...(route?.stops || [])].sort(
-        (a, b) => (a.sequence ?? 0) - (b.sequence ?? 0),
-      ),
+    () => [...(route?.stops || [])].sort((a, b) => (a.sequence ?? 0) - (b.sequence ?? 0)),
     [route],
   );
 
-  const perStopDistance = stops.length
-    ? Number(route?.distanceKm || 0) / stops.length
-    : 0;
+  const perStopDistance = stops.length ? Number(route?.distanceKm || 0) / stops.length : 0;
 
   if (!route) return null;
 
@@ -89,10 +117,7 @@ export default function RouteDetailModal({ isOpen, onClose, route }) {
             </div>
 
             <div className="space-y-3">
-              <InfoCell
-                label="Vehicle Number:"
-                value={vehicle?.registrationNumber}
-              />
+              <InfoCell label="Vehicle Number:" value={vehicle?.registrationNumber} />
               <InfoCell label="Driver Name" value={vehicle?.driver?.name} />
             </div>
 
@@ -101,24 +126,17 @@ export default function RouteDetailModal({ isOpen, onClose, route }) {
                 label="Vehicle Model"
                 value={
                   vehicle
-                    ? [vehicle.make, vehicle.modelName]
-                        .filter(Boolean)
-                        .join(' ') || vehicle.vehicleType
+                    ? [vehicle.make, vehicle.modelName].filter(Boolean).join(' ') ||
+                      vehicle.vehicleType
                     : ''
                 }
               />
-              <InfoCell
-                label="Driver Licence"
-                value={vehicle?.driver?.licenseNumber}
-              />
+              <InfoCell label="Driver Licence" value={vehicle?.driver?.licenseNumber} />
             </div>
 
             <div className="space-y-3">
               <InfoCell label="Made" value={vehicle?.manufactureYear} />
-              <InfoCell
-                label="Driver Contact"
-                value={vehicle?.driver?.phone}
-              />
+              <InfoCell label="Driver Contact" value={vehicle?.driver?.phone} />
             </div>
           </div>
         </div>
@@ -140,9 +158,7 @@ export default function RouteDetailModal({ isOpen, onClose, route }) {
           {route.estimatedDurationMin != null && (
             <div>
               <span className="text-gray-500 dark:text-gray-400">Est. Duration: </span>
-              <span className="font-medium">
-                {route.estimatedDurationMin} min
-              </span>
+              <span className="font-medium">{route.estimatedDurationMin} min</span>
             </div>
           )}
           <div>
@@ -178,8 +194,7 @@ export default function RouteDetailModal({ isOpen, onClose, route }) {
                   const points = [];
                   for (let i = 0; i <= segments; i++) {
                     const x = (i / segments) * 1000;
-                    const phase =
-                      (i / segments) * Math.max(stops.length - 1, 1) * Math.PI;
+                    const phase = (i / segments) * Math.max(stops.length - 1, 1) * Math.PI;
                     const y = midY + Math.sin(phase) * amplitude;
                     points.push(`${i === 0 ? 'M' : 'L'}${x},${y}`);
                   }
@@ -208,20 +223,15 @@ export default function RouteDetailModal({ isOpen, onClose, route }) {
               {/* Stop pins positioned along the road */}
               {stops.map((stop, i) => {
                 const palette = PIN_PALETTES[i % PIN_PALETTES.length];
-                const xPct =
-                  stops.length === 1 ? 50 : 6 + (i / (stops.length - 1)) * 88;
+                const xPct = stops.length === 1 ? 50 : 6 + (i / (stops.length - 1)) * 88;
                 const isTop = i % 2 === 0;
-                const distance = Number(
-                  stop.distanceKm ?? perStopDistance,
-                ).toFixed(1);
+                const distance = Number(stop.distanceKm ?? perStopDistance).toFixed(1);
 
                 const pinFace = (
                   <div
                     className={`relative w-20 h-20 rounded-full border-[3px] ${palette.border} bg-white dark:bg-gray-900 flex items-center justify-center shadow-sm`}
                   >
-                    <MapPin
-                      className={`w-4 h-4 ${palette.text} absolute top-1.5 left-1.5`}
-                    />
+                    <MapPin className={`w-4 h-4 ${palette.text} absolute top-1.5 left-1.5`} />
                     <span className="text-[11px] font-semibold text-gray-700 dark:text-gray-300 px-1 text-center leading-tight">
                       {stop.name || `Stop ${i + 1}`}
                     </span>

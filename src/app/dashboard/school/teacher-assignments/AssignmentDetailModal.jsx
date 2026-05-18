@@ -9,7 +9,9 @@ import { Star } from 'lucide-react';
 function Row({ label, value, className = '' }) {
   return (
     <div className={`flex flex-col gap-0.5 min-w-0 ${className}`}>
-      <span className="text-[10px] text-gray-400 dark:text-gray-500 font-medium uppercase tracking-wide">{label}</span>
+      <span className="text-[10px] text-gray-400 dark:text-gray-500 font-medium uppercase tracking-wide">
+        {label}
+      </span>
       <span className="text-xs text-gray-800 dark:text-gray-200 font-medium break-words leading-tight">
         {value || <span className="text-gray-300">—</span>}
       </span>
@@ -40,7 +42,9 @@ function Badge({ label, color, icon: Icon }) {
     amber: 'bg-amber-100 text-amber-800',
   };
   return (
-    <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-medium capitalize ${colors[color] || colors.gray}`}>
+    <span
+      className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-medium capitalize ${colors[color] || colors.gray}`}
+    >
       {Icon && <Icon className="w-3 h-3" />}
       {label}
     </span>
@@ -49,7 +53,11 @@ function Badge({ label, color, icon: Icon }) {
 
 function fmt(date) {
   if (!date) return null;
-  return new Date(date).toLocaleDateString('en-PK', { year: 'numeric', month: 'short', day: 'numeric' });
+  return new Date(date).toLocaleDateString('en-PK', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  });
 }
 
 export default function AssignmentDetailModal({ isOpen, onClose, assignmentId }) {
@@ -65,12 +73,13 @@ export default function AssignmentDetailModal({ isOpen, onClose, assignmentId })
   const a = data?.data;
 
   const teacherName = a?.staff?.user?.name || '';
-  const initials = teacherName
-    .split(' ')
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((n) => n[0]?.toUpperCase())
-    .join('') || '?';
+  const initials =
+    teacherName
+      .split(' ')
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((n) => n[0]?.toUpperCase())
+      .join('') || '?';
 
   return (
     <Modal
@@ -105,20 +114,28 @@ export default function AssignmentDetailModal({ isOpen, onClose, assignmentId })
             </div>
 
             <div className="flex-1 min-w-0">
-              <div className="text-lg font-bold text-gray-900 dark:text-gray-100 truncate">{teacherName}</div>
+              <div className="text-lg font-bold text-gray-900 dark:text-gray-100 truncate">
+                {teacherName}
+              </div>
               <div className="text-sm text-gray-600 dark:text-gray-400 truncate">
                 {a.subject?.name} {a.subject?.code ? `(${a.subject.code})` : ''}
                 {' · '}
-                {a.class?.name}{a.section?.name ? ` / ${a.section.name}` : ''}
+                {a.class?.name}
+                {a.section?.name ? ` / ${a.section.name}` : ''}
               </div>
               <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                 {a.staff?.designation} · {a.academicYear}
               </div>
               <div className="flex flex-wrap gap-1.5 mt-2">
-                <Badge label={a.isActive ? 'Active' : 'Inactive'} color={a.isActive ? 'green' : 'gray'} />
+                <Badge
+                  label={a.isActive ? 'Active' : 'Inactive'}
+                  color={a.isActive ? 'green' : 'gray'}
+                />
                 <Badge
                   label={a.role}
-                  color={a.role === 'teacher' ? 'teal' : a.role === 'co-teacher' ? 'blue' : 'yellow'}
+                  color={
+                    a.role === 'teacher' ? 'teal' : a.role === 'co-teacher' ? 'blue' : 'yellow'
+                  }
                 />
                 {a.isPrimary && <Badge label="Primary" color="amber" icon={Star} />}
               </div>
@@ -156,7 +173,10 @@ export default function AssignmentDetailModal({ isOpen, onClose, assignmentId })
             <Row label="Class Type" value={a.class?.classType} />
             <Row label="Medium" value={a.class?.medium} />
             <Row label="Section" value={a.section?.name} />
-            <Row label="Strength" value={a.section ? `${a.section.currentStrength}/${a.section.capacity}` : null} />
+            <Row
+              label="Strength"
+              value={a.section ? `${a.section.currentStrength}/${a.section.capacity}` : null}
+            />
           </Section>
 
           {a.notes && (

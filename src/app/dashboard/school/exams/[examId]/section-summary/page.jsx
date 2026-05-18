@@ -37,17 +37,16 @@ export default function SectionSummaryPage() {
 
   const { data: summaryRes, isFetching } = useQuery({
     queryKey: ['section-summary', examId, sectionId],
-    queryFn: () =>
-      fetchData({ url: `/exam/${examId}/section-summary`, token, sectionId }),
+    queryFn: () => fetchData({ url: `/exam/${examId}/section-summary`, token, sectionId }),
     enabled: !!token && !!examId && !!sectionId,
     staleTime: 0,
   });
   const summary = summaryRes?.data;
   const studentsRanked = summary?.students || [];
-  const sectionMeta = useMemo(() => sections.find((s) => s._id === sectionId), [
-    sections,
-    sectionId,
-  ]);
+  const sectionMeta = useMemo(
+    () => sections.find((s) => s._id === sectionId),
+    [sections, sectionId],
+  );
 
   const handlePrint = () => window.print();
 
@@ -72,7 +71,9 @@ export default function SectionSummaryPage() {
         </div>
 
         <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 p-4 mb-4 no-print">
-          <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">Section</label>
+          <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">
+            Section
+          </label>
           <select
             value={sectionId}
             onChange={(e) => setSectionId(e.target.value)}
@@ -100,7 +101,10 @@ export default function SectionSummaryPage() {
             No marks recorded for this section yet.
           </div>
         ) : (
-          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 print-area" id="printable">
+          <div
+            className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 print-area"
+            id="printable"
+          >
             <SchoolHeader
               user={user}
               title="Section Result Sheet"
@@ -112,33 +116,58 @@ export default function SectionSummaryPage() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6 text-sm">
               <Stat label="Exam Type" value={exam?.type} />
               <Stat label="Total Marks" value={summary.totalMarks} />
-              <Stat label="Schedule" value={`${formatDate(exam?.startDate)} → ${formatDate(exam?.endDate)}`} />
+              <Stat
+                label="Schedule"
+                value={`${formatDate(exam?.startDate)} → ${formatDate(exam?.endDate)}`}
+              />
               <Stat label="Students" value={studentsRanked.length} />
             </div>
 
             <table className="w-full border-collapse text-sm">
               <thead>
                 <tr className="bg-gray-100 dark:bg-gray-800 text-xs uppercase text-gray-700 dark:text-gray-300">
-                  <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-left">#</th>
-                  <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-left">Roll</th>
-                  <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-left">Adm No.</th>
-                  <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-left">Name</th>
-                  <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-right">Total</th>
-                  <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-right">%</th>
-                  <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center">Failed</th>
-                  <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center">Result</th>
+                  <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-left">
+                    #
+                  </th>
+                  <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-left">
+                    Roll
+                  </th>
+                  <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-left">
+                    Adm No.
+                  </th>
+                  <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-left">
+                    Name
+                  </th>
+                  <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-right">
+                    Total
+                  </th>
+                  <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-right">
+                    %
+                  </th>
+                  <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center">
+                    Failed
+                  </th>
+                  <th className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center">
+                    Result
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {studentsRanked.map((s) => (
                   <tr
                     key={s.studentId}
-                    className={!s.isPassed ? 'bg-red-50 dark:bg-red-950/40' : 'hover:bg-gray-50 dark:hover:bg-gray-800'}
+                    className={
+                      !s.isPassed
+                        ? 'bg-red-50 dark:bg-red-950/40'
+                        : 'hover:bg-gray-50 dark:hover:bg-gray-800'
+                    }
                   >
                     <td className="border border-gray-300 dark:border-gray-600 px-2 py-2 font-bold">
                       {s.position}
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-600 px-2 py-2">{s.rollNumber || '—'}</td>
+                    <td className="border border-gray-300 dark:border-gray-600 px-2 py-2">
+                      {s.rollNumber || '—'}
+                    </td>
                     <td className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-xs text-gray-600 dark:text-gray-400">
                       {s.admissionNumber || '—'}
                     </td>
@@ -167,9 +196,7 @@ export default function SectionSummaryPage() {
                     <td className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-center">
                       <span
                         className={`inline-flex px-2 py-0.5 rounded-full text-xs font-semibold ${
-                          s.isPassed
-                            ? 'bg-green-100 text-green-700'
-                            : 'bg-red-100 text-red-700'
+                          s.isPassed ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
                         }`}
                       >
                         {s.isPassed ? 'PASS' : 'FAIL'}
@@ -196,8 +223,12 @@ export default function SectionSummaryPage() {
 function Stat({ label, value }) {
   return (
     <div className="border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2">
-      <p className="text-[10px] uppercase text-gray-500 dark:text-gray-400 font-semibold tracking-wider">{label}</p>
-      <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 capitalize">{value ?? '—'}</p>
+      <p className="text-[10px] uppercase text-gray-500 dark:text-gray-400 font-semibold tracking-wider">
+        {label}
+      </p>
+      <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 capitalize">
+        {value ?? '—'}
+      </p>
     </div>
   );
 }

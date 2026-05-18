@@ -189,8 +189,7 @@ export default function RecordPaymentModal({ isOpen, onClose, voucher }) {
             </div>
             <div>
               <label className={labelCls}>
-                Reference / Cheque #
-                {refRequired && <span className="text-red-500 ml-0.5">*</span>}
+                Reference / Cheque #{refRequired && <span className="text-red-500 ml-0.5">*</span>}
               </label>
               <input
                 type="text"
@@ -216,20 +215,21 @@ export default function RecordPaymentModal({ isOpen, onClose, voucher }) {
       ) : (
         <div className="space-y-4">
           <div className="text-center p-6 bg-green-50 dark:bg-green-950/40 border border-green-200 rounded-lg">
-            <div className="text-xs text-green-700 dark:text-green-400 uppercase tracking-widest">Receipt</div>
+            <div className="text-xs text-green-700 dark:text-green-400 uppercase tracking-widest">
+              Receipt
+            </div>
             <div className="text-3xl font-bold text-green-800 dark:text-green-300 mt-1">
               {receipt.payment.receiptNumber}
             </div>
             <div className="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-3">
               {formatMoney(receipt.payment.amount)}
             </div>
-            <div className="text-sm text-gray-600 dark:text-gray-400 mt-1 capitalize">{receipt.payment.method}</div>
+            <div className="text-sm text-gray-600 dark:text-gray-400 mt-1 capitalize">
+              {receipt.payment.method}
+            </div>
           </div>
           <div className="grid grid-cols-3 gap-2 text-sm">
-            <Stat
-              label="Voucher Total"
-              value={formatMoney(receipt.voucher.totalAmount)}
-            />
+            <Stat label="Voucher Total" value={formatMoney(receipt.voucher.totalAmount)} />
             <Stat
               label="Paid"
               value={formatMoney(receipt.voucher.paidAmount)}
@@ -253,7 +253,9 @@ export default function RecordPaymentModal({ isOpen, onClose, voucher }) {
 function Stat({ label, value, tone = 'text-gray-900' }) {
   return (
     <div>
-      <div className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">{label}</div>
+      <div className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">
+        {label}
+      </div>
       <div className={`text-base font-medium ${tone}`}>{value}</div>
     </div>
   );

@@ -3,7 +3,6 @@ import React, { useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   AlertTriangle,
-  Download,
   FileSpreadsheet,
   FileText,
   Printer,
@@ -40,13 +39,9 @@ export default function DefaultersReportPage() {
   const role = user?.role;
   const canRun =
     role?.isPredefined ||
-    hasAnyAction(role, [
-      'student-defaults-list-view',
-      'student-defaults-list-view-all-branch',
-    ]);
+    hasAnyAction(role, ['student-defaults-list-view', 'student-defaults-list-view-all-branch']);
   const canPickBranches =
-    role?.isPredefined ||
-    hasAnyAction(role, ['student-defaults-list-view-all-branch']);
+    role?.isPredefined || hasAnyAction(role, ['student-defaults-list-view-all-branch']);
 
   // Draft state — user-editable; only applied when "Generate" is pressed.
   const [draftFrom, setDraftFrom] = useState(firstOfMonth());
@@ -168,9 +163,7 @@ export default function DefaultersReportPage() {
   };
 
   const toggleBranch = (id) => {
-    setDraftBranchIds((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
-    );
+    setDraftBranchIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
   };
 
   const toggleExpand = (studentId) => {
@@ -193,12 +186,8 @@ export default function DefaultersReportPage() {
     if (!report) return;
     const lines = [];
     lines.push(['Student Fee Defaulters Statement']);
-    lines.push([
-      `Period: ${formatDate(report.period.from)} to ${formatDate(report.period.to)}`,
-    ]);
-    lines.push([
-      `Branches: ${(report.totals?.branchesCovered || []).join(', ') || 'All'}`,
-    ]);
+    lines.push([`Period: ${formatDate(report.period.from)} to ${formatDate(report.period.to)}`]);
+    lines.push([`Branches: ${(report.totals?.branchesCovered || []).join(', ') || 'All'}`]);
     lines.push([]);
     lines.push([
       'S/N',
@@ -285,6 +274,7 @@ export default function DefaultersReportPage() {
       )
       .join('\n');
 
+    // eslint-disable-next-line no-irregular-whitespace
     const blob = new Blob([`﻿${csv}`], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -431,9 +421,7 @@ export default function DefaultersReportPage() {
                               onChange={() => toggleBranch(b._id)}
                               className="accent-teal-600"
                             />
-                            <span className="text-gray-800 dark:text-gray-200">
-                              {b.name}
-                            </span>
+                            <span className="text-gray-800 dark:text-gray-200">{b.name}</span>
                           </label>
                         );
                       })
@@ -546,8 +534,7 @@ export default function DefaultersReportPage() {
 
         {!applied && (
           <div className="bg-white dark:bg-gray-900 border border-dashed border-gray-300 dark:border-gray-700 rounded-2xl p-12 text-center text-sm text-gray-500 dark:text-gray-400">
-            Pick a date range and click <strong>Generate</strong> to view the
-            defaulters statement.
+            Pick a date range and click <strong>Generate</strong> to view the defaulters statement.
           </div>
         )}
 
@@ -717,9 +704,7 @@ export default function DefaultersReportPage() {
                   <table className="w-full text-sm">
                     <thead className="bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
                       <tr>
-                        {applied?.includeDetails && (
-                          <th className="px-3 py-2 w-8 print:hidden" />
-                        )}
+                        {applied?.includeDetails && <th className="px-3 py-2 w-8 print:hidden" />}
                         <th className="px-3 py-2 text-left">S/N</th>
                         <th className="px-3 py-2 text-left">Student</th>
                         <th className="px-3 py-2 text-left">Father</th>
@@ -738,9 +723,7 @@ export default function DefaultersReportPage() {
                         const isOpen = expandedRows.has(r.studentId);
                         return (
                           <React.Fragment key={r.studentId}>
-                            <tr
-                              className="border-t border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/60"
-                            >
+                            <tr className="border-t border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/60">
                               {applied?.includeDetails && (
                                 <td className="px-3 py-2 print:hidden">
                                   <button
@@ -785,9 +768,7 @@ export default function DefaultersReportPage() {
                                 </div>
                               </td>
                               <td className="px-3 py-2 text-gray-700 dark:text-gray-300">
-                                <div className="truncate max-w-[160px]">
-                                  {r.fatherName || '—'}
-                                </div>
+                                <div className="truncate max-w-[160px]">{r.fatherName || '—'}</div>
                                 {r.fatherPhone && (
                                   <div className="text-xs text-gray-500 dark:text-gray-400">
                                     {r.fatherPhone}
@@ -844,9 +825,7 @@ export default function DefaultersReportPage() {
                       {totals && (
                         <tr className="bg-gray-50 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
                           <td
-                            colSpan={
-                              applied?.includeDetails ? 7 : 6
-                            }
+                            colSpan={applied?.includeDetails ? 7 : 6}
                             className="px-3 py-2 text-right font-bold text-gray-900 dark:text-gray-100"
                           >
                             GRAND TOTAL
@@ -906,13 +885,9 @@ function SummaryCard({ label, value, sub, tone = 'gray', big }) {
     gray: 'from-gray-500 to-gray-600',
   };
   return (
-    <div
-      className={`rounded-2xl p-5 shadow-sm bg-gradient-to-br ${toneMap[tone]} text-white`}
-    >
+    <div className={`rounded-2xl p-5 shadow-sm bg-gradient-to-br ${toneMap[tone]} text-white`}>
       <div className="text-xs uppercase tracking-widest opacity-90">{label}</div>
-      <div className={`${big ? 'text-4xl' : 'text-3xl'} font-bold mt-1`}>
-        {formatMoney(value)}
-      </div>
+      <div className={`${big ? 'text-4xl' : 'text-3xl'} font-bold mt-1`}>{formatMoney(value)}</div>
       {sub && <div className="text-xs opacity-80 mt-1">{sub}</div>}
     </div>
   );
@@ -921,9 +896,7 @@ function SummaryCard({ label, value, sub, tone = 'gray', big }) {
 function DetailVouchers({ vouchers }) {
   if (!vouchers?.length) {
     return (
-      <div className="text-xs text-gray-500 dark:text-gray-400">
-        No voucher details available.
-      </div>
+      <div className="text-xs text-gray-500 dark:text-gray-400">No voucher details available.</div>
     );
   }
   return (
@@ -967,9 +940,7 @@ function DetailVouchers({ vouchers }) {
               <td className="px-3 py-1.5 text-right text-gray-700 dark:text-gray-300">
                 {formatMoney(v.totalAmount)}
               </td>
-              <td className="px-3 py-1.5 text-right text-green-700">
-                {formatMoney(v.paidAmount)}
-              </td>
+              <td className="px-3 py-1.5 text-right text-green-700">{formatMoney(v.paidAmount)}</td>
               <td className="px-3 py-1.5 text-right font-semibold text-red-700">
                 {formatMoney(v.balanceAmount)}
               </td>

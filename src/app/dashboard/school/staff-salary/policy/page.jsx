@@ -6,19 +6,14 @@ import { Scale, Plus, Save } from 'lucide-react';
 import { fetchData, putData } from '@/utils/api';
 import { useTokenStore } from '@/store/tokenStore';
 import { useUserStore } from '@/store/userStore';
-import {
-  resolveScope,
-  hasAnyAction,
-  canSee,
-} from '@/utils/permissions';
+import { resolveScope, hasAnyAction } from '@/utils/permissions';
 import { STAFF_TYPES } from '@/constants/staffSalary';
 import { useTranslations } from 'next-intl';
 
 const inputCls =
   'w-full px-3 py-2 border border-gray-200 rounded-lg outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 text-sm text-gray-900 bg-white placeholder:text-gray-400 disabled:bg-gray-50 disabled:text-gray-500';
 const labelCls = 'block text-xs font-semibold text-gray-700 mb-1';
-const sectionTitleCls =
-  'text-xs font-bold text-gray-500 uppercase tracking-widest mb-3';
+const sectionTitleCls = 'text-xs font-bold text-gray-500 uppercase tracking-widest mb-3';
 
 const STAFF_TYPE_LABELS = {
   teaching: 'Teaching Staff',
@@ -104,8 +99,7 @@ export default function StaffSalaryPolicyPage() {
 
   const { data: branchData } = useQuery({
     queryKey: ['branches-dropdown'],
-    queryFn: () =>
-      fetchData({ url: '/branch/list', page: 1, limit: 200, token }),
+    queryFn: () => fetchData({ url: '/branch/list', page: 1, limit: 200, token }),
     enabled: !!token && isOrgLevel,
     staleTime: Infinity,
   });
@@ -135,16 +129,12 @@ export default function StaffSalaryPolicyPage() {
 
   const initialForm = useMemo(() => toForm(policy), [policy]);
   const isDirty = useMemo(
-    () =>
-      Object.keys(DEFAULTS).some(
-        (k) => String(form[k]) !== String(initialForm[k]),
-      ),
+    () => Object.keys(DEFAULTS).some((k) => String(form[k]) !== String(initialForm[k])),
     [form, initialForm],
   );
 
   const saveMut = useMutation({
-    mutationFn: (payload) =>
-      putData({ url: '/staff-salary/policy', payload, token }),
+    mutationFn: (payload) => putData({ url: '/staff-salary/policy', payload, token }),
     onSuccess: (res) => {
       toast.success(res?.message || 'Policy saved');
       queryClient.invalidateQueries({ queryKey: policyKey });
@@ -249,12 +239,7 @@ export default function StaffSalaryPolicyPage() {
             }}
           />
         ) : (
-          <PolicyForm
-            form={form}
-            setForm={setForm}
-            disabled={formDisabled}
-            isNew={!policy}
-          />
+          <PolicyForm form={form} setForm={setForm} disabled={formDisabled} isNew={!policy} />
         )}
 
         {showForm && effectiveBranchId && (
@@ -274,9 +259,7 @@ export default function StaffSalaryPolicyPage() {
             <button
               type="button"
               onClick={onSave}
-              disabled={
-                formDisabled || saveMut.isPending || (!creating && !isDirty)
-              }
+              disabled={formDisabled || saveMut.isPending || (!creating && !isDirty)}
               className="inline-flex items-center gap-2 px-6 py-2 text-sm font-medium text-white bg-teal-600 rounded-full hover:bg-teal-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Save className="w-4 h-4" />
@@ -299,8 +282,8 @@ function EmptyState({ staffTypeLabel, canEdit, onCreate }) {
         No {staffTypeLabel.toLowerCase()} policy yet
       </div>
       <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 max-w-md mx-auto">
-        Until a policy is set, payslip generation falls back to a simple
-        pro-rate (basic / working days × unpaid days).
+        Until a policy is set, payslip generation falls back to a simple pro-rate (basic / working
+        days × unpaid days).
       </p>
       {canEdit && (
         <button
@@ -324,21 +307,22 @@ function PolicyForm({ form, setForm, disabled, isNew }) {
       [k]: v === '' ? '' : Number(v),
     }));
   };
-  const setMode = (mode) =>
-    setForm((prev) => ({ ...prev, absentDeductionMode: mode }));
+  const setMode = (mode) => setForm((prev) => ({ ...prev, absentDeductionMode: mode }));
 
   return (
     <div className="space-y-6">
       {isNew && (
         <div className="rounded-xl bg-teal-50 dark:bg-teal-950/40 border border-teal-200 p-3 text-sm text-teal-800">
-          Defaults shown below — adjust and click <strong>Create Policy</strong>{' '}
-          to save.
+          Defaults shown below — adjust and click <strong>Create Policy</strong> to save.
         </div>
       )}
 
       {/* Working days */}
       <Section title="Working Days">
-        <Field label="Working days per month" hint="Used as the denominator for the per-day rate (basic ÷ working days).">
+        <Field
+          label="Working days per month"
+          hint="Used as the denominator for the per-day rate (basic ÷ working days)."
+        >
           <input
             type="number"
             min={1}

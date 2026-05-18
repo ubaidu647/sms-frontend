@@ -24,9 +24,9 @@ const mockDisabledOrganizations = [
   },
 ];
 
-export default function organization() {
+export default function Organization() {
   const { accessToken: token } = useTokenStore();
-  const { data, isLoading } = useOrganizations({ token });
+  useOrganizations({ token });
   const t = useTranslations('organizations');
   const mockOrganizations = useOrganizationStore((state) => state.organizations);
   const [activeTab, setActiveTab] = useState('active');
@@ -47,7 +47,9 @@ export default function organization() {
     {
       header: 'Organization Name',
       accessor: 'name',
-      render: (value) => <div className="font-medium text-gray-900 dark:text-gray-100">{value}</div>,
+      render: (value) => (
+        <div className="font-medium text-gray-900 dark:text-gray-100">{value}</div>
+      ),
     },
     {
       header: 'Email',
@@ -82,7 +84,9 @@ export default function organization() {
       header: 'Created Date',
       accessor: 'createdAt',
       render: (value) => (
-        <div className="text-gray-600 dark:text-gray-400">{new Date(value).toLocaleDateString()}</div>
+        <div className="text-gray-600 dark:text-gray-400">
+          {new Date(value).toLocaleDateString()}
+        </div>
       ),
     },
     {

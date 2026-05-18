@@ -81,12 +81,8 @@ export default function SettingsPage() {
           <SettingsIcon className="w-6 h-6" />
         </span>
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-            {t('title')}
-          </h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
-            {t('subtitle')}
-          </p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{t('title')}</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{t('subtitle')}</p>
         </div>
       </div>
 
@@ -99,9 +95,7 @@ export default function SettingsPage() {
             <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">
               {t('appearance.title')}
             </h2>
-            <p className="text-xs text-gray-500 dark:text-gray-400">
-              {t('appearance.subtitle')}
-            </p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">{t('appearance.subtitle')}</p>
           </div>
         </header>
 
@@ -126,16 +120,16 @@ export default function SettingsPage() {
                     <Check className="w-4 h-4" />
                   </span>
                 )}
-                <div className={`h-24 rounded-xl border ${preview} flex items-center justify-center`}>
+                <div
+                  className={`h-24 rounded-xl border ${preview} flex items-center justify-center`}
+                >
                   <Icon className={`w-8 h-8 ${accent}`} />
                 </div>
                 <div className="mt-3">
                   <div className="text-sm font-semibold text-gray-900 dark:text-gray-100">
                     {label}
                   </div>
-                  <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                    {desc}
-                  </div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{desc}</div>
                 </div>
               </button>
             );
@@ -152,9 +146,7 @@ export default function SettingsPage() {
             <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">
               {tLang('title')}
             </h2>
-            <p className="text-xs text-gray-500 dark:text-gray-400">
-              {tLang('subtitle')}
-            </p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">{tLang('subtitle')}</p>
           </div>
           <span className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 text-[11px] font-semibold uppercase tracking-widest">
             <Sparkles className="w-3 h-3" /> {tLang('comingSoon')}
@@ -180,10 +172,7 @@ export default function SettingsPage() {
                   <div className="text-sm font-semibold text-gray-900 dark:text-gray-100">
                     {lang.label}
                   </div>
-                  <div
-                    className="text-xs text-gray-500 dark:text-gray-400 mt-0.5"
-                    dir={lang.dir}
-                  >
+                  <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5" dir={lang.dir}>
                     {lang.native} · {lang.dir.toUpperCase()}
                   </div>
                 </div>

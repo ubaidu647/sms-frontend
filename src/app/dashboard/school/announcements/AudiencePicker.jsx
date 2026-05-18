@@ -1,5 +1,5 @@
 'use client';
-import React, { useEffect, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { fetchData } from '@/utils/api';
 import { useTokenStore } from '@/store/tokenStore';
@@ -57,8 +57,7 @@ export default function AudiencePicker({
   const sectionsTargetClassId = safeValue.classIds?.[0] || '';
   const { data: sectionData } = useQuery({
     queryKey: ['sections-audience', sectionsTargetClassId],
-    queryFn: () =>
-      fetchData({ url: `/class/${sectionsTargetClassId}/sections`, token }),
+    queryFn: () => fetchData({ url: `/class/${sectionsTargetClassId}/sections`, token }),
     enabled: !!token && safeValue.scope === 'section' && !!sectionsTargetClassId,
     staleTime: 60000,
   });
@@ -120,9 +119,7 @@ export default function AudiencePicker({
           empty="No branches loaded yet — pick at least one branch."
           disabled={!isOrgLevel}
           disabledHint={
-            !isOrgLevel
-              ? 'You can only target your own branch — pick School or Class scope.'
-              : null
+            !isOrgLevel ? 'You can only target your own branch — pick School or Class scope.' : null
           }
         />
       )}
@@ -148,7 +145,9 @@ export default function AudiencePicker({
             </label>
             <select
               value={sectionsTargetClassId}
-              onChange={(e) => set({ classIds: e.target.value ? [e.target.value] : [], sectionIds: [] })}
+              onChange={(e) =>
+                set({ classIds: e.target.value ? [e.target.value] : [], sectionIds: [] })
+              }
               className={inputCls}
             >
               <option value="">Select class...</option>
@@ -166,11 +165,7 @@ export default function AudiencePicker({
             items={sections.map((s) => ({ value: s._id, label: s.name }))}
             value={safeValue.sectionIds}
             onChange={(ids) => set({ sectionIds: ids })}
-            empty={
-              !sectionsTargetClassId
-                ? 'Pick a class first.'
-                : 'No sections in this class.'
-            }
+            empty={!sectionsTargetClassId ? 'Pick a class first.' : 'No sections in this class.'}
           />
         </>
       )}

@@ -4,22 +4,14 @@ import { Table } from '@/component/Table';
 import { Plus, Search, Edit, Trash2, Users, Eye, X } from 'lucide-react';
 import { useTokenStore } from '@/store/tokenStore';
 import { useUserStore } from '@/store/userStore';
-import {
-  useQuery,
-  useMutation,
-  useQueryClient,
-  keepPreviousData,
-} from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { fetchData, deleteData } from '@/utils/api';
 import toast from 'react-hot-toast';
 import RouteFormModal from './RouteFormModal';
 import RouteRosterModal from './RouteRosterModal';
 import RouteDetailModal from './RouteDetailModal';
 import ConfirmModal from '../ConfirmModal';
-import {
-  ROUTE_STATUSES,
-  ROUTE_STATUS_COLORS,
-} from '@/constants/transport';
+import { ROUTE_STATUSES, ROUTE_STATUS_COLORS } from '@/constants/transport';
 import { formatMoney } from '@/constants/fee';
 import { useTranslations } from 'next-intl';
 
@@ -188,17 +180,25 @@ export default function RoutesPage() {
       {
         header: 'Stops',
         accessor: 'stops',
-        render: (v) => <span className="text-sm text-gray-700 dark:text-gray-300">{(v || []).length}</span>,
+        render: (v) => (
+          <span className="text-sm text-gray-700 dark:text-gray-300">{(v || []).length}</span>
+        ),
       },
       {
         header: 'Base Fee',
         accessor: 'baseFee',
-        render: (v) => <span className="text-sm font-medium text-teal-700 dark:text-teal-400">{formatMoney(v)}</span>,
+        render: (v) => (
+          <span className="text-sm font-medium text-teal-700 dark:text-teal-400">
+            {formatMoney(v)}
+          </span>
+        ),
       },
       {
         header: 'Branch',
         accessor: 'branchId',
-        render: (v) => <span className="text-sm text-gray-600 dark:text-gray-400">{v?.name || '—'}</span>,
+        render: (v) => (
+          <span className="text-sm text-gray-600 dark:text-gray-400">{v?.name || '—'}</span>
+        ),
       },
       {
         header: 'Status',
@@ -262,7 +262,9 @@ export default function RoutesPage() {
               placeholder="Search by name..."
               value={draftSearch}
               onChange={(e) => setDraftSearch(e.target.value)}
-              onKeyDown={(e) => { if (e.key === 'Enter') applyFilters(); }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') applyFilters();
+              }}
               className="outline-none text-sm w-56 text-gray-900 dark:text-gray-100 placeholder:text-gray-400"
             />
           </div>

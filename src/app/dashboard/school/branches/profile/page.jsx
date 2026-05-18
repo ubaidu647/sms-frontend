@@ -61,7 +61,10 @@ export default function MyBranchProfilePage() {
               </h1>
               {branchName && (
                 <div className="text-sm text-gray-500 dark:text-gray-400 mt-1 ml-8">
-                  Branch: <span className="font-semibold text-gray-700 dark:text-gray-300">{branchName}</span>
+                  Branch:{' '}
+                  <span className="font-semibold text-gray-700 dark:text-gray-300">
+                    {branchName}
+                  </span>
                 </div>
               )}
             </div>
@@ -82,8 +85,8 @@ export default function MyBranchProfilePage() {
           <>
             {!profile && (
               <div className="mb-4 rounded-xl bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-800">
-                No profile yet — fill the form below to create one. This is what shows on
-                printed reports, vouchers, and certificates.
+                No profile yet — fill the form below to create one. This is what shows on printed
+                reports, vouchers, and certificates.
               </div>
             )}
             <BranchProfileForm

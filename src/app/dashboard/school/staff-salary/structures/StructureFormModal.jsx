@@ -13,8 +13,7 @@ import { COMPONENT_TYPES, toYMD } from '@/constants/staffSalary';
 const inputCls =
   'w-full px-3 py-2 border border-gray-200 rounded-lg outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 text-sm text-gray-900 bg-white placeholder:text-gray-400';
 const labelCls = 'block text-xs font-semibold text-gray-700 mb-1';
-const sectionCls =
-  'text-xs font-bold text-gray-500 uppercase tracking-widest mb-3';
+const sectionCls = 'text-xs font-bold text-gray-500 uppercase tracking-widest mb-3';
 
 const blankComponent = () => ({
   name: '',
@@ -30,8 +29,7 @@ export default function StructureFormModal({ isOpen, onClose, structure }) {
 
   const isAdmin = !!user?.role?.isPredefined;
   const canCreateAllBranch =
-    isAdmin ||
-    !!user?.role?.actions?.includes('create-all-branch-staff-salary');
+    isAdmin || !!user?.role?.actions?.includes('create-all-branch-staff-salary');
   const userBranchId = user?.branchId || user?.branch?._id || '';
 
   const [staffId, setStaffId] = useState('');
@@ -130,9 +128,7 @@ export default function StructureFormModal({ isOpen, onClose, structure }) {
           })
         : postData({ url: '/staff-salary/structure', payload, token }),
     onSuccess: (res) => {
-      toast.success(
-        res?.message || (isEdit ? 'Structure updated' : 'Structure saved'),
-      );
+      toast.success(res?.message || (isEdit ? 'Structure updated' : 'Structure saved'));
       queryClient.invalidateQueries({ queryKey: ['staff-salary-structures'] });
       queryClient.invalidateQueries({ queryKey: ['staff-salary-active'] });
       setSuccessState(true);
@@ -150,22 +146,19 @@ export default function StructureFormModal({ isOpen, onClose, structure }) {
 
   const validate = () => {
     if (!isEdit && !staffId) return 'Staff is required';
-    if (basicSalary === '' || Number(basicSalary) < 0)
-      return 'Basic salary must be ≥ 0';
+    if (basicSalary === '' || Number(basicSalary) < 0) return 'Basic salary must be ≥ 0';
     if (!effectiveFrom) return 'Effective from date is required';
     for (let i = 0; i < allowances.length; i++) {
       const a = allowances[i];
       if (!a.name?.trim()) return `Allowance #${i + 1}: name is required`;
-      if (a.amount === '' || Number(a.amount) < 0)
-        return `Allowance #${i + 1}: amount must be ≥ 0`;
+      if (a.amount === '' || Number(a.amount) < 0) return `Allowance #${i + 1}: amount must be ≥ 0`;
       if (a.type === 'percent' && Number(a.amount) > 100)
         return `Allowance #${i + 1}: percent cannot exceed 100`;
     }
     for (let i = 0; i < deductions.length; i++) {
       const d = deductions[i];
       if (!d.name?.trim()) return `Deduction #${i + 1}: name is required`;
-      if (d.amount === '' || Number(d.amount) < 0)
-        return `Deduction #${i + 1}: amount must be ≥ 0`;
+      if (d.amount === '' || Number(d.amount) < 0) return `Deduction #${i + 1}: amount must be ≥ 0`;
       if (d.type === 'percent' && Number(d.amount) > 100)
         return `Deduction #${i + 1}: percent cannot exceed 100`;
     }
@@ -211,9 +204,7 @@ export default function StructureFormModal({ isOpen, onClose, structure }) {
             value={c.name}
             onChange={(e) =>
               setList((prev) =>
-                prev.map((x, idx) =>
-                  idx === i ? { ...x, name: e.target.value } : x,
-                ),
+                prev.map((x, idx) => (idx === i ? { ...x, name: e.target.value } : x)),
               )
             }
             className={inputCls + ' col-span-5'}
@@ -225,9 +216,7 @@ export default function StructureFormModal({ isOpen, onClose, structure }) {
             value={c.amount}
             onChange={(e) =>
               setList((prev) =>
-                prev.map((x, idx) =>
-                  idx === i ? { ...x, amount: e.target.value } : x,
-                ),
+                prev.map((x, idx) => (idx === i ? { ...x, amount: e.target.value } : x)),
               )
             }
             className={inputCls + ' col-span-3'}
@@ -236,9 +225,7 @@ export default function StructureFormModal({ isOpen, onClose, structure }) {
             value={c.type}
             onChange={(e) =>
               setList((prev) =>
-                prev.map((x, idx) =>
-                  idx === i ? { ...x, type: e.target.value } : x,
-                ),
+                prev.map((x, idx) => (idx === i ? { ...x, type: e.target.value } : x)),
               )
             }
             className={inputCls + ' col-span-3 capitalize'}
@@ -251,9 +238,7 @@ export default function StructureFormModal({ isOpen, onClose, structure }) {
           </select>
           <button
             type="button"
-            onClick={() =>
-              setList((prev) => prev.filter((_, idx) => idx !== i))
-            }
+            onClick={() => setList((prev) => prev.filter((_, idx) => idx !== i))}
             className="col-span-1 flex items-center justify-center text-red-500 hover:text-red-700 p-2"
             title="Remove"
           >
@@ -335,11 +320,7 @@ export default function StructureFormModal({ isOpen, onClose, structure }) {
                 >
                   <option value="">Select staff...</option>
                   {staffList.map((s) => {
-                    const label =
-                      s.user?.name ||
-                      s.userId?.name ||
-                      s.name ||
-                      'Staff';
+                    const label = s.user?.name || s.userId?.name || s.name || 'Staff';
                     const ref = s.serialNumber || s.employeeId;
                     return (
                       <option key={s._id} value={s._id}>

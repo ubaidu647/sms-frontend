@@ -85,9 +85,7 @@ export default function PeriodConfigModal({ isOpen, onClose, onSuccess, config }
   }, [isOpen, isEditing, config, canCreateAllBranch, userBranchId]);
 
   const toggleDay = (d) => {
-    setWorkingDays((prev) =>
-      prev.includes(d) ? prev.filter((x) => x !== d) : [...prev, d],
-    );
+    setWorkingDays((prev) => (prev.includes(d) ? prev.filter((x) => x !== d) : [...prev, d]));
   };
 
   const addPeriod = () => {
@@ -114,8 +112,7 @@ export default function PeriodConfigModal({ isOpen, onClose, onSuccess, config }
       if (!p.name) return `periods[${i}]: name is required`;
       if (!isHHmm(p.startTime)) return `periods[${i}]: startTime must be HH:mm`;
       if (!isHHmm(p.endTime)) return `periods[${i}]: endTime must be HH:mm`;
-      if (p.endTime <= p.startTime)
-        return `periods[${i}]: endTime must be after startTime`;
+      if (p.endTime <= p.startTime) return `periods[${i}]: endTime must be after startTime`;
       if (seen.has(p.number)) return `periods[${i}]: duplicate number ${p.number}`;
       seen.add(p.number);
     }
@@ -319,9 +316,7 @@ export default function PeriodConfigModal({ isOpen, onClose, onSuccess, config }
                         type="number"
                         min="1"
                         value={p.number}
-                        onChange={(e) =>
-                          updatePeriod(idx, { number: Number(e.target.value) })
-                        }
+                        onChange={(e) => updatePeriod(idx, { number: Number(e.target.value) })}
                         className={smallInputCls}
                       />
                     </td>
@@ -337,9 +332,7 @@ export default function PeriodConfigModal({ isOpen, onClose, onSuccess, config }
                       <input
                         type="time"
                         value={p.startTime}
-                        onChange={(e) =>
-                          updatePeriod(idx, { startTime: e.target.value })
-                        }
+                        onChange={(e) => updatePeriod(idx, { startTime: e.target.value })}
                         className={smallInputCls}
                       />
                     </td>

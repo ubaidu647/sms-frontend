@@ -35,7 +35,9 @@ export default function VehicleRosterModal({ isOpen, onClose, vehicleId, vehicle
     >
       <div className="space-y-4">
         <div className="flex items-center gap-3">
-          <label className="text-xs font-semibold text-gray-700 dark:text-gray-300">Academic Year</label>
+          <label className="text-xs font-semibold text-gray-700 dark:text-gray-300">
+            Academic Year
+          </label>
           <input
             type="text"
             value={academicYear}
@@ -58,9 +60,7 @@ export default function VehicleRosterModal({ isOpen, onClose, vehicleId, vehicle
                 label="Available"
                 value={roster.available}
                 tone={
-                  roster.available === 0
-                    ? 'bg-red-100 text-red-800'
-                    : 'bg-green-100 text-green-800'
+                  roster.available === 0 ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
                 }
               />
             </div>
@@ -79,7 +79,10 @@ export default function VehicleRosterModal({ isOpen, onClose, vehicleId, vehicle
                 <tbody>
                   {(roster.passengers || []).length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="px-3 py-6 text-center text-gray-500 dark:text-gray-400">
+                      <td
+                        colSpan={5}
+                        className="px-3 py-6 text-center text-gray-500 dark:text-gray-400"
+                      >
                         No passengers yet.
                       </td>
                     </tr>

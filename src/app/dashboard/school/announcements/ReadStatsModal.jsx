@@ -33,8 +33,12 @@ export default function ReadStatsModal({ isOpen, onClose, announcement }) {
         <div className="space-y-5">
           <div className="grid grid-cols-2 gap-3">
             <div className="rounded-lg bg-gray-50 dark:bg-gray-800 p-4">
-              <div className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">Total Reads</div>
-              <div className="text-3xl font-bold text-gray-900 dark:text-gray-100 mt-1">{stats.totalReads ?? 0}</div>
+              <div className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                Total Reads
+              </div>
+              <div className="text-3xl font-bold text-gray-900 dark:text-gray-100 mt-1">
+                {stats.totalReads ?? 0}
+              </div>
             </div>
             {stats.requiresAck && (
               <div className="rounded-lg bg-indigo-50 dark:bg-indigo-950/40 p-4">
@@ -65,21 +69,24 @@ export default function ReadStatsModal({ isOpen, onClose, announcement }) {
                       <th className="px-3 py-2 text-left">Name</th>
                       <th className="px-3 py-2 text-left">Type</th>
                       <th className="px-3 py-2 text-left">Read At</th>
-                      {stats.requiresAck && (
-                        <th className="px-3 py-2 text-center">Ack</th>
-                      )}
+                      {stats.requiresAck && <th className="px-3 py-2 text-center">Ack</th>}
                     </tr>
                   </thead>
                   <tbody>
                     {reads.map((r) => (
-                      <tr key={r._id || r.userId} className="border-t border-gray-100 dark:border-gray-800">
+                      <tr
+                        key={r._id || r.userId}
+                        className="border-t border-gray-100 dark:border-gray-800"
+                      >
                         <td className="px-3 py-2 font-medium text-gray-900 dark:text-gray-100">
                           {r.user?.name || '—'}
                         </td>
                         <td className="px-3 py-2 capitalize text-gray-700 dark:text-gray-300">
                           {r.user?.type || '—'}
                         </td>
-                        <td className="px-3 py-2 text-gray-600 dark:text-gray-400">{formatDateTime(r.readAt)}</td>
+                        <td className="px-3 py-2 text-gray-600 dark:text-gray-400">
+                          {formatDateTime(r.readAt)}
+                        </td>
                         {stats.requiresAck && (
                           <td className="px-3 py-2 text-center">
                             {r.acknowledged ? (

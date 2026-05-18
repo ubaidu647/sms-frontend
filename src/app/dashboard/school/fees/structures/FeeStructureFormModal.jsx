@@ -8,11 +8,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { fetchData, postData, putData } from '@/utils/api';
 import { useTokenStore } from '@/store/tokenStore';
 import { useUserStore } from '@/store/userStore';
-import {
-  FEE_FREQUENCIES,
-  MONTH_OPTIONS,
-  currentAcademicYear,
-} from '@/constants/fee';
+import { FEE_FREQUENCIES, MONTH_OPTIONS, currentAcademicYear } from '@/constants/fee';
 
 const inputCls =
   'w-full px-3 py-2 border border-gray-200 rounded-lg outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 text-sm text-gray-900 bg-white placeholder:text-gray-400';
@@ -34,8 +30,7 @@ export default function FeeStructureFormModal({ isOpen, onClose, structure }) {
   const queryClient = useQueryClient();
 
   const isAdmin = !!user?.role?.isPredefined;
-  const canCreateAllBranch =
-    isAdmin || !!user?.role?.actions?.includes('create-all-branch-fee');
+  const canCreateAllBranch = isAdmin || !!user?.role?.actions?.includes('create-all-branch-fee');
   const userBranchId = user?.branchId || user?.branch?._id || '';
 
   const [classId, setClassId] = useState('');
@@ -141,10 +136,8 @@ export default function FeeStructureFormModal({ isOpen, onClose, structure }) {
       const lower = c.name.trim().toLowerCase();
       if (seen.has(lower)) return `components[${i}]: duplicate name "${c.name}"`;
       seen.add(lower);
-      if (c.amount === '' || Number(c.amount) < 0)
-        return `components[${i}]: amount must be ≥ 0`;
-      if (!FEE_FREQUENCIES.includes(c.frequency))
-        return `components[${i}]: frequency invalid`;
+      if (c.amount === '' || Number(c.amount) < 0) return `components[${i}]: amount must be ≥ 0`;
+      if (!FEE_FREQUENCIES.includes(c.frequency)) return `components[${i}]: frequency invalid`;
       if (
         (c.frequency === 'annual' || c.frequency === 'quarterly') &&
         (!c.billingMonth || c.billingMonth < 1 || c.billingMonth > 12)
@@ -308,7 +301,10 @@ export default function FeeStructureFormModal({ isOpen, onClose, structure }) {
               Components
             </h3>
             <span className="text-xs text-gray-500 dark:text-gray-400">
-              Monthly total: <strong className="text-teal-700 dark:text-teal-400">₨ {totalMonthly.toLocaleString()}</strong>
+              Monthly total:{' '}
+              <strong className="text-teal-700 dark:text-teal-400">
+                ₨ {totalMonthly.toLocaleString()}
+              </strong>
             </span>
           </div>
 
@@ -344,9 +340,7 @@ export default function FeeStructureFormModal({ isOpen, onClose, structure }) {
                           type="number"
                           min={0}
                           value={c.amount}
-                          onChange={(e) =>
-                            updateComponent(i, { amount: e.target.value })
-                          }
+                          onChange={(e) => updateComponent(i, { amount: e.target.value })}
                           className={inputCls}
                         />
                       </td>
@@ -356,7 +350,10 @@ export default function FeeStructureFormModal({ isOpen, onClose, structure }) {
                           onChange={(e) =>
                             updateComponent(i, {
                               frequency: e.target.value,
-                              billingMonth: e.target.value === 'annual' || e.target.value === 'quarterly' ? c.billingMonth : '',
+                              billingMonth:
+                                e.target.value === 'annual' || e.target.value === 'quarterly'
+                                  ? c.billingMonth
+                                  : '',
                             })
                           }
                           className={inputCls}
@@ -400,9 +397,7 @@ export default function FeeStructureFormModal({ isOpen, onClose, structure }) {
                         <input
                           type="checkbox"
                           checked={c.isOptional}
-                          onChange={(e) =>
-                            updateComponent(i, { isOptional: e.target.checked })
-                          }
+                          onChange={(e) => updateComponent(i, { isOptional: e.target.checked })}
                         />
                       </td>
                       <td className="px-3 py-2 w-10">

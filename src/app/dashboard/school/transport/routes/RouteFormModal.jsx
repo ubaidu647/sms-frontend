@@ -32,8 +32,7 @@ export default function RouteFormModal({ isOpen, onClose, route }) {
   const queryClient = useQueryClient();
 
   const isAdmin = !!user?.role?.isPredefined;
-  const canCreateAllBranch =
-    isAdmin || !!user?.role?.actions?.includes('create-all-branch-route');
+  const canCreateAllBranch = isAdmin || !!user?.role?.actions?.includes('create-all-branch-route');
   const canViewAllBranchVehicles =
     isAdmin || !!user?.role?.actions?.includes('view-all-branch-vehicle');
   const userBranchId = user?.branchId || user?.branch?._id || '';
@@ -127,9 +126,7 @@ export default function RouteFormModal({ isOpen, onClose, route }) {
 
   const removeStop = (i) => {
     setStops((prev) =>
-      prev
-        .filter((_, idx) => idx !== i)
-        .map((s, idx) => ({ ...s, sequence: idx + 1 })),
+      prev.filter((_, idx) => idx !== i).map((s, idx) => ({ ...s, sequence: idx + 1 })),
     );
   };
 
@@ -143,8 +140,7 @@ export default function RouteFormModal({ isOpen, onClose, route }) {
     });
   };
 
-  const addStop = () =>
-    setStops((prev) => [...prev, blankStop(prev.length + 1)]);
+  const addStop = () => setStops((prev) => [...prev, blankStop(prev.length + 1)]);
 
   const mutation = useMutation({
     mutationFn: (payload) =>
@@ -182,11 +178,9 @@ export default function RouteFormModal({ isOpen, onClose, route }) {
         return `stops[${i}]: pickup time must be HH:mm`;
       if (!s.dropTime || !/^\d{2}:\d{2}$/.test(s.dropTime))
         return `stops[${i}]: drop time must be HH:mm`;
-      if (!s.sequence || seqSet.has(s.sequence))
-        return `stops[${i}]: sequence must be unique`;
+      if (!s.sequence || seqSet.has(s.sequence)) return `stops[${i}]: sequence must be unique`;
       seqSet.add(s.sequence);
-      if (s.fee !== '' && Number(s.fee) < 0)
-        return `stops[${i}]: fee must be ≥ 0`;
+      if (s.fee !== '' && Number(s.fee) < 0) return `stops[${i}]: fee must be ≥ 0`;
     }
     return null;
   };
@@ -441,7 +435,9 @@ export default function RouteFormModal({ isOpen, onClose, route }) {
                   <tr key={i} className="border-t border-gray-100 dark:border-gray-800">
                     <td className="px-2 py-2 w-16">
                       <div className="flex flex-col items-center gap-0.5">
-                        <span className="text-xs text-gray-500 dark:text-gray-400">{s.sequence}</span>
+                        <span className="text-xs text-gray-500 dark:text-gray-400">
+                          {s.sequence}
+                        </span>
                         <div className="flex gap-1">
                           <button
                             type="button"

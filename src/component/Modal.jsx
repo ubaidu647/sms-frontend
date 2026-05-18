@@ -30,7 +30,8 @@ export const Modal = ({
     }
   };
 
-  const sizeClass = { sm: 'w-[25vw]', md: 'w-[30vw]', lg: 'w-[55vw]', xl: 'w-[75vw]' }[size] || 'w-[30vw]';
+  const sizeClass =
+    { sm: 'w-[25vw]', md: 'w-[30vw]', lg: 'w-[55vw]', xl: 'w-[75vw]' }[size] || 'w-[30vw]';
 
   return (
     <>
@@ -45,7 +46,9 @@ export const Modal = ({
           <div className="sticky top-0 bg-gradient-to-r from-teal-50 to-blue-50 dark:from-teal-950/40 dark:to-blue-950/40 border-b border-gray-200 dark:border-gray-700 px-8 py-6 flex items-start justify-between">
             <div className="flex-1">
               <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{title}</h2>
-              {subtitle && <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{subtitle}</p>}
+              {subtitle && (
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{subtitle}</p>
+              )}
             </div>
             <button
               onClick={onClose}

@@ -49,7 +49,7 @@ export default function TeacherAssignmentsPage() {
   const [classId, setClassId] = useState('');
   const [sectionId, setSectionId] = useState('');
   const [subjectId, setSubjectId] = useState('');
-  const [staffId, setStaffId] = useState('');
+  const [staffId, _setStaffId] = useState('');
   const [role, setRole] = useState('');
   const [isPrimary, setIsPrimary] = useState('');
   const [branchId, setBranchId] = useState('');
@@ -114,9 +114,7 @@ export default function TeacherAssignmentsPage() {
       'delete-teaching-assignment',
       'delete-all-branch-teaching-assignment',
     ]);
-  const canActOnAllBranches = hasAnyAction(user?.role, [
-    'delete-all-branch-teaching-assignment',
-  ]);
+  const canActOnAllBranches = hasAnyAction(user?.role, ['delete-all-branch-teaching-assignment']);
   const userBranchId = user?.branchId || user?.branch?._id || '';
 
   // Branch dropdown for org-level
@@ -129,7 +127,6 @@ export default function TeacherAssignmentsPage() {
   });
   const branches = branchData?.data || [];
 
-  const effectiveBranchId = isOrgLevel ? branchId : userBranchId;
   const draftEffectiveBranchId = isOrgLevel ? draftBranchId : userBranchId;
 
   // Classes — cascade off draftBranchId + draftAcademicYear for instant dropdown refresh.
@@ -176,100 +173,125 @@ export default function TeacherAssignmentsPage() {
   const subjects = subjectData?.data || [];
 
   // Reset cascading filters on the draft side.
-  useEffect(() => { setDraftClassId(''); setDraftSectionId(''); setDraftSubjectId(''); }, [draftAcademicYear, draftBranchId]);
-  useEffect(() => { setDraftSectionId(''); setDraftSubjectId(''); }, [draftClassId]);
+  useEffect(() => {
+    setDraftClassId('');
+    setDraftSectionId('');
+    setDraftSubjectId('');
+  }, [draftAcademicYear, draftBranchId]);
+  useEffect(() => {
+    setDraftSectionId('');
+    setDraftSubjectId('');
+  }, [draftClassId]);
 
-  const columns = useMemo(() => [
-    {
-      header: 'Teacher',
-      accessor: 'staff',
-      render: (v) => {
-        const name = v?.user?.name || '';
-        const initials = name
-          .split(' ')
-          .filter(Boolean)
-          .slice(0, 2)
-          .map((n) => n[0]?.toUpperCase())
-          .join('') || '?';
-        return (
-          <div className="flex items-center gap-3">
-            {v?.photo ? (
-              <img
-                src={v.photo}
-                alt={name}
-                className="w-9 h-9 rounded-full object-cover border border-gray-200 dark:border-gray-700 flex-shrink-0"
-              />
-            ) : (
-              <div className="w-9 h-9 rounded-full bg-teal-100 text-teal-700 dark:text-teal-400 font-semibold text-xs flex items-center justify-center flex-shrink-0">
-                {initials}
+  const columns = useMemo(
+    () => [
+      {
+        header: 'Teacher',
+        accessor: 'staff',
+        render: (v) => {
+          const name = v?.user?.name || '';
+          const initials =
+            name
+              .split(' ')
+              .filter(Boolean)
+              .slice(0, 2)
+              .map((n) => n[0]?.toUpperCase())
+              .join('') || '?';
+          return (
+            <div className="flex items-center gap-3">
+              {v?.photo ? (
+                <img
+                  src={v.photo}
+                  alt={name}
+                  className="w-9 h-9 rounded-full object-cover border border-gray-200 dark:border-gray-700 flex-shrink-0"
+                />
+              ) : (
+                <div className="w-9 h-9 rounded-full bg-teal-100 text-teal-700 dark:text-teal-400 font-semibold text-xs flex items-center justify-center flex-shrink-0">
+                  {initials}
+                </div>
+              )}
+              <div className="min-w-0">
+                <div className="font-medium text-gray-900 dark:text-gray-100 text-sm truncate">
+                  {name}
+                </div>
+                <div className="text-xs text-gray-400 dark:text-gray-500 truncate">
+                  {v?.designation}
+                </div>
               </div>
-            )}
-            <div className="min-w-0">
-              <div className="font-medium text-gray-900 dark:text-gray-100 text-sm truncate">{name}</div>
-              <div className="text-xs text-gray-400 dark:text-gray-500 truncate">{v?.designation}</div>
             </div>
-          </div>
-        );
+          );
+        },
       },
-    },
-    {
-      header: 'Subject',
-      accessor: 'subject',
-      render: (v) => (
-        <div>
-          <div className="text-sm font-medium text-gray-900 dark:text-gray-100">{v?.name || '—'}</div>
-          {v?.code && <div className="text-xs text-gray-400 dark:text-gray-500">{v.code}</div>}
-        </div>
-      ),
-    },
-    {
-      header: 'Class / Section',
-      accessor: 'class',
-      render: (_, row) => (
-        <div className="text-sm text-gray-700 dark:text-gray-300">
-          {row.class?.name || '—'}
-          {row.section?.name && <span className="text-gray-400 dark:text-gray-500"> / {row.section.name}</span>}
-        </div>
-      ),
-    },
-    {
-      header: 'Role',
-      accessor: 'role',
-      render: (v, row) => (
-        <div className="flex flex-wrap items-center gap-1">
-          <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium capitalize ${
-            v === 'teacher' ? 'bg-teal-100 text-teal-800' :
-            v === 'co-teacher' ? 'bg-blue-100 text-blue-800' :
-            'bg-yellow-100 text-yellow-800'
-          }`}>
-            {v}
-          </span>
-          {row.isPrimary && (
-            <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800">
-              <Star className="w-3 h-3 fill-amber-500 text-amber-500" />
-              Primary
+      {
+        header: 'Subject',
+        accessor: 'subject',
+        render: (v) => (
+          <div>
+            <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
+              {v?.name || '—'}
+            </div>
+            {v?.code && <div className="text-xs text-gray-400 dark:text-gray-500">{v.code}</div>}
+          </div>
+        ),
+      },
+      {
+        header: 'Class / Section',
+        accessor: 'class',
+        render: (_, row) => (
+          <div className="text-sm text-gray-700 dark:text-gray-300">
+            {row.class?.name || '—'}
+            {row.section?.name && (
+              <span className="text-gray-400 dark:text-gray-500"> / {row.section.name}</span>
+            )}
+          </div>
+        ),
+      },
+      {
+        header: 'Role',
+        accessor: 'role',
+        render: (v, row) => (
+          <div className="flex flex-wrap items-center gap-1">
+            <span
+              className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium capitalize ${
+                v === 'teacher'
+                  ? 'bg-teal-100 text-teal-800'
+                  : v === 'co-teacher'
+                    ? 'bg-blue-100 text-blue-800'
+                    : 'bg-yellow-100 text-yellow-800'
+              }`}
+            >
+              {v}
             </span>
-          )}
-        </div>
-      ),
-    },
-    {
-      header: 'Year',
-      accessor: 'academicYear',
-      render: (v) => <div className="text-sm text-gray-600 dark:text-gray-400">{v}</div>,
-    },
-    {
-      header: 'Status',
-      accessor: 'isActive',
-      render: (v) => (
-        <span className={`inline-flex px-3 py-1 rounded-full text-xs font-medium ${
-          v ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-700'
-        }`}>
-          {v ? 'Active' : 'Inactive'}
-        </span>
-      ),
-    },
-  ], []);
+            {row.isPrimary && (
+              <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800">
+                <Star className="w-3 h-3 fill-amber-500 text-amber-500" />
+                Primary
+              </span>
+            )}
+          </div>
+        ),
+      },
+      {
+        header: 'Year',
+        accessor: 'academicYear',
+        render: (v) => <div className="text-sm text-gray-600 dark:text-gray-400">{v}</div>,
+      },
+      {
+        header: 'Status',
+        accessor: 'isActive',
+        render: (v) => (
+          <span
+            className={`inline-flex px-3 py-1 rounded-full text-xs font-medium ${
+              v ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-700'
+            }`}
+          >
+            {v ? 'Active' : 'Inactive'}
+          </span>
+        ),
+      },
+    ],
+    [],
+  );
 
   const visibleColumns = useMemo(() => columns.map((c) => c.accessor), [columns]);
 
@@ -277,7 +299,8 @@ export default function TeacherAssignmentsPage() {
     const items = [{ label: 'View Details', value: 'view', icon: Eye }];
     if (canUpdate) items.push({ label: 'Edit', value: 'edit', icon: Edit });
     if (canDelete) {
-      const sameBranch = row.staff?.branchId === userBranchId || row.section?.branchId === userBranchId;
+      const sameBranch =
+        row.staff?.branchId === userBranchId || row.section?.branchId === userBranchId;
       if (canActOnAllBranches || sameBranch) {
         items.push({ label: 'Unassign', value: 'delete', icon: Trash2, danger: true });
       }
@@ -304,8 +327,20 @@ export default function TeacherAssignmentsPage() {
   });
 
   const queryKey = [
-    'teacher-assignments', page, limit, academicYear, classId, sectionId,
-    subjectId, staffId, role, isPrimary, branchId, isActive, isOrgLevel, userBranchId,
+    'teacher-assignments',
+    page,
+    limit,
+    academicYear,
+    classId,
+    sectionId,
+    subjectId,
+    staffId,
+    role,
+    isPrimary,
+    branchId,
+    isActive,
+    isOrgLevel,
+    userBranchId,
     staffSearch,
   ];
 
@@ -344,7 +379,6 @@ export default function TeacherAssignmentsPage() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-800 p-6 rounded-[50px]">
       <div className="max-w-7xl mx-auto">
-
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div>
@@ -358,14 +392,20 @@ export default function TeacherAssignmentsPage() {
           {canCreate && (
             <div className="flex items-center gap-2">
               <button
-                onClick={() => { setAddMode('bulk'); setIsAddOpen(true); }}
+                onClick={() => {
+                  setAddMode('bulk');
+                  setIsAddOpen(true);
+                }}
                 className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-900 text-teal-700 dark:text-teal-400 border border-teal-300 rounded-lg hover:bg-teal-50 dark:hover:bg-teal-950/40 transition-colors"
               >
                 <Users className="w-5 h-5" />
                 Bulk Assign
               </button>
               <button
-                onClick={() => { setAddMode('single'); setIsAddOpen(true); }}
+                onClick={() => {
+                  setAddMode('single');
+                  setIsAddOpen(true);
+                }}
                 className="flex items-center gap-2 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors shadow-sm"
               >
                 <Plus className="w-5 h-5" />
@@ -406,7 +446,9 @@ export default function TeacherAssignmentsPage() {
             >
               <option value="">All Branches</option>
               {branches.map((b) => (
-                <option key={b._id} value={b._id}>{b.name}</option>
+                <option key={b._id} value={b._id}>
+                  {b.name}
+                </option>
               ))}
             </select>
           )}
@@ -418,7 +460,9 @@ export default function TeacherAssignmentsPage() {
           >
             <option value="">All Classes</option>
             {classes.map((c) => (
-              <option key={c._id} value={c._id}>{c.name}</option>
+              <option key={c._id} value={c._id}>
+                {c.name}
+              </option>
             ))}
           </select>
 
@@ -431,7 +475,9 @@ export default function TeacherAssignmentsPage() {
               >
                 <option value="">All Sections</option>
                 {sections.map((s) => (
-                  <option key={s._id} value={s._id}>{s.name}</option>
+                  <option key={s._id} value={s._id}>
+                    {s.name}
+                  </option>
                 ))}
               </select>
 
@@ -442,7 +488,9 @@ export default function TeacherAssignmentsPage() {
               >
                 <option value="">All Subjects</option>
                 {subjects.map((s) => (
-                  <option key={s._id} value={s._id}>{s.name}</option>
+                  <option key={s._id} value={s._id}>
+                    {s.name}
+                  </option>
                 ))}
               </select>
             </>
@@ -545,14 +593,23 @@ export default function TeacherAssignmentsPage() {
             <div className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm" />
             <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
               <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-sm p-8 space-y-4">
-                <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">Unassign Teacher</h3>
+                <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">
+                  Unassign Teacher
+                </h3>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
                   Are you sure you want to unassign{' '}
-                  <span className="font-semibold text-gray-900 dark:text-gray-100">{deleteTarget.staff?.user?.name}</span>{' '}
-                  from <span className="font-semibold text-gray-900 dark:text-gray-100">{deleteTarget.subject?.name}</span> in{' '}
+                  <span className="font-semibold text-gray-900 dark:text-gray-100">
+                    {deleteTarget.staff?.user?.name}
+                  </span>{' '}
+                  from{' '}
+                  <span className="font-semibold text-gray-900 dark:text-gray-100">
+                    {deleteTarget.subject?.name}
+                  </span>{' '}
+                  in{' '}
                   <span className="font-semibold text-gray-900 dark:text-gray-100">
                     {deleteTarget.class?.name} / {deleteTarget.section?.name}
-                  </span>?
+                  </span>
+                  ?
                 </p>
                 <div className="flex gap-3 pt-2">
                   <button

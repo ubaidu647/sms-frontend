@@ -1,16 +1,7 @@
 'use client';
 import React, { useRef, useState } from 'react';
 import Link from 'next/link';
-import {
-  Printer,
-  Download,
-  Receipt,
-  School,
-  Phone,
-  Mail,
-  MapPin,
-  Globe,
-} from 'lucide-react';
+import { Printer, Download, Receipt, School, Phone, Mail, MapPin, Globe } from 'lucide-react';
 import { Modal } from '@/component/Modal';
 import { useQuery } from '@tanstack/react-query';
 import apiClient from '@/services/apiClient';
@@ -36,8 +27,7 @@ export default function PaymentDetailModal({ isOpen, onClose, paymentId }) {
 
   const p = data?.data;
   const voucherRef = p?.voucherId;
-  const voucherIdValue =
-    voucherRef && typeof voucherRef === 'object' ? voucherRef._id : voucherRef;
+  const voucherIdValue = voucherRef && typeof voucherRef === 'object' ? voucherRef._id : voucherRef;
 
   const { data: voucherData } = useQuery({
     queryKey: ['voucher', voucherIdValue],
@@ -46,8 +36,7 @@ export default function PaymentDetailModal({ isOpen, onClose, paymentId }) {
   });
 
   const voucher =
-    voucherData?.data ||
-    (voucherRef && typeof voucherRef === 'object' ? voucherRef : null);
+    voucherData?.data || (voucherRef && typeof voucherRef === 'object' ? voucherRef : null);
   const student =
     voucher?.studentId && typeof voucher.studentId === 'object' ? voucher.studentId : null;
 
@@ -56,8 +45,7 @@ export default function PaymentDetailModal({ isOpen, onClose, paymentId }) {
 
   const { data: profileData } = useQuery({
     queryKey: ['branch-profile', 'branch', branchIdForProfile],
-    queryFn: async () =>
-      (await apiClient.get(`/branch-profile/branch/${branchIdForProfile}`)).data,
+    queryFn: async () => (await apiClient.get(`/branch-profile/branch/${branchIdForProfile}`)).data,
     enabled: !!token && !!branchIdForProfile,
   });
 
@@ -68,7 +56,9 @@ export default function PaymentDetailModal({ isOpen, onClose, paymentId }) {
     const html = printableRef.current.innerHTML;
     const win = window.open('', '_blank', 'width=900,height=1000');
     if (!win) return;
-    win.document.write(`<!doctype html><html><head><title>Receipt ${p?.receiptNumber || ''}</title>`);
+    win.document.write(
+      `<!doctype html><html><head><title>Receipt ${p?.receiptNumber || ''}</title>`,
+    );
     Array.from(document.querySelectorAll('link[rel="stylesheet"], style')).forEach((el) => {
       win.document.write(el.outerHTML);
     });
@@ -195,7 +185,10 @@ export default function PaymentDetailModal({ isOpen, onClose, paymentId }) {
                       : '—'
                   }
                 />
-                <Info label="Voucher Due" value={voucher?.dueDate ? formatDate(voucher.dueDate) : '—'} />
+                <Info
+                  label="Voucher Due"
+                  value={voucher?.dueDate ? formatDate(voucher.dueDate) : '—'}
+                />
               </div>
 
               <h3 className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2">
@@ -248,7 +241,11 @@ export default function PaymentDetailModal({ isOpen, onClose, paymentId }) {
                   {voucher && (
                     <>
                       <Total label="Voucher Total" value={voucher.totalAmount} />
-                      <Total label="Voucher Paid" value={voucher.paidAmount} tone="text-green-700" />
+                      <Total
+                        label="Voucher Paid"
+                        value={voucher.paidAmount}
+                        tone="text-green-700"
+                      />
                       <Total
                         label="Voucher Balance"
                         value={voucher.balanceAmount}
@@ -366,7 +363,9 @@ function Letterhead({ profile, branchName }) {
 function Info({ label, value }) {
   return (
     <div>
-      <div className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">{label}</div>
+      <div className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+        {label}
+      </div>
       <div className="text-sm text-gray-900 dark:text-gray-100 font-medium">{value || '—'}</div>
     </div>
   );
@@ -390,7 +389,9 @@ function DetailRow({ label, value, mono, capitalize }) {
 function Total({ label, value, tone = 'text-gray-900', big, strike }) {
   return (
     <div className={`flex items-center justify-end gap-4 ${big ? 'border-t pt-2 mt-1' : ''}`}>
-      <span className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">{label}</span>
+      <span className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">
+        {label}
+      </span>
       <span
         className={`${big ? 'text-2xl font-bold' : 'font-medium'} ${tone} ${
           strike ? 'line-through text-gray-400' : ''

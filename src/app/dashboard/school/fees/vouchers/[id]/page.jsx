@@ -51,18 +51,13 @@ export default function VoucherDetailPage() {
 
   const isOwnOnly = resolveScope(user?.role, 'view-fee') === 'own';
   const canRecordPayment =
-    !isOwnOnly &&
-    hasAnyAction(user?.role, ['record-payment', 'record-all-branch-payment']);
-  const canUpdate =
-    !isOwnOnly && hasAnyAction(user?.role, ['update-fee', 'update-all-branch-fee']);
-  const canDelete =
-    !isOwnOnly && hasAnyAction(user?.role, ['delete-fee', 'delete-all-branch-fee']);
+    !isOwnOnly && hasAnyAction(user?.role, ['record-payment', 'record-all-branch-payment']);
+  const canUpdate = !isOwnOnly && hasAnyAction(user?.role, ['update-fee', 'update-all-branch-fee']);
+  const canDelete = !isOwnOnly && hasAnyAction(user?.role, ['delete-fee', 'delete-all-branch-fee']);
   const canRegenerate =
-    !isOwnOnly &&
-    hasAnyAction(user?.role, ['generate-voucher', 'generate-all-branch-voucher']);
+    !isOwnOnly && hasAnyAction(user?.role, ['generate-voucher', 'generate-all-branch-voucher']);
   const canVoidPayment =
-    !isOwnOnly &&
-    hasAnyAction(user?.role, ['void-payment', 'void-all-branch-payment']);
+    !isOwnOnly && hasAnyAction(user?.role, ['void-payment', 'void-all-branch-payment']);
 
   const { data, isLoading } = useQuery({
     queryKey: ['voucher', voucherId],
@@ -79,8 +74,7 @@ export default function VoucherDetailPage() {
 
   const { data: profileData } = useQuery({
     queryKey: ['branch-profile', 'branch', branchIdForProfile],
-    queryFn: async () =>
-      (await apiClient.get(`/branch-profile/branch/${branchIdForProfile}`)).data,
+    queryFn: async () => (await apiClient.get(`/branch-profile/branch/${branchIdForProfile}`)).data,
     enabled: !!token && !!branchIdForProfile,
   });
 
@@ -124,9 +118,7 @@ export default function VoucherDetailPage() {
   };
 
   if (isLoading || !voucher) {
-    return (
-      <div className="p-6 text-sm text-gray-500 dark:text-gray-400">Loading voucher...</div>
-    );
+    return <div className="p-6 text-sm text-gray-500 dark:text-gray-400">Loading voucher...</div>;
   }
 
   return (
@@ -192,185 +184,198 @@ export default function VoucherDetailPage() {
           </div>
 
           <div ref={printableRef}>
-          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-8 print:shadow-none print:border-0">
-            <Letterhead profile={profile} branchName={voucher.branchId?.name} />
+            <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-8 print:shadow-none print:border-0">
+              <Letterhead profile={profile} branchName={voucher.branchId?.name} />
 
-            <div className="flex items-start justify-between border-b border-gray-200 dark:border-gray-700 pb-6 mb-6">
-              <div>
-                <div className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-widest">Voucher</div>
-                <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">{voucher.voucherNumber}</h1>
-                <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                  {formatMonth(voucher.month)} · {voucher.academicYear}
+              <div className="flex items-start justify-between border-b border-gray-200 dark:border-gray-700 pb-6 mb-6">
+                <div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-widest">
+                    Voucher
+                  </div>
+                  <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+                    {voucher.voucherNumber}
+                  </h1>
+                  <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                    {formatMonth(voucher.month)} · {voucher.academicYear}
+                  </div>
                 </div>
+                <span
+                  className={`inline-flex px-3 py-1 rounded-full text-sm font-medium uppercase tracking-wide ${
+                    VOUCHER_STATUS_COLORS[voucher.status] || 'bg-gray-100'
+                  }`}
+                >
+                  {voucher.status}
+                </span>
               </div>
-              <span
-                className={`inline-flex px-3 py-1 rounded-full text-sm font-medium uppercase tracking-wide ${
-                  VOUCHER_STATUS_COLORS[voucher.status] || 'bg-gray-100'
-                }`}
-              >
-                {voucher.status}
-              </span>
-            </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mb-6">
-              <Info label="Student Name" value={voucher.studentId?.user?.name} />
-              <Info label="Father Name" value={voucher.studentId?.father?.name} />
-              <Info label="Admission #" value={voucher.studentId?.admissionNumber} />
-              <Info label="Roll" value={voucher.studentId?.rollNumber} />
-              <Info label="Class" value={`${voucher.classId?.name || ''} ${voucher.sectionId?.name ? `· ${voucher.sectionId.name}` : ''}`} />
-              <Info label="Branch" value={voucher.branchId?.name} />
-              <Info label="Due Date" value={formatDate(voucher.dueDate)} />
-              <Info
-                label="Discount"
-                value={voucher.discountApplied ? `${voucher.discountApplied}%` : '—'}
-              />
-              <Info label="Waiver" value={voucher.waiverApplied ? 'Yes' : 'No'} />
-            </div>
-
-            <h3 className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2">
-              Line Items
-            </h3>
-            <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700 mb-6">
-              <table className="w-full text-sm">
-                <thead className="bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
-                  <tr>
-                    <th className="px-3 py-2 text-left">Item</th>
-                    <th className="px-3 py-2 text-left">Frequency</th>
-                    <th className="px-3 py-2 text-right">Amount</th>
-                    <th className="px-3 py-2 text-right">Final</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {(voucher.lineItems || []).map((li, i) => {
-                    const isTransport = li.componentName === 'transport';
-                    return (
-                      <tr
-                        key={i}
-                        className={`border-t border-gray-100 dark:border-gray-800 ${isTransport ? 'bg-blue-50' : ''}`}
-                      >
-                        <td className="px-3 py-2 font-medium text-gray-900 dark:text-gray-100">
-                          {li.name}
-                          {isTransport && (
-                            <span className="ml-2 inline-flex px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase bg-blue-100 text-blue-700 dark:text-blue-400">
-                              Transport
-                            </span>
-                          )}
-                        </td>
-                        <td className="px-3 py-2 capitalize text-gray-600 dark:text-gray-400">{li.frequency}</td>
-                        <td className="px-3 py-2 text-right text-gray-600 dark:text-gray-400">
-                          {formatMoney(li.amount)}
-                        </td>
-                        <td className="px-3 py-2 text-right font-medium text-gray-900 dark:text-gray-100">
-                          {formatMoney(li.finalAmount)}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                  {voucher.lateFee > 0 && (
-                    <tr className="border-t border-gray-100 dark:border-gray-800 bg-amber-50">
-                      <td className="px-3 py-2 font-medium text-amber-800">Late Fee</td>
-                      <td className="px-3 py-2 text-amber-700">—</td>
-                      <td className="px-3 py-2 text-right text-amber-700">—</td>
-                      <td className="px-3 py-2 text-right font-medium text-amber-900">
-                        {formatMoney(voucher.lateFee)}
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-
-            <div className="flex items-end justify-between gap-4">
-              {voucher.status === 'paid' && profile?.stamp ? (
-                <img
-                  src={profile.stamp}
-                  alt="Paid stamp"
-                  className="h-28 w-28 object-contain opacity-90 -rotate-12"
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mb-6">
+                <Info label="Student Name" value={voucher.studentId?.user?.name} />
+                <Info label="Father Name" value={voucher.studentId?.father?.name} />
+                <Info label="Admission #" value={voucher.studentId?.admissionNumber} />
+                <Info label="Roll" value={voucher.studentId?.rollNumber} />
+                <Info
+                  label="Class"
+                  value={`${voucher.classId?.name || ''} ${voucher.sectionId?.name ? `· ${voucher.sectionId.name}` : ''}`}
                 />
-              ) : (
-                <div />
-              )}
-              <div className="flex flex-col items-end gap-1 text-sm">
-                <Total label="Total" value={voucher.totalAmount} />
-                <Total label="Paid" value={voucher.paidAmount} tone="text-green-700" />
-                <Total label="Balance" value={voucher.balanceAmount} tone="text-red-700" big />
+                <Info label="Branch" value={voucher.branchId?.name} />
+                <Info label="Due Date" value={formatDate(voucher.dueDate)} />
+                <Info
+                  label="Discount"
+                  value={voucher.discountApplied ? `${voucher.discountApplied}%` : '—'}
+                />
+                <Info label="Waiver" value={voucher.waiverApplied ? 'Yes' : 'No'} />
               </div>
-            </div>
-          </div>
 
-          <div className="mt-6 bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 print:shadow-none print:border-0 print:rounded-none print:mt-4 print:p-0">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-base font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-                <Receipt className="w-4 h-4" /> Payment History
+              <h3 className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2">
+                Line Items
               </h3>
-              <span className="text-xs text-gray-500 dark:text-gray-400">{payments.length} payment(s)</span>
-            </div>
-            {payments.length === 0 ? (
-              <p className="text-sm text-gray-500 dark:text-gray-400">No payments yet.</p>
-            ) : (
-              <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
+              <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700 mb-6">
                 <table className="w-full text-sm">
                   <thead className="bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
                     <tr>
-                      <th className="px-3 py-2 text-left">Receipt #</th>
-                      <th className="px-3 py-2 text-left">Date</th>
-                      <th className="px-3 py-2 text-left">Method</th>
+                      <th className="px-3 py-2 text-left">Item</th>
+                      <th className="px-3 py-2 text-left">Frequency</th>
                       <th className="px-3 py-2 text-right">Amount</th>
-                      <th className="px-3 py-2 text-left">Status</th>
-                      <th className="px-3 py-2"></th>
+                      <th className="px-3 py-2 text-right">Final</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {payments.map((p) => (
-                      <tr key={p._id} className="border-t border-gray-100 dark:border-gray-800">
-                        <td className="px-3 py-2 font-mono text-xs text-gray-700 dark:text-gray-300">
-                          {p.receiptNumber}
-                        </td>
-                        <td className="px-3 py-2 text-gray-700 dark:text-gray-300">{formatDate(p.paymentDate)}</td>
-                        <td className="px-3 py-2">
-                          <span
-                            className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${
-                              PAYMENT_METHOD_COLORS[p.method] || 'bg-gray-100 text-gray-700'
-                            }`}
-                          >
-                            {p.method}
-                          </span>
-                        </td>
-                        <td
-                          className={`px-3 py-2 text-right font-medium ${
-                            p.isVoid ? 'line-through text-gray-400' : 'text-gray-900'
-                          }`}
+                    {(voucher.lineItems || []).map((li, i) => {
+                      const isTransport = li.componentName === 'transport';
+                      return (
+                        <tr
+                          key={i}
+                          className={`border-t border-gray-100 dark:border-gray-800 ${isTransport ? 'bg-blue-50' : ''}`}
                         >
-                          {formatMoney(p.amount)}
-                        </td>
-                        <td className="px-3 py-2">
-                          {p.isVoid ? (
-                            <span className="inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700 dark:text-red-400">
-                              Void
-                            </span>
-                          ) : (
-                            <span className="inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700 dark:text-green-400">
-                              Active
-                            </span>
-                          )}
-                        </td>
-                        <td className="px-3 py-2 text-right">
-                          {canVoidPayment && !p.isVoid && (
-                            <button
-                              onClick={() => setVoidPaymentTarget(p)}
-                              className="text-xs text-red-600 hover:underline"
-                            >
-                              Void
-                            </button>
-                          )}
+                          <td className="px-3 py-2 font-medium text-gray-900 dark:text-gray-100">
+                            {li.name}
+                            {isTransport && (
+                              <span className="ml-2 inline-flex px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase bg-blue-100 text-blue-700 dark:text-blue-400">
+                                Transport
+                              </span>
+                            )}
+                          </td>
+                          <td className="px-3 py-2 capitalize text-gray-600 dark:text-gray-400">
+                            {li.frequency}
+                          </td>
+                          <td className="px-3 py-2 text-right text-gray-600 dark:text-gray-400">
+                            {formatMoney(li.amount)}
+                          </td>
+                          <td className="px-3 py-2 text-right font-medium text-gray-900 dark:text-gray-100">
+                            {formatMoney(li.finalAmount)}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                    {voucher.lateFee > 0 && (
+                      <tr className="border-t border-gray-100 dark:border-gray-800 bg-amber-50">
+                        <td className="px-3 py-2 font-medium text-amber-800">Late Fee</td>
+                        <td className="px-3 py-2 text-amber-700">—</td>
+                        <td className="px-3 py-2 text-right text-amber-700">—</td>
+                        <td className="px-3 py-2 text-right font-medium text-amber-900">
+                          {formatMoney(voucher.lateFee)}
                         </td>
                       </tr>
-                    ))}
+                    )}
                   </tbody>
                 </table>
               </div>
-            )}
-          </div>
+
+              <div className="flex items-end justify-between gap-4">
+                {voucher.status === 'paid' && profile?.stamp ? (
+                  <img
+                    src={profile.stamp}
+                    alt="Paid stamp"
+                    className="h-28 w-28 object-contain opacity-90 -rotate-12"
+                  />
+                ) : (
+                  <div />
+                )}
+                <div className="flex flex-col items-end gap-1 text-sm">
+                  <Total label="Total" value={voucher.totalAmount} />
+                  <Total label="Paid" value={voucher.paidAmount} tone="text-green-700" />
+                  <Total label="Balance" value={voucher.balanceAmount} tone="text-red-700" big />
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-6 bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 print:shadow-none print:border-0 print:rounded-none print:mt-4 print:p-0">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-base font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                  <Receipt className="w-4 h-4" /> Payment History
+                </h3>
+                <span className="text-xs text-gray-500 dark:text-gray-400">
+                  {payments.length} payment(s)
+                </span>
+              </div>
+              {payments.length === 0 ? (
+                <p className="text-sm text-gray-500 dark:text-gray-400">No payments yet.</p>
+              ) : (
+                <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
+                  <table className="w-full text-sm">
+                    <thead className="bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
+                      <tr>
+                        <th className="px-3 py-2 text-left">Receipt #</th>
+                        <th className="px-3 py-2 text-left">Date</th>
+                        <th className="px-3 py-2 text-left">Method</th>
+                        <th className="px-3 py-2 text-right">Amount</th>
+                        <th className="px-3 py-2 text-left">Status</th>
+                        <th className="px-3 py-2"></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {payments.map((p) => (
+                        <tr key={p._id} className="border-t border-gray-100 dark:border-gray-800">
+                          <td className="px-3 py-2 font-mono text-xs text-gray-700 dark:text-gray-300">
+                            {p.receiptNumber}
+                          </td>
+                          <td className="px-3 py-2 text-gray-700 dark:text-gray-300">
+                            {formatDate(p.paymentDate)}
+                          </td>
+                          <td className="px-3 py-2">
+                            <span
+                              className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${
+                                PAYMENT_METHOD_COLORS[p.method] || 'bg-gray-100 text-gray-700'
+                              }`}
+                            >
+                              {p.method}
+                            </span>
+                          </td>
+                          <td
+                            className={`px-3 py-2 text-right font-medium ${
+                              p.isVoid ? 'line-through text-gray-400' : 'text-gray-900'
+                            }`}
+                          >
+                            {formatMoney(p.amount)}
+                          </td>
+                          <td className="px-3 py-2">
+                            {p.isVoid ? (
+                              <span className="inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700 dark:text-red-400">
+                                Void
+                              </span>
+                            ) : (
+                              <span className="inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700 dark:text-green-400">
+                                Active
+                              </span>
+                            )}
+                          </td>
+                          <td className="px-3 py-2 text-right">
+                            {canVoidPayment && !p.isVoid && (
+                              <button
+                                onClick={() => setVoidPaymentTarget(p)}
+                                className="text-xs text-red-600 hover:underline"
+                              >
+                                Void
+                              </button>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -380,11 +385,7 @@ export default function VoucherDetailPage() {
         onClose={() => setVoidVoucherOpen(false)}
         voucher={voucher}
       />
-      <LateFeeModal
-        isOpen={lateFeeOpen}
-        onClose={() => setLateFeeOpen(false)}
-        voucher={voucher}
-      />
+      <LateFeeModal isOpen={lateFeeOpen} onClose={() => setLateFeeOpen(false)} voucher={voucher} />
       <RegenerateVoucherModal
         isOpen={regenOpen}
         onClose={() => setRegenOpen(false)}
@@ -479,7 +480,9 @@ function Letterhead({ profile, branchName }) {
 function Info({ label, value }) {
   return (
     <div>
-      <div className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">{label}</div>
+      <div className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+        {label}
+      </div>
       <div className="text-sm text-gray-900 dark:text-gray-100 font-medium">{value || '—'}</div>
     </div>
   );
@@ -488,7 +491,9 @@ function Info({ label, value }) {
 function Total({ label, value, tone = 'text-gray-900', big }) {
   return (
     <div className={`flex items-center justify-end gap-4 ${big ? 'border-t pt-2 mt-1' : ''}`}>
-      <span className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">{label}</span>
+      <span className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">
+        {label}
+      </span>
       <span className={`${big ? 'text-2xl font-bold' : 'font-medium'} ${tone}`}>
         {formatMoney(value)}
       </span>

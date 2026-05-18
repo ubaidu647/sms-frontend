@@ -16,10 +16,7 @@ import {
 } from 'lucide-react';
 import { useTokenStore } from '@/store/tokenStore';
 import { useUserStore } from '@/store/userStore';
-import {
-  useQuery,
-  keepPreviousData,
-} from '@tanstack/react-query';
+import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import { fetchData } from '@/utils/api';
 import { resolveScope, hasAnyAction } from '@/utils/permissions';
 import GenerateSectionModal from './GenerateSectionModal';
@@ -124,15 +121,11 @@ export default function VouchersPage() {
   const isOrgLevel = scope === 'all';
   const isOwnOnly = scope === 'own';
   const canGenerate =
-    !isOwnOnly &&
-    hasAnyAction(user?.role, ['generate-voucher', 'generate-all-branch-voucher']);
+    !isOwnOnly && hasAnyAction(user?.role, ['generate-voucher', 'generate-all-branch-voucher']);
   const canRecordPayment =
-    !isOwnOnly &&
-    hasAnyAction(user?.role, ['record-payment', 'record-all-branch-payment']);
-  const canUpdate =
-    !isOwnOnly && hasAnyAction(user?.role, ['update-fee', 'update-all-branch-fee']);
-  const canDelete =
-    !isOwnOnly && hasAnyAction(user?.role, ['delete-fee', 'delete-all-branch-fee']);
+    !isOwnOnly && hasAnyAction(user?.role, ['record-payment', 'record-all-branch-payment']);
+  const canUpdate = !isOwnOnly && hasAnyAction(user?.role, ['update-fee', 'update-all-branch-fee']);
+  const canDelete = !isOwnOnly && hasAnyAction(user?.role, ['delete-fee', 'delete-all-branch-fee']);
   const userBranchId = user?.branchId || user?.branch?._id || '';
   // Dropdown queries: branchId/classId use draft so picking a branch/class instantly refreshes
   // dependent options; academicYear uses applied to avoid keystroke-storms while typing.
@@ -219,7 +212,9 @@ export default function VouchersPage() {
       const first = list.find((v) => (v.studentId?._id || v.studentId) === studentId) || list[0];
       const s = first?.student;
       if (s) {
-        setStudentLabel(`${s.user?.name || 'Student'}${s.admissionNumber ? ` · ${s.admissionNumber}` : ''}`);
+        setStudentLabel(
+          `${s.user?.name || 'Student'}${s.admissionNumber ? ` · ${s.admissionNumber}` : ''}`,
+        );
       }
     }
   }, [studentId, studentLabel, list]);
@@ -247,7 +242,9 @@ export default function VouchersPage() {
         accessor: 'student',
         render: (s) => (
           <div>
-            <div className="text-sm font-medium text-gray-900 dark:text-gray-100">{s?.user?.name || '—'}</div>
+            <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
+              {s?.user?.name || '—'}
+            </div>
             <div className="text-xs text-gray-500 dark:text-gray-400">
               {s?.admissionNumber} · Roll {s?.rollNumber}
             </div>
@@ -260,19 +257,25 @@ export default function VouchersPage() {
         render: (c, row) => (
           <div className="text-sm text-gray-700 dark:text-gray-300">
             {c?.name ?? '—'}
-            {row.section?.name && <span className="text-gray-400 dark:text-gray-500"> · {row.section.name}</span>}
+            {row.section?.name && (
+              <span className="text-gray-400 dark:text-gray-500"> · {row.section.name}</span>
+            )}
           </div>
         ),
       },
       {
         header: 'Total',
         accessor: 'totalAmount',
-        render: (v) => <span className="text-sm text-gray-700 dark:text-gray-300">{formatMoney(v)}</span>,
+        render: (v) => (
+          <span className="text-sm text-gray-700 dark:text-gray-300">{formatMoney(v)}</span>
+        ),
       },
       {
         header: 'Paid',
         accessor: 'paidAmount',
-        render: (v) => <span className="text-sm text-green-700 dark:text-green-400">{formatMoney(v)}</span>,
+        render: (v) => (
+          <span className="text-sm text-green-700 dark:text-green-400">{formatMoney(v)}</span>
+        ),
       },
       {
         header: 'Balance',
@@ -286,7 +289,9 @@ export default function VouchersPage() {
       {
         header: 'Due',
         accessor: 'dueDate',
-        render: (v) => <span className="text-xs text-gray-600 dark:text-gray-400">{formatDate(v)}</span>,
+        render: (v) => (
+          <span className="text-xs text-gray-600 dark:text-gray-400">{formatDate(v)}</span>
+        ),
       },
       {
         header: 'Status',
@@ -406,7 +411,9 @@ export default function VouchersPage() {
               placeholder="Search voucher / student..."
               value={draftSearch}
               onChange={(e) => setDraftSearch(e.target.value)}
-              onKeyDown={(e) => { if (e.key === 'Enter') applyFilters(); }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') applyFilters();
+              }}
               className="outline-none text-sm w-64 text-gray-900 dark:text-gray-100 placeholder:text-gray-400"
             />
           </div>
@@ -416,7 +423,9 @@ export default function VouchersPage() {
             placeholder="2025-2026"
             value={draftAcademicYear}
             onChange={(e) => setDraftAcademicYear(e.target.value)}
-            onKeyDown={(e) => { if (e.key === 'Enter') applyFilters(); }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') applyFilters();
+            }}
             className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-900 dark:text-gray-100 w-32 outline-none"
           />
 
@@ -429,7 +438,10 @@ export default function VouchersPage() {
 
           <select
             value={draftClassId}
-            onChange={(e) => { setDraftClassId(e.target.value); setDraftSectionId(''); }}
+            onChange={(e) => {
+              setDraftClassId(e.target.value);
+              setDraftSectionId('');
+            }}
             className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
           >
             <option value="">All Classes</option>

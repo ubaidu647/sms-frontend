@@ -84,15 +84,11 @@ export default function EditRoleModal({ isOpen, onClose, onSuccess, role }) {
 
   const toggleItem = (field, key) => {
     const current = field === 'menus' ? selectedMenus : selectedActions;
-    const updated = current.includes(key)
-      ? current.filter((k) => k !== key)
-      : [...current, key];
+    const updated = current.includes(key) ? current.filter((k) => k !== key) : [...current, key];
     setValue(field, updated, { shouldValidate: true });
 
     if (field === 'menus' && current.includes(key)) {
-      const menuActionKeys = allowedActions
-        .filter((a) => a.menu === key)
-        .map((a) => a.key);
+      const menuActionKeys = allowedActions.filter((a) => a.menu === key).map((a) => a.key);
       const cleanedActions = selectedActions.filter((a) => !menuActionKeys.includes(a));
       setValue('actions', cleanedActions, { shouldValidate: true });
     }
@@ -140,9 +136,7 @@ export default function EditRoleModal({ isOpen, onClose, onSuccess, role }) {
     .filter((menu) => selectedMenus.includes(menu.key))
     .map((menu) => ({
       ...menu,
-      actions: allowedActions.filter(
-        (a) => a.menu === menu.key && a.scope !== 'own',
-      ),
+      actions: allowedActions.filter((a) => a.menu === menu.key && a.scope !== 'own'),
     }))
     .filter((g) => g.actions.length > 0);
 
@@ -150,9 +144,7 @@ export default function EditRoleModal({ isOpen, onClose, onSuccess, role }) {
     .filter((menu) => selectedMenus.includes(menu.key))
     .map((menu) => ({
       ...menu,
-      actions: allowedActions.filter(
-        (a) => a.menu === menu.key && a.scope === 'own',
-      ),
+      actions: allowedActions.filter((a) => a.menu === menu.key && a.scope === 'own'),
     }))
     .filter((g) => g.actions.length > 0);
 
@@ -198,9 +190,7 @@ export default function EditRoleModal({ isOpen, onClose, onSuccess, role }) {
             placeholder="e.g. Branch Manager"
             className="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 rounded-xl outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 text-gray-900 dark:text-gray-100 placeholder:text-gray-400"
           />
-          {errors.name && (
-            <p className="text-red-500 text-xs mt-1">{errors.name.message}</p>
-          )}
+          {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name.message}</p>}
         </div>
 
         {/* Branch — only for users with canChangeBranch */}
@@ -250,9 +240,7 @@ export default function EditRoleModal({ isOpen, onClose, onSuccess, role }) {
               );
             })}
           </div>
-          {errors.menus && (
-            <p className="text-red-500 text-xs mt-1">{errors.menus.message}</p>
-          )}
+          {errors.menus && <p className="text-red-500 text-xs mt-1">{errors.menus.message}</p>}
         </div>
 
         {/* Actions grouped by selected menus */}
@@ -261,7 +249,9 @@ export default function EditRoleModal({ isOpen, onClose, onSuccess, role }) {
             Actions <span className="text-red-500">*</span>
           </label>
           {selectedMenus.length === 0 && (
-            <p className="text-gray-400 dark:text-gray-500 text-xs mb-2">Select a menu above to see its actions.</p>
+            <p className="text-gray-400 dark:text-gray-500 text-xs mb-2">
+              Select a menu above to see its actions.
+            </p>
           )}
           <div className="space-y-4">
             {actionsByMenu.map((group) => (
@@ -291,19 +281,18 @@ export default function EditRoleModal({ isOpen, onClose, onSuccess, role }) {
               </div>
             ))}
           </div>
-          {errors.actions && (
-            <p className="text-red-500 text-xs mt-1">{errors.actions.message}</p>
-          )}
+          {errors.actions && <p className="text-red-500 text-xs mt-1">{errors.actions.message}</p>}
         </div>
 
         {ownActionsByMenu.length > 0 && (
           <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
             <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
-              Self-scoped <span className="font-normal text-gray-500 dark:text-gray-400">(own data only)</span>
+              Self-scoped{' '}
+              <span className="font-normal text-gray-500 dark:text-gray-400">(own data only)</span>
             </label>
             <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
-              These permissions are weaker than the branch-level ones above — they only
-              let the user see/update their own record.
+              These permissions are weaker than the branch-level ones above — they only let the user
+              see/update their own record.
             </p>
             <div className="space-y-4">
               {ownActionsByMenu.map((group) => (

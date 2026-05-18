@@ -7,13 +7,7 @@ import { useTokenStore } from '@/store/tokenStore';
 import toast from 'react-hot-toast';
 import { Upload, Trash2, FileText, ExternalLink } from 'lucide-react';
 
-const ALLOWED_DOC_TYPES = [
-  'image/jpeg',
-  'image/jpg',
-  'image/png',
-  'image/webp',
-  'application/pdf',
-];
+const ALLOWED_DOC_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'application/pdf'];
 const MAX_DOC_SIZE = 5 * 1024 * 1024;
 
 const DOCUMENT_TYPES = [
@@ -28,7 +22,9 @@ const DOCUMENT_TYPES = [
 function Row({ label, value, className = '' }) {
   return (
     <div className={`flex flex-col gap-0.5 min-w-0 ${className}`}>
-      <span className="text-[10px] text-gray-400 dark:text-gray-500 font-medium uppercase tracking-wide">{label}</span>
+      <span className="text-[10px] text-gray-400 dark:text-gray-500 font-medium uppercase tracking-wide">
+        {label}
+      </span>
       <span className="text-xs text-gray-800 dark:text-gray-200 font-medium break-words leading-tight">
         {value || <span className="text-gray-300">—</span>}
       </span>
@@ -59,7 +55,9 @@ function Badge({ label, color }) {
     purple: 'bg-purple-100 text-purple-800',
   };
   return (
-    <span className={`inline-flex px-2.5 py-0.5 rounded-full text-[11px] font-medium capitalize ${colors[color] || colors.gray}`}>
+    <span
+      className={`inline-flex px-2.5 py-0.5 rounded-full text-[11px] font-medium capitalize ${colors[color] || colors.gray}`}
+    >
       {label}
     </span>
   );
@@ -67,25 +65,36 @@ function Badge({ label, color }) {
 
 function fmt(date) {
   if (!date) return null;
-  return new Date(date).toLocaleDateString('en-PK', { year: 'numeric', month: 'short', day: 'numeric' });
+  return new Date(date).toLocaleDateString('en-PK', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  });
 }
 
 function statusColor(status) {
-  return ({
-    enrolled: 'green',
-    promoted: 'teal',
-    transferred: 'blue',
-    graduated: 'purple',
-    dropped: 'red',
-    suspended: 'yellow',
-  })[status] || 'gray';
+  return (
+    {
+      enrolled: 'green',
+      promoted: 'teal',
+      transferred: 'blue',
+      graduated: 'purple',
+      dropped: 'red',
+      suspended: 'yellow',
+    }[status] || 'gray'
+  );
 }
 
 function docTypeLabel(type) {
   return DOCUMENT_TYPES.find((d) => d.value === type)?.label || type;
 }
 
-export default function StudentDetailModal({ isOpen, onClose, studentId, canManageDocuments = false }) {
+export default function StudentDetailModal({
+  isOpen,
+  onClose,
+  studentId,
+  canManageDocuments = false,
+}) {
   const { accessToken: token } = useTokenStore();
   const queryClient = useQueryClient();
   const fileInputRef = useRef(null);
@@ -154,12 +163,13 @@ export default function StudentDetailModal({ isOpen, onClose, studentId, canMana
   };
 
   const name = s?.user?.name || '';
-  const initials = name
-    .split(' ')
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((n) => n[0]?.toUpperCase())
-    .join('') || '?';
+  const initials =
+    name
+      .split(' ')
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((n) => n[0]?.toUpperCase())
+      .join('') || '?';
 
   return (
     <Modal
@@ -200,19 +210,29 @@ export default function StudentDetailModal({ isOpen, onClose, studentId, canMana
             </div>
 
             <div className="flex-1 min-w-0">
-              <div className="text-xl font-bold text-gray-900 dark:text-gray-100 truncate">{s.user?.name}</div>
+              <div className="text-xl font-bold text-gray-900 dark:text-gray-100 truncate">
+                {s.user?.name}
+              </div>
               <div className="text-sm text-gray-600 dark:text-gray-400 truncate">
-                {s.class?.name}{s.section?.name ? ` / ${s.section.name}` : ''} · {s.academicYear}
+                {s.class?.name}
+                {s.section?.name ? ` / ${s.section.name}` : ''} · {s.academicYear}
               </div>
               <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                 {s.admissionNumber} · Roll {s.rollNumber} · {s.user?.email}
               </div>
               <div className="flex flex-wrap gap-1.5 mt-2">
-                <Badge label={s.isActive ? 'Active' : 'Blocked'} color={s.isActive ? 'green' : 'red'} />
-                {s.academicStatus && <Badge label={s.academicStatus} color={statusColor(s.academicStatus)} />}
+                <Badge
+                  label={s.isActive ? 'Active' : 'Blocked'}
+                  color={s.isActive ? 'green' : 'red'}
+                />
+                {s.academicStatus && (
+                  <Badge label={s.academicStatus} color={statusColor(s.academicStatus)} />
+                )}
                 {s.admissionType && <Badge label={`${s.admissionType} admission`} color="blue" />}
                 {s.feeWaiver && <Badge label="Fee Waived" color="purple" />}
-                {!s.feeWaiver && s.feeDiscount > 0 && <Badge label={`${s.feeDiscount}% discount`} color="teal" />}
+                {!s.feeWaiver && s.feeDiscount > 0 && (
+                  <Badge label={`${s.feeDiscount}% discount`} color="teal" />
+                )}
               </div>
             </div>
           </div>
@@ -224,15 +244,28 @@ export default function StudentDetailModal({ isOpen, onClose, studentId, canMana
             <Row label="Academic Year" value={s.academicYear} />
             <Row label="Branch" value={s.branch?.name} />
             <Row label="Admission Date" value={fmt(s.admissionDate)} />
-            <Row label="Admission Type" value={s.admissionType ? s.admissionType.charAt(0).toUpperCase() + s.admissionType.slice(1) : null} />
-            <Row label="Section Capacity" value={s.section ? `${s.section.currentStrength}/${s.section.capacity}` : null} />
+            <Row
+              label="Admission Type"
+              value={
+                s.admissionType
+                  ? s.admissionType.charAt(0).toUpperCase() + s.admissionType.slice(1)
+                  : null
+              }
+            />
+            <Row
+              label="Section Capacity"
+              value={s.section ? `${s.section.currentStrength}/${s.section.capacity}` : null}
+            />
             <Row label="Class Medium" value={s.class?.medium} />
           </Section>
 
           {/* Personal */}
           <Section title="Personal">
             <Row label="Date of Birth" value={fmt(s.dob)} />
-            <Row label="Gender" value={s.gender ? s.gender.charAt(0).toUpperCase() + s.gender.slice(1) : null} />
+            <Row
+              label="Gender"
+              value={s.gender ? s.gender.charAt(0).toUpperCase() + s.gender.slice(1) : null}
+            />
             <Row label="Blood Group" value={s.bloodGroup} />
             <Row label="Nationality" value={s.nationality} />
             <Row label="Religion" value={s.religion} />
@@ -249,7 +282,14 @@ export default function StudentDetailModal({ isOpen, onClose, studentId, canMana
               <Row label="Phone" value={s.father.phone} />
               <Row label="Email" value={s.father.email} />
               <Row label="Occupation" value={s.father.occupation} />
-              <Row label="Monthly Income" value={s.father.monthlyIncome != null ? `PKR ${Number(s.father.monthlyIncome).toLocaleString()}` : null} />
+              <Row
+                label="Monthly Income"
+                value={
+                  s.father.monthlyIncome != null
+                    ? `PKR ${Number(s.father.monthlyIncome).toLocaleString()}`
+                    : null
+                }
+              />
             </Section>
           )}
 
@@ -343,7 +383,9 @@ export default function StudentDetailModal({ isOpen, onClose, studentId, canMana
                     className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 outline-none focus:border-teal-500"
                   >
                     {DOCUMENT_TYPES.map((d) => (
-                      <option key={d.value} value={d.value}>{d.label}</option>
+                      <option key={d.value} value={d.value}>
+                        {d.label}
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -367,14 +409,14 @@ export default function StudentDetailModal({ isOpen, onClose, studentId, canMana
                   <Upload className="w-4 h-4" />
                   {uploadMutation.isPending ? 'Uploading…' : 'Upload'}
                 </button>
-                {docError && (
-                  <p className="w-full text-red-500 text-xs">{docError}</p>
-                )}
+                {docError && <p className="w-full text-red-500 text-xs">{docError}</p>}
               </div>
             )}
 
-            {(!s.documents || s.documents.length === 0) ? (
-              <p className="text-sm text-gray-400 dark:text-gray-500 italic py-2">No documents uploaded yet.</p>
+            {!s.documents || s.documents.length === 0 ? (
+              <p className="text-sm text-gray-400 dark:text-gray-500 italic py-2">
+                No documents uploaded yet.
+              </p>
             ) : (
               <ul className="space-y-2">
                 {s.documents.map((doc) => (
@@ -387,7 +429,9 @@ export default function StudentDetailModal({ isOpen, onClose, studentId, canMana
                       <div className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
                         {docTypeLabel(doc.type)}
                       </div>
-                      <div className="text-[11px] text-gray-500 dark:text-gray-400">{fmt(doc.uploadedAt)}</div>
+                      <div className="text-[11px] text-gray-500 dark:text-gray-400">
+                        {fmt(doc.uploadedAt)}
+                      </div>
                     </div>
                     <a
                       href={doc.url}

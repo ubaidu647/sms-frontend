@@ -4,11 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { fetchData } from '@/utils/api';
 import { useTokenStore } from '@/store/tokenStore';
 import { useUserStore } from '@/store/userStore';
-import {
-  formatMoney,
-  PAYMENT_METHOD_COLORS,
-  todayYMD,
-} from '@/constants/fee';
+import { formatMoney, PAYMENT_METHOD_COLORS, todayYMD } from '@/constants/fee';
 import { TrendingUp } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
@@ -63,7 +59,9 @@ export default function CollectionReportPage() {
 
         <div className="flex flex-wrap items-end gap-3 mb-6">
           <div>
-            <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">From</label>
+            <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+              From
+            </label>
             <input
               type="date"
               value={from}
@@ -72,7 +70,9 @@ export default function CollectionReportPage() {
             />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">To</label>
+            <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+              To
+            </label>
             <input
               type="date"
               value={to}
@@ -82,7 +82,9 @@ export default function CollectionReportPage() {
           </div>
           {isOrgLevel && (
             <div>
-              <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Branch</label>
+              <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                Branch
+              </label>
               <select
                 value={branchId}
                 onFocus={() => setBranchDropdownTouched(true)}
@@ -113,8 +115,12 @@ export default function CollectionReportPage() {
                 </div>
               </div>
               <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
-                <div className="text-sm text-gray-500 dark:text-gray-400 uppercase tracking-widest">Payments</div>
-                <div className="text-4xl font-bold text-gray-900 dark:text-gray-100 mt-2">{report.totalCount}</div>
+                <div className="text-sm text-gray-500 dark:text-gray-400 uppercase tracking-widest">
+                  Payments
+                </div>
+                <div className="text-4xl font-bold text-gray-900 dark:text-gray-100 mt-2">
+                  {report.totalCount}
+                </div>
                 <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                   {report.byMethod?.length || 0} method(s)
                 </div>
@@ -123,10 +129,14 @@ export default function CollectionReportPage() {
 
             <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
               <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                <h2 className="text-base font-bold text-gray-900 dark:text-gray-100">Breakdown by Method</h2>
+                <h2 className="text-base font-bold text-gray-900 dark:text-gray-100">
+                  Breakdown by Method
+                </h2>
               </div>
-              {(!report.byMethod || report.byMethod.length === 0) ? (
-                <p className="px-6 py-8 text-sm text-gray-500 dark:text-gray-400 text-center">No payments in range.</p>
+              {!report.byMethod || report.byMethod.length === 0 ? (
+                <p className="px-6 py-8 text-sm text-gray-500 dark:text-gray-400 text-center">
+                  No payments in range.
+                </p>
               ) : (
                 <table className="w-full text-sm">
                   <thead className="bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
@@ -153,7 +163,9 @@ export default function CollectionReportPage() {
                               {m._id}
                             </span>
                           </td>
-                          <td className="px-6 py-3 text-right text-gray-700 dark:text-gray-300">{m.count}</td>
+                          <td className="px-6 py-3 text-right text-gray-700 dark:text-gray-300">
+                            {m.count}
+                          </td>
                           <td className="px-6 py-3 text-right font-medium text-gray-900 dark:text-gray-100">
                             {formatMoney(m.total)}
                           </td>

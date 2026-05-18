@@ -4,12 +4,7 @@ import { Table } from '@/component/Table';
 import { Plus, Search, Edit, Trash2, Eye, X } from 'lucide-react';
 import { useTokenStore } from '@/store/tokenStore';
 import { useUserStore } from '@/store/userStore';
-import {
-  useQuery,
-  useMutation,
-  useQueryClient,
-  keepPreviousData,
-} from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { fetchData, deleteData } from '@/utils/api';
 import toast from 'react-hot-toast';
 import FeeStructureFormModal from './FeeStructureFormModal';
@@ -167,7 +162,9 @@ export default function FeeStructuresPage() {
         render: (v) => (
           <div className="text-sm text-gray-700 dark:text-gray-300">
             {v?.name ?? '—'}
-            {v?.grade && <span className="text-xs text-gray-400 dark:text-gray-500 ml-1">(Gr {v.grade})</span>}
+            {v?.grade && (
+              <span className="text-xs text-gray-400 dark:text-gray-500 ml-1">(Gr {v.grade})</span>
+            )}
           </div>
         ),
       },
@@ -179,12 +176,18 @@ export default function FeeStructuresPage() {
       {
         header: 'Components',
         accessor: 'components',
-        render: (v) => <span className="text-sm text-gray-700 dark:text-gray-300">{(v || []).length}</span>,
+        render: (v) => (
+          <span className="text-sm text-gray-700 dark:text-gray-300">{(v || []).length}</span>
+        ),
       },
       {
         header: 'Monthly Total',
         accessor: 'totalMonthly',
-        render: (v) => <span className="text-sm font-medium text-teal-700 dark:text-teal-400">{formatMoney(v)}</span>,
+        render: (v) => (
+          <span className="text-sm font-medium text-teal-700 dark:text-teal-400">
+            {formatMoney(v)}
+          </span>
+        ),
       },
       {
         header: 'Due Day',
@@ -250,7 +253,9 @@ export default function FeeStructuresPage() {
               placeholder="Search by name..."
               value={draftSearch}
               onChange={(e) => setDraftSearch(e.target.value)}
-              onKeyDown={(e) => { if (e.key === 'Enter') applyFilters(); }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') applyFilters();
+              }}
               className="outline-none text-sm w-56 text-gray-900 dark:text-gray-100 placeholder:text-gray-400"
             />
           </div>
@@ -260,7 +265,9 @@ export default function FeeStructuresPage() {
             placeholder="2025-2026"
             value={draftAcademicYear}
             onChange={(e) => setDraftAcademicYear(e.target.value)}
-            onKeyDown={(e) => { if (e.key === 'Enter') applyFilters(); }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') applyFilters();
+            }}
             className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-900 dark:text-gray-100 w-32 outline-none"
           />
 
@@ -335,10 +342,7 @@ export default function FeeStructuresPage() {
           totalItems={data?.total}
         />
 
-        <FeeStructureFormModal
-          isOpen={isAddOpen}
-          onClose={() => setIsAddOpen(false)}
-        />
+        <FeeStructureFormModal isOpen={isAddOpen} onClose={() => setIsAddOpen(false)} />
         <FeeStructureFormModal
           isOpen={!!editTarget}
           onClose={() => setEditTarget(null)}

@@ -9,12 +9,7 @@ import { fetchData } from '@/utils/api';
 import VoidPaymentModal from './VoidPaymentModal';
 import PaymentDetailModal from './PaymentDetailModal';
 import { resolveScope, hasAnyAction } from '@/utils/permissions';
-import {
-  PAYMENT_METHODS,
-  PAYMENT_METHOD_COLORS,
-  formatDate,
-  formatMoney,
-} from '@/constants/fee';
+import { PAYMENT_METHODS, PAYMENT_METHOD_COLORS, formatDate, formatMoney } from '@/constants/fee';
 import { useTranslations } from 'next-intl';
 
 export default function PaymentsPage() {
@@ -73,8 +68,7 @@ export default function PaymentsPage() {
   const isOrgLevel = scope === 'all';
   const isOwnOnly = scope === 'own';
   const canVoid =
-    !isOwnOnly &&
-    hasAnyAction(user?.role, ['void-payment', 'void-all-branch-payment']);
+    !isOwnOnly && hasAnyAction(user?.role, ['void-payment', 'void-all-branch-payment']);
   const userBranchId = user?.branchId || user?.branch?._id || '';
 
   const { data: branchData } = useQuery({
@@ -132,7 +126,9 @@ export default function PaymentsPage() {
         render: (v, row) => (
           <div>
             <div className="font-mono text-sm text-gray-900 dark:text-gray-100">{v}</div>
-            <div className="text-xs text-gray-400 dark:text-gray-500">{formatDate(row.paymentDate)}</div>
+            <div className="text-xs text-gray-400 dark:text-gray-500">
+              {formatDate(row.paymentDate)}
+            </div>
           </div>
         ),
       },
@@ -141,7 +137,9 @@ export default function PaymentsPage() {
         accessor: 'student',
         render: (s) => (
           <div>
-            <div className="text-sm font-medium text-gray-900 dark:text-gray-100">{s?.user?.name || '—'}</div>
+            <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
+              {s?.user?.name || '—'}
+            </div>
             <div className="text-xs text-gray-500 dark:text-gray-400">
               {s?.admissionNumber} · Roll {s?.rollNumber}
             </div>
@@ -204,8 +202,7 @@ export default function PaymentsPage() {
 
   const rowActions = (row) => {
     const items = [{ label: 'View Detail', value: 'view', icon: Eye }];
-    if (canVoid && !row.isVoid)
-      items.push({ label: 'Void', value: 'void', icon: Ban });
+    if (canVoid && !row.isVoid) items.push({ label: 'Void', value: 'void', icon: Ban });
     return items;
   };
 
@@ -231,7 +228,9 @@ export default function PaymentsPage() {
               placeholder="Search receipt / student / voucher..."
               value={draftSearch}
               onChange={(e) => setDraftSearch(e.target.value)}
-              onKeyDown={(e) => { if (e.key === 'Enter') applyFilters(); }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') applyFilters();
+              }}
               className="outline-none text-sm w-72 text-gray-900 dark:text-gray-100 placeholder:text-gray-400"
             />
           </div>

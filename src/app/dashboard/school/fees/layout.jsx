@@ -3,13 +3,7 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useUserStore } from '@/store/userStore';
-import {
-  ListTree,
-  Receipt,
-  Wallet,
-  TrendingDown,
-  TrendingUp,
-} from 'lucide-react';
+import { ListTree, Receipt, Wallet, TrendingDown, TrendingUp } from 'lucide-react';
 import { canSee, resolveScope } from '@/utils/permissions';
 
 const branchOnly = (role, base) => {

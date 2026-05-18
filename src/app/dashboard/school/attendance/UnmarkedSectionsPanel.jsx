@@ -40,7 +40,9 @@ export default function UnmarkedSectionsPanel() {
       <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 max-w-2xl">
           <div>
-            <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">Date</label>
+            <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">
+              Date
+            </label>
             <input
               type="date"
               value={date}
@@ -50,7 +52,9 @@ export default function UnmarkedSectionsPanel() {
             />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">Academic Year (optional)</label>
+            <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">
+              Academic Year (optional)
+            </label>
             <input
               value={academicYear}
               onChange={(e) => setAcademicYear(e.target.value)}
@@ -70,7 +74,9 @@ export default function UnmarkedSectionsPanel() {
       {!isFetching && count === 0 && (
         <div className="bg-white dark:bg-gray-900 rounded-xl border border-green-200 p-8 text-center">
           <CheckCircle2 className="w-12 h-12 mx-auto text-green-500" />
-          <p className="text-green-700 dark:text-green-400 font-medium mt-3">All sections have marked attendance for {date}.</p>
+          <p className="text-green-700 dark:text-green-400 font-medium mt-3">
+            All sections have marked attendance for {date}.
+          </p>
         </div>
       )}
 
@@ -79,30 +85,51 @@ export default function UnmarkedSectionsPanel() {
           <div className="flex items-center gap-2 px-4 py-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-800 text-sm">
             <AlertTriangle className="w-5 h-5" />
             <span className="font-semibold">{count}</span>
-            <span>section{count > 1 ? 's' : ''} have not marked attendance on {date}.</span>
+            <span>
+              section{count > 1 ? 's' : ''} have not marked attendance on {date}.
+            </span>
           </div>
 
           <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
             <table className="w-full">
               <thead className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
                 <tr>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Class</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Section</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Academic Year</th>
-                  <th className="text-center px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Strength</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                    Class
+                  </th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                    Section
+                  </th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                    Academic Year
+                  </th>
+                  <th className="text-center px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                    Strength
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {sections.map((s) => (
-                  <tr key={s.sectionId} className="border-b border-gray-100 dark:border-gray-800 last:border-b-0 hover:bg-gray-50 dark:hover:bg-gray-800">
+                  <tr
+                    key={s.sectionId}
+                    className="border-b border-gray-100 dark:border-gray-800 last:border-b-0 hover:bg-gray-50 dark:hover:bg-gray-800"
+                  >
                     <td className="px-4 py-3">
-                      <div className="text-sm font-medium text-gray-900 dark:text-gray-100">{s.class?.name || '—'}</div>
+                      <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                        {s.class?.name || '—'}
+                      </div>
                       {s.class?.grade && (
-                        <div className="text-xs text-gray-400 dark:text-gray-500">Grade {s.class.grade}</div>
+                        <div className="text-xs text-gray-400 dark:text-gray-500">
+                          Grade {s.class.grade}
+                        </div>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">{s.sectionName}</td>
-                    <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">{s.academicYear || '—'}</td>
+                    <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
+                      {s.sectionName}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
+                      {s.academicYear || '—'}
+                    </td>
                     <td className="px-4 py-3 text-sm text-center text-gray-700 dark:text-gray-300">
                       {s.currentStrength}/{s.capacity}
                     </td>

@@ -23,6 +23,8 @@ export default function StaffAttendancePage() {
     'mark-all-branch-staff-attendance',
   ]);
 
+  const [activeTab, setActiveTab] = useState('mark');
+
   // Own-scope: render only the personal history view (no branch roster, no marking).
   if (isOwnOnly) {
     return (
@@ -39,16 +41,10 @@ export default function StaffAttendancePage() {
   }
 
   const tabs = [];
-  if (canMark || canView)
-    tabs.push({ key: 'mark', label: 'Daily Mark', icon: ClipboardCheck });
-  if (canView)
-    tabs.push({ key: 'calendar', label: 'Calendar View', icon: CalendarRange });
-  if (canView)
-    tabs.push({ key: 'summary', label: 'Monthly Summary', icon: BarChart3 });
-  if (isOrgLevel)
-    tabs.push({ key: 'unmarked', label: 'Unmarked Branches', icon: AlertTriangle });
-
-  const [activeTab, setActiveTab] = useState(tabs[0]?.key || 'mark');
+  if (canMark || canView) tabs.push({ key: 'mark', label: 'Daily Mark', icon: ClipboardCheck });
+  if (canView) tabs.push({ key: 'calendar', label: 'Calendar View', icon: CalendarRange });
+  if (canView) tabs.push({ key: 'summary', label: 'Monthly Summary', icon: BarChart3 });
+  if (isOrgLevel) tabs.push({ key: 'unmarked', label: 'Unmarked Branches', icon: AlertTriangle });
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-800 p-6 rounded-[50px]">
@@ -69,9 +65,7 @@ export default function StaffAttendancePage() {
                 key={t.key}
                 onClick={() => setActiveTab(t.key)}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  isActive
-                    ? 'bg-teal-600 text-white shadow-sm'
-                    : 'text-gray-600 hover:bg-gray-50'
+                  isActive ? 'bg-teal-600 text-white shadow-sm' : 'text-gray-600 hover:bg-gray-50'
                 }`}
               >
                 <Icon className="w-4 h-4" />

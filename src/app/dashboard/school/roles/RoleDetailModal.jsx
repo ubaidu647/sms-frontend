@@ -13,14 +13,20 @@ async function fetchRoleById(id) {
 function DetailRow({ label, children }) {
   return (
     <div className="flex flex-col gap-1">
-      <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">{label}</span>
+      <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+        {label}
+      </span>
       <div className="text-sm text-gray-800 dark:text-gray-200">{children}</div>
     </div>
   );
 }
 
 export default function RoleDetailModal({ isOpen, onClose, roleId }) {
-  const { data: role, isLoading, isError } = useQuery({
+  const {
+    data: role,
+    isLoading,
+    isError,
+  } = useQuery({
     queryKey: ['role-detail', roleId],
     queryFn: () => fetchRoleById(roleId),
     enabled: !!roleId && isOpen,
@@ -125,7 +131,9 @@ export default function RoleDetailModal({ isOpen, onClose, roleId }) {
                 {actionsByMenu.map((group) =>
                   group.actions.length > 0 ? (
                     <div key={group.key}>
-                      <p className="text-xs font-medium text-gray-400 dark:text-gray-500 mb-1">{group.label}</p>
+                      <p className="text-xs font-medium text-gray-400 dark:text-gray-500 mb-1">
+                        {group.label}
+                      </p>
                       <div className="flex flex-wrap gap-1.5">
                         {group.actions.map((a) => (
                           <span

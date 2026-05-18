@@ -53,8 +53,7 @@ export default function GenerateStudentModal({ isOpen, onClose }) {
   const students = studentData?.data || [];
 
   const mutation = useMutation({
-    mutationFn: (payload) =>
-      postData({ url: '/fee/voucher/generate-student', payload, token }),
+    mutationFn: (payload) => postData({ url: '/fee/voucher/generate-student', payload, token }),
     onSuccess: (res) => {
       if (res?.data?.skipped) {
         toast(res?.message || 'Voucher already exists for this month', { icon: '⏭️' });
@@ -168,7 +167,9 @@ export default function GenerateStudentModal({ isOpen, onClose }) {
                         setShowResults(false);
                       }}
                     >
-                      <div className="font-medium text-gray-900 dark:text-gray-100">{s.user?.name || s.name}</div>
+                      <div className="font-medium text-gray-900 dark:text-gray-100">
+                        {s.user?.name || s.name}
+                      </div>
                       <div className="text-xs text-gray-500 dark:text-gray-400">
                         {s.admissionNumber} · Roll {s.rollNumber}
                       </div>

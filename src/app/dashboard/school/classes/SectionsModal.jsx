@@ -17,9 +17,14 @@ function CapacityBar({ current, capacity }) {
   return (
     <div className="flex items-center gap-2 mt-1.5">
       <div className="flex-1 h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
-        <div className={`h-full rounded-full transition-all ${color}`} style={{ width: `${pct}%` }} />
+        <div
+          className={`h-full rounded-full transition-all ${color}`}
+          style={{ width: `${pct}%` }}
+        />
       </div>
-      <span className="text-xs text-gray-500 dark:text-gray-400 tabular-nums">{current}/{capacity}</span>
+      <span className="text-xs text-gray-500 dark:text-gray-400 tabular-nums">
+        {current}/{capacity}
+      </span>
       {pct >= 90 && <AlertTriangle className="w-3.5 h-3.5 text-red-500 shrink-0" />}
     </div>
   );
@@ -42,7 +47,10 @@ function SectionMenu({ section, onEdit, onToggle, canUpdate, canToggle }) {
           <div className="absolute right-0 top-8 z-20 bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-gray-100 dark:border-gray-800 py-1 w-40 text-sm">
             {canUpdate && (
               <button
-                onClick={() => { setOpen(false); onEdit(section); }}
+                onClick={() => {
+                  setOpen(false);
+                  onEdit(section);
+                }}
                 className="w-full flex items-center gap-2 px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300"
               >
                 <Edit2 className="w-3.5 h-3.5 text-teal-600" />
@@ -51,7 +59,10 @@ function SectionMenu({ section, onEdit, onToggle, canUpdate, canToggle }) {
             )}
             {canToggle && (
               <button
-                onClick={() => { setOpen(false); onToggle(section); }}
+                onClick={() => {
+                  setOpen(false);
+                  onToggle(section);
+                }}
                 className={`w-full flex items-center gap-2 px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-800 ${section.isActive ? 'text-red-600' : 'text-green-600'}`}
               >
                 <Power className="w-3.5 h-3.5" />
@@ -70,14 +81,17 @@ export default function SectionsModal({ isOpen, onClose, cls }) {
   const { user } = useUserStore();
   const queryClient = useQueryClient();
 
-  const [isAddOpen,   setIsAddOpen]   = useState(false);
+  const [isAddOpen, setIsAddOpen] = useState(false);
   const [editSection, setEditSection] = useState(null);
 
-  const isAdmin   = !!user?.role?.isPredefined;
-  const actions   = user?.role?.actions || [];
-  const canCreate = isAdmin || actions.includes('create-class') || actions.includes('create-all-branch-class');
-  const canUpdate = isAdmin || actions.includes('update-class') || actions.includes('update-all-branch-class');
-  const canToggle = isAdmin || actions.includes('delete-class') || actions.includes('delete-all-branch-class');
+  const isAdmin = !!user?.role?.isPredefined;
+  const actions = user?.role?.actions || [];
+  const canCreate =
+    isAdmin || actions.includes('create-class') || actions.includes('create-all-branch-class');
+  const canUpdate =
+    isAdmin || actions.includes('update-class') || actions.includes('update-all-branch-class');
+  const canToggle =
+    isAdmin || actions.includes('delete-class') || actions.includes('delete-all-branch-class');
 
   const classId = cls?._id;
 
@@ -90,14 +104,17 @@ export default function SectionsModal({ isOpen, onClose, cls }) {
   const sections = data?.data || [];
 
   const toggleMutation = useMutation({
-    mutationFn: (sectionId) => patchData({ url: `/class/${classId}/sections/${sectionId}/toggle-status`, token }),
+    mutationFn: (sectionId) =>
+      patchData({ url: `/class/${classId}/sections/${sectionId}/toggle-status`, token }),
     onSuccess: (res, sectionId) => {
       queryClient.setQueriesData({ queryKey: ['sections', classId] }, (old) => {
         if (!old) return old;
         return {
           ...old,
           data: (old.data || []).map((s) =>
-            s._id === sectionId ? { ...s, isActive: res.data.isActive, status: res.data.status } : s,
+            s._id === sectionId
+              ? { ...s, isActive: res.data.isActive, status: res.data.status }
+              : s,
           ),
         };
       });
@@ -161,29 +178,43 @@ export default function SectionsModal({ isOpen, onClose, cls }) {
               >
                 {/* Section letter avatar */}
                 <div className="w-10 h-10 rounded-full bg-teal-100 flex items-center justify-center shrink-0">
-                  <span className="text-teal-700 dark:text-teal-400 font-bold text-base">{sec.name}</span>
+                  <span className="text-teal-700 dark:text-teal-400 font-bold text-base">
+                    {sec.name}
+                  </span>
                 </div>
 
                 {/* Info */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-semibold text-gray-900 dark:text-gray-100">Section {sec.name}</span>
-                    <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${sec.isActive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                    <span className="font-semibold text-gray-900 dark:text-gray-100">
+                      Section {sec.name}
+                    </span>
+                    <span
+                      className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${sec.isActive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}
+                    >
                       {sec.isActive ? 'Active' : 'Inactive'}
                     </span>
-                    {(sec.currentStrength / sec.capacity) >= 0.9 && (
+                    {sec.currentStrength / sec.capacity >= 0.9 && (
                       <span className="inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700 dark:text-red-400">
                         Almost Full
                       </span>
                     )}
                   </div>
-                  <div className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{sec.serialNumber} · {sec.academicYear}</div>
+                  <div className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+                    {sec.serialNumber} · {sec.academicYear}
+                  </div>
                   <CapacityBar current={sec.currentStrength || 0} capacity={sec.capacity} />
                   {sec.classTeacherInfo && (
                     <div className="text-xs text-gray-500 dark:text-gray-400 mt-1.5">
-                      Teacher: <span className="font-medium text-gray-700 dark:text-gray-300">{sec.classTeacherInfo.user?.name}</span>
+                      Teacher:{' '}
+                      <span className="font-medium text-gray-700 dark:text-gray-300">
+                        {sec.classTeacherInfo.user?.name}
+                      </span>
                       {sec.classTeacherInfo.designation && (
-                        <span className="text-gray-400 dark:text-gray-500"> · {sec.classTeacherInfo.designation}</span>
+                        <span className="text-gray-400 dark:text-gray-500">
+                          {' '}
+                          · {sec.classTeacherInfo.designation}
+                        </span>
                       )}
                     </div>
                   )}

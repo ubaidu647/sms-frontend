@@ -9,7 +9,7 @@ export const Table = ({
   showImage = false,
   imageAccessor = 'image',
   visibleColumns = [],
-  rowActions,          // optional — overrides the default action list
+  rowActions, // optional — overrides the default action list
   // controlled pagination (optional)
   page: controlledPage,
   limit: controlledLimit,
@@ -75,10 +75,6 @@ export const Table = ({
     else setInternalPage(1);
   };
 
-  const toggleMenu = (_id) => {
-    setOpenMenuId(openMenuId === _id ? null : _id);
-  };
-
   const handleAction = (action, row) => {
     setOpenMenuId(null);
     if (onRowAction) onRowAction(action, row);
@@ -94,9 +90,7 @@ export const Table = ({
   ];
   // rowActions can be an array (same for every row) or a function (row) => array
   const resolveActions = (row) =>
-    typeof rowActions === 'function'
-      ? rowActions(row)
-      : (rowActions ?? defaultActions);
+    typeof rowActions === 'function' ? rowActions(row) : (rowActions ?? defaultActions);
 
   return (
     <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col">
@@ -144,7 +138,10 @@ export const Table = ({
               paginatedData.map((row, rowIndex) => {
                 const rowNumber = (page - 1) * limit + rowIndex + 1;
                 return (
-                  <tr key={row._id || rowIndex} className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                  <tr
+                    key={row._id || rowIndex}
+                    className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                  >
                     <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-300 font-medium w-12">
                       {rowNumber}
                     </td>
@@ -185,7 +182,12 @@ export const Table = ({
                       <button
                         onClick={(e) => {
                           const rect = e.currentTarget.getBoundingClientRect();
-                          setAnchorRect({ top: rect.top + window.scrollY, left: rect.left + window.scrollX, right: rect.right + window.scrollX, bottom: rect.bottom + window.scrollY });
+                          setAnchorRect({
+                            top: rect.top + window.scrollY,
+                            left: rect.left + window.scrollX,
+                            right: rect.right + window.scrollX,
+                            bottom: rect.bottom + window.scrollY,
+                          });
                           setOpenMenuId(openMenuId === row._id ? null : row._id);
                         }}
                         className="inline-flex items-center justify-center w-8 h-8 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
@@ -193,14 +195,22 @@ export const Table = ({
                         <MoreVertical className="w-5 h-5 text-gray-600 dark:text-gray-300" />
                       </button>
 
-                      {openMenuId === row._id && anchorRect && typeof document !== 'undefined' &&
+                      {openMenuId === row._id &&
+                        anchorRect &&
+                        typeof document !== 'undefined' &&
                         createPortal(
                           <>
-                            <div className="fixed inset-0 z-40" onClick={() => setOpenMenuId(null)} />
+                            <div
+                              className="fixed inset-0 z-40"
+                              onClick={() => setOpenMenuId(null)}
+                            />
                             <div
                               className="absolute z-50 w-56 rounded-lg shadow-lg bg-white dark:bg-gray-900 ring-1 ring-black/5 dark:ring-white/10"
                               style={{
-                                top: Math.min(anchorRect.bottom + 8, window.scrollY + window.innerHeight - 8 - 200),
+                                top: Math.min(
+                                  anchorRect.bottom + 8,
+                                  window.scrollY + window.innerHeight - 8 - 200,
+                                ),
                                 left: Math.max(anchorRect.right - 224, 8),
                               }}
                             >
@@ -212,7 +222,9 @@ export const Table = ({
                                       key={action.value}
                                       onClick={() => handleAction(action.value, row)}
                                       className={`w-full flex items-center gap-3 px-4 py-2 text-sm transition-colors ${
-                                        action.danger ? 'text-red-700 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
+                                        action.danger
+                                          ? 'text-red-700 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40'
+                                          : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
                                       }`}
                                     >
                                       <Icon className="w-4 h-4" />

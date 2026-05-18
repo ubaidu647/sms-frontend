@@ -19,11 +19,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { fetchData, deleteData, patchData } from '@/utils/api';
 import toast from 'react-hot-toast';
 import { resolveScope, hasAnyAction } from '@/utils/permissions';
-import {
-  EXAM_STATUS_COLORS,
-  SUBJECT_STATUS_COLORS,
-  formatDate,
-} from '@/constants/exam';
+import { EXAM_STATUS_COLORS, SUBJECT_STATUS_COLORS, formatDate } from '@/constants/exam';
 import AddExamSubjectModal from '../AddExamSubjectModal';
 import EditExamSubjectModal from '../EditExamSubjectModal';
 import EditExamModal from '../EditExamModal';
@@ -53,7 +49,12 @@ export default function ExamDetailPage() {
     !isOwnOnly && hasAnyAction(user?.role, ['enter-marks', 'enter-all-branch-marks']);
   const canViewMarks = resolveScope(user?.role, 'view-marks') !== 'none';
 
-  const { data: examRes, isLoading, isError, error } = useQuery({
+  const {
+    data: examRes,
+    isLoading,
+    isError,
+    error,
+  } = useQuery({
     queryKey: ['exam-detail', examId],
     queryFn: () => fetchData({ url: `/exam/${examId}`, token }),
     enabled: !!token && !!examId,
@@ -73,8 +74,7 @@ export default function ExamDetailPage() {
 
   useEffect(() => {
     if (!isError) return;
-    const msg =
-      error?.response?.data?.message || error?.message || 'Failed to load exam';
+    const msg = error?.response?.data?.message || error?.message || 'Failed to load exam';
     toast.error(msg);
   }, [isError, error]);
 
@@ -115,7 +115,9 @@ export default function ExamDetailPage() {
       {
         header: 'Date',
         accessor: 'examDate',
-        render: (v) => <span className="text-sm text-gray-700 dark:text-gray-300">{formatDate(v)}</span>,
+        render: (v) => (
+          <span className="text-sm text-gray-700 dark:text-gray-300">{formatDate(v)}</span>
+        ),
       },
       {
         header: 'Time',
@@ -143,7 +145,8 @@ export default function ExamDetailPage() {
         accessor: 'theoryMarks',
         render: (v, row) => (
           <span className="text-xs text-gray-600 dark:text-gray-400">
-            {v != null ? `T: ${v}` : 'T: —'} / {row.practicalMarks != null ? `P: ${row.practicalMarks}` : 'P: —'}
+            {v != null ? `T: ${v}` : 'T: —'} /{' '}
+            {row.practicalMarks != null ? `P: ${row.practicalMarks}` : 'P: —'}
           </span>
         ),
       },
@@ -165,15 +168,12 @@ export default function ExamDetailPage() {
   );
   const visibleColumns = useMemo(() => columns.map((c) => c.accessor), [columns]);
 
-  const rowActions = (row) => {
+  const rowActions = () => {
     const items = [];
-    if (canEnterMarks)
-      items.push({ label: 'Enter Marks', value: 'marks', icon: Pencil });
-    if (canViewMarks)
-      items.push({ label: 'View Results', value: 'results', icon: ListChecks });
+    if (canEnterMarks) items.push({ label: 'Enter Marks', value: 'marks', icon: Pencil });
+    if (canViewMarks) items.push({ label: 'View Results', value: 'results', icon: ListChecks });
     if (canUpdate && !isLocked) items.push({ label: 'Edit', value: 'edit', icon: Edit });
-    if (canUpdate && !isLocked)
-      items.push({ label: 'Remove', value: 'delete', icon: Trash2 });
+    if (canUpdate && !isLocked) items.push({ label: 'Remove', value: 'delete', icon: Trash2 });
     return items;
   };
 
@@ -183,9 +183,7 @@ export default function ExamDetailPage() {
     if (action === 'marks')
       router.push(`/dashboard/school/exams/${examId}/marks?examSubjectId=${row._id}`);
     if (action === 'results')
-      router.push(
-        `/dashboard/school/exams/${examId}/marks?examSubjectId=${row._id}&view=1`,
-      );
+      router.push(`/dashboard/school/exams/${examId}/marks?examSubjectId=${row._id}&view=1`);
   };
 
   if (isLoading) {
@@ -262,9 +260,7 @@ export default function ExamDetailPage() {
               )}
               {canViewMarks && (
                 <button
-                  onClick={() =>
-                    router.push(`/dashboard/school/exams/${examId}/section-summary`)
-                  }
+                  onClick={() => router.push(`/dashboard/school/exams/${examId}/section-summary`)}
                   className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 text-sm"
                 >
                   <BarChart3 className="w-4 h-4" /> Section Summary
@@ -280,9 +276,7 @@ export default function ExamDetailPage() {
               )}
               {canPublish && (
                 <button
-                  onClick={() =>
-                    setPublishTarget({ publish: !isLocked })
-                  }
+                  onClick={() => setPublishTarget({ publish: !isLocked })}
                   className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm ${
                     isLocked
                       ? 'bg-amber-600 text-white hover:bg-amber-700'
@@ -297,9 +291,16 @@ export default function ExamDetailPage() {
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
-            <Stat label="Class" value={exam.class?.name} sub={exam.class?.grade ? `Grade ${exam.class.grade}` : ''} />
+            <Stat
+              label="Class"
+              value={exam.class?.name}
+              sub={exam.class?.grade ? `Grade ${exam.class.grade}` : ''}
+            />
             <Stat label="Academic Year" value={exam.academicYear} />
-            <Stat label="Schedule" value={`${formatDate(exam.startDate)} → ${formatDate(exam.endDate)}`} />
+            <Stat
+              label="Schedule"
+              value={`${formatDate(exam.startDate)} → ${formatDate(exam.endDate)}`}
+            />
             <Stat
               label="Total Marks"
               value={exam.totalMarks}
@@ -422,8 +423,12 @@ export default function ExamDetailPage() {
 function Stat({ label, value, sub }) {
   return (
     <div className="bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-xl p-3">
-      <p className="text-xs uppercase text-gray-500 dark:text-gray-400 font-semibold tracking-wider">{label}</p>
-      <p className="text-base font-semibold text-gray-900 dark:text-gray-100 mt-1">{value ?? '—'}</p>
+      <p className="text-xs uppercase text-gray-500 dark:text-gray-400 font-semibold tracking-wider">
+        {label}
+      </p>
+      <p className="text-base font-semibold text-gray-900 dark:text-gray-100 mt-1">
+        {value ?? '—'}
+      </p>
       {sub && <p className="text-xs text-gray-500 dark:text-gray-400">{sub}</p>}
     </div>
   );

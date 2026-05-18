@@ -10,14 +10,7 @@ import {
   currentMonth,
   PAYSLIP_STATUS_COLORS,
 } from '@/constants/staffSalary';
-import {
-  Wallet,
-  CheckCircle2,
-  Clock,
-  XCircle,
-  FileText,
-  TrendingUp,
-} from 'lucide-react';
+import { Wallet, CheckCircle2, Clock, XCircle, FileText, TrendingUp } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 export default function PayrollDashboardPage() {
@@ -36,8 +29,7 @@ export default function PayrollDashboardPage() {
 
   const { data: branchData } = useQuery({
     queryKey: ['branches-dropdown'],
-    queryFn: () =>
-      fetchData({ url: '/branch/list', page: 1, limit: 100, token }),
+    queryFn: () => fetchData({ url: '/branch/list', page: 1, limit: 100, token }),
     enabled: !!token && isOrgLevel && branchDropdownTouched,
     staleTime: Infinity,
   });
@@ -66,8 +58,7 @@ export default function PayrollDashboardPage() {
     cancelled: summary?.cancelled || 0,
   };
   const total =
-    summary?.totalCount ??
-    Object.values(counts).reduce((s, n) => s + (Number(n) || 0), 0);
+    summary?.totalCount ?? Object.values(counts).reduce((s, n) => s + (Number(n) || 0), 0);
 
   return (
     <div className="p-6">
@@ -151,26 +142,10 @@ export default function PayrollDashboardPage() {
                 Status Breakdown
               </h3>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <StatusTile
-                  status="draft"
-                  count={counts.draft || 0}
-                  icon={Clock}
-                />
-                <StatusTile
-                  status="finalized"
-                  count={counts.finalized || 0}
-                  icon={FileText}
-                />
-                <StatusTile
-                  status="paid"
-                  count={counts.paid || 0}
-                  icon={CheckCircle2}
-                />
-                <StatusTile
-                  status="cancelled"
-                  count={counts.cancelled || 0}
-                  icon={XCircle}
-                />
+                <StatusTile status="draft" count={counts.draft || 0} icon={Clock} />
+                <StatusTile status="finalized" count={counts.finalized || 0} icon={FileText} />
+                <StatusTile status="paid" count={counts.paid || 0} icon={CheckCircle2} />
+                <StatusTile status="cancelled" count={counts.cancelled || 0} icon={XCircle} />
               </div>
             </div>
           </div>
@@ -188,14 +163,10 @@ function KpiCard({ icon: Icon, label, value, subtitle, tone = 'teal' }) {
     amber: 'from-amber-50 to-amber-100 text-amber-700 border-amber-200',
   };
   return (
-    <div
-      className={`rounded-2xl border bg-gradient-to-br ${tones[tone] || tones.teal} px-5 py-4`}
-    >
+    <div className={`rounded-2xl border bg-gradient-to-br ${tones[tone] || tones.teal} px-5 py-4`}>
       <div className="flex items-start justify-between">
         <div>
-          <div className="text-xs font-semibold uppercase tracking-widest opacity-80">
-            {label}
-          </div>
+          <div className="text-xs font-semibold uppercase tracking-widest opacity-80">{label}</div>
           <div className="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-2">{value}</div>
           {subtitle && (
             <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">{subtitle}</div>

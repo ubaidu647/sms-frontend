@@ -73,7 +73,8 @@ export default function EditAssignmentModal({ isOpen, onClose, onSuccess, assign
   }, [isOpen, reset]);
 
   const mutation = useMutation({
-    mutationFn: (payload) => putData({ url: `/teaching-assignment/${assignment._id}`, payload, token }),
+    mutationFn: (payload) =>
+      putData({ url: `/teaching-assignment/${assignment._id}`, payload, token }),
     onSuccess: (res) => {
       queryClient.invalidateQueries({ queryKey: ['teacher-assignments'] });
       queryClient.invalidateQueries({ queryKey: ['assignment-detail', assignment._id] });
@@ -96,12 +97,14 @@ export default function EditAssignmentModal({ isOpen, onClose, onSuccess, assign
     setSubmitError('');
     const payload = {};
     if (data.role) payload.role = data.role;
-    if (data.isPrimary !== undefined && data.isPrimary !== '') payload.isPrimary = data.isPrimary === 'true';
+    if (data.isPrimary !== undefined && data.isPrimary !== '')
+      payload.isPrimary = data.isPrimary === 'true';
     if (data.startDate) payload.startDate = data.startDate;
     if (data.endDate) payload.endDate = data.endDate;
     if (data.notes != null) payload.notes = data.notes;
     if (data.status) payload.status = data.status;
-    if (data.isActive !== undefined && data.isActive !== '') payload.isActive = data.isActive === 'true';
+    if (data.isActive !== undefined && data.isActive !== '')
+      payload.isActive = data.isActive === 'true';
     mutation.mutate(payload);
   };
 

@@ -33,7 +33,9 @@ export default function UnmarkedBranchesPanel() {
       <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 max-w-md">
           <div>
-            <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">Date</label>
+            <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">
+              Date
+            </label>
             <input
               type="date"
               value={date}
@@ -94,7 +96,9 @@ export default function UnmarkedBranchesPanel() {
                     <td className="px-4 py-3 text-sm font-medium text-gray-900 dark:text-gray-100">
                       {b.branchName}
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">{b.branchCode || '—'}</td>
+                    <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
+                      {b.branchCode || '—'}
+                    </td>
                     <td className="px-4 py-3 text-sm text-center text-gray-700 dark:text-gray-300">
                       {b.staffCount ?? 0}
                     </td>

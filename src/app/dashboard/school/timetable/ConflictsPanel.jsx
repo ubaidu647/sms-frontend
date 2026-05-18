@@ -58,7 +58,9 @@ export default function ConflictsPanel() {
           </div>
           {isOrgLevel && (
             <div>
-              <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">Branch</label>
+              <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">
+                Branch
+              </label>
               <select
                 value={branchId}
                 onChange={(e) => setBranchId(e.target.value)}

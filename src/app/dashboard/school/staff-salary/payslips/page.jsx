@@ -40,16 +40,12 @@ export default function PayslipsPage() {
   const isOrgLevel = scope === 'all';
   const isOwnOnly = scope === 'own';
   // Generate / bulk are bulk operations — only branch-level or admin staff get them.
-  const canGenerate = hasAnyAction(user?.role, [
-    'generate-payslip',
-    'generate-all-branch-payslip',
-  ]);
+  const canGenerate = hasAnyAction(user?.role, ['generate-payslip', 'generate-all-branch-payslip']);
   const userBranchId = user?.branchId || user?.branch?._id || '';
 
   const { data: branchData } = useQuery({
     queryKey: ['branches-dropdown'],
-    queryFn: () =>
-      fetchData({ url: '/branch/list', page: 1, limit: 100, token }),
+    queryFn: () => fetchData({ url: '/branch/list', page: 1, limit: 100, token }),
     enabled: !!token && isOrgLevel && branchDropdownTouched,
     staleTime: Infinity,
   });
@@ -181,14 +177,9 @@ export default function PayslipsPage() {
     [],
   );
 
-  const visibleColumns = useMemo(
-    () => columns.map((c) => c.accessor),
-    [columns],
-  );
+  const visibleColumns = useMemo(() => columns.map((c) => c.accessor), [columns]);
 
-  const rowActions = () => [
-    { label: 'View Details', value: 'detail', icon: Eye },
-  ];
+  const rowActions = () => [{ label: 'View Details', value: 'detail', icon: Eye }];
 
   const handleRowAction = (action, row) => {
     if (action === 'detail') setDetailTarget(row);
@@ -301,14 +292,8 @@ export default function PayslipsPage() {
           totalItems={data?.total}
         />
 
-        <GeneratePayslipModal
-          isOpen={genOpen}
-          onClose={() => setGenOpen(false)}
-        />
-        <GenerateBulkModal
-          isOpen={bulkOpen}
-          onClose={() => setBulkOpen(false)}
-        />
+        <GeneratePayslipModal isOpen={genOpen} onClose={() => setGenOpen(false)} />
+        <GenerateBulkModal isOpen={bulkOpen} onClose={() => setBulkOpen(false)} />
         <PayslipDetailModal
           isOpen={!!detailTarget}
           onClose={() => setDetailTarget(null)}

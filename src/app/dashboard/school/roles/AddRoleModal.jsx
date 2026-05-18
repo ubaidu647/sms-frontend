@@ -17,8 +17,17 @@ const PRESETS = {
     label: 'Teacher',
     name: 'Teacher',
     menus: [
-      'staff', 'class', 'subject', 'student', 'attendance', 'staff-attendance',
-      'teaching-assignment', 'exam', 'timetable', 'announcement', 'payslip',
+      'staff',
+      'class',
+      'subject',
+      'student',
+      'attendance',
+      'staff-attendance',
+      'teaching-assignment',
+      'exam',
+      'timetable',
+      'announcement',
+      'payslip',
       'salary-structure',
     ],
     actions: [
@@ -48,8 +57,13 @@ const PRESETS = {
     label: 'Student / Parent',
     name: 'Student',
     menus: [
-      'student', 'attendance', 'exam', 'timetable', 'fee',
-      'transport-assignment', 'announcement',
+      'student',
+      'attendance',
+      'exam',
+      'timetable',
+      'fee',
+      'transport-assignment',
+      'announcement',
     ],
     actions: [
       ACTIONS.VIEW_OWN_STUDENT,
@@ -131,16 +145,12 @@ export default function AddRoleModal({ isOpen, onClose, onSuccess }) {
 
   const toggleItem = (field, key) => {
     const current = field === 'menus' ? selectedMenus : selectedActions;
-    const updated = current.includes(key)
-      ? current.filter((k) => k !== key)
-      : [...current, key];
+    const updated = current.includes(key) ? current.filter((k) => k !== key) : [...current, key];
     setValue(field, updated, { shouldValidate: true });
 
     // When a menu is removed, also remove its actions from the selection
     if (field === 'menus' && current.includes(key)) {
-      const menuActionKeys = allowedActions
-        .filter((a) => a.menu === key)
-        .map((a) => a.key);
+      const menuActionKeys = allowedActions.filter((a) => a.menu === key).map((a) => a.key);
       const cleanedActions = selectedActions.filter((a) => !menuActionKeys.includes(a));
       setValue('actions', cleanedActions, { shouldValidate: true });
     }
@@ -177,12 +187,20 @@ export default function AddRoleModal({ isOpen, onClose, onSuccess }) {
     const allowedMenuKeys = new Set(allowedMenus.map((m) => m.key));
     const allowedActionKeys = new Set(allowedActions.map((a) => a.key));
     setValue('name', p.name, { shouldValidate: true });
-    setValue('menus', p.menus.filter((m) => allowedMenuKeys.has(m)), {
-      shouldValidate: true,
-    });
-    setValue('actions', p.actions.filter((a) => allowedActionKeys.has(a)), {
-      shouldValidate: true,
-    });
+    setValue(
+      'menus',
+      p.menus.filter((m) => allowedMenuKeys.has(m)),
+      {
+        shouldValidate: true,
+      },
+    );
+    setValue(
+      'actions',
+      p.actions.filter((a) => allowedActionKeys.has(a)),
+      {
+        shouldValidate: true,
+      },
+    );
   };
 
   // Only show action groups for menus the user has selected.
@@ -193,9 +211,7 @@ export default function AddRoleModal({ isOpen, onClose, onSuccess }) {
     .filter((menu) => selectedMenus.includes(menu.key))
     .map((menu) => ({
       ...menu,
-      actions: allowedActions.filter(
-        (a) => a.menu === menu.key && a.scope !== 'own',
-      ),
+      actions: allowedActions.filter((a) => a.menu === menu.key && a.scope !== 'own'),
     }))
     .filter((g) => g.actions.length > 0);
 
@@ -203,9 +219,7 @@ export default function AddRoleModal({ isOpen, onClose, onSuccess }) {
     .filter((menu) => selectedMenus.includes(menu.key))
     .map((menu) => ({
       ...menu,
-      actions: allowedActions.filter(
-        (a) => a.menu === menu.key && a.scope === 'own',
-      ),
+      actions: allowedActions.filter((a) => a.menu === menu.key && a.scope === 'own'),
     }))
     .filter((g) => g.actions.length > 0);
 
@@ -273,9 +287,7 @@ export default function AddRoleModal({ isOpen, onClose, onSuccess }) {
             placeholder="e.g. Branch Manager"
             className="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 rounded-xl outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 text-gray-900 dark:text-gray-100 placeholder:text-gray-400"
           />
-          {errors.name && (
-            <p className="text-red-500 text-xs mt-1">{errors.name.message}</p>
-          )}
+          {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name.message}</p>}
         </div>
 
         {/* Branch — only visible to admin; non-admin gets their branch set silently */}
@@ -325,9 +337,7 @@ export default function AddRoleModal({ isOpen, onClose, onSuccess }) {
               );
             })}
           </div>
-          {errors.menus && (
-            <p className="text-red-500 text-xs mt-1">{errors.menus.message}</p>
-          )}
+          {errors.menus && <p className="text-red-500 text-xs mt-1">{errors.menus.message}</p>}
         </div>
 
         {/* Actions grouped by menu */}
@@ -336,7 +346,9 @@ export default function AddRoleModal({ isOpen, onClose, onSuccess }) {
             Actions <span className="text-red-500">*</span>
           </label>
           {selectedMenus.length === 0 && (
-            <p className="text-gray-400 dark:text-gray-500 text-xs mb-2">Select a menu above to see its actions.</p>
+            <p className="text-gray-400 dark:text-gray-500 text-xs mb-2">
+              Select a menu above to see its actions.
+            </p>
           )}
           <div className="space-y-4">
             {actionsByMenu.map((group) => (
@@ -366,9 +378,7 @@ export default function AddRoleModal({ isOpen, onClose, onSuccess }) {
               </div>
             ))}
           </div>
-          {errors.actions && (
-            <p className="text-red-500 text-xs mt-1">{errors.actions.message}</p>
-          )}
+          {errors.actions && <p className="text-red-500 text-xs mt-1">{errors.actions.message}</p>}
         </div>
 
         {/* Self-scoped (own data only) — shown only when at least one selected
@@ -376,11 +386,12 @@ export default function AddRoleModal({ isOpen, onClose, onSuccess }) {
         {ownActionsByMenu.length > 0 && (
           <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
             <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
-              Self-scoped <span className="font-normal text-gray-500 dark:text-gray-400">(own data only)</span>
+              Self-scoped{' '}
+              <span className="font-normal text-gray-500 dark:text-gray-400">(own data only)</span>
             </label>
             <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
-              These permissions are weaker than the branch-level ones above — they only
-              let the user see/update their own record.
+              These permissions are weaker than the branch-level ones above — they only let the user
+              see/update their own record.
             </p>
             <div className="space-y-4">
               {ownActionsByMenu.map((group) => (

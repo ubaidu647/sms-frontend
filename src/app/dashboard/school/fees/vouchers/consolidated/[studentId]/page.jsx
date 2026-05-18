@@ -18,12 +18,7 @@ import apiClient from '@/services/apiClient';
 import { useTokenStore } from '@/store/tokenStore';
 import { useUserStore } from '@/store/userStore';
 import { resolveScope, hasAnyAction } from '@/utils/permissions';
-import {
-  formatDate,
-  formatMoney,
-  formatMonth,
-  VOUCHER_STATUS_COLORS,
-} from '@/constants/fee';
+import { formatDate, formatMoney, formatMonth, VOUCHER_STATUS_COLORS } from '@/constants/fee';
 import PayConsolidatedModal from '../PayConsolidatedModal';
 
 export default function ConsolidatedVoucherPage() {
@@ -39,13 +34,11 @@ export default function ConsolidatedVoucherPage() {
 
   const isOwnOnly = resolveScope(user?.role, 'view-fee') === 'own';
   const canPay =
-    !isOwnOnly &&
-    hasAnyAction(user?.role, ['record-payment', 'record-all-branch-payment']);
+    !isOwnOnly && hasAnyAction(user?.role, ['record-payment', 'record-all-branch-payment']);
 
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ['consolidated', studentId],
-    queryFn: async () =>
-      (await apiClient.get(`/fee/voucher/consolidated/${studentId}`)).data,
+    queryFn: async () => (await apiClient.get(`/fee/voucher/consolidated/${studentId}`)).data,
     enabled: !!token && !!studentId,
   });
 
@@ -56,8 +49,7 @@ export default function ConsolidatedVoucherPage() {
 
   const { data: profileData } = useQuery({
     queryKey: ['branch-profile', 'branch', branchIdForProfile],
-    queryFn: async () =>
-      (await apiClient.get(`/branch-profile/branch/${branchIdForProfile}`)).data,
+    queryFn: async () => (await apiClient.get(`/branch-profile/branch/${branchIdForProfile}`)).data,
     enabled: !!token && !!branchIdForProfile,
   });
 
@@ -115,8 +107,8 @@ export default function ConsolidatedVoucherPage() {
       (status === 403
         ? "You don't have access to this student"
         : status === 404
-        ? 'Student not found'
-        : 'Failed to load consolidated slip');
+          ? 'Student not found'
+          : 'Failed to load consolidated slip');
     return (
       <div className="p-6">
         <div className="max-w-2xl mx-auto bg-white dark:bg-gray-900 border border-red-200 rounded-2xl p-6 text-sm text-red-700 dark:text-red-400">
@@ -286,10 +278,7 @@ export default function ConsolidatedVoucherPage() {
                           </thead>
                           <tbody>
                             {(v.lineItems || []).map((li, i) => (
-                              <tr
-                                key={i}
-                                className="border-t border-gray-100 dark:border-gray-800"
-                              >
+                              <tr key={i} className="border-t border-gray-100 dark:border-gray-800">
                                 <td className="px-3 py-2 font-medium text-gray-900 dark:text-gray-100">
                                   {li.name}
                                 </td>
@@ -306,9 +295,7 @@ export default function ConsolidatedVoucherPage() {
                             ))}
                             {v.lateFee > 0 && (
                               <tr className="border-t border-gray-100 dark:border-gray-800 bg-amber-50">
-                                <td className="px-3 py-2 font-medium text-amber-800">
-                                  Late Fee
-                                </td>
+                                <td className="px-3 py-2 font-medium text-amber-800">Late Fee</td>
                                 <td className="px-3 py-2 text-amber-700">—</td>
                                 <td className="px-3 py-2 text-right text-amber-700">—</td>
                                 <td className="px-3 py-2 text-right font-medium text-amber-900">
@@ -325,9 +312,7 @@ export default function ConsolidatedVoucherPage() {
                               </td>
                               <td className="px-3 py-2 text-right text-sm text-gray-700 dark:text-gray-300">
                                 {formatMoney(v.totalAmount)} ·{' '}
-                                <span className="text-green-700">
-                                  {formatMoney(v.paidAmount)}
-                                </span>
+                                <span className="text-green-700">{formatMoney(v.paidAmount)}</span>
                               </td>
                               <td className="px-3 py-2 text-right text-sm font-semibold text-red-700">
                                 {formatMoney(v.balanceAmount)}
@@ -342,17 +327,9 @@ export default function ConsolidatedVoucherPage() {
                   <div className="flex items-end justify-end">
                     <div className="flex flex-col items-end gap-1 text-sm">
                       <Total label="Gross Total" value={totals.grossTotal} />
-                      <Total
-                        label="Total Paid"
-                        value={totals.totalPaid}
-                        tone="text-green-700"
-                      />
+                      <Total label="Total Paid" value={totals.totalPaid} tone="text-green-700" />
                       {totals.totalLateFee > 0 && (
-                        <Total
-                          label="Late Fee"
-                          value={totals.totalLateFee}
-                          tone="text-amber-700"
-                        />
+                        <Total label="Late Fee" value={totals.totalLateFee} tone="text-amber-700" />
                       )}
                       <Total
                         label="Outstanding"
@@ -410,9 +387,7 @@ function Letterhead({ profile, branchName }) {
           {displayName}
         </h2>
         {tagline && (
-          <div className="text-xs text-gray-600 dark:text-gray-400 italic mt-0.5">
-            {tagline}
-          </div>
+          <div className="text-xs text-gray-600 dark:text-gray-400 italic mt-0.5">{tagline}</div>
         )}
         <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 text-xs text-gray-700 dark:text-gray-300">
           {address && (
@@ -441,18 +416,14 @@ function Letterhead({ profile, branchName }) {
           )}
         </div>
         {regNo && (
-          <div className="text-[11px] text-gray-500 dark:text-gray-400 mt-1">
-            Reg #: {regNo}
-          </div>
+          <div className="text-[11px] text-gray-500 dark:text-gray-400 mt-1">Reg #: {regNo}</div>
         )}
       </div>
       <div className="shrink-0 text-right">
         <div className="text-[10px] uppercase tracking-widest text-gray-500 dark:text-gray-400">
           Arrears Slip
         </div>
-        <div className="text-xs text-gray-700 dark:text-gray-300 mt-1">
-          Student Ledger
-        </div>
+        <div className="text-xs text-gray-700 dark:text-gray-300 mt-1">Student Ledger</div>
       </div>
     </div>
   );
@@ -464,9 +435,7 @@ function Info({ label, value }) {
       <div className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">
         {label}
       </div>
-      <div className="text-sm text-gray-900 dark:text-gray-100 font-medium">
-        {value || '—'}
-      </div>
+      <div className="text-sm text-gray-900 dark:text-gray-100 font-medium">{value || '—'}</div>
     </div>
   );
 }

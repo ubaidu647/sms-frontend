@@ -14,43 +14,65 @@ import { SUBJECT_TYPES, SUBJECT_CATEGORIES, SUBJECT_CODE_REGEX } from '@/constan
 
 const numFromInput = (v, o) => (o === '' || o === null || o === undefined ? null : v);
 
-const schema = yup.object().shape({
-  classId:        yup.string().required('Class is required'),
-  name:           yup.string().required('Subject name is required'),
-  code:           yup.string()
-                     .required('Code is required')
-                     .matches(SUBJECT_CODE_REGEX, 'Code must be 2–10 chars, letters/numbers/dashes only'),
-  subjectType:    yup.string().oneOf(SUBJECT_TYPES, 'Select a type').required('Type is required'),
-  category:       yup.string().oneOf(SUBJECT_CATEGORIES, 'Select a category').required('Category is required'),
-  totalMarks:     yup.number().typeError('Total marks is required').min(1, 'Min 1').required('Total marks is required'),
-  passingMarks:   yup.number().typeError('Passing marks is required').min(0, 'Min 0').required('Passing marks is required')
-                     .test('lte-total', 'Passing marks cannot exceed total', function (v) {
-                       const { totalMarks } = this.parent;
-                       return v == null || totalMarks == null || v <= totalMarks;
-                     }),
-  theoryMarks:    yup.number().nullable().transform(numFromInput).min(0, 'Min 0').optional(),
-  practicalMarks: yup.number().nullable().transform(numFromInput).min(0, 'Min 0').optional(),
-  creditHours:    yup.number().nullable().transform(numFromInput).min(0, 'Min 0').optional(),
-  defaultTeacher: yup.string().optional(),
-  status:         yup.string().optional(),
-}).test('theory-practical-sum', 'Theory + Practical must equal Total', function (val) {
-  const { theoryMarks, practicalMarks, totalMarks } = val || {};
-  if (theoryMarks != null && practicalMarks != null) {
-    if (Number(theoryMarks) + Number(practicalMarks) !== Number(totalMarks)) {
-      return this.createError({ path: 'practicalMarks', message: 'Theory + Practical must equal Total marks' });
+const schema = yup
+  .object()
+  .shape({
+    classId: yup.string().required('Class is required'),
+    name: yup.string().required('Subject name is required'),
+    code: yup
+      .string()
+      .required('Code is required')
+      .matches(SUBJECT_CODE_REGEX, 'Code must be 2–10 chars, letters/numbers/dashes only'),
+    subjectType: yup.string().oneOf(SUBJECT_TYPES, 'Select a type').required('Type is required'),
+    category: yup
+      .string()
+      .oneOf(SUBJECT_CATEGORIES, 'Select a category')
+      .required('Category is required'),
+    totalMarks: yup
+      .number()
+      .typeError('Total marks is required')
+      .min(1, 'Min 1')
+      .required('Total marks is required'),
+    passingMarks: yup
+      .number()
+      .typeError('Passing marks is required')
+      .min(0, 'Min 0')
+      .required('Passing marks is required')
+      .test('lte-total', 'Passing marks cannot exceed total', function (v) {
+        const { totalMarks } = this.parent;
+        return v == null || totalMarks == null || v <= totalMarks;
+      }),
+    theoryMarks: yup.number().nullable().transform(numFromInput).min(0, 'Min 0').optional(),
+    practicalMarks: yup.number().nullable().transform(numFromInput).min(0, 'Min 0').optional(),
+    creditHours: yup.number().nullable().transform(numFromInput).min(0, 'Min 0').optional(),
+    defaultTeacher: yup.string().optional(),
+    status: yup.string().optional(),
+  })
+  .test('theory-practical-sum', 'Theory + Practical must equal Total', function (val) {
+    const { theoryMarks, practicalMarks, totalMarks } = val || {};
+    if (theoryMarks != null && practicalMarks != null) {
+      if (Number(theoryMarks) + Number(practicalMarks) !== Number(totalMarks)) {
+        return this.createError({
+          path: 'practicalMarks',
+          message: 'Theory + Practical must equal Total marks',
+        });
+      }
     }
-  }
-  return true;
-});
+    return true;
+  });
 
-const inputCls = 'w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 text-sm text-gray-900 bg-white placeholder:text-gray-400';
+const inputCls =
+  'w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 text-sm text-gray-900 bg-white placeholder:text-gray-400';
 const labelCls = 'block text-sm font-semibold text-gray-700 mb-1';
 const errorCls = 'text-red-500 text-xs mt-1';
 
 function Field({ label, required, error, children }) {
   return (
     <div>
-      <label className={labelCls}>{label}{required && <span className="text-red-500 ml-0.5">*</span>}</label>
+      <label className={labelCls}>
+        {label}
+        {required && <span className="text-red-500 ml-0.5">*</span>}
+      </label>
       {children}
       {error && <p className={errorCls}>{error}</p>}
     </div>
@@ -65,20 +87,39 @@ export default function AddSubjectModal({ isOpen, onClose, onSuccess }) {
   const [successState, setSuccessState] = useState(false);
 
   const isAdmin = !!user?.role?.isPredefined;
-  const canCreateAllBranch = isAdmin || !!user?.role?.actions?.includes('create-all-branch-subject');
+  const canCreateAllBranch =
+    isAdmin || !!user?.role?.actions?.includes('create-all-branch-subject');
   const userBranchId = user?.branchId || user?.branch?._id || '';
 
-  const { register, handleSubmit, reset, formState: { errors } } = useForm({
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm({
     resolver: yupResolver(schema),
     defaultValues: {
-      classId: '', name: '', code: '', subjectType: '', category: '',
-      totalMarks: '', passingMarks: '', theoryMarks: '', practicalMarks: '',
-      creditHours: '', defaultTeacher: '', status: 'active',
+      classId: '',
+      name: '',
+      code: '',
+      subjectType: '',
+      category: '',
+      totalMarks: '',
+      passingMarks: '',
+      theoryMarks: '',
+      practicalMarks: '',
+      creditHours: '',
+      defaultTeacher: '',
+      status: 'active',
     },
   });
 
   useEffect(() => {
-    if (!isOpen) { reset(); setSubmitError(''); setSuccessState(false); }
+    if (!isOpen) {
+      reset();
+      setSubmitError('');
+      setSuccessState(false);
+    }
   }, [isOpen, reset]);
 
   const { data: classData } = useQuery({
@@ -95,7 +136,8 @@ export default function AddSubjectModal({ isOpen, onClose, onSuccess }) {
 
   const { data: staffData } = useQuery({
     queryKey: ['teaching-staff-dropdown'],
-    queryFn: () => fetchData({ url: '/staff/list', page: 1, limit: 200, token, staffType: 'teaching' }),
+    queryFn: () =>
+      fetchData({ url: '/staff/list', page: 1, limit: 200, token, staffType: 'teaching' }),
     enabled: !!token && isOpen,
     staleTime: 30000,
   });
@@ -121,7 +163,11 @@ export default function AddSubjectModal({ isOpen, onClose, onSuccess }) {
       toast.success(res?.message || 'Subject created successfully');
       onSuccess?.(newSubject);
       setSuccessState(true);
-      setTimeout(() => { setSuccessState(false); reset(); onClose(); }, 1000);
+      setTimeout(() => {
+        setSuccessState(false);
+        reset();
+        onClose();
+      }, 1000);
     },
     onError: (err) => {
       const msg = err.message || 'Failed to create subject';
@@ -153,11 +199,23 @@ export default function AddSubjectModal({ isOpen, onClose, onSuccess }) {
             label="Cancel"
             handleClick={onClose}
             type="button"
-            styleObject={{ baseColor: 'bg-white border border-gray-300', hoverColor: 'hover:bg-gray-50', rounded: 'rounded-full', size: 'px-10 py-3 text-md min-h-[3rem]', textColor: 'text-gray-700' }}
+            styleObject={{
+              baseColor: 'bg-white border border-gray-300',
+              hoverColor: 'hover:bg-gray-50',
+              rounded: 'rounded-full',
+              size: 'px-10 py-3 text-md min-h-[3rem]',
+              textColor: 'text-gray-700',
+            }}
           />
           <Button
             label="Create Subject"
-            styleObject={{ baseColor: 'bg-teal-600', hoverColor: 'hover:bg-teal-700', rounded: 'rounded-full', size: 'px-10 py-3 text-md min-h-[3rem]', textColor: 'text-white' }}
+            styleObject={{
+              baseColor: 'bg-teal-600',
+              hoverColor: 'hover:bg-teal-700',
+              rounded: 'rounded-full',
+              size: 'px-10 py-3 text-md min-h-[3rem]',
+              textColor: 'text-white',
+            }}
             loading={mutation.isPending}
             success={successState}
             handleClick={handleSubmit(onSubmit)}
@@ -167,11 +225,15 @@ export default function AddSubjectModal({ isOpen, onClose, onSuccess }) {
     >
       <form className="space-y-6">
         {submitError && (
-          <div className="p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 rounded-lg text-red-700 dark:text-red-400 text-sm">{submitError}</div>
+          <div className="p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 rounded-lg text-red-700 dark:text-red-400 text-sm">
+            {submitError}
+          </div>
         )}
 
         <div>
-          <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">Basic Info</h3>
+          <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">
+            Basic Info
+          </h3>
           <div className="grid grid-cols-2 gap-4">
             <Field label="Class" required error={errors.classId?.message}>
               <select {...register('classId')} className={inputCls}>
@@ -197,13 +259,21 @@ export default function AddSubjectModal({ isOpen, onClose, onSuccess }) {
             <Field label="Subject Type" required error={errors.subjectType?.message}>
               <select {...register('subjectType')} className={inputCls}>
                 <option value="">Select type...</option>
-                {SUBJECT_TYPES.map((t) => <option key={t} value={t} className="capitalize">{t}</option>)}
+                {SUBJECT_TYPES.map((t) => (
+                  <option key={t} value={t} className="capitalize">
+                    {t}
+                  </option>
+                ))}
               </select>
             </Field>
             <Field label="Category" required error={errors.category?.message}>
               <select {...register('category')} className={inputCls}>
                 <option value="">Select category...</option>
-                {SUBJECT_CATEGORIES.map((c) => <option key={c} value={c} className="capitalize">{c}</option>)}
+                {SUBJECT_CATEGORIES.map((c) => (
+                  <option key={c} value={c} className="capitalize">
+                    {c}
+                  </option>
+                ))}
               </select>
             </Field>
             <Field label="Status" error={errors.status?.message}>
@@ -216,28 +286,62 @@ export default function AddSubjectModal({ isOpen, onClose, onSuccess }) {
         </div>
 
         <div>
-          <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">Marks &amp; Credits</h3>
+          <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">
+            Marks &amp; Credits
+          </h3>
           <div className="grid grid-cols-2 gap-4">
             <Field label="Total Marks" required error={errors.totalMarks?.message}>
-              <input {...register('totalMarks')} type="number" min="1" placeholder="100" className={inputCls} />
+              <input
+                {...register('totalMarks')}
+                type="number"
+                min="1"
+                placeholder="100"
+                className={inputCls}
+              />
             </Field>
             <Field label="Passing Marks" required error={errors.passingMarks?.message}>
-              <input {...register('passingMarks')} type="number" min="0" placeholder="40" className={inputCls} />
+              <input
+                {...register('passingMarks')}
+                type="number"
+                min="0"
+                placeholder="40"
+                className={inputCls}
+              />
             </Field>
             <Field label="Theory Marks" error={errors.theoryMarks?.message}>
-              <input {...register('theoryMarks')} type="number" min="0" placeholder="75" className={inputCls} />
+              <input
+                {...register('theoryMarks')}
+                type="number"
+                min="0"
+                placeholder="75"
+                className={inputCls}
+              />
             </Field>
             <Field label="Practical Marks" error={errors.practicalMarks?.message}>
-              <input {...register('practicalMarks')} type="number" min="0" placeholder="25" className={inputCls} />
+              <input
+                {...register('practicalMarks')}
+                type="number"
+                min="0"
+                placeholder="25"
+                className={inputCls}
+              />
             </Field>
             <Field label="Credit Hours" error={errors.creditHours?.message}>
-              <input {...register('creditHours')} type="number" min="0" placeholder="5" className={inputCls} />
+              <input
+                {...register('creditHours')}
+                type="number"
+                min="0"
+                placeholder="5"
+                className={inputCls}
+              />
             </Field>
             <Field label="Default Teacher" error={errors.defaultTeacher?.message}>
               <select {...register('defaultTeacher')} className={inputCls}>
                 <option value="">None</option>
                 {teachingStaff.map((s) => (
-                  <option key={s._id} value={s._id}>{s.user?.name} — {s.designation}</option>
+                  <option key={s._id} value={s._id}>
+                    {s.user?.name} — {s.designation}
+                  </option>
                 ))}
               </select>
             </Field>

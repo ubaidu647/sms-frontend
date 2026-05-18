@@ -84,7 +84,9 @@ export default function OwnAttendancePanel() {
       {isFetching ? (
         <div className="text-sm text-gray-500 dark:text-gray-400">Loading…</div>
       ) : rows.length === 0 ? (
-        <div className="text-sm text-gray-500 dark:text-gray-400">No attendance records in this range.</div>
+        <div className="text-sm text-gray-500 dark:text-gray-400">
+          No attendance records in this range.
+        </div>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-sm">

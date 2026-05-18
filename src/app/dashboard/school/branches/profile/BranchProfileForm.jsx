@@ -7,11 +7,7 @@ import { useTokenStore } from '@/store/tokenStore';
 import { useUserStore } from '@/store/userStore';
 import Button from '@/component/Button';
 import ImageUploadCard from './ImageUploadCard';
-import {
-  SOCIAL_NETWORKS,
-  buildUpsertFormData,
-  validateProfile,
-} from '@/constants/branchProfile';
+import { SOCIAL_NETWORKS, buildUpsertFormData, validateProfile } from '@/constants/branchProfile';
 
 const inputCls =
   'w-full px-3 py-2 border border-gray-200 rounded-lg outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 text-sm text-gray-900 bg-white placeholder:text-gray-400';
@@ -33,12 +29,7 @@ const blank = {
   socialLinks: {},
 };
 
-export default function BranchProfileForm({
-  initialProfile,
-  branchLabel,
-  branchId,
-  onSaved,
-}) {
+export default function BranchProfileForm({ initialProfile, branchLabel, branchId, onSaved }) {
   const { accessToken: token } = useTokenStore();
   const { user } = useUserStore();
   const queryClient = useQueryClient();

@@ -34,10 +34,8 @@ function formatRange(start, end) {
   const em = end.toLocaleString('en', { month: 'short' });
   const sy = start.getFullYear();
   const ey = end.getFullYear();
-  if (sy === ey && sm === em)
-    return `${sm} ${start.getDate()} – ${end.getDate()}, ${sy}`;
-  if (sy === ey)
-    return `${sm} ${start.getDate()} – ${em} ${end.getDate()}, ${sy}`;
+  if (sy === ey && sm === em) return `${sm} ${start.getDate()} – ${end.getDate()}, ${sy}`;
+  if (sy === ey) return `${sm} ${start.getDate()} – ${em} ${end.getDate()}, ${sy}`;
   return `${sm} ${start.getDate()}, ${sy} – ${em} ${end.getDate()}, ${ey}`;
 }
 
@@ -67,15 +65,12 @@ export default function CalendarViewPanel() {
 
   const actions = user?.role?.actions || [];
   const isAdmin = !!user?.role?.isPredefined;
-  const isOrgLevel =
-    isAdmin || actions.includes('view-all-branch-staff-attendance');
+  const isOrgLevel = isAdmin || actions.includes('view-all-branch-staff-attendance');
   const userBranchId = user?.branchId || user?.branch?._id || '';
 
   const [branchId, setBranchId] = useState(isOrgLevel ? '' : userBranchId);
   const [staffType, setStaffType] = useState('');
-  const [weekStart, setWeekStart] = useState(() =>
-    startOfWeekMonday(new Date()),
-  );
+  const [weekStart, setWeekStart] = useState(() => startOfWeekMonday(new Date()));
   const [view, setView] = useState('Week');
 
   const days = useMemo(
@@ -86,8 +81,7 @@ export default function CalendarViewPanel() {
 
   const { data: branchData } = useQuery({
     queryKey: ['branches-dropdown'],
-    queryFn: () =>
-      fetchData({ url: '/branch/list', page: 1, limit: 100, token }),
+    queryFn: () => fetchData({ url: '/branch/list', page: 1, limit: 100, token }),
     enabled: !!token && isOrgLevel,
     staleTime: Infinity,
   });
@@ -96,12 +90,7 @@ export default function CalendarViewPanel() {
 
   const dayQueries = useQueries({
     queries: days.map((d) => ({
-      queryKey: [
-        'staff-attendance-daily',
-        effectiveBranchId,
-        toISO(d),
-        staffType,
-      ],
+      queryKey: ['staff-attendance-daily', effectiveBranchId, toISO(d), staffType],
       queryFn: () =>
         fetchData({
           url: '/staff-attendance/branch/daily',

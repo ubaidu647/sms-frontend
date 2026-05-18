@@ -4,12 +4,7 @@ import { Table } from '@/component/Table';
 import { Plus, Edit, Trash2 } from 'lucide-react';
 import { useTokenStore } from '@/store/tokenStore';
 import { useUserStore } from '@/store/userStore';
-import {
-  useQuery,
-  useMutation,
-  useQueryClient,
-  keepPreviousData,
-} from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { fetchData, deleteData } from '@/utils/api';
 import toast from 'react-hot-toast';
 import StructureFormModal from './StructureFormModal';
@@ -41,28 +36,18 @@ export default function StructuresPage() {
   // Self-scoped users can never create / edit / delete structures.
   const canCreate =
     !isOwnOnly &&
-    hasAnyAction(user?.role, [
-      'create-staff-salary',
-      'create-all-branch-staff-salary',
-    ]);
+    hasAnyAction(user?.role, ['create-staff-salary', 'create-all-branch-staff-salary']);
   const canUpdate =
     !isOwnOnly &&
-    hasAnyAction(user?.role, [
-      'update-staff-salary',
-      'update-all-branch-staff-salary',
-    ]);
+    hasAnyAction(user?.role, ['update-staff-salary', 'update-all-branch-staff-salary']);
   const canDelete =
     !isOwnOnly &&
-    hasAnyAction(user?.role, [
-      'delete-staff-salary',
-      'delete-all-branch-staff-salary',
-    ]);
+    hasAnyAction(user?.role, ['delete-staff-salary', 'delete-all-branch-staff-salary']);
   const userBranchId = user?.branchId || user?.branch?._id || '';
 
   const { data: branchData } = useQuery({
     queryKey: ['branches-dropdown'],
-    queryFn: () =>
-      fetchData({ url: '/branch/list', page: 1, limit: 100, token }),
+    queryFn: () => fetchData({ url: '/branch/list', page: 1, limit: 100, token }),
     enabled: !!token && isOrgLevel && branchDropdownTouched,
     staleTime: Infinity,
   });
@@ -83,8 +68,7 @@ export default function StructuresPage() {
   const staffList = staffData?.data || [];
 
   const deleteMutation = useMutation({
-    mutationFn: (id) =>
-      deleteData({ url: `/staff-salary/structure/${id}`, token }),
+    mutationFn: (id) => deleteData({ url: `/staff-salary/structure/${id}`, token }),
     onSuccess: () => {
       toast.success('Structure deactivated');
       queryClient.invalidateQueries({ queryKey: ['staff-salary-structures'] });
@@ -184,7 +168,9 @@ export default function StructuresPage() {
           <div className="text-xs text-gray-700 dark:text-gray-300">
             <div>{formatDate(v)}</div>
             {row.effectiveTo && (
-              <div className="text-gray-400 dark:text-gray-500">to {formatDate(row.effectiveTo)}</div>
+              <div className="text-gray-400 dark:text-gray-500">
+                to {formatDate(row.effectiveTo)}
+              </div>
             )}
           </div>
         ),
@@ -210,8 +196,7 @@ export default function StructuresPage() {
 
   const rowActions = (row) => {
     const items = [];
-    if (canUpdate && row.isActive)
-      items.push({ label: 'Edit', value: 'edit', icon: Edit });
+    if (canUpdate && row.isActive) items.push({ label: 'Edit', value: 'edit', icon: Edit });
     if (canDelete && row.isActive)
       items.push({ label: 'Deactivate', value: 'delete', icon: Trash2 });
     return items;
@@ -307,10 +292,7 @@ export default function StructuresPage() {
           totalItems={data?.total}
         />
 
-        <StructureFormModal
-          isOpen={isAddOpen}
-          onClose={() => setIsAddOpen(false)}
-        />
+        <StructureFormModal isOpen={isAddOpen} onClose={() => setIsAddOpen(false)} />
         <StructureFormModal
           isOpen={!!editTarget}
           onClose={() => setEditTarget(null)}

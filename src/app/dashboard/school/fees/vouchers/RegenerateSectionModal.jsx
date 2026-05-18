@@ -19,8 +19,7 @@ export default function RegenerateSectionModal({ isOpen, onClose }) {
   const queryClient = useQueryClient();
 
   const isAdmin = !!user?.role?.isPredefined;
-  const isOrgLevel =
-    isAdmin || user?.role?.actions?.includes('generate-all-branch-voucher');
+  const isOrgLevel = isAdmin || user?.role?.actions?.includes('generate-all-branch-voucher');
   const userBranchId = user?.branchId || user?.branch?._id || '';
 
   const [academicYear, setAcademicYear] = useState(currentAcademicYear());
@@ -82,8 +81,7 @@ export default function RegenerateSectionModal({ isOpen, onClose }) {
   const sections = sectionData?.data || [];
 
   const mutation = useMutation({
-    mutationFn: (payload) =>
-      postData({ url: '/fee/voucher/regenerate-section', payload, token }),
+    mutationFn: (payload) => postData({ url: '/fee/voucher/regenerate-section', payload, token }),
     onSuccess: (res) => {
       toast.success(res?.message || 'Section regenerated');
       queryClient.invalidateQueries({ queryKey: ['vouchers'] });
@@ -295,7 +293,9 @@ export default function RegenerateSectionModal({ isOpen, onClose }) {
                     <span className="font-mono text-xs text-gray-500 dark:text-gray-400">
                       voucher: {s.voucherId}
                     </span>
-                    <span className="text-gray-700 dark:text-gray-300">paid: {formatMoney(s.paidAmount)}</span>
+                    <span className="text-gray-700 dark:text-gray-300">
+                      paid: {formatMoney(s.paidAmount)}
+                    </span>
                   </li>
                 ))}
               </ul>
@@ -313,7 +313,9 @@ export default function RegenerateSectionModal({ isOpen, onClose }) {
                     <span className="font-mono text-xs text-gray-500 dark:text-gray-400">
                       {s.studentId || s.voucherId}
                     </span>
-                    {s.reason && <span className="text-gray-700 dark:text-gray-300"> — {s.reason}</span>}
+                    {s.reason && (
+                      <span className="text-gray-700 dark:text-gray-300"> — {s.reason}</span>
+                    )}
                   </li>
                 ))}
               </ul>

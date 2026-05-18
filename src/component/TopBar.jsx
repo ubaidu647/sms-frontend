@@ -1,14 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import {
-  Bell,
-  Settings,
-  Users,
-  LogOut,
-  ChevronDown,
-  Sun,
-  Moon,
-} from 'lucide-react';
+import { Bell, Settings, Users, LogOut, ChevronDown, Sun, Moon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useThemeStore } from '@/store/themeStore';
 
@@ -84,8 +76,12 @@ export const Topbar = ({ user = {}, userRole = {} }) => {
           {isProfileOpen && (
             <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-900 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-2 z-50">
               <div className="px-4 py-2 border-b border-gray-200 dark:border-gray-700">
-                <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">{user?.name}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 capitalize">{userRole?.name}</p>
+                <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">
+                  {user?.name}
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 capitalize">
+                  {userRole?.name}
+                </p>
               </div>
 
               <button
@@ -102,7 +98,9 @@ export const Topbar = ({ user = {}, userRole = {} }) => {
               {showUserManagement && (
                 <button className="w-full flex items-center gap-3 px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-left">
                   <Users className="w-4 h-4 text-gray-600 dark:text-gray-300" />
-                  <span className="text-sm text-gray-700 dark:text-gray-200">{t('userManagement')}</span>
+                  <span className="text-sm text-gray-700 dark:text-gray-200">
+                    {t('userManagement')}
+                  </span>
                 </button>
               )}
 

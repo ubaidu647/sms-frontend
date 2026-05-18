@@ -108,7 +108,9 @@ export default function PeriodConfigsPanel() {
         header: 'Periods',
         accessor: 'periodCount',
         render: (_v, row) => (
-          <span className="text-sm text-gray-700 dark:text-gray-300">{(row.periods || []).length}</span>
+          <span className="text-sm text-gray-700 dark:text-gray-300">
+            {(row.periods || []).length}
+          </span>
         ),
       },
       {
@@ -129,7 +131,9 @@ export default function PeriodConfigsPanel() {
             {
               header: 'Branch',
               accessor: 'branch',
-              render: (v) => <div className="text-gray-600 dark:text-gray-400 text-sm">{v?.name ?? '—'}</div>,
+              render: (v) => (
+                <div className="text-gray-600 dark:text-gray-400 text-sm">{v?.name ?? '—'}</div>
+              ),
             },
           ]
         : []),
@@ -139,7 +143,7 @@ export default function PeriodConfigsPanel() {
 
   const visibleColumns = useMemo(() => columns.map((c) => c.accessor), [columns]);
 
-  const rowActions = (row) => {
+  const rowActions = () => {
     const items = [];
     if (canUpdate) items.push({ label: 'Edit', value: 'edit', icon: Edit });
     if (canDelete) items.push({ label: 'Delete', value: 'delete', icon: Trash2 });
@@ -175,9 +179,7 @@ export default function PeriodConfigsPanel() {
         )}
       </div>
 
-      {isFetching && (
-        <div className="text-xs text-gray-500 dark:text-gray-400">Loading…</div>
-      )}
+      {isFetching && <div className="text-xs text-gray-500 dark:text-gray-400">Loading…</div>}
 
       <Table
         columns={columns}

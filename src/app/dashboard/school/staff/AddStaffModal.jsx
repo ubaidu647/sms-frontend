@@ -357,7 +357,10 @@ export default function AddStaffModal({ isOpen, onClose, onSuccess }) {
           <div className="grid grid-cols-2 gap-4">
             {canCreateAllBranch ? (
               <Field label="Branch" required error={errors.branchId?.message}>
-                <select {...register('branchId')} className={`${inputCls} bg-white dark:bg-gray-900`}>
+                <select
+                  {...register('branchId')}
+                  className={`${inputCls} bg-white dark:bg-gray-900`}
+                >
                   <option value="">Select branch...</option>
                   {branches.map((b) => (
                     <option key={b._id} value={b._id}>
@@ -402,14 +405,20 @@ export default function AddStaffModal({ isOpen, onClose, onSuccess }) {
               />
             </Field>
             <Field label="Staff Type" required error={errors.staffType?.message}>
-              <select {...register('staffType')} className={`${inputCls} bg-white dark:bg-gray-900`}>
+              <select
+                {...register('staffType')}
+                className={`${inputCls} bg-white dark:bg-gray-900`}
+              >
                 <option value="">Select type...</option>
                 <option value="teaching">Teaching</option>
                 <option value="non-teaching">Non-Teaching</option>
               </select>
             </Field>
             <Field label="Employment Type" required error={errors.employmentType?.message}>
-              <select {...register('employmentType')} className={`${inputCls} bg-white dark:bg-gray-900`}>
+              <select
+                {...register('employmentType')}
+                className={`${inputCls} bg-white dark:bg-gray-900`}
+              >
                 <option value="">Select type...</option>
                 <option value="permanent">Permanent</option>
                 <option value="contract">Contract</option>
@@ -465,7 +474,10 @@ export default function AddStaffModal({ isOpen, onClose, onSuccess }) {
               <input {...register('cnic')} placeholder="35201-1234567-1" className={inputCls} />
             </Field>
             <Field label="Blood Group" error={errors.bloodGroup?.message}>
-              <select {...register('bloodGroup')} className={`${inputCls} bg-white dark:bg-gray-900`}>
+              <select
+                {...register('bloodGroup')}
+                className={`${inputCls} bg-white dark:bg-gray-900`}
+              >
                 <option value="">Select...</option>
                 {['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map((g) => (
                   <option key={g} value={g}>
@@ -475,7 +487,10 @@ export default function AddStaffModal({ isOpen, onClose, onSuccess }) {
               </select>
             </Field>
             <Field label="Marital Status" error={errors.maritalStatus?.message}>
-              <select {...register('maritalStatus')} className={`${inputCls} bg-white dark:bg-gray-900`}>
+              <select
+                {...register('maritalStatus')}
+                className={`${inputCls} bg-white dark:bg-gray-900`}
+              >
                 <option value="">Select...</option>
                 <option value="single">Single</option>
                 <option value="married">Married</option>
@@ -564,11 +579,15 @@ export default function AddStaffModal({ isOpen, onClose, onSuccess }) {
                 onChange={handlePhotoChange}
                 className="block text-sm text-gray-700 dark:text-gray-300 file:mr-3 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-medium file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100"
               />
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">JPG, PNG, WEBP or PDF — max 5 MB</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                JPG, PNG, WEBP or PDF — max 5 MB
+              </p>
               {photoFile && (
                 <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
                   {photoFile.name}{' '}
-                  <span className="text-gray-400 dark:text-gray-500">({(photoFile.size / 1024).toFixed(0)} KB)</span>
+                  <span className="text-gray-400 dark:text-gray-500">
+                    ({(photoFile.size / 1024).toFixed(0)} KB)
+                  </span>
                 </p>
               )}
               {photoError && <p className={errorCls}>{photoError}</p>}

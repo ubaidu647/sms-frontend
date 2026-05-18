@@ -1,14 +1,7 @@
 'use client';
 import React, { useState } from 'react';
 import { useUserStore } from '@/store/userStore';
-import {
-  CalendarDays,
-  Settings2,
-  Clock,
-  UserCheck,
-  AlertTriangle,
-  User,
-} from 'lucide-react';
+import { CalendarDays, Settings2, Clock, UserCheck, AlertTriangle, User } from 'lucide-react';
 import EditorPanel from './EditorPanel';
 import PeriodConfigsPanel from './PeriodConfigsPanel';
 import NowPanel from './NowPanel';
@@ -34,6 +27,8 @@ export default function TimetablePage() {
       'update-all-branch-timetable',
     ]);
 
+  const [activeTab, setActiveTab] = useState('editor');
+
   // Own-scope users see only their personal schedule.
   if (isOwnOnly) {
     return (
@@ -57,8 +52,6 @@ export default function TimetablePage() {
   if (canView) tabs.push({ key: 'conflicts', label: 'Conflicts', icon: AlertTriangle });
   if (canView) tabs.push({ key: 'my', label: 'My Schedule', icon: User });
 
-  const [activeTab, setActiveTab] = useState(tabs[0]?.key || 'editor');
-
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-800 p-6 rounded-[50px]">
       <div className="max-w-7xl mx-auto">
@@ -78,9 +71,7 @@ export default function TimetablePage() {
                 key={t.key}
                 onClick={() => setActiveTab(t.key)}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  isActive
-                    ? 'bg-teal-600 text-white shadow-sm'
-                    : 'text-gray-600 hover:bg-gray-50'
+                  isActive ? 'bg-teal-600 text-white shadow-sm' : 'text-gray-600 hover:bg-gray-50'
                 }`}
               >
                 <Icon className="w-4 h-4" />

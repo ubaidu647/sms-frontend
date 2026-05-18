@@ -229,7 +229,7 @@ const navigationItems = [
   },
 ];
 
-export const Sidebar = ({ user = {}, menus = [], actions = [] }) => {
+export const Sidebar = ({ user = {}, menus = [], actions: _actions = [] }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [expandedItems, setExpandedItems] = useState(new Set());
   const [sidebarWidth, setSidebarWidth] = useState(240);
@@ -380,9 +380,7 @@ export const Sidebar = ({ user = {}, menus = [], actions = [] }) => {
         <nav className="flex flex-col items-start w-full flex-1 overflow-y-auto overflow-x-hidden scrollbar-hide">
           {navigationItems.map((item, index) => {
             if (!isItemVisible(item)) return null;
-            const itemIsActive = item.hasSubmenu
-              ? isParentActive(item)
-              : isActive(item.path);
+            const itemIsActive = item.hasSubmenu ? isParentActive(item) : isActive(item.path);
             const itemLabel = t(item.labelKey);
             return (
               <div key={index} className="w-full">
@@ -490,8 +488,7 @@ export const Sidebar = ({ user = {}, menus = [], actions = [] }) => {
                       ?.filter((sub) => user?.role?.isPredefined || subVisible(sub))
                       .map((sub) => {
                         const subActive =
-                          pathname === sub.path ||
-                          pathname.startsWith(sub.path + '/');
+                          pathname === sub.path || pathname.startsWith(sub.path + '/');
                         const SubIcon = sub.iconComponent;
                         const subLabel = t(sub.labelKey);
                         return (
@@ -526,7 +523,6 @@ export const Sidebar = ({ user = {}, menus = [], actions = [] }) => {
                       })}
                   </div>
                 )}
-
               </div>
             );
           })}

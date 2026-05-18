@@ -53,19 +53,11 @@ export default function AssignmentFormModal({ isOpen, onClose, assignment, locke
   useEffect(() => {
     if (!isOpen) return;
     if (isEdit) {
-      const studentObj =
-        typeof assignment.student === 'object' ? assignment.student : null;
-      const routeObj =
-        typeof assignment.route === 'object' ? assignment.route : null;
-      const sId =
-        studentObj?._id ||
-        assignment.studentId?._id ||
-        assignment.studentId ||
-        '';
+      const studentObj = typeof assignment.student === 'object' ? assignment.student : null;
+      const routeObj = typeof assignment.route === 'object' ? assignment.route : null;
+      const sId = studentObj?._id || assignment.studentId?._id || assignment.studentId || '';
       setStudentId(sId);
-      setRouteId(
-        routeObj?._id || assignment.routeId?._id || assignment.routeId || '',
-      );
+      setRouteId(routeObj?._id || assignment.routeId?._id || assignment.routeId || '');
       setStopName(assignment.stopName || '');
       setDirection(assignment.direction || 'both');
       setMonthlyFee(assignment.monthlyFee ?? '');
@@ -75,8 +67,7 @@ export default function AssignmentFormModal({ isOpen, onClose, assignment, locke
       setStatus(assignment.status || 'active');
       setNotes(assignment.notes || '');
       const sName = studentObj?.name || assignment.studentId?.user?.name || '';
-      const sAdm =
-        studentObj?.admissionNumber || assignment.studentId?.admissionNumber || '';
+      const sAdm = studentObj?.admissionNumber || assignment.studentId?.admissionNumber || '';
       setStudentSearch(sName ? `${sName}${sAdm ? ` · ${sAdm}` : ''}` : '');
     } else {
       setStudentId(lockedStudent?._id || '');
@@ -107,8 +98,7 @@ export default function AssignmentFormModal({ isOpen, onClose, assignment, locke
       if (studentSearch) params.search = studentSearch;
       return fetchData({ url: '/student/list', ...params });
     },
-    enabled:
-      !!token && isOpen && !isEdit && !lockedStudent && studentSearch.length >= 2,
+    enabled: !!token && isOpen && !isEdit && !lockedStudent && studentSearch.length >= 2,
     staleTime: 15000,
   });
   const students = studentSearchData?.data || [];
@@ -131,10 +121,7 @@ export default function AssignmentFormModal({ isOpen, onClose, assignment, locke
   });
   const routes = routesData?.data || [];
 
-  const selectedRoute = useMemo(
-    () => routes.find((r) => r._id === routeId),
-    [routes, routeId],
-  );
+  const selectedRoute = useMemo(() => routes.find((r) => r._id === routeId), [routes, routeId]);
   const stopOptions = selectedRoute?.stops || [];
 
   useEffect(() => {
@@ -286,7 +273,9 @@ export default function AssignmentFormModal({ isOpen, onClose, assignment, locke
                     }}
                     className="w-full px-3 py-2 text-left text-sm hover:bg-teal-50 dark:hover:bg-teal-950/40 border-b border-gray-100 dark:border-gray-800 last:border-0"
                   >
-                    <div className="font-medium text-gray-900 dark:text-gray-100">{s.user?.name}</div>
+                    <div className="font-medium text-gray-900 dark:text-gray-100">
+                      {s.user?.name}
+                    </div>
                     <div className="text-xs text-gray-500 dark:text-gray-400">
                       {s.admissionNumber} · Roll {s.rollNumber} · {s.class?.name || ''}
                       {s.section?.name ? ` / ${s.section.name}` : ''}
@@ -300,7 +289,9 @@ export default function AssignmentFormModal({ isOpen, onClose, assignment, locke
 
         {(lockedStudent || isEdit) && (
           <div className="p-3 bg-teal-50 dark:bg-teal-950/40 border border-teal-200 rounded-lg text-sm text-teal-800">
-            <div className="text-xs uppercase tracking-wide text-teal-700 dark:text-teal-400">Student</div>
+            <div className="text-xs uppercase tracking-wide text-teal-700 dark:text-teal-400">
+              Student
+            </div>
             <div className="font-medium">{studentSearch || studentId}</div>
           </div>
         )}
@@ -368,7 +359,9 @@ export default function AssignmentFormModal({ isOpen, onClose, assignment, locke
           <div>
             <label className={labelCls}>
               Monthly Fee
-              <span className="text-gray-400 dark:text-gray-500 ml-1 normal-case">(defaults to stop/route fee)</span>
+              <span className="text-gray-400 dark:text-gray-500 ml-1 normal-case">
+                (defaults to stop/route fee)
+              </span>
             </label>
             <input
               type="number"

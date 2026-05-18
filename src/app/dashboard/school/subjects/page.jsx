@@ -83,9 +83,21 @@ export default function SubjectsPage() {
   const scope = resolveScope(user?.role, 'view-subject');
   const isOwnOnly = scope === 'own';
   const isOrgLevel = scope === 'all';
-  const canCreate = !isOwnOnly && (isAdmin || actions.includes('create-subject') || actions.includes('create-all-branch-subject'));
-  const canUpdate = !isOwnOnly && (isAdmin || actions.includes('update-subject') || actions.includes('update-all-branch-subject'));
-  const canToggle = !isOwnOnly && (isAdmin || actions.includes('delete-subject') || actions.includes('delete-all-branch-subject'));
+  const canCreate =
+    !isOwnOnly &&
+    (isAdmin ||
+      actions.includes('create-subject') ||
+      actions.includes('create-all-branch-subject'));
+  const canUpdate =
+    !isOwnOnly &&
+    (isAdmin ||
+      actions.includes('update-subject') ||
+      actions.includes('update-all-branch-subject'));
+  const canToggle =
+    !isOwnOnly &&
+    (isAdmin ||
+      actions.includes('delete-subject') ||
+      actions.includes('delete-all-branch-subject'));
   const userBranchId = user?.branchId || user?.branch?._id || '';
 
   const { data: branchData } = useQuery({
@@ -131,95 +143,140 @@ export default function SubjectsPage() {
     onError: (err) => toast.error(err.message || 'Failed to toggle status'),
   });
 
-  const columns = useMemo(() => [
-    {
-      header: 'Subject',
-      accessor: 'name',
-      render: (v, row) => (
-        <div>
-          <div className="font-medium text-gray-900 dark:text-gray-100">{v}</div>
-          <div className="text-xs text-gray-400 dark:text-gray-500">{row.serialNumber}</div>
-        </div>
-      ),
-    },
-    {
-      header: 'Code',
-      accessor: 'code',
-      render: (v) => (
-        <span className="inline-flex px-2 py-0.5 rounded-md text-xs font-mono font-semibold bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200">{v}</span>
-      ),
-    },
-    {
-      header: 'Class',
-      accessor: 'class',
-      render: (v) => (
-        <div className="text-sm text-gray-700 dark:text-gray-300">
-          {v?.name ?? '—'}
-          {v?.grade && <span className="text-xs text-gray-400 dark:text-gray-500 ml-1">(Grade {v.grade})</span>}
-        </div>
-      ),
-    },
-    {
-      header: 'Type',
-      accessor: 'subjectType',
-      render: (v) => (
-        <span className="inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 capitalize">{v}</span>
-      ),
-    },
-    {
-      header: 'Category',
-      accessor: 'category',
-      render: (v) => (
-        <span className="inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:text-blue-300 capitalize">{v}</span>
-      ),
-    },
-    {
-      header: 'Marks',
-      accessor: 'totalMarks',
-      render: (v, row) => (
-        <div className="text-sm text-gray-700 dark:text-gray-300">
-          <div>{v} <span className="text-gray-400 dark:text-gray-500">total</span></div>
-          <div className="text-xs text-gray-400 dark:text-gray-500">Pass: {row.passingMarks}</div>
-        </div>
-      ),
-    },
-    ...(isOwnOnly ? [] : [{
-      header: 'Teacher',
-      accessor: 'teacherInfo',
-      render: (v) => <div className="text-gray-700 dark:text-gray-300 text-sm">{v?.user?.name ?? '—'}</div>,
-    }]),
-    ...(isOrgLevel ? [{
-      header: 'Branch',
-      accessor: 'branch',
-      render: (v) => <div className="text-gray-600 dark:text-gray-400 text-sm">{v?.name ?? '—'}</div>,
-    }] : []),
-    {
-      header: 'Status',
-      accessor: 'isActive',
-      render: (v) => (
-        <span className={`inline-flex px-3 py-1 rounded-full text-xs font-medium ${v ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-          {v ? 'Active' : 'Inactive'}
-        </span>
-      ),
-    },
-  ], [isOrgLevel, isOwnOnly]);
+  const columns = useMemo(
+    () => [
+      {
+        header: 'Subject',
+        accessor: 'name',
+        render: (v, row) => (
+          <div>
+            <div className="font-medium text-gray-900 dark:text-gray-100">{v}</div>
+            <div className="text-xs text-gray-400 dark:text-gray-500">{row.serialNumber}</div>
+          </div>
+        ),
+      },
+      {
+        header: 'Code',
+        accessor: 'code',
+        render: (v) => (
+          <span className="inline-flex px-2 py-0.5 rounded-md text-xs font-mono font-semibold bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200">
+            {v}
+          </span>
+        ),
+      },
+      {
+        header: 'Class',
+        accessor: 'class',
+        render: (v) => (
+          <div className="text-sm text-gray-700 dark:text-gray-300">
+            {v?.name ?? '—'}
+            {v?.grade && (
+              <span className="text-xs text-gray-400 dark:text-gray-500 ml-1">
+                (Grade {v.grade})
+              </span>
+            )}
+          </div>
+        ),
+      },
+      {
+        header: 'Type',
+        accessor: 'subjectType',
+        render: (v) => (
+          <span className="inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 capitalize">
+            {v}
+          </span>
+        ),
+      },
+      {
+        header: 'Category',
+        accessor: 'category',
+        render: (v) => (
+          <span className="inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:text-blue-300 capitalize">
+            {v}
+          </span>
+        ),
+      },
+      {
+        header: 'Marks',
+        accessor: 'totalMarks',
+        render: (v, row) => (
+          <div className="text-sm text-gray-700 dark:text-gray-300">
+            <div>
+              {v} <span className="text-gray-400 dark:text-gray-500">total</span>
+            </div>
+            <div className="text-xs text-gray-400 dark:text-gray-500">Pass: {row.passingMarks}</div>
+          </div>
+        ),
+      },
+      ...(isOwnOnly
+        ? []
+        : [
+            {
+              header: 'Teacher',
+              accessor: 'teacherInfo',
+              render: (v) => (
+                <div className="text-gray-700 dark:text-gray-300 text-sm">
+                  {v?.user?.name ?? '—'}
+                </div>
+              ),
+            },
+          ]),
+      ...(isOrgLevel
+        ? [
+            {
+              header: 'Branch',
+              accessor: 'branch',
+              render: (v) => (
+                <div className="text-gray-600 dark:text-gray-400 text-sm">{v?.name ?? '—'}</div>
+              ),
+            },
+          ]
+        : []),
+      {
+        header: 'Status',
+        accessor: 'isActive',
+        render: (v) => (
+          <span
+            className={`inline-flex px-3 py-1 rounded-full text-xs font-medium ${v ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}
+          >
+            {v ? 'Active' : 'Inactive'}
+          </span>
+        ),
+      },
+    ],
+    [isOrgLevel, isOwnOnly],
+  );
 
   const visibleColumns = useMemo(() => columns.map((c) => c.accessor), [columns]);
 
   const rowActions = (row) => {
     const items = [{ label: 'View Details', value: 'view', icon: Eye }];
     if (canUpdate) items.push({ label: 'Edit', value: 'edit', icon: Edit });
-    if (canToggle) items.push(
-      row.isActive
-        ? { label: 'Deactivate', value: 'toggle', icon: Power }
-        : { label: 'Activate', value: 'toggle', icon: Power },
-    );
+    if (canToggle)
+      items.push(
+        row.isActive
+          ? { label: 'Deactivate', value: 'toggle', icon: Power }
+          : { label: 'Activate', value: 'toggle', icon: Power },
+      );
     return items;
   };
 
   const queryKey = isOwnOnly
     ? ['subjects-own', page, limit, search, classId, subjectType, category, academicYear, isActive]
-    : ['subjects', page, limit, search, classId, subjectType, category, academicYear, branchId, isActive, isOrgLevel, userBranchId];
+    : [
+        'subjects',
+        page,
+        limit,
+        search,
+        classId,
+        subjectType,
+        category,
+        academicYear,
+        branchId,
+        isActive,
+        isOrgLevel,
+        userBranchId,
+      ];
 
   const { data } = useQuery({
     queryKey,
@@ -286,7 +343,6 @@ export default function SubjectsPage() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-800 p-6 rounded-[50px]">
       <div className="max-w-7xl mx-auto">
-
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div>
@@ -317,7 +373,9 @@ export default function SubjectsPage() {
               placeholder="Search by name or code..."
               value={draftSearch}
               onChange={(e) => setDraftSearch(e.target.value)}
-              onKeyDown={(e) => { if (e.key === 'Enter') applyFilters(); }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') applyFilters();
+              }}
               className="outline-none text-sm w-56 text-gray-900 dark:text-gray-100 placeholder:text-gray-400"
             />
           </div>
@@ -329,7 +387,9 @@ export default function SubjectsPage() {
               placeholder="2025-2026"
               value={draftAcademicYear}
               onChange={(e) => setDraftAcademicYear(e.target.value)}
-              onKeyDown={(e) => { if (e.key === 'Enter') applyFilters(); }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') applyFilters();
+              }}
               className="outline-none text-sm w-24 text-gray-900 dark:text-gray-100 placeholder:text-gray-400"
             />
           </div>
@@ -353,7 +413,9 @@ export default function SubjectsPage() {
           >
             <option value="">All Classes</option>
             {classes.map((c) => (
-              <option key={c._id} value={c._id}>{c.name} {c.grade ? `(Gr ${c.grade})` : ''}</option>
+              <option key={c._id} value={c._id}>
+                {c.name} {c.grade ? `(Gr ${c.grade})` : ''}
+              </option>
             ))}
           </select>
 
@@ -364,7 +426,11 @@ export default function SubjectsPage() {
             className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300 capitalize"
           >
             <option value="">All Types</option>
-            {SUBJECT_TYPES.map((t) => <option key={t} value={t} className="capitalize">{t}</option>)}
+            {SUBJECT_TYPES.map((t) => (
+              <option key={t} value={t} className="capitalize">
+                {t}
+              </option>
+            ))}
           </select>
 
           {/* Category */}
@@ -374,7 +440,11 @@ export default function SubjectsPage() {
             className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300 capitalize"
           >
             <option value="">All Categories</option>
-            {SUBJECT_CATEGORIES.map((c) => <option key={c} value={c} className="capitalize">{c}</option>)}
+            {SUBJECT_CATEGORIES.map((c) => (
+              <option key={c} value={c} className="capitalize">
+                {c}
+              </option>
+            ))}
           </select>
 
           {/* Branch — org-level only */}
@@ -386,7 +456,11 @@ export default function SubjectsPage() {
               className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
             >
               <option value="">All Branches</option>
-              {branches.map((b) => <option key={b._id} value={b._id}>{b.name}</option>)}
+              {branches.map((b) => (
+                <option key={b._id} value={b._id}>
+                  {b.name}
+                </option>
+              ))}
             </select>
           )}
 

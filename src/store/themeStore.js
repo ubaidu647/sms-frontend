@@ -6,8 +6,7 @@ export const useThemeStore = create(
     (set, get) => ({
       theme: 'light',
       setTheme: (theme) => set({ theme }),
-      toggleTheme: () =>
-        set({ theme: get().theme === 'dark' ? 'light' : 'dark' }),
+      toggleTheme: () => set({ theme: get().theme === 'dark' ? 'light' : 'dark' }),
     }),
     { name: 'theme-storage' },
   ),

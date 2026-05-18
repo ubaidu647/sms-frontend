@@ -50,8 +50,7 @@ export default function PayConsolidatedModal({
   }, [isOpen, outstandingTotal]);
 
   const mutation = useMutation({
-    mutationFn: (payload) =>
-      postData({ url: '/fee/payment/consolidated', payload, token }),
+    mutationFn: (payload) => postData({ url: '/fee/payment/consolidated', payload, token }),
     onSuccess: (res) => {
       const payload = res?.data;
       toast.success(
@@ -80,13 +79,10 @@ export default function PayConsolidatedModal({
     const num = Number(amount);
     if (!num || num <= 0) return setSubmitError('Amount must be > 0');
     if (num > outstandingTotal)
-      return setSubmitError(
-        `Amount cannot exceed outstanding ${formatMoney(outstandingTotal)}`,
-      );
+      return setSubmitError(`Amount cannot exceed outstanding ${formatMoney(outstandingTotal)}`);
     if (!/^\d{4}-\d{2}-\d{2}$/.test(paymentDate))
       return setSubmitError('Payment date must be YYYY-MM-DD');
-    if (!PAYMENT_METHODS.includes(method))
-      return setSubmitError('Invalid payment method');
+    if (!PAYMENT_METHODS.includes(method)) return setSubmitError('Invalid payment method');
     if (refRequired && !referenceNumber.trim())
       return setSubmitError('Reference number is required for this method');
 
@@ -219,8 +215,7 @@ export default function PayConsolidatedModal({
             </div>
             <div>
               <label className={labelCls}>
-                Reference / Cheque #
-                {refRequired && <span className="text-red-500 ml-0.5">*</span>}
+                Reference / Cheque #{refRequired && <span className="text-red-500 ml-0.5">*</span>}
               </label>
               <input
                 type="text"
@@ -294,10 +289,7 @@ function ResultView({ result }) {
           </thead>
           <tbody>
             {rows.map(({ voucher, payment }, i) => (
-              <tr
-                key={voucher._id || i}
-                className="border-t border-gray-100 dark:border-gray-800"
-              >
+              <tr key={voucher._id || i} className="border-t border-gray-100 dark:border-gray-800">
                 <td className="px-3 py-2 font-mono text-xs text-gray-700 dark:text-gray-300">
                   {payment?.receiptNumber || '—'}
                 </td>

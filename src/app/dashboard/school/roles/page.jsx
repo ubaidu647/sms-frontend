@@ -92,8 +92,7 @@ export default function RolesPage() {
     !!user?.role?.actions?.includes('delete-all-branch-role');
 
   const canActOnAllBranches =
-    !!user?.role?.isPredefined ||
-    !!user?.role?.actions?.includes('delete-all-branch-role');
+    !!user?.role?.isPredefined || !!user?.role?.actions?.includes('delete-all-branch-role');
 
   const userBranchId = user?.branchId || user?.branch?._id || '';
 
@@ -143,7 +142,9 @@ export default function RolesPage() {
       {
         header: 'Actions Count',
         accessor: 'actions',
-        render: (v) => <div className="text-gray-600 dark:text-gray-400">{v?.length ?? 0} actions</div>,
+        render: (v) => (
+          <div className="text-gray-600 dark:text-gray-400">{v?.length ?? 0} actions</div>
+        ),
       },
       {
         header: 'Type',
@@ -174,7 +175,9 @@ export default function RolesPage() {
       {
         header: 'Created',
         accessor: 'createdAt',
-        render: (v) => <div className="text-gray-600 dark:text-gray-400">{new Date(v).toLocaleDateString()}</div>,
+        render: (v) => (
+          <div className="text-gray-600 dark:text-gray-400">{new Date(v).toLocaleDateString()}</div>
+        ),
       },
     ],
     [],
@@ -317,14 +320,20 @@ export default function RolesPage() {
             <input
               type="date"
               value={fromDate}
-              onChange={(e) => { setFromDate(e.target.value); setPage(1); }}
+              onChange={(e) => {
+                setFromDate(e.target.value);
+                setPage(1);
+              }}
               className="text-sm outline-none"
             />
             <label className="text-sm text-gray-500 dark:text-gray-400">To</label>
             <input
               type="date"
               value={toDate}
-              onChange={(e) => { setToDate(e.target.value); setPage(1); }}
+              onChange={(e) => {
+                setToDate(e.target.value);
+                setPage(1);
+              }}
               className="text-sm outline-none"
             />
           </div>
@@ -332,7 +341,10 @@ export default function RolesPage() {
           {/* Status filter */}
           <select
             value={isActive}
-            onChange={(e) => { setIsActive(e.target.value); setPage(1); }}
+            onChange={(e) => {
+              setIsActive(e.target.value);
+              setPage(1);
+            }}
             className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
           >
             <option value="">All Status</option>
@@ -347,7 +359,10 @@ export default function RolesPage() {
               type="text"
               placeholder="Role name..."
               value={name}
-              onChange={(e) => { setName(e.target.value); setPage(1); }}
+              onChange={(e) => {
+                setName(e.target.value);
+                setPage(1);
+              }}
               className="outline-none text-sm w-36"
             />
           </div>
@@ -358,7 +373,10 @@ export default function RolesPage() {
               type="text"
               placeholder="Serial number..."
               value={serialNumber}
-              onChange={(e) => { setSerialNumber(e.target.value); setPage(1); }}
+              onChange={(e) => {
+                setSerialNumber(e.target.value);
+                setPage(1);
+              }}
               className="outline-none text-sm w-36"
             />
           </div>
@@ -368,7 +386,10 @@ export default function RolesPage() {
             <select
               value={branchId}
               onFocus={() => setBranchDropdownTouched(true)}
-              onChange={(e) => { setBranchId(e.target.value); setPage(1); }}
+              onChange={(e) => {
+                setBranchId(e.target.value);
+                setPage(1);
+              }}
               className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
             >
               <option value="">All Branches</option>
@@ -387,7 +408,10 @@ export default function RolesPage() {
                 type="text"
                 placeholder="Branch name..."
                 value={branchName}
-                onChange={(e) => { setBranchName(e.target.value); setPage(1); }}
+                onChange={(e) => {
+                  setBranchName(e.target.value);
+                  setPage(1);
+                }}
                 className="outline-none text-sm w-36"
               />
             </div>
@@ -398,7 +422,10 @@ export default function RolesPage() {
             label="Actions"
             options={AVAILABLE_ACTIONS}
             selected={selectedActions}
-            onChange={(v) => { setSelectedActions(v); setPage(1); }}
+            onChange={(v) => {
+              setSelectedActions(v);
+              setPage(1);
+            }}
           />
 
           {/* Menus multi-select */}
@@ -406,7 +433,10 @@ export default function RolesPage() {
             label="Menus"
             options={AVAILABLE_MENUS}
             selected={selectedMenus}
-            onChange={(v) => { setSelectedMenus(v); setPage(1); }}
+            onChange={(v) => {
+              setSelectedMenus(v);
+              setPage(1);
+            }}
           />
         </div>
 
@@ -457,8 +487,10 @@ export default function RolesPage() {
                 <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">Delete Role</h3>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
                   Are you sure you want to delete{' '}
-                  <span className="font-semibold text-gray-900 dark:text-gray-100">{deleteTarget.name}</span>? This
-                  action cannot be undone.
+                  <span className="font-semibold text-gray-900 dark:text-gray-100">
+                    {deleteTarget.name}
+                  </span>
+                  ? This action cannot be undone.
                 </p>
                 <div className="flex gap-3 pt-2">
                   <button

@@ -12,49 +12,42 @@ import { useTokenStore } from '@/store/tokenStore';
 
 const numFromInput = (v, o) => (o === '' || o === null || o === undefined ? null : v);
 
-const schema = yup.object().shape({
-  subjectId: yup.string().required('Subject is required'),
-  examDate: yup.string().required('Exam date is required'),
-  startTime: yup.string().optional(),
-  endTime: yup.string().optional(),
-  totalMarks: yup
-    .number()
-    .typeError('Total marks is required')
-    .min(1, 'Min 1')
-    .required('Total marks is required'),
-  passingMarks: yup
-    .number()
-    .typeError('Passing marks is required')
-    .min(0, 'Min 0')
-    .required('Passing marks is required')
-    .test('lte-total', 'Passing marks cannot exceed total', function (v) {
-      const { totalMarks } = this.parent;
-      return v == null || totalMarks == null || v <= totalMarks;
-    }),
-  theoryMarks: yup
-    .number()
-    .nullable()
-    .transform(numFromInput)
-    .min(0, 'Min 0')
-    .optional(),
-  practicalMarks: yup
-    .number()
-    .nullable()
-    .transform(numFromInput)
-    .min(0, 'Min 0')
-    .optional(),
-}).test('theory-practical-sum', 'Theory + Practical must equal Total', function (val) {
-  const { theoryMarks, practicalMarks, totalMarks } = val || {};
-  if (theoryMarks != null && practicalMarks != null) {
-    if (Number(theoryMarks) + Number(practicalMarks) !== Number(totalMarks)) {
-      return this.createError({
-        path: 'practicalMarks',
-        message: 'Theory + Practical must equal Total marks',
-      });
+const schema = yup
+  .object()
+  .shape({
+    subjectId: yup.string().required('Subject is required'),
+    examDate: yup.string().required('Exam date is required'),
+    startTime: yup.string().optional(),
+    endTime: yup.string().optional(),
+    totalMarks: yup
+      .number()
+      .typeError('Total marks is required')
+      .min(1, 'Min 1')
+      .required('Total marks is required'),
+    passingMarks: yup
+      .number()
+      .typeError('Passing marks is required')
+      .min(0, 'Min 0')
+      .required('Passing marks is required')
+      .test('lte-total', 'Passing marks cannot exceed total', function (v) {
+        const { totalMarks } = this.parent;
+        return v == null || totalMarks == null || v <= totalMarks;
+      }),
+    theoryMarks: yup.number().nullable().transform(numFromInput).min(0, 'Min 0').optional(),
+    practicalMarks: yup.number().nullable().transform(numFromInput).min(0, 'Min 0').optional(),
+  })
+  .test('theory-practical-sum', 'Theory + Practical must equal Total', function (val) {
+    const { theoryMarks, practicalMarks, totalMarks } = val || {};
+    if (theoryMarks != null && practicalMarks != null) {
+      if (Number(theoryMarks) + Number(practicalMarks) !== Number(totalMarks)) {
+        return this.createError({
+          path: 'practicalMarks',
+          message: 'Theory + Practical must equal Total marks',
+        });
+      }
     }
-  }
-  return true;
-});
+    return true;
+  });
 
 const inputCls =
   'w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 text-sm text-gray-900 bg-white placeholder:text-gray-400';

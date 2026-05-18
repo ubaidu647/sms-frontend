@@ -4,7 +4,7 @@ import { Modal } from '@/component/Modal';
 import { useQuery } from '@tanstack/react-query';
 import apiClient from '@/services/apiClient';
 import { useTokenStore } from '@/store/tokenStore';
-import { Paperclip, FileText } from 'lucide-react';
+import { FileText } from 'lucide-react';
 import {
   PRIORITY_COLORS,
   STATUS_COLORS,
@@ -77,8 +77,12 @@ export default function AnnouncementDetailModal({ isOpen, onClose, announcementI
           </div>
 
           <div>
-            <h4 className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2">Body</h4>
-            <div className="text-sm text-gray-800 dark:text-gray-200 whitespace-pre-wrap leading-relaxed">{a.body}</div>
+            <h4 className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2">
+              Body
+            </h4>
+            <div className="text-sm text-gray-800 dark:text-gray-200 whitespace-pre-wrap leading-relaxed">
+              {a.body}
+            </div>
           </div>
 
           <div>
@@ -104,7 +108,10 @@ export default function AnnouncementDetailModal({ isOpen, onClose, announcementI
                 <ScopeList label="Classes" items={a.audience.classIds.map((c) => c?.name || c)} />
               )}
               {a.audience?.scope === 'section' && a.audience?.sectionIds?.length > 0 && (
-                <ScopeList label="Sections" items={a.audience.sectionIds.map((c) => c?.name || c)} />
+                <ScopeList
+                  label="Sections"
+                  items={a.audience.sectionIds.map((c) => c?.name || c)}
+                />
               )}
               {a.audience?.scope === 'branch' && a.audience?.branchIds?.length > 0 && (
                 <ScopeList label="Branches" items={a.audience.branchIds.map((c) => c?.name || c)} />
@@ -139,7 +146,9 @@ export default function AnnouncementDetailModal({ isOpen, onClose, announcementI
                       >
                         {att.name}
                       </a>
-                      <span className="text-xs text-gray-500 dark:text-gray-400">{formatBytes(att.size)}</span>
+                      <span className="text-xs text-gray-500 dark:text-gray-400">
+                        {formatBytes(att.size)}
+                      </span>
                     </div>
                   </li>
                 ))}
@@ -162,7 +171,9 @@ export default function AnnouncementDetailModal({ isOpen, onClose, announcementI
 function Info({ label, value }) {
   return (
     <div>
-      <div className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">{label}</div>
+      <div className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+        {label}
+      </div>
       <div className="text-sm text-gray-900 dark:text-gray-100 font-medium">{value || '—'}</div>
     </div>
   );
@@ -171,7 +182,9 @@ function Info({ label, value }) {
 function Stat({ label, value }) {
   return (
     <div className="rounded-lg bg-gray-50 dark:bg-gray-800 p-3">
-      <div className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">{label}</div>
+      <div className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+        {label}
+      </div>
       <div className="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-1">{value}</div>
     </div>
   );

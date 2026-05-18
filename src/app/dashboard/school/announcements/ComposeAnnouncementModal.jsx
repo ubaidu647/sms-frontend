@@ -35,8 +35,7 @@ export default function ComposeAnnouncementModal({ isOpen, onClose }) {
   const queryClient = useQueryClient();
 
   const isAdmin = !!user?.role?.isPredefined;
-  const isOrgLevel =
-    isAdmin || !!user?.role?.actions?.includes('create-all-branch-announcement');
+  const isOrgLevel = isAdmin || !!user?.role?.actions?.includes('create-all-branch-announcement');
 
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
@@ -71,8 +70,7 @@ export default function ComposeAnnouncementModal({ isOpen, onClose }) {
   }, [isOpen]);
 
   const mutation = useMutation({
-    mutationFn: (formData) =>
-      postData({ url: '/announcement/create', payload: formData, token }),
+    mutationFn: (formData) => postData({ url: '/announcement/create', payload: formData, token }),
     onSuccess: (res) => {
       toast.success(res?.message || 'Announcement created');
       queryClient.invalidateQueries({ queryKey: ['announcements'] });
@@ -95,8 +93,7 @@ export default function ComposeAnnouncementModal({ isOpen, onClose }) {
     if (!audience.targetUserTypes?.length) return 'Pick at least one user type';
     if (audience.scope === 'branch' && !audience.branchIds?.length)
       return 'Pick at least one branch';
-    if (audience.scope === 'class' && !audience.classIds?.length)
-      return 'Pick at least one class';
+    if (audience.scope === 'class' && !audience.classIds?.length) return 'Pick at least one class';
     if (audience.scope === 'section' && !audience.sectionIds?.length)
       return 'Pick at least one section';
     if (audience.scope === 'staff' && !audience.staffIds?.length)
@@ -238,7 +235,9 @@ export default function ComposeAnnouncementModal({ isOpen, onClose }) {
                 onChange={(e) => setPublishedAt(e.target.value)}
                 className={inputCls}
               />
-              <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">Defaults to now if you publish.</p>
+              <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                Defaults to now if you publish.
+              </p>
             </div>
             <div>
               <label className={labelCls}>Expires At</label>
@@ -305,7 +304,9 @@ export default function ComposeAnnouncementModal({ isOpen, onClose }) {
               <div className="flex items-center gap-2 text-sm text-gray-800 dark:text-gray-200">
                 <Paperclip className="w-4 h-4" />
                 <span className="font-medium">{file.name}</span>
-                <span className="text-xs text-gray-500 dark:text-gray-400">({formatBytes(file.size)})</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">
+                  ({formatBytes(file.size)})
+                </span>
               </div>
               <button
                 type="button"

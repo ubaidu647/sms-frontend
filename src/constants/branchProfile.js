@@ -31,8 +31,7 @@ export function validateFile(file) {
 
 export function validateProfile(profile) {
   if (!profile.displayName?.trim()) return 'Display name is required';
-  if (profile.printEmail && !EMAIL_RE.test(profile.printEmail))
-    return 'Invalid printEmail format';
+  if (profile.printEmail && !EMAIL_RE.test(profile.printEmail)) return 'Invalid printEmail format';
   if (profile.principal?.email && !EMAIL_RE.test(profile.principal.email))
     return 'Invalid principal.email format';
   if (profile.website && !URL_RE.test(profile.website))

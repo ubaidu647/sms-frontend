@@ -1,16 +1,7 @@
 'use client';
 import React, { useState, useMemo } from 'react';
 import { Table } from '@/component/Table';
-import {
-  Plus,
-  Search,
-  Eye,
-  Edit,
-  Ban,
-  CheckCircle,
-  ArrowRightLeft,
-  X,
-} from 'lucide-react';
+import { Plus, Search, Eye, Edit, Ban, CheckCircle, ArrowRightLeft, X } from 'lucide-react';
 import AddStudentModal from './AddStudentModal';
 import EditStudentModal from './EditStudentModal';
 import StudentDetailModal from './StudentDetailModal';
@@ -163,108 +154,127 @@ export default function StudentsPage() {
   });
   const sections = sectionData?.data || [];
 
-  const columns = useMemo(() => [
-    {
-      header: 'Name',
-      accessor: 'user',
-      render: (v, row) => {
-        const name = v?.name || '';
-        const initials = name
-          .split(' ')
-          .filter(Boolean)
-          .slice(0, 2)
-          .map((n) => n[0]?.toUpperCase())
-          .join('') || '?';
-        return (
-          <div className="flex items-center gap-3">
-            {row.photo ? (
-              <img
-                src={row.photo}
-                alt={name}
-                className="w-10 h-10 rounded-full object-cover border border-gray-200 dark:border-gray-700 flex-shrink-0"
-                onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.nextSibling.style.display = 'flex'; }}
-              />
+  const columns = useMemo(
+    () => [
+      {
+        header: 'Name',
+        accessor: 'user',
+        render: (v, row) => {
+          const name = v?.name || '';
+          const initials =
+            name
+              .split(' ')
+              .filter(Boolean)
+              .slice(0, 2)
+              .map((n) => n[0]?.toUpperCase())
+              .join('') || '?';
+          return (
+            <div className="flex items-center gap-3">
+              {row.photo ? (
+                <img
+                  src={row.photo}
+                  alt={name}
+                  className="w-10 h-10 rounded-full object-cover border border-gray-200 dark:border-gray-700 flex-shrink-0"
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                    e.currentTarget.nextSibling.style.display = 'flex';
+                  }}
+                />
+              ) : null}
+              <div
+                className="w-10 h-10 rounded-full bg-teal-100 text-teal-700 dark:text-teal-400 font-semibold text-sm items-center justify-center flex-shrink-0"
+                style={{ display: row.photo ? 'none' : 'flex' }}
+              >
+                {initials}
+              </div>
+              <div className="min-w-0">
+                <div className="font-medium text-gray-900 dark:text-gray-100 truncate">{name}</div>
+                <div className="text-xs text-gray-400 dark:text-gray-500 truncate">{v?.email}</div>
+              </div>
+            </div>
+          );
+        },
+      },
+      {
+        header: 'Admission No.',
+        accessor: 'admissionNumber',
+        render: (v) => (
+          <div className="text-gray-700 dark:text-gray-300 text-sm font-medium">{v}</div>
+        ),
+      },
+      {
+        header: 'Roll',
+        accessor: 'rollNumber',
+        render: (v) => <div className="text-gray-700 dark:text-gray-300 text-sm">{v}</div>,
+      },
+      {
+        header: 'Class',
+        accessor: 'class',
+        render: (_, row) => (
+          <div className="text-gray-700 dark:text-gray-300 text-sm">
+            {row.class?.name || '—'}
+            {row.section?.name ? (
+              <span className="text-gray-400 dark:text-gray-500"> / {row.section.name}</span>
             ) : null}
-            <div
-              className="w-10 h-10 rounded-full bg-teal-100 text-teal-700 dark:text-teal-400 font-semibold text-sm items-center justify-center flex-shrink-0"
-              style={{ display: row.photo ? 'none' : 'flex' }}
-            >
-              {initials}
-            </div>
-            <div className="min-w-0">
-              <div className="font-medium text-gray-900 dark:text-gray-100 truncate">{name}</div>
-              <div className="text-xs text-gray-400 dark:text-gray-500 truncate">{v?.email}</div>
-            </div>
           </div>
-        );
+        ),
       },
-    },
-    {
-      header: 'Admission No.',
-      accessor: 'admissionNumber',
-      render: (v) => <div className="text-gray-700 dark:text-gray-300 text-sm font-medium">{v}</div>,
-    },
-    {
-      header: 'Roll',
-      accessor: 'rollNumber',
-      render: (v) => <div className="text-gray-700 dark:text-gray-300 text-sm">{v}</div>,
-    },
-    {
-      header: 'Class',
-      accessor: 'class',
-      render: (_, row) => (
-        <div className="text-gray-700 dark:text-gray-300 text-sm">
-          {row.class?.name || '—'}
-          {row.section?.name ? <span className="text-gray-400 dark:text-gray-500"> / {row.section.name}</span> : null}
-        </div>
-      ),
-    },
-    {
-      header: 'Year',
-      accessor: 'academicYear',
-      render: (v) => <div className="text-gray-600 dark:text-gray-400 text-sm">{v}</div>,
-    },
-    {
-      header: 'Father',
-      accessor: 'father',
-      render: (v) => <div className="text-gray-600 dark:text-gray-400 text-sm">{v?.name || '—'}</div>,
-    },
-    {
-      header: 'Branch',
-      accessor: 'branch',
-      render: (v) => <div className="text-gray-600 dark:text-gray-400 text-sm">{v?.name ?? '—'}</div>,
-    },
-    {
-      header: 'Academic Status',
-      accessor: 'academicStatus',
-      render: (v) => {
-        const colors = {
-          enrolled: 'bg-green-100 text-green-800',
-          promoted: 'bg-teal-100 text-teal-800',
-          transferred: 'bg-blue-100 text-blue-800',
-          graduated: 'bg-purple-100 text-purple-800',
-          dropped: 'bg-red-100 text-red-800',
-          suspended: 'bg-yellow-100 text-yellow-800',
-        };
-        return (
-          <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium capitalize ${colors[v] || 'bg-gray-100 text-gray-700'}`}>
-            {v}
+      {
+        header: 'Year',
+        accessor: 'academicYear',
+        render: (v) => <div className="text-gray-600 dark:text-gray-400 text-sm">{v}</div>,
+      },
+      {
+        header: 'Father',
+        accessor: 'father',
+        render: (v) => (
+          <div className="text-gray-600 dark:text-gray-400 text-sm">{v?.name || '—'}</div>
+        ),
+      },
+      {
+        header: 'Branch',
+        accessor: 'branch',
+        render: (v) => (
+          <div className="text-gray-600 dark:text-gray-400 text-sm">{v?.name ?? '—'}</div>
+        ),
+      },
+      {
+        header: 'Academic Status',
+        accessor: 'academicStatus',
+        render: (v) => {
+          const colors = {
+            enrolled: 'bg-green-100 text-green-800',
+            promoted: 'bg-teal-100 text-teal-800',
+            transferred: 'bg-blue-100 text-blue-800',
+            graduated: 'bg-purple-100 text-purple-800',
+            dropped: 'bg-red-100 text-red-800',
+            suspended: 'bg-yellow-100 text-yellow-800',
+          };
+          return (
+            <span
+              className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium capitalize ${colors[v] || 'bg-gray-100 text-gray-700'}`}
+            >
+              {v}
+            </span>
+          );
+        },
+      },
+      {
+        header: 'Status',
+        accessor: 'isActive',
+        render: (v) => (
+          <span
+            className={`inline-flex px-3 py-1 rounded-full text-xs font-medium ${
+              v ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+            }`}
+          >
+            {v ? 'Active' : 'Blocked'}
           </span>
-        );
+        ),
       },
-    },
-    {
-      header: 'Status',
-      accessor: 'isActive',
-      render: (v) => (
-        <span className={`inline-flex px-3 py-1 rounded-full text-xs font-medium ${
-          v ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-        }`}>
-          {v ? 'Active' : 'Blocked'}
-        </span>
-      ),
-    },
-  ], []);
+    ],
+    [],
+  );
 
   const visibleColumns = useMemo(() => columns.map((c) => c.accessor), [columns]);
 
@@ -305,9 +315,21 @@ export default function StudentsPage() {
   });
 
   const queryKey = [
-    'students', page, limit, search, admissionNumber, rollNumber, gender,
-    academicStatus, academicYear, classId, sectionId, branchId, isActive,
-    isOrgLevel, userBranchId,
+    'students',
+    page,
+    limit,
+    search,
+    admissionNumber,
+    rollNumber,
+    gender,
+    academicStatus,
+    academicYear,
+    classId,
+    sectionId,
+    branchId,
+    isActive,
+    isOrgLevel,
+    userBranchId,
   ];
 
   const { data } = useQuery({
@@ -345,7 +367,6 @@ export default function StudentsPage() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-800 p-6 rounded-[50px]">
       <div className="max-w-7xl mx-auto">
-
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div>
@@ -390,7 +411,9 @@ export default function StudentsPage() {
               placeholder="Search name..."
               value={draftSearch}
               onChange={(e) => setDraftSearch(e.target.value)}
-              onKeyDown={(e) => { if (e.key === 'Enter') applyFilters(); }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') applyFilters();
+              }}
               className="outline-none text-sm w-36 text-gray-900 dark:text-gray-100 placeholder:text-gray-400"
             />
           </div>
@@ -402,7 +425,9 @@ export default function StudentsPage() {
               placeholder="Admission no..."
               value={draftAdmissionNumber}
               onChange={(e) => setDraftAdmissionNumber(e.target.value)}
-              onKeyDown={(e) => { if (e.key === 'Enter') applyFilters(); }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') applyFilters();
+              }}
               className="outline-none text-sm w-32 text-gray-900 dark:text-gray-100 placeholder:text-gray-400"
             />
           </div>
@@ -414,7 +439,9 @@ export default function StudentsPage() {
               placeholder="Roll no..."
               value={draftRollNumber}
               onChange={(e) => setDraftRollNumber(e.target.value)}
-              onKeyDown={(e) => { if (e.key === 'Enter') applyFilters(); }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') applyFilters();
+              }}
               className="outline-none text-sm w-24 text-gray-900 dark:text-gray-100 placeholder:text-gray-400"
             />
           </div>
@@ -426,7 +453,9 @@ export default function StudentsPage() {
               placeholder="2025-2026"
               value={draftAcademicYear}
               onChange={(e) => setDraftAcademicYear(e.target.value)}
-              onKeyDown={(e) => { if (e.key === 'Enter') applyFilters(); }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') applyFilters();
+              }}
               className="outline-none text-sm w-28 text-gray-900 dark:text-gray-100 placeholder:text-gray-400"
             />
           </div>
@@ -434,12 +463,17 @@ export default function StudentsPage() {
           {/* Class */}
           <select
             value={draftClassId}
-            onChange={(e) => { setDraftClassId(e.target.value); setDraftSectionId(''); }}
+            onChange={(e) => {
+              setDraftClassId(e.target.value);
+              setDraftSectionId('');
+            }}
             className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
           >
             <option value="">All Classes</option>
             {classes.map((c) => (
-              <option key={c._id} value={c._id}>{c.name}</option>
+              <option key={c._id} value={c._id}>
+                {c.name}
+              </option>
             ))}
           </select>
 
@@ -452,7 +486,9 @@ export default function StudentsPage() {
             >
               <option value="">All Sections</option>
               {sections.map((s) => (
-                <option key={s._id} value={s._id}>{s.name}</option>
+                <option key={s._id} value={s._id}>
+                  {s.name}
+                </option>
               ))}
             </select>
           )}
@@ -477,7 +513,9 @@ export default function StudentsPage() {
           >
             <option value="">All Academic Status</option>
             {ACADEMIC_STATUSES.map((s) => (
-              <option key={s} value={s} className="capitalize">{s}</option>
+              <option key={s} value={s} className="capitalize">
+                {s}
+              </option>
             ))}
           </select>
 
@@ -486,12 +524,18 @@ export default function StudentsPage() {
             <select
               value={draftBranchId}
               onFocus={() => setBranchDropdownTouched(true)}
-              onChange={(e) => { setDraftBranchId(e.target.value); setDraftClassId(''); setDraftSectionId(''); }}
+              onChange={(e) => {
+                setDraftBranchId(e.target.value);
+                setDraftClassId('');
+                setDraftSectionId('');
+              }}
               className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
             >
               <option value="">All Branches</option>
               {branches.map((b) => (
-                <option key={b._id} value={b._id}>{b.name}</option>
+                <option key={b._id} value={b._id}>
+                  {b.name}
+                </option>
               ))}
             </select>
           )}
