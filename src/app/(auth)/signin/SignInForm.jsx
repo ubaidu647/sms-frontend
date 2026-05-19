@@ -1,77 +1,108 @@
 'use client';
-import React from 'react';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
+import { Mail, Lock, Eye, EyeOff, Loader2, ArrowRight } from 'lucide-react';
 import { signInSchema } from './validation';
 import { useSignIn } from './hooks/useSignIn';
-import Input from '@/component/InputField';
-import Button from '@/component/Button';
-import Link from 'next/link';
 
 const SignInForm = () => {
+  const [showPassword, setShowPassword] = useState(false);
+
   const {
     register,
     handleSubmit,
-    watch,
     formState: { errors },
-  } = useForm({
-    resolver: yupResolver(signInSchema),
-  });
+  } = useForm({ resolver: yupResolver(signInSchema) });
 
-  const { mutate, isPending, isSuccess } = useSignIn();
+  const { mutate, isPending } = useSignIn();
 
   const onSubmit = (data) => mutate(data);
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
-      <Input
-        label="Enter your email"
-        name="email"
-        type="email"
-        placeholder=""
-        watch={watch}
-        errors={errors}
-        register={register}
-      />
-
-      <Input
-        label="Enter your Password"
-        name="password"
-        type="password"
-        placeholder=""
-        watch={watch}
-        errors={errors}
-        register={register}
-      />
-
-      <div className="text-right mt-2">
-        <Link
-          href="/forgot-password"
-          className="text-sm text-indigo-600 hover:text-indigo-800 font-medium"
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+      {/* Email */}
+      <div>
+        <label
+          htmlFor="email"
+          className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1.5"
         >
-          Forgot password?
-        </Link>
+          Email
+        </label>
+        <div className="relative">
+          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+          <input
+            id="email"
+            type="email"
+            placeholder="you@school.com"
+            autoComplete="email"
+            {...register('email')}
+            className={`w-full h-11 pl-10 pr-3 rounded-xl bg-gray-50 dark:bg-white/5 border outline-none transition-all text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:ring-4 ${
+              errors.email
+                ? 'border-red-400 focus:border-red-500 focus:ring-red-500/15'
+                : 'border-gray-200 dark:border-white/10 focus:border-teal-500 focus:ring-teal-500/15'
+            }`}
+          />
+        </div>
+        {errors.email && (
+          <p className="mt-1.5 text-xs text-red-500">{errors.email.message}</p>
+        )}
       </div>
 
-      <div className="mt-[2rem] flex items-center justify-center">
-        <Button
-          type="submit"
-          styleObject={{
-            baseColor: 'bg-black',
-            hoverColor: 'hover:bg-gray-800',
-            animation: 'transform transition-all duration-500 ease-in-out transform origin-center',
-            rounded: 'rounded-full',
-            size: 'px-10 py-1 text-md  min-h-[2.5rem]',
-            textColor: 'text-white',
-          }}
-          loading={isPending}
-          success={isSuccess}
+      {/* Password */}
+      <div>
+        <label
+          htmlFor="password"
+          className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1.5"
         >
-          Login
-        </Button>
+          Password
+        </label>
+        <div className="relative">
+          <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+          <input
+            id="password"
+            type={showPassword ? 'text' : 'password'}
+            placeholder="••••••••"
+            autoComplete="current-password"
+            {...register('password')}
+            className={`w-full h-11 pl-10 pr-11 rounded-xl bg-gray-50 dark:bg-white/5 border outline-none transition-all text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:ring-4 ${
+              errors.password
+                ? 'border-red-400 focus:border-red-500 focus:ring-red-500/15'
+                : 'border-gray-200 dark:border-white/10 focus:border-teal-500 focus:ring-teal-500/15'
+            }`}
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword((v) => !v)}
+            aria-label={showPassword ? 'Hide password' : 'Show password'}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-teal-600 dark:hover:text-teal-400 transition-colors"
+          >
+            {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+          </button>
+        </div>
+        {errors.password && (
+          <p className="mt-1.5 text-xs text-red-500">{errors.password.message}</p>
+        )}
       </div>
 
-      {/* {error && <p className="text-red-500 mt-2">{error.message}</p>} */}
+      {/* Submit */}
+      <button
+        type="submit"
+        disabled={isPending}
+        className="w-full h-11 rounded-xl bg-teal-600 hover:bg-teal-700 disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold shadow-lg shadow-teal-600/30 transition-all flex items-center justify-center gap-2 group"
+      >
+        {isPending ? (
+          <>
+            <Loader2 className="w-4 h-4 animate-spin" />
+            Signing in…
+          </>
+        ) : (
+          <>
+            Sign in
+            <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+          </>
+        )}
+      </button>
     </form>
   );
 };

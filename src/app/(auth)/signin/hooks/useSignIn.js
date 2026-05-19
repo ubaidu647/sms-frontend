@@ -22,13 +22,11 @@ export function useSignIn() {
       )}; path=/; max-age=86400;`;
       toast.success('Logged in successfully!');
 
-      const type = payload.user?.type || response.type;
-      if (type === 'staff') {
-        router.push('/dashboard/school');
-      } else {
-        // student and parent dashboards coming later
-        router.push('/dashboard');
-      }
+      // Always push to /dashboard — middleware reads the auth-role cookie
+      // (set above) and forwards super-admin → /dashboard/system,
+      // admin/sub-admin → /dashboard/school. Keeps the route decision in
+      // one place so super-admin doesn't land on the school view.
+      router.push('/dashboard');
     },
     onError: (err) => {
       const message = err.response?.data?.message || err.message || 'Something went wrong';
