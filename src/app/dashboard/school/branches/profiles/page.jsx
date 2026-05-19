@@ -36,8 +36,8 @@ export default function AllBranchProfilesPage() {
     retry: false,
   });
 
-  const profiles = profilesData?.data || [];
-  const branches = branchesData?.data || [];
+  const profiles = useMemo(() => profilesData?.data || [], [profilesData]);
+  const branches = useMemo(() => branchesData?.data || [], [branchesData]);
   const isLoading = loadingProfiles || loadingBranches;
   const branchListUnavailable = !branchesData && !loadingBranches;
 
@@ -134,6 +134,7 @@ export default function AllBranchProfilesPage() {
                   >
                     <div className="aspect-[16/9] bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex items-center justify-center">
                       {p?.logo ? (
+                        // eslint-disable-next-line @next/next/no-img-element
                         <img
                           src={p.logo}
                           alt={p.displayName}

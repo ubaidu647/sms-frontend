@@ -404,6 +404,7 @@ export const Sidebar = ({ user = {}, menus = [], actions: _actions = [] }) => {
                           style={{ color: itemIsActive ? '#FFDC34' : '#ffffff' }}
                         />
                       ) : (
+                        // eslint-disable-next-line @next/next/no-img-element
                         <img
                           className="w-5 h-5 flex-shrink-0"
                           alt={itemLabel}
@@ -456,6 +457,7 @@ export const Sidebar = ({ user = {}, menus = [], actions: _actions = [] }) => {
                           style={{ color: itemIsActive ? '#FFDC34' : '#ffffff' }}
                         />
                       ) : (
+                        // eslint-disable-next-line @next/next/no-img-element
                         <img
                           className="w-5 h-5 flex-shrink-0"
                           alt={itemLabel}

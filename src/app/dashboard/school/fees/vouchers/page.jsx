@@ -196,7 +196,7 @@ export default function VouchersPage() {
     enabled: !!token && !!user,
   });
 
-  const list = data?.data || [];
+  const list = useMemo(() => data?.data || [], [data]);
   const filtered = search
     ? list.filter(
         (v) =>

@@ -482,6 +482,7 @@ export default function MarkAttendancePanel() {
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-3">
                           {s.photo ? (
+                            // eslint-disable-next-line @next/next/no-img-element
                             <img
                               src={s.photo}
                               alt={s.name}

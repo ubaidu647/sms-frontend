@@ -119,10 +119,10 @@ export default function AssignmentFormModal({ isOpen, onClose, assignment, locke
     enabled: !!token && isOpen,
     staleTime: 30000,
   });
-  const routes = routesData?.data || [];
+  const routes = useMemo(() => routesData?.data || [], [routesData]);
 
   const selectedRoute = useMemo(() => routes.find((r) => r._id === routeId), [routes, routeId]);
-  const stopOptions = selectedRoute?.stops || [];
+  const stopOptions = useMemo(() => selectedRoute?.stops || [], [selectedRoute]);
 
   useEffect(() => {
     if (!stopName || !selectedRoute) return;

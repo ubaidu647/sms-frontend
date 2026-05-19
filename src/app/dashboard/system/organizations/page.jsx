@@ -167,6 +167,7 @@ export default function Organization() {
 
   useEffect(() => {
     setSelectedColumns(columns.map((col) => col.accessor));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   // const handleAddOrganizationSuccess = (newOrganization) => {
   //   setTableData((prev) => [

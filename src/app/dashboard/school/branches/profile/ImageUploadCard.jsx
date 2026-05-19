@@ -84,6 +84,7 @@ export default function ImageUploadCard({
               <span className="text-xs">View PDF</span>
             </a>
           ) : (
+            // eslint-disable-next-line @next/next/no-img-element
             <img src={src} alt={label} className="max-h-full max-w-full object-contain" />
           )
         ) : (

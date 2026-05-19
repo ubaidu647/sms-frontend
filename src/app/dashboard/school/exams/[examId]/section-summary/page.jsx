@@ -33,7 +33,7 @@ export default function SectionSummaryPage() {
     enabled: !!token && !!classId,
     staleTime: 60000,
   });
-  const sections = sectionData?.data || [];
+  const sections = useMemo(() => sectionData?.data || [], [sectionData]);
 
   const { data: summaryRes, isFetching } = useQuery({
     queryKey: ['section-summary', examId, sectionId],

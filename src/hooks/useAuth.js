@@ -58,7 +58,7 @@ export const useAuth = () => {
     } else {
       setLoading(false);
     }
-  }, [hasHydrated, accessToken, refreshToken, clearTokens, clearUser]);
+  }, [hasHydrated, accessToken, refreshToken, clearTokens, clearUser, setUser]);
 
   const logout = () => {
     if (isLoggingOut.current) return; // Prevent multiple calls

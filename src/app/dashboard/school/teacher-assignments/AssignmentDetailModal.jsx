@@ -101,6 +101,7 @@ export default function AssignmentDetailModal({ isOpen, onClose, assignmentId })
           <div className="flex items-center gap-5 p-4 rounded-xl bg-gradient-to-r from-teal-50 to-blue-50 border border-teal-100">
             <div className="relative flex-shrink-0">
               {a.staff?.photo ? (
+                // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={a.staff.photo}
                   alt={teacherName}

@@ -90,7 +90,7 @@ export default function StructureFormModal({ isOpen, onClose, structure }) {
     enabled: !!token && isOpen && !isEdit,
     staleTime: 60000,
   });
-  const staffList = staffData?.data || [];
+  const staffList = useMemo(() => staffData?.data || [], [staffData]);
 
   // Prefill basic salary from the staff record set during staff creation.
   useEffect(() => {

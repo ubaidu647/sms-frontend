@@ -129,7 +129,7 @@ export default function MarksEntryPage() {
     enabled: !!token && !!sectionId,
     staleTime: 30000,
   });
-  const students = studentRes?.data || [];
+  const students = useMemo(() => studentRes?.data || [], [studentRes]);
 
   const {
     data: resultsRes,
@@ -149,7 +149,7 @@ export default function MarksEntryPage() {
     staleTime: 0,
     retry: false,
   });
-  const existingResults = resultsRes?.data || [];
+  const existingResults = useMemo(() => resultsRes?.data || [], [resultsRes]);
 
   useEffect(() => {
     if (!resultsIsError) return;

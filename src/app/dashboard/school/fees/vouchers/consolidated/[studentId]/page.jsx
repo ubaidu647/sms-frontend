@@ -371,6 +371,7 @@ function Letterhead({ profile, branchName }) {
     <div className="flex items-start gap-4 pb-5 mb-5 border-b-2 border-gray-900">
       <div className="shrink-0">
         {logo ? (
+          // eslint-disable-next-line @next/next/no-img-element
           <img
             src={logo}
             alt={displayName}

@@ -746,6 +746,7 @@ export default function DefaultersReportPage() {
                               <td className="px-3 py-2">
                                 <div className="flex items-center gap-2">
                                   {r.photo ? (
+                                    // eslint-disable-next-line @next/next/no-img-element
                                     <img
                                       src={r.photo}
                                       alt=""

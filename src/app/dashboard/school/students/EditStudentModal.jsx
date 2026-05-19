@@ -520,12 +520,14 @@ export default function EditStudentModal({ isOpen, onClose, onSuccess, student }
           </h3>
           <div className="flex items-center gap-4">
             {photoPreview ? (
+              // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={photoPreview}
                 alt="Preview"
                 className="w-20 h-20 rounded-full object-cover border border-gray-200 dark:border-gray-700"
               />
             ) : currentPhoto ? (
+              // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={currentPhoto}
                 alt="Current"

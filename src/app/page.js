@@ -40,10 +40,18 @@ export default function Home() {
           </Link>
 
           <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-gray-600 dark:text-gray-300">
-            <a href="#features" className="hover:text-teal-600 transition-colors">Features</a>
-            <a href="#how" className="hover:text-teal-600 transition-colors">How it works</a>
-            <a href="#testimonials" className="hover:text-teal-600 transition-colors">Testimonials</a>
-            <a href="#contact" className="hover:text-teal-600 transition-colors">Contact</a>
+            <a href="#features" className="hover:text-teal-600 transition-colors">
+              Features
+            </a>
+            <a href="#how" className="hover:text-teal-600 transition-colors">
+              How it works
+            </a>
+            <a href="#testimonials" className="hover:text-teal-600 transition-colors">
+              Testimonials
+            </a>
+            <a href="#contact" className="hover:text-teal-600 transition-colors">
+              Contact
+            </a>
           </nav>
 
           <div className="flex items-center gap-3">
@@ -84,10 +92,18 @@ export default function Home() {
 
         {mobileOpen && (
           <div className="md:hidden border-t border-gray-200/60 dark:border-white/10 px-4 py-3 flex flex-col gap-2 text-sm font-medium">
-            <a href="#features" onClick={() => setMobileOpen(false)}>Features</a>
-            <a href="#how" onClick={() => setMobileOpen(false)}>How it works</a>
-            <a href="#testimonials" onClick={() => setMobileOpen(false)}>Testimonials</a>
-            <a href="#contact" onClick={() => setMobileOpen(false)}>Contact</a>
+            <a href="#features" onClick={() => setMobileOpen(false)}>
+              Features
+            </a>
+            <a href="#how" onClick={() => setMobileOpen(false)}>
+              How it works
+            </a>
+            <a href="#testimonials" onClick={() => setMobileOpen(false)}>
+              Testimonials
+            </a>
+            <a href="#contact" onClick={() => setMobileOpen(false)}>
+              Contact
+            </a>
           </div>
         )}
       </header>
@@ -134,9 +150,15 @@ export default function Home() {
               </div>
 
               <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-gray-500 dark:text-gray-400">
-                <div className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-teal-600" /> No credit card</div>
-                <div className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-teal-600" /> 14-day trial</div>
-                <div className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-teal-600" /> Cancel anytime</div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-teal-600" /> No credit card
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-teal-600" /> 14-day trial
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-teal-600" /> Cancel anytime
+                </div>
               </div>
             </div>
 
@@ -160,7 +182,9 @@ export default function Home() {
                       key={s.label}
                       className="rounded-xl p-4 bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/5"
                     >
-                      <div className="text-[11px] uppercase tracking-wide text-gray-500">{s.label}</div>
+                      <div className="text-[11px] uppercase tracking-wide text-gray-500">
+                        {s.label}
+                      </div>
                       <div
                         className={`mt-1 text-xl font-bold ${
                           s.tone === 'teal' ? 'text-teal-600' : 'text-yellow-500'
@@ -179,7 +203,11 @@ export default function Home() {
                     </div>
                     <div className="flex items-end gap-2 h-24">
                       {[60, 75, 55, 90, 80, 95, 70].map((h, i) => (
-                        <div key={i} className="flex-1 rounded-md bg-gradient-to-t from-teal-600 to-teal-300" style={{ height: `${h}%` }} />
+                        <div
+                          key={i}
+                          className="flex-1 rounded-md bg-gradient-to-t from-teal-600 to-teal-300"
+                          style={{ height: `${h}%` }}
+                        />
                       ))}
                     </div>
                   </div>
@@ -205,13 +233,15 @@ export default function Home() {
       <section id="features" className="py-20 lg:py-28">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-2xl">
-            <div className="text-sm font-semibold text-teal-600 uppercase tracking-wider">Features</div>
+            <div className="text-sm font-semibold text-teal-600 uppercase tracking-wider">
+              Features
+            </div>
             <h2 className="mt-2 text-3xl sm:text-4xl font-bold tracking-tight">
               Everything your school needs, nothing it doesn&apos;t
             </h2>
             <p className="mt-4 text-gray-600 dark:text-gray-300">
-              From the front desk to the finance office, Node Campus replaces a stack of spreadsheets
-              with one fast, modern workspace.
+              From the front desk to the finance office, Node Campus replaces a stack of
+              spreadsheets with one fast, modern workspace.
             </p>
           </div>
 
@@ -225,7 +255,9 @@ export default function Home() {
                   <f.icon className="w-5 h-5" />
                 </div>
                 <h3 className="mt-5 text-lg font-semibold">{f.title}</h3>
-                <p className="mt-2 text-sm text-gray-600 dark:text-gray-300 leading-relaxed">{f.desc}</p>
+                <p className="mt-2 text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
+                  {f.desc}
+                </p>
               </div>
             ))}
           </div>
@@ -248,12 +280,15 @@ export default function Home() {
       <section id="how" className="py-20 lg:py-28">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-2xl">
-            <div className="text-sm font-semibold text-teal-600 uppercase tracking-wider">How it works</div>
+            <div className="text-sm font-semibold text-teal-600 uppercase tracking-wider">
+              How it works
+            </div>
             <h2 className="mt-2 text-3xl sm:text-4xl font-bold tracking-tight">
               Go live in days, not months
             </h2>
             <p className="mt-4 text-gray-600 dark:text-gray-300">
-              Setup is guided end-to-end. Most schools migrate their data and onboard staff inside a week.
+              Setup is guided end-to-end. Most schools migrate their data and onboard staff inside a
+              week.
             </p>
           </div>
 
@@ -267,7 +302,9 @@ export default function Home() {
                   {i + 1}
                 </div>
                 <h3 className="mt-4 text-lg font-semibold">{s.title}</h3>
-                <p className="mt-2 text-sm text-gray-600 dark:text-gray-300 leading-relaxed">{s.desc}</p>
+                <p className="mt-2 text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
+                  {s.desc}
+                </p>
               </div>
             ))}
           </div>
@@ -275,10 +312,15 @@ export default function Home() {
       </section>
 
       {/* ───────────────────────── Testimonials ───────────────────────── */}
-      <section id="testimonials" className="py-20 lg:py-28 bg-gray-50/60 dark:bg-white/[0.02] border-y border-gray-200/60 dark:border-white/10">
+      <section
+        id="testimonials"
+        className="py-20 lg:py-28 bg-gray-50/60 dark:bg-white/[0.02] border-y border-gray-200/60 dark:border-white/10"
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-2xl">
-            <div className="text-sm font-semibold text-teal-600 uppercase tracking-wider">Loved by educators</div>
+            <div className="text-sm font-semibold text-teal-600 uppercase tracking-wider">
+              Loved by educators
+            </div>
             <h2 className="mt-2 text-3xl sm:text-4xl font-bold tracking-tight">
               What schools are saying
             </h2>
@@ -367,9 +409,21 @@ export default function Home() {
           <div>
             <div className="text-sm font-semibold mb-3">Product</div>
             <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
-              <li><a href="#features" className="hover:text-teal-600">Features</a></li>
-              <li><a href="#how" className="hover:text-teal-600">How it works</a></li>
-              <li><a href="#testimonials" className="hover:text-teal-600">Testimonials</a></li>
+              <li>
+                <a href="#features" className="hover:text-teal-600">
+                  Features
+                </a>
+              </li>
+              <li>
+                <a href="#how" className="hover:text-teal-600">
+                  How it works
+                </a>
+              </li>
+              <li>
+                <a href="#testimonials" className="hover:text-teal-600">
+                  Testimonials
+                </a>
+              </li>
             </ul>
           </div>
           <div>
@@ -392,8 +446,13 @@ export default function Home() {
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 hover:text-teal-600"
                 >
-                  <svg className="w-4 h-4 text-green-500" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                    <path d="M.057 24l1.687-6.163a11.867 11.867 0 01-1.587-5.946C.16 5.335 5.495 0 12.05 0a11.817 11.817 0 018.413 3.488 11.824 11.824 0 013.48 8.414c-.003 6.557-5.338 11.892-11.893 11.892a11.9 11.9 0 01-5.688-1.448L.057 24zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.371-.025-.52-.075-.149-.669-1.611-.916-2.206-.242-.579-.487-.5-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413z"/>
+                  <svg
+                    className="w-4 h-4 text-green-500"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path d="M.057 24l1.687-6.163a11.867 11.867 0 01-1.587-5.946C.16 5.335 5.495 0 12.05 0a11.817 11.817 0 018.413 3.488 11.824 11.824 0 013.48 8.414c-.003 6.557-5.338 11.892-11.893 11.892a11.9 11.9 0 01-5.688-1.448L.057 24zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.371-.025-.52-.075-.149-.669-1.611-.916-2.206-.242-.579-.487-.5-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413z" />
                   </svg>
                   +92 310 9721647
                 </a>
@@ -405,8 +464,12 @@ export default function Home() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-gray-500">
             <div>© {new Date().getFullYear()} Node Campus. All rights reserved.</div>
             <div className="flex gap-4">
-              <a href="#" className="hover:text-teal-600">Privacy</a>
-              <a href="#" className="hover:text-teal-600">Terms</a>
+              <a href="#" className="hover:text-teal-600">
+                Privacy
+              </a>
+              <a href="#" className="hover:text-teal-600">
+                Terms
+              </a>
             </div>
           </div>
         </div>

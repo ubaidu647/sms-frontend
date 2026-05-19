@@ -110,6 +110,7 @@ export const SystemSidebar = ({ onLogout }) => {
                   <div
                     className={`flex items-center gap-2.5 ${isCollapsed ? 'px-3' : 'px-7'} w-full overflow-hidden`}
                   >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img className="w-5 h-5 flex-shrink-0" alt={item.label} src={item.icon} />
                     {!isCollapsed && (
                       <span

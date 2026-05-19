@@ -283,6 +283,7 @@ export default function VoucherDetailPage() {
 
               <div className="flex items-end justify-between gap-4">
                 {voucher.status === 'paid' && profile?.stamp ? (
+                  // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={profile.stamp}
                     alt="Paid stamp"
@@ -419,6 +420,7 @@ function Letterhead({ profile, branchName }) {
     <div className="flex items-start gap-4 pb-5 mb-5 border-b-2 border-gray-900">
       <div className="shrink-0">
         {logo ? (
+          // eslint-disable-next-line @next/next/no-img-element
           <img
             src={logo}
             alt={displayName}

@@ -71,6 +71,7 @@ export const Table = ({
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex-shrink-0 h-12 w-12">
                         {row[imageAccessor] ? (
+                          // eslint-disable-next-line @next/next/no-img-element
                           <img
                             className="h-12 w-12 rounded-lg object-cover border border-gray-200"
                             src={row[imageAccessor]}

@@ -200,6 +200,7 @@ export default function TeacherAssignmentsPage() {
           return (
             <div className="flex items-center gap-3">
               {v?.photo ? (
+                // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={v.photo}
                   alt={name}
@@ -367,7 +368,7 @@ export default function TeacherAssignmentsPage() {
     enabled: !!token && !!user,
   });
 
-  const assignments = data?.data || [];
+  const assignments = useMemo(() => data?.data || [], [data]);
 
   // Filter client-side by staff name search
   const filteredAssignments = useMemo(() => {

@@ -171,6 +171,7 @@ export default function StudentsPage() {
           return (
             <div className="flex items-center gap-3">
               {row.photo ? (
+                // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={row.photo}
                   alt={name}

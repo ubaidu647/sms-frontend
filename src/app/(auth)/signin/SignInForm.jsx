@@ -44,9 +44,7 @@ const SignInForm = () => {
             }`}
           />
         </div>
-        {errors.email && (
-          <p className="mt-1.5 text-xs text-red-500">{errors.email.message}</p>
-        )}
+        {errors.email && <p className="mt-1.5 text-xs text-red-500">{errors.email.message}</p>}
       </div>
 
       {/* Password */}
