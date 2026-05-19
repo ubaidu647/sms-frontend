@@ -25,6 +25,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { canSee, canEditScope } from '@/utils/permissions';
+import { useAuth } from '@/hooks/useAuth';
 
 // `key` controls which menus appear in the role form / are stored on the role.
 // `base` is the view action used by canSee() — when set, sidebar visibility falls
@@ -237,6 +238,7 @@ export const Sidebar = ({ user = {}, menus = [], actions: _actions = [] }) => {
   const sidebarRef = useRef(null);
   const pathname = usePathname();
   const t = useTranslations('sidebar');
+  const { logout } = useAuth();
 
   const toggleExpand = (index) => {
     const newExpanded = new Set(expandedItems);
@@ -530,6 +532,7 @@ export const Sidebar = ({ user = {}, menus = [], actions: _actions = [] }) => {
 
         <div className="mt-auto pt-4 border-t border-white/20">
           <button
+            onClick={logout}
             className={`w-full h-14 ${
               isCollapsed ? 'justify-center px-0' : 'justify-start px-0'
             } rounded-full transition-colors hover:bg-teal-700 dark:hover:bg-slate-800 bg-transparent flex items-center`}

@@ -3,6 +3,7 @@ import { useRouter } from 'next/navigation';
 import { Bell, Settings, Users, LogOut, ChevronDown, Sun, Moon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useThemeStore } from '@/store/themeStore';
+import { useAuth } from '@/hooks/useAuth';
 
 export const Topbar = ({ user = {}, userRole = {} }) => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -12,6 +13,7 @@ export const Topbar = ({ user = {}, userRole = {} }) => {
   const toggleTheme = useThemeStore((s) => s.toggleTheme);
   const isDark = theme === 'dark';
   const t = useTranslations('topbar');
+  const { logout } = useAuth();
 
   const showUserManagement = ['super-admin', 'admin', 'subadmin'].includes(
     userRole?.name?.toLowerCase(),
@@ -105,7 +107,13 @@ export const Topbar = ({ user = {}, userRole = {} }) => {
               )}
 
               <div className="border-t border-gray-200 dark:border-gray-700 mt-2 pt-2">
-                <button className="w-full flex items-center gap-3 px-4 py-2 hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors text-left">
+                <button
+                  onClick={() => {
+                    setIsProfileOpen(false);
+                    logout();
+                  }}
+                  className="w-full flex items-center gap-3 px-4 py-2 hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors text-left"
+                >
                   <LogOut className="w-4 h-4 text-red-600" />
                   <span className="text-sm text-red-600">{t('logout')}</span>
                 </button>

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import axios from 'axios';
 import apiClient from '@/services/apiClient';
 import { useTokenStore } from '@/store/tokenStore';
 import { useUserStore } from '@/store/userStore';
@@ -63,11 +64,31 @@ export const useAuth = () => {
     if (isLoggingOut.current) return; // Prevent multiple calls
     isLoggingOut.current = true;
 
+    // Capture tokens before clearing — server needs both to revoke this session.
+    const { accessToken: at, refreshToken: rt } = useTokenStore.getState();
+
+    // Best-effort server-side revoke. Use raw axios (not apiClient) so the
+    // header is attached synchronously from captured values, and we don't
+    // re-enter the 401 refresh interceptor. Never block local cleanup on it.
+    if (at && rt) {
+      const baseURL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4001';
+      axios
+        .post(
+          `${baseURL}/auth/logout`,
+          { refreshToken: rt },
+          { headers: { Authorization: `Bearer ${at}` } },
+        )
+        .catch((err) => console.warn('logout API call failed', err));
+    }
+
     clearUser();
     clearTokens();
     hasFetchedUser.current = false;
-    // redirectToSignin();
     clearAuthCookies();
+
+    // Hard reload to dump in-memory React Query caches and component state
+    // that may hold sensitive data. Matches apiClient's 401 redirect path.
+    if (typeof window !== 'undefined') window.location.href = '/signin';
   };
 
   return {
