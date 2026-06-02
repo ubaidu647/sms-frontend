@@ -23,7 +23,7 @@ export default function MyBranchProfilePage() {
     enabled: !!token,
   });
 
-  const profile = data?.data || null;
+  const profile = (Array.isArray(data?.data) ? data.data[0] : data?.data) || null;
   const branchName =
     (typeof profile?.branchId === 'object' && profile?.branchId?.name) ||
     user?.branch?.name ||
