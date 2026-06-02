@@ -178,7 +178,7 @@ export default function StaffSalaryPolicyPage() {
       <div className="max-w-5xl mx-auto">
         <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
               <Scale className="w-7 h-7 text-teal-600" />
               {t('title')}
             </h1>

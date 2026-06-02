@@ -170,7 +170,7 @@ export default function EditExamSubjectModal({ isOpen, onClose, onSuccess, examI
           </div>
         )}
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Field label="Exam Date" required error={errors.examDate?.message}>
             <input {...register('examDate')} type="date" className={inputCls} />
           </Field>

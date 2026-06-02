@@ -966,7 +966,9 @@ function ClassView3({ cls }) {
         <div className="text-[10px] uppercase tracking-[0.4em] text-gray-500 dark:text-gray-400">
           Classroom Elements
         </div>
-        <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mt-1">{cls.name}</h2>
+        <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100 mt-1">
+          {cls.name}
+        </h2>
         <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
           Eight building blocks of a healthy classroom.
         </p>

@@ -16,9 +16,26 @@ export const Table = ({
   onPageChange,
   onLimitChange,
   totalItems, // if provided, assume server returns paginated data
+  // Desktop only — table grows up to this many rows, then scrolls internally.
+  // On mobile, the cap is dropped so the page itself scrolls and every row
+  // on the current page is reachable without nested scrolling.
+  // rowHeightPx is approximate; default picks a taller row when an avatar/logo cell renders.
+  maxVisibleRows = 5,
+  rowHeightPx,
 }) => {
   const [openMenuId, setOpenMenuId] = useState(null);
   const [anchorRect, setAnchorRect] = useState(null);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Track mobile breakpoint so the row budget can differ on phones.
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return;
+    const mq = window.matchMedia('(max-width: 767px)');
+    const update = () => setIsMobile(mq.matches);
+    update();
+    mq.addEventListener('change', update);
+    return () => mq.removeEventListener('change', update);
+  }, []);
 
   // Pagination States (uncontrolled fallback)
   const [internalLimit, setInternalLimit] = useState(controlledLimit ?? 10);
@@ -92,9 +109,20 @@ export const Table = ({
   const resolveActions = (row) =>
     typeof rowActions === 'function' ? rowActions(row) : (rowActions ?? defaultActions);
 
+  // Approximate row height. Logo rows are taller because of the 48x48 image cell.
+  const effectiveRowHeight = rowHeightPx ?? (showImage ? 80 : 64);
+  const headerHeight = 48;
+  // On mobile, don't cap the table height — the page itself scrolls so users
+  // can see every row in the current page (typically 10–20). On desktop, cap
+  // the body at maxVisibleRows so the layout stays compact and the table
+  // scrolls internally.
+  const scrollMaxHeight = isMobile
+    ? 'none'
+    : `${headerHeight + maxVisibleRows * effectiveRowHeight}px`;
+
   return (
     <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col">
-      <div className="overflow-auto scrollbar-hide max-h-[calc(100vh-280px)]">
+      <div className="overflow-auto scrollbar-hide" style={{ maxHeight: scrollMaxHeight }}>
         {/* ================= TABLE ================= */}
         <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
           <thead className="bg-gray-50 dark:bg-gray-800 sticky top-0 z-10">
@@ -248,9 +276,9 @@ export const Table = ({
       </div>
 
       {/* ================= PAGINATION ================= */}
-      <div className="flex items-center justify-between p-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 sm:p-4">
         {/* Items Per Page */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <span className="text-gray-600 dark:text-gray-400 text-sm">Items per page:</span>
 
           <select
@@ -267,7 +295,7 @@ export const Table = ({
         </div>
 
         {/* Page Navigation */}
-        <div className="text-black dark:text-gray-100 flex items-center gap-2">
+        <div className="text-black dark:text-gray-100 flex items-center gap-1.5 sm:gap-2 flex-wrap">
           <button
             disabled={page === 1}
             onClick={() => (onPageChange ? onPageChange(page - 1) : setInternalPage(page - 1))}

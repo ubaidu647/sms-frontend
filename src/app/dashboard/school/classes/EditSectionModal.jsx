@@ -161,7 +161,7 @@ export default function EditSectionModal({ isOpen, onClose, onSuccess, classId, 
             Current strength is {section.currentStrength}. Capacity cannot be set below this.
           </div>
         )}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Field label="Section Name" error={errors.name?.message}>
             <input {...register('name')} placeholder="A" className={inputCls} />
           </Field>
@@ -180,7 +180,7 @@ export default function EditSectionModal({ isOpen, onClose, onSuccess, classId, 
               <option value="inactive">Inactive</option>
             </select>
           </Field>
-          <div className="col-span-2">
+          <div className="sm:col-span-2">
             <Field label="Section Teacher" error={errors.classTeacher?.message}>
               <select {...register('classTeacher')} className={inputCls}>
                 <option value="">None</option>

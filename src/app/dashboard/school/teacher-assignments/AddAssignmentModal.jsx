@@ -408,7 +408,7 @@ export default function AddAssignmentModal({ isOpen, mode = 'single', onClose, o
             <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">
               Scope
             </h3>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {canCreateAllBranch ? (
                 <Field label="Branch" required error={errors.branchId?.message}>
                   <select
@@ -531,7 +531,7 @@ export default function AddAssignmentModal({ isOpen, mode = 'single', onClose, o
             <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">
               Subject &amp; Teacher
             </h3>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Field label="Subject" required error={errors.subjectId?.message}>
                 <select
                   {...register('subjectId')}
@@ -568,7 +568,7 @@ export default function AddAssignmentModal({ isOpen, mode = 'single', onClose, o
             <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">
               Role
             </h3>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Field label="Role" error={errors.role?.message}>
                 <select {...register('role')} className={`${inputCls} bg-white dark:bg-gray-900`}>
                   <option value="teacher">Teacher</option>
@@ -591,7 +591,7 @@ export default function AddAssignmentModal({ isOpen, mode = 'single', onClose, o
               <Field label="End Date (optional, for substitutes)" error={errors.endDate?.message}>
                 <input {...register('endDate')} type="date" className={inputCls} />
               </Field>
-              <div className="col-span-2">
+              <div className="sm:col-span-2">
                 <Field label="Notes" error={errors.notes?.message}>
                   <input
                     {...register('notes')}

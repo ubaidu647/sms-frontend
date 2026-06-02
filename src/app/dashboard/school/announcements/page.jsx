@@ -325,7 +325,9 @@ export default function AnnouncementsPage() {
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">{t('title')}</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100">
+              {t('title')}
+            </h1>
             <p className="text-gray-600 dark:text-gray-400 mt-1">{t('subtitle')}</p>
           </div>
           {canCreate && (

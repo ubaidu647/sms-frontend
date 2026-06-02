@@ -660,7 +660,7 @@ function PayForm({ payslip, onClose, onDone }) {
             className={inputCls}
           />
         </div>
-        <div className="col-span-2">
+        <div className="sm:col-span-2">
           <label className={labelCls}>Notes</label>
           <textarea
             rows={2}

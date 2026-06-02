@@ -307,9 +307,9 @@ export default function StructureFormModal({ isOpen, onClose, structure }) {
 
         <div>
           <h3 className={sectionCls}>Basics</h3>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {!isEdit && (
-              <div className="col-span-2">
+              <div className="sm:col-span-2">
                 <label className={labelCls}>
                   Staff<span className="text-red-500">*</span>
                 </label>

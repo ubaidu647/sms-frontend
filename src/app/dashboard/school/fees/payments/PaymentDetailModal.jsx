@@ -142,7 +142,7 @@ export default function PaymentDetailModal({ isOpen, onClose, paymentId }) {
                   <div className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-widest">
                     Payment Receipt
                   </div>
-                  <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+                  <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100">
                     {p.receiptNumber}
                   </h1>
                   <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">

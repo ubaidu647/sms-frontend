@@ -280,7 +280,7 @@ export default function RouteFormModal({ isOpen, onClose, route }) {
 
         <div>
           <h3 className={sectionCls}>Route Details</h3>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {!isEdit && canCreateAllBranch && (
               <div>
                 <label className={labelCls}>
@@ -395,7 +395,7 @@ export default function RouteFormModal({ isOpen, onClose, route }) {
                 className={inputCls}
               />
             </div>
-            <div className="col-span-2">
+            <div className="sm:col-span-2">
               <label className={labelCls}>Description</label>
               <textarea
                 rows={2}

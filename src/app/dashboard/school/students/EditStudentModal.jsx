@@ -319,7 +319,7 @@ export default function EditStudentModal({ isOpen, onClose, onSuccess, student }
           <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">
             Basic Info
           </h3>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Field label="Full Name" error={errors.name?.message}>
               <input {...register('name')} placeholder="Ahmed Khan" className={inputCls} />
             </Field>
@@ -389,7 +389,7 @@ export default function EditStudentModal({ isOpen, onClose, onSuccess, student }
           <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">
             Father
           </h3>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Field label="Name">
               <input {...register('father.name')} className={inputCls} />
             </Field>
@@ -421,7 +421,7 @@ export default function EditStudentModal({ isOpen, onClose, onSuccess, student }
           <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">
             Mother
           </h3>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Field label="Name">
               <input {...register('mother.name')} className={inputCls} />
             </Field>
@@ -442,7 +442,7 @@ export default function EditStudentModal({ isOpen, onClose, onSuccess, student }
           <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">
             Emergency Contact
           </h3>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <Field label="Name">
               <input {...register('emergencyContact.name')} className={inputCls} />
             </Field>
@@ -460,8 +460,8 @@ export default function EditStudentModal({ isOpen, onClose, onSuccess, student }
           <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">
             Address
           </h3>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="col-span-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="sm:col-span-2">
               <Field label="Street">
                 <input {...register('address.street')} className={inputCls} />
               </Field>
@@ -486,7 +486,7 @@ export default function EditStudentModal({ isOpen, onClose, onSuccess, student }
           <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">
             Fees
           </h3>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Field label="Discount (%)" error={errors.feeDiscount?.message}>
               <input
                 {...register('feeDiscount')}
@@ -505,7 +505,7 @@ export default function EditStudentModal({ isOpen, onClose, onSuccess, student }
                 <option value="true">Yes</option>
               </select>
             </Field>
-            <div className="col-span-2">
+            <div className="sm:col-span-2">
               <Field label="Notes">
                 <input {...register('feeNotes')} className={inputCls} />
               </Field>

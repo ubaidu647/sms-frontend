@@ -24,22 +24,24 @@ function MultiSelectDropdown({ label, options, selected, onChange }) {
   const toggle = (key) =>
     onChange(selected.includes(key) ? selected.filter((k) => k !== key) : [...selected, key]);
   return (
-    <div className="relative">
+    <div className="relative w-full lg:w-auto">
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="flex items-center gap-1 bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300 whitespace-nowrap"
+        className="w-full lg:w-auto flex items-center justify-between gap-1 bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300 whitespace-nowrap"
       >
-        {label}
-        {selected.length > 0 && (
-          <span className="ml-1 bg-teal-100 text-teal-800 text-xs px-1.5 py-0.5 rounded-full font-medium">
-            {selected.length}
-          </span>
-        )}
+        <span className="flex items-center gap-1">
+          {label}
+          {selected.length > 0 && (
+            <span className="ml-1 bg-teal-100 text-teal-800 text-xs px-1.5 py-0.5 rounded-full font-medium">
+              {selected.length}
+            </span>
+          )}
+        </span>
         <ChevronDown className="w-4 h-4 ml-1 text-gray-400 dark:text-gray-500" />
       </button>
       {open && (
-        <div className="absolute top-full left-0 mt-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-10 min-w-[180px] max-h-56 overflow-y-auto p-1">
+        <div className="absolute top-full left-0 mt-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-10 w-full lg:min-w-[180px] lg:w-auto max-h-56 overflow-y-auto p-1">
           {options.map((opt) => (
             <label
               key={opt.key}
@@ -295,17 +297,21 @@ export default function RolesPage() {
   const roles = data?.data || [];
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-800 p-6 rounded-[50px]">
-      <div className="max-w-7xl mx-auto">
+    <div className="md:flex-1 md:min-h-0 md:overflow-hidden flex flex-col bg-gray-50 dark:bg-gray-800 p-3 sm:p-6 rounded-2xl sm:rounded-[50px]">
+      <div className="max-w-7xl mx-auto w-full md:flex-1 md:min-h-0 flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">{t('title')}</h1>
-            <p className="text-gray-600 dark:text-gray-400 mt-1">{t('subtitle')}</p>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+          <div className="min-w-0">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100">
+              {t('title')}
+            </h1>
+            <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">
+              {t('subtitle')}
+            </p>
           </div>
           <button
             onClick={() => setIsModalOpen(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors shadow-sm"
+            className="flex items-center justify-center gap-2 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors shadow-sm w-full sm:w-auto"
           >
             <Plus className="w-5 h-5" />
             Add Role
@@ -313,9 +319,9 @@ export default function RolesPage() {
         </div>
 
         {/* Filters */}
-        <div className="mb-4 flex flex-wrap items-center gap-3">
+        <div className="mb-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:flex lg:flex-wrap lg:items-center gap-2 sm:gap-3">
           {/* Date range — always first */}
-          <div className="flex items-center bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 gap-2">
+          <div className="w-full lg:w-auto flex items-center bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 gap-2 flex-wrap col-span-2 sm:col-span-3 md:col-span-2 lg:col-auto">
             <label className="text-sm text-gray-500 dark:text-gray-400">From</label>
             <input
               type="date"
@@ -324,7 +330,7 @@ export default function RolesPage() {
                 setFromDate(e.target.value);
                 setPage(1);
               }}
-              className="text-sm outline-none"
+              className="text-sm outline-none bg-transparent flex-1 min-w-0"
             />
             <label className="text-sm text-gray-500 dark:text-gray-400">To</label>
             <input
@@ -334,7 +340,7 @@ export default function RolesPage() {
                 setToDate(e.target.value);
                 setPage(1);
               }}
-              className="text-sm outline-none"
+              className="text-sm outline-none bg-transparent flex-1 min-w-0"
             />
           </div>
 
@@ -345,7 +351,7 @@ export default function RolesPage() {
               setIsActive(e.target.value);
               setPage(1);
             }}
-            className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
+            className="w-full lg:w-auto bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
           >
             <option value="">All Status</option>
             <option value="true">Active</option>
@@ -353,7 +359,7 @@ export default function RolesPage() {
           </select>
 
           {/* Role name search */}
-          <div className="flex items-center bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700">
+          <div className="w-full lg:w-auto flex items-center bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700">
             <Search className="w-4 h-4 text-gray-400 dark:text-gray-500 mr-2 shrink-0" />
             <input
               type="text"
@@ -363,12 +369,12 @@ export default function RolesPage() {
                 setName(e.target.value);
                 setPage(1);
               }}
-              className="outline-none text-sm w-36"
+              className="outline-none text-sm w-full lg:w-36 bg-transparent"
             />
           </div>
 
           {/* Serial number search */}
-          <div className="flex items-center bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700">
+          <div className="w-full lg:w-auto flex items-center bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700">
             <input
               type="text"
               placeholder="Serial number..."
@@ -377,7 +383,7 @@ export default function RolesPage() {
                 setSerialNumber(e.target.value);
                 setPage(1);
               }}
-              className="outline-none text-sm w-36"
+              className="outline-none text-sm w-full lg:w-36 bg-transparent"
             />
           </div>
 
@@ -390,7 +396,7 @@ export default function RolesPage() {
                 setBranchId(e.target.value);
                 setPage(1);
               }}
-              className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
+              className="w-full lg:w-auto bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
             >
               <option value="">All Branches</option>
               {branches.map((b) => (
@@ -403,7 +409,7 @@ export default function RolesPage() {
 
           {/* Branch name search — org only */}
           {hasOrgAccess && (
-            <div className="flex items-center bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700">
+            <div className="w-full lg:w-auto flex items-center bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700">
               <input
                 type="text"
                 placeholder="Branch name..."
@@ -412,7 +418,7 @@ export default function RolesPage() {
                   setBranchName(e.target.value);
                   setPage(1);
                 }}
-                className="outline-none text-sm w-36"
+                className="outline-none text-sm w-full lg:w-36 bg-transparent"
               />
             </div>
           )}

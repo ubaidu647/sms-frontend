@@ -345,7 +345,7 @@ export default function DefaultersReportPage() {
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-6 print:hidden">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
               <TrendingDown className="w-7 h-7 text-red-500" />
               {t('title')}
             </h1>

@@ -162,7 +162,7 @@ export default function EditAssignmentModal({ isOpen, onClose, onSuccess, assign
           Teacher, subject and section cannot be changed. To change them, unassign and re-create.
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Field label="Role" error={errors.role?.message}>
             <select {...register('role')} className={`${inputCls} bg-white dark:bg-gray-900`}>
               <option value="teacher">Teacher</option>
@@ -194,7 +194,7 @@ export default function EditAssignmentModal({ isOpen, onClose, onSuccess, assign
               <option value="false">No</option>
             </select>
           </Field>
-          <div className="col-span-2">
+          <div className="sm:col-span-2">
             <Field label="Notes" error={errors.notes?.message}>
               <input {...register('notes')} className={inputCls} />
             </Field>

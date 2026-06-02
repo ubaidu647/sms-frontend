@@ -212,17 +212,19 @@ export default function PaymentsPage() {
   };
 
   return (
-    <div className="p-6">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex items-center justify-between mb-6">
+    <div className="p-3 sm:p-6">
+      <div className="max-w-7xl mx-auto w-full">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">{t('title')}</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100">
+              {t('title')}
+            </h1>
             <p className="text-gray-600 dark:text-gray-400 mt-1">{t('subtitle')}</p>
           </div>
         </div>
 
-        <div className="mb-4 flex flex-wrap items-center gap-3">
-          <div className="flex items-center bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 gap-2">
+        <div className="mb-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:flex lg:flex-wrap lg:items-center gap-2 sm:gap-3">
+          <div className="w-full lg:w-auto flex items-center bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 gap-2 col-span-2 sm:col-span-3 md:col-span-2 lg:col-auto">
             <input
               type="text"
               placeholder="Search receipt / student / voucher..."
@@ -231,7 +233,7 @@ export default function PaymentsPage() {
               onKeyDown={(e) => {
                 if (e.key === 'Enter') applyFilters();
               }}
-              className="outline-none text-sm w-72 text-gray-900 dark:text-gray-100 placeholder:text-gray-400"
+              className="outline-none text-sm w-full lg:w-72 text-gray-900 dark:text-gray-100 placeholder:text-gray-400 bg-transparent"
             />
           </div>
 
@@ -240,20 +242,20 @@ export default function PaymentsPage() {
             value={draftFromDate}
             onChange={(e) => setDraftFromDate(e.target.value)}
             placeholder="From"
-            className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300 outline-none"
+            className="w-full lg:w-auto bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300 outline-none"
           />
           <input
             type="date"
             value={draftToDate}
             onChange={(e) => setDraftToDate(e.target.value)}
             placeholder="To"
-            className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300 outline-none"
+            className="w-full lg:w-auto bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300 outline-none"
           />
 
           <select
             value={draftMethod}
             onChange={(e) => setDraftMethod(e.target.value)}
-            className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
+            className="w-full lg:w-auto bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
           >
             <option value="">All Methods</option>
             {PAYMENT_METHODS.map((m) => (
@@ -266,7 +268,7 @@ export default function PaymentsPage() {
           <select
             value={draftIsVoid}
             onChange={(e) => setDraftIsVoid(e.target.value)}
-            className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
+            className="w-full lg:w-auto bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
           >
             <option value="false">Active Only</option>
             <option value="true">Voided Only</option>
@@ -278,7 +280,7 @@ export default function PaymentsPage() {
               value={draftBranchId}
               onFocus={() => setBranchDropdownTouched(true)}
               onChange={(e) => setDraftBranchId(e.target.value)}
-              className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
+              className="w-full lg:w-auto bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
             >
               <option value="">All Branches</option>
               {branches.map((b) => (
@@ -292,7 +294,7 @@ export default function PaymentsPage() {
           <button
             type="button"
             onClick={applyFilters}
-            className="flex items-center gap-1 px-3 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 text-sm"
+            className="flex items-center justify-center gap-1 px-3 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 text-sm w-full lg:w-auto"
           >
             <Search className="w-4 h-4" />
             Search
@@ -300,7 +302,7 @@ export default function PaymentsPage() {
           <button
             type="button"
             onClick={clearFilters}
-            className="flex items-center gap-1 px-3 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 text-sm"
+            className="flex items-center justify-center gap-1 px-3 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 text-sm w-full lg:w-auto"
           >
             <X className="w-4 h-4" />
             Clear

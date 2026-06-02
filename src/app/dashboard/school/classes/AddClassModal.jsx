@@ -205,7 +205,7 @@ export default function AddClassModal({ isOpen, onClose, onSuccess }) {
           <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">
             Basic Info
           </h3>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Field label="Class Name" required error={errors.name?.message}>
               <input {...register('name')} placeholder="Grade 5" className={inputCls} />
             </Field>

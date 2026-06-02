@@ -147,7 +147,7 @@ export default function BranchesPage() {
 
   const handleRowAction = (action, row) => {
     if (action === 'profile') router.push(`/dashboard/school/branches/${row._id}/profile`);
-    if (action === 'view') router.push(`/dashboard/school/branches/${row._id}/profile`);
+    if (action === 'view') router.push(`/dashboard/school/branches/${row._id}`);
   };
 
   const rowActions = [
@@ -156,17 +156,21 @@ export default function BranchesPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-800 p-6 rounded-[50px]">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">{t('title')}</h1>
-            <p className="text-gray-600 dark:text-gray-400 mt-1">{t('subtitle')}</p>
+    <div className="md:flex-1 md:min-h-0 md:overflow-hidden flex flex-col bg-gray-50 dark:bg-gray-800 p-3 sm:p-6 rounded-2xl sm:rounded-[50px]">
+      <div className="max-w-7xl mx-auto w-full md:flex-1 md:min-h-0 flex flex-col">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+          <div className="min-w-0">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100">
+              {t('title')}
+            </h1>
+            <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">
+              {t('subtitle')}
+            </p>
           </div>
-          <div className="flex items-center gap-2 flex-wrap">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:items-center gap-2 lg:gap-2 lg:flex-wrap">
             <Link
               href="/dashboard/school/branches/profile"
-              className="flex items-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors shadow-sm"
+              className="flex items-center justify-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors shadow-sm"
             >
               <Building2 className="w-5 h-5" />
               My Branch Profile
@@ -174,7 +178,7 @@ export default function BranchesPage() {
             {canViewAllProfiles && (
               <Link
                 href="/dashboard/school/branches/profiles"
-                className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors shadow-sm"
+                className="flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors shadow-sm"
               >
                 <LayoutGrid className="w-5 h-5" />
                 All Profiles
@@ -183,7 +187,7 @@ export default function BranchesPage() {
             {canCreateBranch && (
               <button
                 onClick={() => setIsModalOpen(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors shadow-sm"
+                className="flex items-center justify-center gap-2 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors shadow-sm col-span-1 sm:col-span-2 lg:col-auto"
               >
                 <Plus className="w-5 h-5" />
                 Add Branch
@@ -192,75 +196,75 @@ export default function BranchesPage() {
           </div>
         </div>
 
-        <div className="mb-4 flex items-center justify-between gap-4 flex-wrap">
-          <div className="flex items-center gap-3 flex-wrap">
-            <div className="flex items-center bg-white dark:bg-gray-900 p-2 rounded-lg border border-gray-200 dark:border-gray-700">
-              <input
-                type="text"
-                placeholder="Search branches..."
-                value={draftSearch}
-                onChange={(e) => setDraftSearch(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') applyFilters();
-                }}
-                className="outline-none text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 bg-transparent"
-              />
-              <button
-                type="button"
-                onClick={applyFilters}
-                title="Search"
-                className="ml-2 p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
-              >
-                <Search className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div className="bg-white dark:bg-gray-900 p-2 rounded-lg border border-gray-200 dark:border-gray-700 flex items-center gap-2">
-              <label className="text-sm text-gray-600 dark:text-gray-400">From</label>
-              <input
-                type="date"
-                value={draftFromDate}
-                onChange={(e) => setDraftFromDate(e.target.value)}
-                className="outline-none text-sm text-gray-900 dark:text-gray-100 bg-transparent"
-              />
-              <label className="text-sm text-gray-600 dark:text-gray-400">To</label>
-              <input
-                type="date"
-                value={draftToDate}
-                onChange={(e) => setDraftToDate(e.target.value)}
-                className="outline-none text-sm text-gray-900 dark:text-gray-100 bg-transparent"
-              />
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3 flex-wrap">
-            <select
-              value={draftStatusFilter}
-              onChange={(e) => setDraftStatusFilter(e.target.value)}
-              className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-900 dark:text-gray-100 outline-none"
-            >
-              <option value="">All Status</option>
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
-              <option value="disabled">Disabled</option>
-            </select>
+        <div className="mb-4 grid grid-cols-1 sm:grid-cols-2 lg:flex lg:items-center lg:justify-between lg:flex-wrap gap-2 sm:gap-3">
+          {/* Search */}
+          <div className="w-full lg:w-auto flex items-center bg-white dark:bg-gray-900 p-2 rounded-lg border border-gray-200 dark:border-gray-700">
+            <input
+              type="text"
+              placeholder="Search branches..."
+              value={draftSearch}
+              onChange={(e) => setDraftSearch(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') applyFilters();
+              }}
+              className="outline-none text-sm w-full text-gray-900 dark:text-gray-100 placeholder:text-gray-400 bg-transparent"
+            />
             <button
               type="button"
               onClick={applyFilters}
-              className="flex items-center gap-1 px-3 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 text-sm"
+              title="Search"
+              className="ml-2 p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 flex-shrink-0"
             >
-              <Search className="w-4 h-4" />
-              Search
-            </button>
-            <button
-              type="button"
-              onClick={clearFilters}
-              className="flex items-center gap-1 px-3 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 text-sm"
-            >
-              <X className="w-4 h-4" />
-              Clear
+              <Search className="w-5 h-5" />
             </button>
           </div>
+
+          {/* Date range */}
+          <div className="w-full lg:w-auto bg-white dark:bg-gray-900 p-2 rounded-lg border border-gray-200 dark:border-gray-700 flex items-center gap-2 flex-wrap">
+            <label className="text-sm text-gray-600 dark:text-gray-400">From</label>
+            <input
+              type="date"
+              value={draftFromDate}
+              onChange={(e) => setDraftFromDate(e.target.value)}
+              className="outline-none text-sm flex-1 min-w-0 text-gray-900 dark:text-gray-100 bg-transparent"
+            />
+            <label className="text-sm text-gray-600 dark:text-gray-400">To</label>
+            <input
+              type="date"
+              value={draftToDate}
+              onChange={(e) => setDraftToDate(e.target.value)}
+              className="outline-none text-sm flex-1 min-w-0 text-gray-900 dark:text-gray-100 bg-transparent"
+            />
+          </div>
+
+          {/* Status */}
+          <select
+            value={draftStatusFilter}
+            onChange={(e) => setDraftStatusFilter(e.target.value)}
+            className="w-full lg:w-auto bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-900 dark:text-gray-100 outline-none"
+          >
+            <option value="">All Status</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+            <option value="disabled">Disabled</option>
+          </select>
+
+          <button
+            type="button"
+            onClick={applyFilters}
+            className="flex items-center justify-center gap-1 px-3 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 text-sm w-full lg:w-auto"
+          >
+            <Search className="w-4 h-4" />
+            Search
+          </button>
+          <button
+            type="button"
+            onClick={clearFilters}
+            className="flex items-center justify-center gap-1 px-3 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 text-sm w-full lg:w-auto"
+          >
+            <X className="w-4 h-4" />
+            Clear
+          </button>
         </div>
 
         <Table

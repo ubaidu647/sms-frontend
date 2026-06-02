@@ -341,18 +341,22 @@ export default function VouchersPage() {
   };
 
   return (
-    <div className="p-6">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">{t('title')}</h1>
-            <p className="text-gray-600 dark:text-gray-400 mt-1">{t('subtitle')}</p>
+    <div className="p-3 sm:p-6">
+      <div className="max-w-7xl mx-auto w-full">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 mb-6">
+          <div className="min-w-0">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100">
+              {t('title')}
+            </h1>
+            <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">
+              {t('subtitle')}
+            </p>
           </div>
-          <div className="flex gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:items-center gap-2">
             {!isOwnOnly && (
               <button
                 onClick={() => setConsolidatedPickerOpen(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-900 border border-indigo-200 text-indigo-700 dark:text-indigo-400 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-950/40 transition-colors"
+                className="flex items-center justify-center gap-2 px-4 py-2 bg-white dark:bg-gray-900 border border-indigo-200 text-indigo-700 dark:text-indigo-400 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-950/40 transition-colors"
               >
                 <FileStack className="w-4 h-4" />
                 Consolidated Slip
@@ -361,7 +365,7 @@ export default function VouchersPage() {
             {canGenerate && (
               <button
                 onClick={() => setGenStudentOpen(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-900 border border-teal-200 text-teal-700 dark:text-teal-400 rounded-lg hover:bg-teal-50 dark:hover:bg-teal-950/40 transition-colors"
+                className="flex items-center justify-center gap-2 px-4 py-2 bg-white dark:bg-gray-900 border border-teal-200 text-teal-700 dark:text-teal-400 rounded-lg hover:bg-teal-50 dark:hover:bg-teal-950/40 transition-colors"
               >
                 <UserPlus className="w-4 h-4" />
                 Single Student
@@ -370,7 +374,7 @@ export default function VouchersPage() {
             {canGenerate && (
               <button
                 onClick={() => setRegenSectionOpen(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-900 border border-amber-200 text-amber-700 rounded-lg hover:bg-amber-50 transition-colors"
+                className="flex items-center justify-center gap-2 px-4 py-2 bg-white dark:bg-gray-900 border border-amber-200 text-amber-700 rounded-lg hover:bg-amber-50 transition-colors"
               >
                 <RefreshCw className="w-4 h-4" />
                 Regenerate Section
@@ -379,7 +383,7 @@ export default function VouchersPage() {
             {canGenerate && (
               <button
                 onClick={() => setGenSectionOpen(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors shadow-sm"
+                className="flex items-center justify-center gap-2 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors shadow-sm"
               >
                 <Plus className="w-5 h-5" />
                 Generate Section
@@ -404,8 +408,8 @@ export default function VouchersPage() {
           </div>
         )}
 
-        <div className="mb-4 flex flex-wrap items-center gap-3">
-          <div className="flex items-center bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 gap-2">
+        <div className="mb-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:flex lg:flex-wrap lg:items-center gap-2 sm:gap-3">
+          <div className="w-full lg:w-auto flex items-center bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 gap-2 col-span-2 sm:col-span-3 md:col-span-2 lg:col-auto">
             <input
               type="text"
               placeholder="Search voucher / student..."
@@ -414,7 +418,7 @@ export default function VouchersPage() {
               onKeyDown={(e) => {
                 if (e.key === 'Enter') applyFilters();
               }}
-              className="outline-none text-sm w-64 text-gray-900 dark:text-gray-100 placeholder:text-gray-400"
+              className="outline-none text-sm w-full lg:w-64 text-gray-900 dark:text-gray-100 placeholder:text-gray-400 bg-transparent"
             />
           </div>
 
@@ -426,14 +430,14 @@ export default function VouchersPage() {
             onKeyDown={(e) => {
               if (e.key === 'Enter') applyFilters();
             }}
-            className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-900 dark:text-gray-100 w-32 outline-none"
+            className="w-full lg:w-32 bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-900 dark:text-gray-100 outline-none"
           />
 
           <input
             type="month"
             value={draftMonth}
             onChange={(e) => setDraftMonth(e.target.value)}
-            className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-900 dark:text-gray-100 outline-none"
+            className="w-full lg:w-auto bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-900 dark:text-gray-100 outline-none"
           />
 
           <select
@@ -442,7 +446,7 @@ export default function VouchersPage() {
               setDraftClassId(e.target.value);
               setDraftSectionId('');
             }}
-            className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
+            className="w-full lg:w-auto bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
           >
             <option value="">All Classes</option>
             {classes.map((c) => (
@@ -456,7 +460,7 @@ export default function VouchersPage() {
             value={draftSectionId}
             onChange={(e) => setDraftSectionId(e.target.value)}
             disabled={!draftClassId}
-            className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
+            className="w-full lg:w-auto bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
           >
             <option value="">{draftClassId ? 'All Sections' : 'Pick class'}</option>
             {sections.map((s) => (
@@ -469,7 +473,7 @@ export default function VouchersPage() {
           <select
             value={draftStatus}
             onChange={(e) => setDraftStatus(e.target.value)}
-            className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300 capitalize"
+            className="w-full lg:w-auto bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300 capitalize"
           >
             <option value="">All Status</option>
             {VOUCHER_STATUSES.map((s) => (
@@ -484,7 +488,7 @@ export default function VouchersPage() {
               value={draftBranchId}
               onFocus={() => setBranchDropdownTouched(true)}
               onChange={(e) => setDraftBranchId(e.target.value)}
-              className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
+              className="w-full lg:w-auto bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
             >
               <option value="">All Branches</option>
               {branches.map((b) => (
@@ -498,7 +502,7 @@ export default function VouchersPage() {
           <button
             type="button"
             onClick={applyFilters}
-            className="flex items-center gap-1 px-3 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 text-sm"
+            className="flex items-center justify-center gap-1 px-3 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 text-sm w-full lg:w-auto"
           >
             <Search className="w-4 h-4" />
             Search
@@ -506,7 +510,7 @@ export default function VouchersPage() {
           <button
             type="button"
             onClick={clearFilters}
-            className="flex items-center gap-1 px-3 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 text-sm"
+            className="flex items-center justify-center gap-1 px-3 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 text-sm w-full lg:w-auto"
           >
             <X className="w-4 h-4" />
             Clear

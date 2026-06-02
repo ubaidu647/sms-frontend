@@ -182,7 +182,7 @@ export default function AddExamSubjectModal({ isOpen, onClose, onSuccess, examId
           </div>
         )}
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Field label="Subject" required error={errors.subjectId?.message}>
             <select {...register('subjectId')} className={inputCls}>
               <option value="">Select subject...</option>

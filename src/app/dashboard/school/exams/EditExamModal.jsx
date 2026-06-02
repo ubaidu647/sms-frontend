@@ -155,7 +155,7 @@ export default function EditExamModal({ isOpen, onClose, onSuccess, exam }) {
           </div>
         )}
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Field label="Exam Name" required error={errors.name?.message}>
             <input {...register('name')} className={inputCls} />
           </Field>

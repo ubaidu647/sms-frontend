@@ -1,7 +1,6 @@
 'use client';
-import React, { useEffect } from 'react';
+import React from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import apiClient from '@/services/apiClient';
 import { useTokenStore } from '@/store/tokenStore';
@@ -10,7 +9,6 @@ import { ArrowLeft, Building2 } from 'lucide-react';
 import BranchProfileForm from './BranchProfileForm';
 
 export default function MyBranchProfilePage() {
-  const router = useRouter();
   const { accessToken: token } = useTokenStore();
   const { user } = useUserStore();
 
@@ -19,15 +17,10 @@ export default function MyBranchProfilePage() {
   const isOrgLevel = isAdmin || acts.includes('view-all-branch-profile');
   const canViewBranches = isAdmin || acts.includes('view-branch');
 
-  // Admins / org-level users manage many branches — send them to the picker.
-  useEffect(() => {
-    if (isOrgLevel) router.replace('/dashboard/school/branches/profiles');
-  }, [isOrgLevel, router]);
-
   const { data, isLoading } = useQuery({
     queryKey: ['branch-profile', 'me'],
     queryFn: async () => (await apiClient.get('/branch-profile/me')).data,
-    enabled: !!token && !isOrgLevel,
+    enabled: !!token,
   });
 
   const profile = data?.data || null;

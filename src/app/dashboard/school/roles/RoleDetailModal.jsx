@@ -76,7 +76,7 @@ export default function RoleDetailModal({ isOpen, onClose, roleId }) {
       {role && (
         <div className="space-y-6">
           {/* Basic info */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <DetailRow label="Role Name">{role.name}</DetailRow>
             <DetailRow label="Serial Number">{role.serialNumber || '—'}</DetailRow>
             <DetailRow label="Branch">{role.branch?.name || '—'}</DetailRow>

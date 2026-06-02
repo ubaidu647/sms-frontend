@@ -333,22 +333,22 @@ export default function StaffPage() {
   const staff = data?.data || [];
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-800 p-6 rounded-[50px]">
-      <div className="max-w-7xl mx-auto">
+    <div className="md:flex-1 md:min-h-0 md:overflow-hidden flex flex-col bg-gray-50 dark:bg-gray-800 p-3 sm:p-6 rounded-2xl sm:rounded-[50px]">
+      <div className="max-w-7xl mx-auto w-full md:flex-1 md:min-h-0 flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+          <div className="min-w-0">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100">
               {isOwnOnly ? t('ownTitle') : t('title')}
             </h1>
-            <p className="text-gray-600 dark:text-gray-400 mt-1">
+            <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">
               {isOwnOnly ? t('ownSubtitle') : t('subtitle')}
             </p>
           </div>
           {canCreate && !isOwnOnly && (
             <button
               onClick={() => setIsAddOpen(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors shadow-sm"
+              className="flex items-center justify-center gap-2 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors shadow-sm w-full sm:w-auto"
             >
               <Plus className="w-5 h-5" />
               Add Staff
@@ -358,24 +358,24 @@ export default function StaffPage() {
 
         {/* Filters — hidden in own-scope, the user only sees their own row */}
         <div
-          className="mb-4 flex flex-wrap items-center gap-3"
+          className="mb-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:flex lg:flex-wrap lg:items-center gap-2 sm:gap-3"
           style={{ display: isOwnOnly ? 'none' : undefined }}
         >
           {/* Date range */}
-          <div className="flex items-center bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 gap-2">
+          <div className="w-full lg:w-auto flex items-center bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 gap-2 flex-wrap col-span-2 sm:col-span-3 md:col-span-2 lg:col-auto">
             <label className="text-sm text-gray-500 dark:text-gray-400">From</label>
             <input
               type="date"
               value={draftFromDate}
               onChange={(e) => setDraftFromDate(e.target.value)}
-              className="text-sm outline-none text-gray-900 dark:text-gray-100"
+              className="text-sm outline-none text-gray-900 dark:text-gray-100 bg-transparent flex-1 min-w-0"
             />
             <label className="text-sm text-gray-500 dark:text-gray-400">To</label>
             <input
               type="date"
               value={draftToDate}
               onChange={(e) => setDraftToDate(e.target.value)}
-              className="text-sm outline-none text-gray-900 dark:text-gray-100"
+              className="text-sm outline-none text-gray-900 dark:text-gray-100 bg-transparent flex-1 min-w-0"
             />
           </div>
 
@@ -383,7 +383,7 @@ export default function StaffPage() {
           <select
             value={draftIsActive}
             onChange={(e) => setDraftIsActive(e.target.value)}
-            className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
+            className="w-full lg:w-auto bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
           >
             <option value="true">Active</option>
             <option value="false">Blocked</option>
@@ -391,7 +391,7 @@ export default function StaffPage() {
           </select>
 
           {/* Name search */}
-          <div className="flex items-center bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700">
+          <div className="w-full lg:w-auto flex items-center bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700">
             <Search className="w-4 h-4 text-gray-400 dark:text-gray-500 mr-2 shrink-0" />
             <input
               type="text"
@@ -401,12 +401,12 @@ export default function StaffPage() {
               onKeyDown={(e) => {
                 if (e.key === 'Enter') applyFilters();
               }}
-              className="outline-none text-sm w-32 text-gray-900 dark:text-gray-100 placeholder:text-gray-400"
+              className="outline-none text-sm w-full lg:w-32 text-gray-900 dark:text-gray-100 placeholder:text-gray-400 bg-transparent"
             />
           </div>
 
           {/* Designation search */}
-          <div className="flex items-center bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700">
+          <div className="w-full lg:w-auto flex items-center bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700">
             <input
               type="text"
               placeholder="Designation..."
@@ -415,12 +415,12 @@ export default function StaffPage() {
               onKeyDown={(e) => {
                 if (e.key === 'Enter') applyFilters();
               }}
-              className="outline-none text-sm w-32 text-gray-900 dark:text-gray-100 placeholder:text-gray-400"
+              className="outline-none text-sm w-full lg:w-32 text-gray-900 dark:text-gray-100 placeholder:text-gray-400 bg-transparent"
             />
           </div>
 
           {/* Serial number */}
-          <div className="flex items-center bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700">
+          <div className="w-full lg:w-auto flex items-center bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700">
             <input
               type="text"
               placeholder="Serial no..."
@@ -429,7 +429,7 @@ export default function StaffPage() {
               onKeyDown={(e) => {
                 if (e.key === 'Enter') applyFilters();
               }}
-              className="outline-none text-sm w-28 text-gray-900 dark:text-gray-100 placeholder:text-gray-400"
+              className="outline-none text-sm w-full lg:w-28 text-gray-900 dark:text-gray-100 placeholder:text-gray-400 bg-transparent"
             />
           </div>
 
@@ -437,7 +437,7 @@ export default function StaffPage() {
           <select
             value={draftStaffType}
             onChange={(e) => setDraftStaffType(e.target.value)}
-            className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
+            className="w-full lg:w-auto bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
           >
             <option value="">All Types</option>
             <option value="teaching">Teaching</option>
@@ -448,7 +448,7 @@ export default function StaffPage() {
           <select
             value={draftEmploymentType}
             onChange={(e) => setDraftEmploymentType(e.target.value)}
-            className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
+            className="w-full lg:w-auto bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
           >
             <option value="">All Employment</option>
             <option value="permanent">Permanent</option>
@@ -461,7 +461,7 @@ export default function StaffPage() {
           <select
             value={draftGender}
             onChange={(e) => setDraftGender(e.target.value)}
-            className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
+            className="w-full lg:w-auto bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
           >
             <option value="">All Genders</option>
             <option value="male">Male</option>
@@ -475,7 +475,7 @@ export default function StaffPage() {
               value={draftBranchId}
               onFocus={() => setBranchDropdownTouched(true)}
               onChange={(e) => setDraftBranchId(e.target.value)}
-              className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
+              className="w-full lg:w-auto bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
             >
               <option value="">All Branches</option>
               {branches.map((b) => (
@@ -489,7 +489,7 @@ export default function StaffPage() {
           <button
             type="button"
             onClick={applyFilters}
-            className="flex items-center gap-1 px-3 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 text-sm"
+            className="flex items-center justify-center gap-1 px-3 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 text-sm w-full lg:w-auto"
           >
             <Search className="w-4 h-4" />
             Search
@@ -497,7 +497,7 @@ export default function StaffPage() {
           <button
             type="button"
             onClick={clearFilters}
-            className="flex items-center gap-1 px-3 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 text-sm"
+            className="flex items-center justify-center gap-1 px-3 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 text-sm w-full lg:w-auto"
           >
             <X className="w-4 h-4" />
             Clear

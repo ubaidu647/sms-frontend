@@ -228,11 +228,13 @@ export default function FeeStructuresPage() {
   };
 
   return (
-    <div className="p-6">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex items-center justify-between mb-6">
+    <div className="p-3 sm:p-6">
+      <div className="max-w-7xl mx-auto w-full">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">{t('title')}</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100">
+              {t('title')}
+            </h1>
             <p className="text-gray-600 dark:text-gray-400 mt-1">{t('subtitle')}</p>
           </div>
           {canCreate && (
@@ -246,7 +248,7 @@ export default function FeeStructuresPage() {
           )}
         </div>
 
-        <div className="mb-4 flex flex-wrap items-center gap-3">
+        <div className="mb-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:flex lg:flex-wrap lg:items-center gap-2 sm:gap-3">
           <div className="flex items-center bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 gap-2">
             <input
               type="text"

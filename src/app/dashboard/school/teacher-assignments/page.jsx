@@ -378,26 +378,26 @@ export default function TeacherAssignmentsPage() {
   }, [assignments, staffSearch]);
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-800 p-6 rounded-[50px]">
-      <div className="max-w-7xl mx-auto">
+    <div className="md:flex-1 md:min-h-0 md:overflow-hidden flex flex-col bg-gray-50 dark:bg-gray-800 p-3 sm:p-6 rounded-2xl sm:rounded-[50px]">
+      <div className="max-w-7xl mx-auto w-full md:flex-1 md:min-h-0 flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+          <div className="min-w-0">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100">
               {isOwnOnly ? t('ownTitle') : t('title')}
             </h1>
-            <p className="text-gray-600 dark:text-gray-400 mt-1">
+            <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">
               {isOwnOnly ? t('ownSubtitle') : t('subtitle')}
             </p>
           </div>
           {canCreate && (
-            <div className="flex items-center gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:items-center gap-2">
               <button
                 onClick={() => {
                   setAddMode('bulk');
                   setIsAddOpen(true);
                 }}
-                className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-900 text-teal-700 dark:text-teal-400 border border-teal-300 rounded-lg hover:bg-teal-50 dark:hover:bg-teal-950/40 transition-colors"
+                className="flex items-center justify-center gap-2 px-4 py-2 bg-white dark:bg-gray-900 text-teal-700 dark:text-teal-400 border border-teal-300 rounded-lg hover:bg-teal-50 dark:hover:bg-teal-950/40 transition-colors"
               >
                 <Users className="w-5 h-5" />
                 Bulk Assign
@@ -407,7 +407,7 @@ export default function TeacherAssignmentsPage() {
                   setAddMode('single');
                   setIsAddOpen(true);
                 }}
-                className="flex items-center gap-2 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors shadow-sm"
+                className="flex items-center justify-center gap-2 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors shadow-sm"
               >
                 <Plus className="w-5 h-5" />
                 Assign Teacher
@@ -417,24 +417,24 @@ export default function TeacherAssignmentsPage() {
         </div>
 
         {/* Filters — inputs bind to draft state; Search applies. */}
-        <div className="mb-4 flex flex-wrap items-center gap-3">
+        <div className="mb-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:flex lg:flex-wrap lg:items-center gap-2 sm:gap-3">
           <select
             value={draftIsActive}
             onChange={(e) => setDraftIsActive(e.target.value)}
-            className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
+            className="w-full lg:w-auto bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
           >
             <option value="true">Active</option>
             <option value="false">Inactive</option>
             <option value="">All</option>
           </select>
 
-          <div className="flex items-center bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700">
+          <div className="w-full lg:w-auto flex items-center bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700">
             <input
               type="text"
               placeholder="Year (2025-2026)"
               value={draftAcademicYear}
               onChange={(e) => setDraftAcademicYear(e.target.value)}
-              className="outline-none text-sm w-32 text-gray-900 dark:text-gray-100 placeholder:text-gray-400"
+              className="outline-none text-sm w-full lg:w-32 text-gray-900 dark:text-gray-100 placeholder:text-gray-400 bg-transparent"
             />
           </div>
 
@@ -443,7 +443,7 @@ export default function TeacherAssignmentsPage() {
               value={draftBranchId}
               onFocus={() => setBranchDropdownTouched(true)}
               onChange={(e) => setDraftBranchId(e.target.value)}
-              className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
+              className="w-full lg:w-auto bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
             >
               <option value="">All Branches</option>
               {branches.map((b) => (
@@ -457,7 +457,7 @@ export default function TeacherAssignmentsPage() {
           <select
             value={draftClassId}
             onChange={(e) => setDraftClassId(e.target.value)}
-            className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
+            className="w-full lg:w-auto bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
           >
             <option value="">All Classes</option>
             {classes.map((c) => (
@@ -472,7 +472,7 @@ export default function TeacherAssignmentsPage() {
               <select
                 value={draftSectionId}
                 onChange={(e) => setDraftSectionId(e.target.value)}
-                className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
+                className="w-full lg:w-auto bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
               >
                 <option value="">All Sections</option>
                 {sections.map((s) => (
@@ -485,7 +485,7 @@ export default function TeacherAssignmentsPage() {
               <select
                 value={draftSubjectId}
                 onChange={(e) => setDraftSubjectId(e.target.value)}
-                className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
+                className="w-full lg:w-auto bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
               >
                 <option value="">All Subjects</option>
                 {subjects.map((s) => (
@@ -500,7 +500,7 @@ export default function TeacherAssignmentsPage() {
           <select
             value={draftRole}
             onChange={(e) => setDraftRole(e.target.value)}
-            className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
+            className="w-full lg:w-auto bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
           >
             <option value="">All Roles</option>
             <option value="teacher">Teacher</option>
@@ -511,7 +511,7 @@ export default function TeacherAssignmentsPage() {
           <select
             value={draftIsPrimary}
             onChange={(e) => setDraftIsPrimary(e.target.value)}
-            className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
+            className="w-full lg:w-auto bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
           >
             <option value="">Primary & Co</option>
             <option value="true">Primary only</option>
@@ -519,14 +519,14 @@ export default function TeacherAssignmentsPage() {
           </select>
 
           {!isOwnOnly && (
-            <div className="flex items-center bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700">
+            <div className="w-full lg:w-auto flex items-center bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700">
               <Search className="w-4 h-4 text-gray-400 dark:text-gray-500 mr-2 shrink-0" />
               <input
                 type="text"
                 placeholder="Teacher name..."
                 value={draftStaffSearch}
                 onChange={(e) => setDraftStaffSearch(e.target.value)}
-                className="outline-none text-sm w-36 text-gray-900 dark:text-gray-100 placeholder:text-gray-400"
+                className="outline-none text-sm w-full lg:w-36 text-gray-900 dark:text-gray-100 placeholder:text-gray-400 bg-transparent"
               />
             </div>
           )}
@@ -534,7 +534,7 @@ export default function TeacherAssignmentsPage() {
           <button
             type="button"
             onClick={applyFilters}
-            className="flex items-center gap-1 px-3 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 text-sm"
+            className="flex items-center justify-center gap-1 px-3 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 text-sm w-full lg:w-auto"
           >
             <Search className="w-4 h-4" />
             Search
@@ -542,7 +542,7 @@ export default function TeacherAssignmentsPage() {
           <button
             type="button"
             onClick={clearFilters}
-            className="flex items-center gap-1 px-3 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 text-sm"
+            className="flex items-center justify-center gap-1 px-3 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 text-sm w-full lg:w-auto"
           >
             <X className="w-4 h-4" />
             Clear

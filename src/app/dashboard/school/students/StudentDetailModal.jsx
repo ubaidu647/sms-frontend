@@ -33,7 +33,11 @@ function Row({ label, value, className = '' }) {
 }
 
 function Section({ title, children, cols = 4 }) {
-  const gridCols = { 2: 'grid-cols-2', 3: 'grid-cols-3', 4: 'grid-cols-4' }[cols];
+  const gridCols = {
+    2: 'grid-cols-1 sm:grid-cols-2',
+    3: 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3',
+    4: 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4',
+  }[cols];
   return (
     <div>
       <h3 className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-2 pb-1 border-b border-gray-100 dark:border-gray-800">
@@ -317,7 +321,7 @@ export default function StudentDetailModal({
 
           {/* Address & Emergency */}
           {(s.address || s.emergencyContact) && (
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {s.address && (
                 <Section title="Address" cols={2}>
                   <Row label="Street" value={s.address.street} className="col-span-2" />

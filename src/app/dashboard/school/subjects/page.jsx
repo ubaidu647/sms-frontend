@@ -341,22 +341,22 @@ export default function SubjectsPage() {
   const subjects = data?.data || [];
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-800 p-6 rounded-[50px]">
-      <div className="max-w-7xl mx-auto">
+    <div className="md:flex-1 md:min-h-0 md:overflow-hidden flex flex-col bg-gray-50 dark:bg-gray-800 p-3 sm:p-6 rounded-2xl sm:rounded-[50px]">
+      <div className="max-w-7xl mx-auto w-full md:flex-1 md:min-h-0 flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+          <div className="min-w-0">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100">
               {isOwnOnly ? t('ownTitle') : t('title')}
             </h1>
-            <p className="text-gray-600 dark:text-gray-400 mt-1">
+            <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">
               {isOwnOnly ? t('ownSubtitle') : t('subtitle')}
             </p>
           </div>
           {canCreate && (
             <button
               onClick={() => setIsAddOpen(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors shadow-sm"
+              className="flex items-center justify-center gap-2 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors shadow-sm w-full sm:w-auto"
             >
               <Plus className="w-5 h-5" />
               Add Subject
@@ -365,9 +365,9 @@ export default function SubjectsPage() {
         </div>
 
         {/* Filters */}
-        <div className="mb-4 flex flex-wrap items-center gap-3">
+        <div className="mb-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:flex lg:flex-wrap lg:items-center gap-2 sm:gap-3">
           {/* Search */}
-          <div className="flex items-center bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 gap-2">
+          <div className="w-full lg:w-auto flex items-center bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 gap-2 col-span-2 sm:col-span-3 md:col-span-2 lg:col-span-1">
             <input
               type="text"
               placeholder="Search by name or code..."
@@ -376,12 +376,12 @@ export default function SubjectsPage() {
               onKeyDown={(e) => {
                 if (e.key === 'Enter') applyFilters();
               }}
-              className="outline-none text-sm w-56 text-gray-900 dark:text-gray-100 placeholder:text-gray-400"
+              className="outline-none text-sm w-full lg:w-56 text-gray-900 dark:text-gray-100 placeholder:text-gray-400 bg-transparent"
             />
           </div>
 
           {/* Academic year */}
-          <div className="flex items-center bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 gap-2">
+          <div className="w-full lg:w-auto flex items-center bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 gap-2">
             <input
               type="text"
               placeholder="2025-2026"
@@ -390,7 +390,7 @@ export default function SubjectsPage() {
               onKeyDown={(e) => {
                 if (e.key === 'Enter') applyFilters();
               }}
-              className="outline-none text-sm w-24 text-gray-900 dark:text-gray-100 placeholder:text-gray-400"
+              className="outline-none text-sm w-full lg:w-24 text-gray-900 dark:text-gray-100 placeholder:text-gray-400 bg-transparent"
             />
           </div>
 
@@ -398,7 +398,7 @@ export default function SubjectsPage() {
           <select
             value={draftIsActive}
             onChange={(e) => setDraftIsActive(e.target.value)}
-            className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
+            className="w-full lg:w-auto bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
           >
             <option value="true">Active</option>
             <option value="false">Inactive</option>
@@ -409,7 +409,7 @@ export default function SubjectsPage() {
           <select
             value={draftClassId}
             onChange={(e) => setDraftClassId(e.target.value)}
-            className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
+            className="w-full lg:w-auto bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
           >
             <option value="">All Classes</option>
             {classes.map((c) => (
@@ -423,7 +423,7 @@ export default function SubjectsPage() {
           <select
             value={draftSubjectType}
             onChange={(e) => setDraftSubjectType(e.target.value)}
-            className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300 capitalize"
+            className="w-full lg:w-auto bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300 capitalize"
           >
             <option value="">All Types</option>
             {SUBJECT_TYPES.map((t) => (
@@ -437,7 +437,7 @@ export default function SubjectsPage() {
           <select
             value={draftCategory}
             onChange={(e) => setDraftCategory(e.target.value)}
-            className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300 capitalize"
+            className="w-full lg:w-auto bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300 capitalize"
           >
             <option value="">All Categories</option>
             {SUBJECT_CATEGORIES.map((c) => (
@@ -453,7 +453,7 @@ export default function SubjectsPage() {
               value={draftBranchId}
               onFocus={() => setBranchDropdownTouched(true)}
               onChange={(e) => setDraftBranchId(e.target.value)}
-              className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
+              className="w-full lg:w-auto bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
             >
               <option value="">All Branches</option>
               {branches.map((b) => (
@@ -467,7 +467,7 @@ export default function SubjectsPage() {
           <button
             type="button"
             onClick={applyFilters}
-            className="flex items-center gap-1 px-3 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 text-sm"
+            className="flex items-center justify-center gap-1 px-3 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 text-sm w-full lg:w-auto"
           >
             <Search className="w-4 h-4" />
             Search
@@ -475,7 +475,7 @@ export default function SubjectsPage() {
           <button
             type="button"
             onClick={clearFilters}
-            className="flex items-center gap-1 px-3 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 text-sm"
+            className="flex items-center justify-center gap-1 px-3 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 text-sm w-full lg:w-auto"
           >
             <X className="w-4 h-4" />
             Clear

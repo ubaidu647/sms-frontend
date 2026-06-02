@@ -36,7 +36,7 @@ export default function ReadStatsModal({ isOpen, onClose, announcement }) {
               <div className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">
                 Total Reads
               </div>
-              <div className="text-3xl font-bold text-gray-900 dark:text-gray-100 mt-1">
+              <div className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100 mt-1">
                 {stats.totalReads ?? 0}
               </div>
             </div>

@@ -53,7 +53,7 @@ export default function FeesLayout({ children }) {
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-gray-50 dark:bg-gray-800 rounded-[20px]">
-      <div className="max-w-7xl mx-auto px-6 pt-6 w-full print:hidden">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 pt-3 sm:pt-6 w-full print:hidden">
         <div className="flex items-center gap-1 border-b border-gray-200 dark:border-gray-700 overflow-x-auto scrollbar-hide">
           {visibleTabs.map((tab) => {
             const isActive =

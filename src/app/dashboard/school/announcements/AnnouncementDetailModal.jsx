@@ -66,7 +66,7 @@ export default function AnnouncementDetailModal({ isOpen, onClose, announcementI
             )}
           </div>
 
-          <div className="grid grid-cols-2 gap-4 text-sm">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
             <Info label="Published At" value={formatDateTime(a.publishedAt)} />
             <Info label="Expires At" value={formatDateTime(a.expiresAt)} />
             <Info

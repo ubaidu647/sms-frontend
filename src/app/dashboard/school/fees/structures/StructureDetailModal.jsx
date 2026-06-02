@@ -25,7 +25,7 @@ export default function StructureDetailModal({ isOpen, onClose, structureId }) {
         <div className="text-sm text-gray-500 dark:text-gray-400">Loading...</div>
       ) : (
         <div className="space-y-5">
-          <div className="grid grid-cols-3 gap-4 text-sm">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
             <Info
               label="Class"
               value={`${s.classId?.name ?? '—'}${s.classId?.grade ? ` (Gr ${s.classId.grade})` : ''}`}

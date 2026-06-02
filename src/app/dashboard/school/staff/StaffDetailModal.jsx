@@ -183,7 +183,7 @@ export default function StaffDetailModal({ isOpen, onClose, staffId }) {
           </Section>
 
           {(s.address || s.emergencyContact) && (
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {s.address && (
                 <Section title="Address" cols={3}>
                   <Row label="Street" value={s.address.street} className="col-span-3" />

@@ -161,7 +161,7 @@ export default function AddSectionModal({ isOpen, onClose, onSuccess, classId, a
             {submitError}
           </div>
         )}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Field label="Section Name" required error={errors.name?.message}>
             <input {...register('name')} placeholder="A" className={inputCls} />
           </Field>
@@ -183,7 +183,7 @@ export default function AddSectionModal({ isOpen, onClose, onSuccess, classId, a
               <option value="inactive">Inactive</option>
             </select>
           </Field>
-          <div className="col-span-2">
+          <div className="sm:col-span-2">
             <Field label="Section Teacher (optional)" error={errors.classTeacher?.message}>
               <select {...register('classTeacher')} className={inputCls}>
                 <option value="">None</option>

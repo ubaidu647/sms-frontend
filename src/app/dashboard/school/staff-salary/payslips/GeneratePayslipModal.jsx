@@ -147,8 +147,8 @@ export default function GeneratePayslipModal({ isOpen, onClose }) {
           </div>
         )}
 
-        <div className="grid grid-cols-2 gap-4">
-          <div className="col-span-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="sm:col-span-2">
             <label className={labelCls}>
               Staff<span className="text-red-500">*</span>
             </label>
@@ -171,7 +171,7 @@ export default function GeneratePayslipModal({ isOpen, onClose }) {
           </div>
 
           {staffId && (
-            <div className="col-span-2">
+            <div className="sm:col-span-2">
               {structLoading ? (
                 <div className="text-xs text-gray-500 dark:text-gray-400">Loading structure…</div>
               ) : noStruct ? (
@@ -230,7 +230,7 @@ export default function GeneratePayslipModal({ isOpen, onClose }) {
             />
           </div>
 
-          <div className="col-span-2">
+          <div className="sm:col-span-2">
             <label className={labelCls}>Notes</label>
             <textarea
               rows={2}

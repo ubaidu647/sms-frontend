@@ -566,7 +566,7 @@ export default function AddStudentModal({ isOpen, onClose, onSuccess }) {
             <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">
               Account
             </h3>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Field label="Full Name" required error={errors.name?.message}>
                 <input {...register('name')} placeholder="Ahmed Khan" className={inputCls} />
               </Field>
@@ -597,7 +597,7 @@ export default function AddStudentModal({ isOpen, onClose, onSuccess }) {
             <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">
               Enrollment
             </h3>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {canCreateAllBranch ? (
                 <Field label="Branch" required error={errors.branchId?.message}>
                   <select
@@ -673,7 +673,7 @@ export default function AddStudentModal({ isOpen, onClose, onSuccess }) {
             <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">
               Personal
             </h3>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Field label="Date of Birth" required error={errors.dob?.message}>
                 <input {...register('dob')} type="date" className={inputCls} />
               </Field>
@@ -718,7 +718,7 @@ export default function AddStudentModal({ isOpen, onClose, onSuccess }) {
             <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">
               Father
             </h3>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Field label="Name" required error={errors.father?.name?.message}>
                 <input {...register('father.name')} placeholder="Mr. Khan" className={inputCls} />
               </Field>
@@ -768,7 +768,7 @@ export default function AddStudentModal({ isOpen, onClose, onSuccess }) {
             <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">
               Mother
             </h3>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Field label="Name" required error={errors.mother?.name?.message}>
                 <input {...register('mother.name')} placeholder="Mrs. Khan" className={inputCls} />
               </Field>
@@ -801,7 +801,7 @@ export default function AddStudentModal({ isOpen, onClose, onSuccess }) {
             <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">
               Emergency Contact
             </h3>
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <Field label="Name" required error={errors.emergencyContact?.name?.message}>
                 <input
                   {...register('emergencyContact.name')}
@@ -831,8 +831,8 @@ export default function AddStudentModal({ isOpen, onClose, onSuccess }) {
             <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">
               Address
             </h3>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="col-span-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="sm:col-span-2">
                 <Field label="Street">
                   <input
                     {...register('address.street')}
@@ -870,7 +870,7 @@ export default function AddStudentModal({ isOpen, onClose, onSuccess }) {
               <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">
                 Previous School
               </h3>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Field label="School Name">
                   <input
                     {...register('previousSchool.name')}
@@ -885,7 +885,7 @@ export default function AddStudentModal({ isOpen, onClose, onSuccess }) {
                     className={inputCls}
                   />
                 </Field>
-                <div className="col-span-2">
+                <div className="sm:col-span-2">
                   <Field label="Reason for Leaving">
                     <input
                       {...register('previousSchool.reasonForLeaving')}
@@ -903,7 +903,7 @@ export default function AddStudentModal({ isOpen, onClose, onSuccess }) {
             <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">
               Fees (optional)
             </h3>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Field label="Discount (%)" error={errors.feeDiscount?.message}>
                 <input
                   {...register('feeDiscount')}
@@ -923,7 +923,7 @@ export default function AddStudentModal({ isOpen, onClose, onSuccess }) {
                   <option value={true}>Yes</option>
                 </select>
               </Field>
-              <div className="col-span-2">
+              <div className="sm:col-span-2">
                 <Field label="Notes">
                   <input
                     {...register('feeNotes')}

@@ -310,7 +310,7 @@ export default function EditStaffModal({ isOpen, onClose, onSuccess, staff, isSe
           <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">
             Basic Info
           </h3>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Field label="Full Name" error={errors.name?.message}>
               <input {...register('name')} placeholder="Ahmed Ali" className={inputCls} />
             </Field>
@@ -376,7 +376,7 @@ export default function EditStaffModal({ isOpen, onClose, onSuccess, staff, isSe
             <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">
               Employment
             </h3>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Field label="Designation" error={errors.designation?.message}>
                 <input
                   {...register('designation')}
@@ -440,11 +440,11 @@ export default function EditStaffModal({ isOpen, onClose, onSuccess, staff, isSe
             <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">
               Leaving (optional)
             </h3>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Field label="Leaving Date" error={errors.leavingDate?.message}>
                 <input {...register('leavingDate')} type="date" className={inputCls} />
               </Field>
-              <div className="col-span-2">
+              <div className="sm:col-span-2">
                 <Field label="Leaving Reason" error={errors.leavingReason?.message}>
                   <input
                     {...register('leavingReason')}
@@ -462,8 +462,8 @@ export default function EditStaffModal({ isOpen, onClose, onSuccess, staff, isSe
           <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">
             Address
           </h3>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="col-span-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="sm:col-span-2">
               <Field label="Street">
                 <input
                   {...register('address.street')}
@@ -486,7 +486,7 @@ export default function EditStaffModal({ isOpen, onClose, onSuccess, staff, isSe
           <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">
             Emergency Contact
           </h3>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Field label="Name">
               <input
                 {...register('emergencyContact.name')}

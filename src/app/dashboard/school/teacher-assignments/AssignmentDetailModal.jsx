@@ -182,7 +182,7 @@ export default function AssignmentDetailModal({ isOpen, onClose, assignmentId })
 
           {a.notes && (
             <Section title="Notes" cols={2}>
-              <Row label="Notes" value={a.notes} className="col-span-2" />
+              <Row label="Notes" value={a.notes} className="sm:col-span-2" />
             </Section>
           )}
 

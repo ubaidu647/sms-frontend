@@ -234,7 +234,7 @@ export default function AddSubjectModal({ isOpen, onClose, onSuccess }) {
           <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">
             Basic Info
           </h3>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Field label="Class" required error={errors.classId?.message}>
               <select {...register('classId')} className={inputCls}>
                 <option value="">Select class...</option>
@@ -289,7 +289,7 @@ export default function AddSubjectModal({ isOpen, onClose, onSuccess }) {
           <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">
             Marks &amp; Credits
           </h3>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Field label="Total Marks" required error={errors.totalMarks?.message}>
               <input
                 {...register('totalMarks')}

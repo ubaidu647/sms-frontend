@@ -46,11 +46,11 @@ export default function CollectionReportPage() {
   const report = data?.data;
 
   return (
-    <div className="p-6">
+    <div className="p-3 sm:p-6">
       <div className="max-w-5xl mx-auto">
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
               <TrendingUp className="w-7 h-7 text-teal-600" /> {t('title')}
             </h1>
             <p className="text-gray-600 dark:text-gray-400 mt-1">{t('subtitle')}</p>
@@ -106,7 +106,7 @@ export default function CollectionReportPage() {
           <div className="text-sm text-gray-500 dark:text-gray-400">Loading...</div>
         ) : !report ? null : (
           <>
-            <div className="grid grid-cols-2 gap-4 mb-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
               <div className="bg-gradient-to-br from-teal-500 to-teal-600 text-white rounded-2xl p-6 shadow-sm">
                 <div className="text-sm opacity-90 uppercase tracking-widest">Total Collected</div>
                 <div className="text-4xl font-bold mt-2">{formatMoney(report.grandTotal)}</div>

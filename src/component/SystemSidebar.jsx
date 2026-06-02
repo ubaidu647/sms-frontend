@@ -18,12 +18,18 @@ const systemNavItems = [
   },
 ];
 
-export const SystemSidebar = ({ onLogout }) => {
+export const SystemSidebar = ({ onLogout, isMobileOpen = false, onMobileClose }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [sidebarWidth, setSidebarWidth] = useState(240);
   const [isResizing, setIsResizing] = useState(false);
   const sidebarRef = useRef(null);
   const pathname = usePathname();
+
+  // Auto-close the mobile drawer on route change.
+  useEffect(() => {
+    if (isMobileOpen && onMobileClose) onMobileClose();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname]);
 
   const startResizing = (e) => {
     e.preventDefault();
@@ -53,14 +59,23 @@ export const SystemSidebar = ({ onLogout }) => {
 
   return (
     <>
+      {/* Mobile backdrop */}
+      <div
+        onClick={onMobileClose}
+        className={`md:hidden fixed inset-0 z-40 bg-black/50 backdrop-blur-sm transition-opacity ${
+          isMobileOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+        }`}
+      />
       <aside
         ref={sidebarRef}
         style={{ width: `${sidebarWidth}px` }}
-        className="bg-teal-600 dark:bg-slate-900 min-h-screen p-4 flex-shrink-0 transition-none flex flex-col relative"
+        className={`bg-teal-600 dark:bg-slate-900 h-screen md:min-h-screen p-4 flex-shrink-0 transition-transform md:transition-none flex flex-col fixed md:relative top-0 left-0 z-50 ${
+          isMobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
+        }`}
       >
         <div
           onMouseDown={startResizing}
-          className="absolute top-0 right-0 w-1 h-full cursor-col-resize hover:bg-teal-500 dark:hover:bg-slate-700 transition-colors z-50"
+          className="hidden md:block absolute top-0 right-0 w-1 h-full cursor-col-resize hover:bg-teal-500 dark:hover:bg-slate-700 transition-colors z-50"
         />
 
         <div className="flex items-center justify-between mb-6">
@@ -146,10 +161,10 @@ export const SystemSidebar = ({ onLogout }) => {
       </aside>
 
       <div
-        className="bg-teal-600 dark:bg-slate-900 fixed top-0 h-25.5 z-0"
+        className="hidden md:block bg-teal-600 dark:bg-slate-900 fixed top-0 h-25.5 z-0"
         style={{ left: `${sidebarWidth}px`, right: 0 }}
       />
-      <div className="bg-teal-600 dark:bg-slate-900 fixed top-0 right-0 w-25.5 h-full z-0" />
+      <div className="hidden md:block bg-teal-600 dark:bg-slate-900 fixed top-0 right-0 w-25.5 h-full z-0" />
     </>
   );
 };

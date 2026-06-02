@@ -202,7 +202,7 @@ export default function EditSubjectModal({ isOpen, onClose, onSuccess, subject }
           Class, branch and academic year cannot be changed after creation.
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Field label="Subject Name" error={errors.name?.message}>
             <input {...register('name')} placeholder="Mathematics" className={inputCls} />
           </Field>

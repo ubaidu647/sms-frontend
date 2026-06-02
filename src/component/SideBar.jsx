@@ -230,7 +230,13 @@ const navigationItems = [
   },
 ];
 
-export const Sidebar = ({ user = {}, menus = [], actions: _actions = [] }) => {
+export const Sidebar = ({
+  user = {},
+  menus = [],
+  actions: _actions = [],
+  isMobileOpen = false,
+  onMobileClose,
+}) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [expandedItems, setExpandedItems] = useState(new Set());
   const [sidebarWidth, setSidebarWidth] = useState(240);
@@ -239,6 +245,12 @@ export const Sidebar = ({ user = {}, menus = [], actions: _actions = [] }) => {
   const pathname = usePathname();
   const t = useTranslations('sidebar');
   const { logout } = useAuth();
+
+  // Auto-close the mobile drawer when navigating to a new route.
+  useEffect(() => {
+    if (isMobileOpen && onMobileClose) onMobileClose();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname]);
 
   const toggleExpand = (index) => {
     const newExpanded = new Set(expandedItems);
@@ -320,14 +332,23 @@ export const Sidebar = ({ user = {}, menus = [], actions: _actions = [] }) => {
 
   return (
     <>
+      {/* Mobile backdrop */}
+      <div
+        onClick={onMobileClose}
+        className={`md:hidden fixed inset-0 z-40 bg-black/50 backdrop-blur-sm transition-opacity ${
+          isMobileOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+        }`}
+      />
       <aside
         ref={sidebarRef}
         style={{ width: `${sidebarWidth}px`, height: '100vh' }}
-        className="bg-teal-600 dark:bg-slate-900 p-4 flex-shrink-0 transition-none flex flex-col sticky top-0 self-start overscroll-contain"
+        className={`bg-teal-600 dark:bg-slate-900 p-4 flex-shrink-0 transition-transform md:transition-none flex flex-col overscroll-contain fixed md:sticky top-0 left-0 z-50 md:self-start ${
+          isMobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
+        }`}
       >
         <div
           onMouseDown={startResizing}
-          className="absolute top-0 right-0 w-1 h-full cursor-col-resize hover:bg-teal-500 dark:hover:bg-slate-700 transition-colors z-50"
+          className="hidden md:block absolute top-0 right-0 w-1 h-full cursor-col-resize hover:bg-teal-500 dark:hover:bg-slate-700 transition-colors z-50"
         />
 
         <div className="flex items-center justify-between mb-6">
@@ -553,7 +574,7 @@ export const Sidebar = ({ user = {}, menus = [], actions: _actions = [] }) => {
 
       {/* Horizontal line from sidebar to end of screen */}
       <div
-        className="bg-teal-600 dark:bg-slate-900 fixed top-0 h-25.5 z-0"
+        className="hidden md:block bg-teal-600 dark:bg-slate-900 fixed top-0 h-25.5 z-0"
         style={{
           left: `${sidebarWidth}px`,
           right: 0,
@@ -561,7 +582,7 @@ export const Sidebar = ({ user = {}, menus = [], actions: _actions = [] }) => {
       />
 
       {/* Vertical line on the right end */}
-      <div className="bg-teal-600 dark:bg-slate-900 fixed top-0 right-0 w-25.5 h-full z-0" />
+      <div className="hidden md:block bg-teal-600 dark:bg-slate-900 fixed top-0 right-0 w-25.5 h-full z-0" />
     </>
   );
 };

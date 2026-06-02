@@ -158,7 +158,7 @@ export default function RegenerateSectionModal({ isOpen, onClose }) {
       )}
 
       {!result ? (
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {isOrgLevel && (
             <div>
               <label className={labelCls}>Branch</label>
@@ -248,7 +248,7 @@ export default function RegenerateSectionModal({ isOpen, onClose }) {
               className={inputCls}
             />
           </div>
-          <div className="col-span-2">
+          <div className="sm:col-span-2">
             <label className={labelCls}>
               Reason<span className="text-red-500">*</span>
             </label>

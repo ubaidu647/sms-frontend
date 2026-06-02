@@ -323,7 +323,7 @@ export default function AddStaffModal({ isOpen, onClose, onSuccess }) {
           <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">
             Account
           </h3>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Field label="Full Name" required error={errors.name?.message}>
               <input {...register('name')} placeholder="Ahmed Ali" className={inputCls} />
             </Field>
@@ -354,7 +354,7 @@ export default function AddStaffModal({ isOpen, onClose, onSuccess }) {
           <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">
             Branch & Role
           </h3>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {canCreateAllBranch ? (
               <Field label="Branch" required error={errors.branchId?.message}>
                 <select
@@ -396,7 +396,7 @@ export default function AddStaffModal({ isOpen, onClose, onSuccess }) {
           <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">
             Employment
           </h3>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Field label="Designation" required error={errors.designation?.message}>
               <input
                 {...register('designation')}
@@ -458,7 +458,7 @@ export default function AddStaffModal({ isOpen, onClose, onSuccess }) {
           <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">
             Personal
           </h3>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Field label="Gender" required error={errors.gender?.message}>
               <select {...register('gender')} className={`${inputCls} bg-white dark:bg-gray-900`}>
                 <option value="">Select gender...</option>
@@ -506,8 +506,8 @@ export default function AddStaffModal({ isOpen, onClose, onSuccess }) {
           <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">
             Address
           </h3>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="col-span-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="sm:col-span-2">
               <Field label="Street" error={errors['address.street']?.message}>
                 <input
                   {...register('address.street')}
@@ -530,7 +530,7 @@ export default function AddStaffModal({ isOpen, onClose, onSuccess }) {
           <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">
             Emergency Contact
           </h3>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Field label="Name" error={errors['emergencyContact.name']?.message}>
               <input
                 {...register('emergencyContact.name')}

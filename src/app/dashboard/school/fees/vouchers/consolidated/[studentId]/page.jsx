@@ -172,7 +172,7 @@ export default function ConsolidatedVoucherPage() {
                   <div className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-widest">
                     Consolidated Arrears Slip
                   </div>
-                  <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+                  <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100">
                     {student?.user?.name || 'Student'}
                   </h1>
                   <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">

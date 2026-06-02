@@ -51,7 +51,7 @@ export default function SectionSummaryPage() {
   const handlePrint = () => window.print();
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-800 p-6 rounded-[50px]">
+    <div className="md:flex-1 md:min-h-0 md:overflow-hidden flex flex-col bg-gray-50 dark:bg-gray-800 p-3 sm:p-6 rounded-2xl sm:rounded-[50px]">
       <PrintStyles />
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-4 no-print">

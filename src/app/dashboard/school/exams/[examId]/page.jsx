@@ -188,7 +188,7 @@ export default function ExamDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-800 p-6 rounded-[50px]">
+      <div className="md:flex-1 md:min-h-0 md:overflow-hidden flex flex-col bg-gray-50 dark:bg-gray-800 p-3 sm:p-6 rounded-2xl sm:rounded-[50px]">
         <div className="max-w-7xl mx-auto text-gray-500 dark:text-gray-400">Loading exam…</div>
       </div>
     );
@@ -196,7 +196,7 @@ export default function ExamDetailPage() {
 
   if (!exam) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-800 p-6 rounded-[50px]">
+      <div className="md:flex-1 md:min-h-0 md:overflow-hidden flex flex-col bg-gray-50 dark:bg-gray-800 p-3 sm:p-6 rounded-2xl sm:rounded-[50px]">
         <div className="max-w-7xl mx-auto">
           <button
             onClick={() => router.push('/dashboard/school/exams')}
@@ -222,7 +222,7 @@ export default function ExamDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-800 p-6 rounded-[50px]">
+    <div className="md:flex-1 md:min-h-0 md:overflow-hidden flex flex-col bg-gray-50 dark:bg-gray-800 p-3 sm:p-6 rounded-2xl sm:rounded-[50px]">
       <div className="max-w-7xl mx-auto">
         <button
           onClick={() => router.push('/dashboard/school/exams')}

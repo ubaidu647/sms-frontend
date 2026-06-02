@@ -166,7 +166,7 @@ export default function EditClassModal({ isOpen, onClose, onSuccess, cls }) {
           Grade and academic year cannot be changed after creation.
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Field label="Class Name" error={errors.name?.message}>
             <input {...register('name')} placeholder="Grade 5" className={inputCls} />
           </Field>

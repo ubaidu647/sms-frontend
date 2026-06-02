@@ -249,7 +249,7 @@ export default function VehicleFormModal({ isOpen, onClose, vehicle }) {
 
         <div>
           <h3 className={sectionCls}>Vehicle Details</h3>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {!isEdit && canCreateAllBranch && (
               <div>
                 <label className={labelCls}>
@@ -423,7 +423,7 @@ export default function VehicleFormModal({ isOpen, onClose, vehicle }) {
 
         <div>
           <h3 className={sectionCls}>Compliance</h3>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label className={labelCls}>Insurance #</label>
               <input
@@ -465,7 +465,7 @@ export default function VehicleFormModal({ isOpen, onClose, vehicle }) {
 
         <div>
           <h3 className={sectionCls}>Driver</h3>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label className={labelCls}>
                 Name<span className="text-red-500">*</span>
@@ -524,7 +524,7 @@ export default function VehicleFormModal({ isOpen, onClose, vehicle }) {
 
         <div>
           <h3 className={sectionCls}>Conductor (optional)</h3>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label className={labelCls}>Name</label>
               <input
