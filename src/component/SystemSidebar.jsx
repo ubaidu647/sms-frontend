@@ -16,6 +16,18 @@ const systemNavItems = [
     key: 'organizations',
     path: '/dashboard/system/organizations',
   },
+  {
+    label: 'Packages',
+    icon: 'https://c.animaapp.com/mi4xjeskxZrnLa/img/frame-1.svg',
+    key: 'packages',
+    path: '/dashboard/system/packages',
+  },
+  {
+    label: 'Subscriptions',
+    icon: 'https://c.animaapp.com/mi4xjeskxZrnLa/img/frame-1.svg',
+    key: 'subscriptions',
+    path: '/dashboard/system/subscriptions',
+  },
 ];
 
 export const SystemSidebar = ({ onLogout, isMobileOpen = false, onMobileClose }) => {

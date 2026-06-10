@@ -244,6 +244,9 @@ export const ACTIONS = {
   VIEW_ALL_BRANCH_STAFF_SALARY_POLICY: 'view-all-branch-staff-salary-policy',
   UPDATE_ALL_BRANCH_STAFF_SALARY_POLICY: 'update-all-branch-staff-salary-policy',
 
+  // ── Billing & subscription (read-only self-serve) ─
+  VIEW_BILLING: 'view-billing',
+
   // ── Self-scoped (own data only) ───────────────────
   VIEW_OWN_STAFF: 'view-own-staff',
   UPDATE_OWN_STAFF: 'update-own-staff',
@@ -285,6 +288,7 @@ export const AVAILABLE_MENUS = [
   { key: 'salary-structure', label: 'Staff Salary — Structures' },
   { key: 'payslip', label: 'Staff Salary — Payslips' },
   { key: 'salary-policy', label: 'Staff Salary — Policy' },
+  { key: 'billing', label: 'Billing' },
 ];
 
 export const AVAILABLE_ACTIONS = [
@@ -604,4 +608,7 @@ export const AVAILABLE_ACTIONS = [
   },
   { key: ACTIONS.VIEW_OWN_STAFF_SALARY, label: 'View Own', menu: 'salary-structure', scope: 'own' },
   { key: ACTIONS.VIEW_OWN_PAYSLIP, label: 'View Own', menu: 'payslip', scope: 'own' },
+
+  // Billing — read-only; paying/changing the plan stays super-admin only
+  { key: ACTIONS.VIEW_BILLING, label: 'View', menu: 'billing' },
 ];

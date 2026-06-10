@@ -59,6 +59,21 @@ const schema = yup.object().shape({
   leavingDate: yup.string().optional(),
   leavingReason: yup.string().optional(),
   isActive: yup.string().optional(),
+  // Optional password change. Blank → omitted from the payload (keeps current
+  // password). When set, the backend requires ≥ 6 chars; confirm must match.
+  password: yup
+    .string()
+    .transform((v) => (v === '' ? undefined : v))
+    .min(6, 'Password must be at least 6 characters')
+    .optional(),
+  confirmPassword: yup.string().when('password', {
+    is: (val) => !!val,
+    then: (s) =>
+      s
+        .required('Please confirm the new password')
+        .oneOf([yup.ref('password')], 'Passwords do not match'),
+    otherwise: (s) => s.optional(),
+  }),
 });
 
 const inputCls =
@@ -115,6 +130,8 @@ export default function EditStaffModal({ isOpen, onClose, onSuccess, staff, isSe
         leavingDate: staff.leavingDate ? staff.leavingDate.slice(0, 10) : '',
         leavingReason: staff.leavingReason || '',
         isActive: staff.isActive === false ? 'false' : 'true',
+        password: '',
+        confirmPassword: '',
         'address.street': staff.address?.street || '',
         'address.city': staff.address?.city || '',
         'address.state': staff.address?.state || '',
@@ -244,6 +261,10 @@ export default function EditStaffModal({ isOpen, onClose, onSuccess, staff, isSe
       );
     }
 
+    // Only send password when the user actually typed one — blank keeps the
+    // current password. Allowed on own profile too.
+    if (data.password) fd.append('password', data.password);
+
     if (photoFile) fd.append('photo', photoFile);
 
     mutation.mutate(fd);
@@ -302,7 +323,7 @@ export default function EditStaffModal({ isOpen, onClose, onSuccess, staff, isSe
         )}
 
         <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg text-amber-700 text-xs">
-          Email, password, role and branch cannot be changed after creation.
+          Email, role and branch cannot be changed after creation.
         </div>
 
         {/* Basic Info */}
@@ -368,6 +389,37 @@ export default function EditStaffModal({ isOpen, onClose, onSuccess, staff, isSe
               </Field>
             )}
           </div>
+        </div>
+
+        {/* Security — optional password change */}
+        <div>
+          <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">
+            Security
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Field label="New Password" error={errors.password?.message}>
+              <input
+                {...register('password')}
+                type="password"
+                autoComplete="new-password"
+                placeholder="Leave blank to keep current"
+                className={inputCls}
+              />
+            </Field>
+            <Field label="Confirm New Password" error={errors.confirmPassword?.message}>
+              <input
+                {...register('confirmPassword')}
+                type="password"
+                autoComplete="new-password"
+                placeholder="Re-enter new password"
+                className={inputCls}
+              />
+            </Field>
+          </div>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+            Leave blank to keep the current password. New password must be at least 6 characters and
+            takes effect immediately.
+          </p>
         </div>
 
         {/* Employment — HR-only, hidden on self-update */}

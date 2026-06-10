@@ -29,6 +29,9 @@ export function useSignIn() {
       router.push('/dashboard');
     },
     onError: (err) => {
+      // 429s are toasted once, globally, by the apiClient interceptor — skip here
+      // to avoid a duplicate toast (and let the form drive the retry countdown).
+      if (err.response?.status === 429) return;
       const message = err.response?.data?.message || err.message || 'Something went wrong';
       toast.error(message);
     },

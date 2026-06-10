@@ -20,6 +20,7 @@ import {
   BadgeDollarSign,
   BarChart3,
   TrendingDown,
+  CreditCard,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -227,6 +228,14 @@ const navigationItems = [
         path: '/dashboard/school/reports/defaulters',
       },
     ],
+  },
+  {
+    labelKey: 'billing',
+    iconComponent: CreditCard,
+    key: 'billing',
+    base: 'view-billing',
+    hasSubmenu: false,
+    path: '/dashboard/school/billing',
   },
 ];
 

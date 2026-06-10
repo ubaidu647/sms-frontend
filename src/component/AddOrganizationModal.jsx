@@ -11,13 +11,22 @@ import * as yup from 'yup';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { postData } from '@/utils/api';
 import { useOrganizationStore } from '../app/dashboard/system/organizations/store/organizationStore';
+import { usePackages } from '../app/dashboard/system/packages/hooks/usePackages';
+import { fmtMoney } from '../app/dashboard/system/packages/format';
 // Validation schema
 const organizationSchema = yup.object().shape({
   name: yup.string().required('School name is required'),
   email: yup.string().email('Invalid email').required('Email is required'),
   phone: yup.string(),
-  packageId: yup.string().required(),
+  packageId: yup.string().required('Please choose a package'),
   status: yup.string().required(),
+  gracePeriodInDays: yup
+    .string()
+    .test('grace', 'Grace period must be a whole number (0 or more)', (v) => {
+      if (v === '' || v == null) return true;
+      const n = Number(v);
+      return Number.isInteger(n) && n >= 0;
+    }),
   password: yup.string().min(6, 'Password must be at least 6 characters'),
 });
 
@@ -30,6 +39,7 @@ export const AddOrganizationModal = ({ isOpen, onClose, token, onSuccess = null 
     handleSubmit,
     watch,
     reset,
+    setValue,
     formState: { errors },
   } = useForm({
     resolver: yupResolver(organizationSchema),
@@ -37,11 +47,22 @@ export const AddOrganizationModal = ({ isOpen, onClose, token, onSuccess = null 
       name: '',
       email: '',
       phone: '',
-      packageId: '691b63ae069855041a3c6655',
+      packageId: '',
       status: 'active',
+      gracePeriodInDays: '0',
       password: '',
     },
   });
+
+  // Real, active packages — the chosen one is frozen into the school's first
+  // subscription on the backend, so the list must come from the catalog.
+  const { data: pkgData, isLoading: pkgLoading } = usePackages({
+    limit: 100,
+    filters: { isActive: true },
+    enabled: isOpen,
+  });
+  const packages = pkgData?.data ?? [];
+  const selectedPackageId = watch('packageId');
 
   const [successState, setSuccessState] = useState(false);
   const [submitError, setSubmitError] = useState('');
@@ -53,6 +74,14 @@ export const AddOrganizationModal = ({ isOpen, onClose, token, onSuccess = null 
       setSuccessState(false);
     }
   }, [isOpen, reset]);
+
+  // Default to the first package once the catalog loads (no hardcoded id).
+  useEffect(() => {
+    const list = pkgData?.data ?? [];
+    if (isOpen && !selectedPackageId && list.length > 0) {
+      setValue('packageId', list[0]._id, { shouldValidate: true });
+    }
+  }, [isOpen, selectedPackageId, pkgData, setValue]);
 
   // Mutation to create a school
   const createSchoolMutation = useMutation({
@@ -87,7 +116,14 @@ export const AddOrganizationModal = ({ isOpen, onClose, token, onSuccess = null 
   const onSubmit = (data) => {
     setSubmitError('');
     setSuccessState(false);
-    createSchoolMutation.mutate(data);
+    // Omit grace when blank (→ backend default 0); otherwise send a number.
+    const payload = { ...data };
+    if (payload.gracePeriodInDays === '' || payload.gracePeriodInDays == null) {
+      delete payload.gracePeriodInDays;
+    } else {
+      payload.gracePeriodInDays = Number(payload.gracePeriodInDays);
+    }
+    createSchoolMutation.mutate(payload);
   };
 
   const handleCancel = () => {
@@ -193,13 +229,26 @@ export const AddOrganizationModal = ({ isOpen, onClose, token, onSuccess = null 
             </label>
             <select
               {...register('packageId')}
-              className="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 rounded-xl"
+              disabled={pkgLoading || packages.length === 0}
+              className="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 rounded-xl disabled:opacity-60"
             >
-              <option value="691b63ae069855041a3c6655">Basic</option>
-              <option value="691b63ae069855041a3c6655">Standard</option>
-              <option value="691b63ae069855041a3c6655">Premium</option>
-              <option value="691b63ae069855041a3c6655">Enterprise</option>
+              {pkgLoading ? (
+                <option value="">Loading packages…</option>
+              ) : packages.length === 0 ? (
+                <option value="">No active packages — create one first</option>
+              ) : (
+                packages.map((p) => (
+                  <option key={p._id} value={p._id}>
+                    {p.name} — {fmtMoney(p.price)} / {p.durationInDays}d
+                  </option>
+                ))
+              )}
             </select>
+            {errors.packageId && (
+              <p className="mt-1 text-xs text-red-600 dark:text-red-400">
+                {errors.packageId.message}
+              </p>
+            )}
           </div>
 
           <div>
@@ -211,10 +260,34 @@ export const AddOrganizationModal = ({ isOpen, onClose, token, onSuccess = null 
               className="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 rounded-xl"
             >
               <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
-              <option value="disabled">Disabled</option>
+              <option value="pending">Pending</option>
+              <option value="suspended">Suspended</option>
             </select>
           </div>
+        </div>
+
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+            Grace period (days after expiry)
+          </label>
+          <input
+            type="number"
+            min="0"
+            step="1"
+            inputMode="numeric"
+            {...register('gracePeriodInDays')}
+            className="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 rounded-xl"
+            placeholder="0"
+          />
+          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+            Days the school keeps access after the subscription expires before writes are blocked. 0
+            = cut off immediately at expiry.
+          </p>
+          {errors.gracePeriodInDays && (
+            <p className="mt-1 text-xs text-red-600 dark:text-red-400">
+              {errors.gracePeriodInDays.message}
+            </p>
+          )}
         </div>
 
         <InputField

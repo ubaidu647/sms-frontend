@@ -5,6 +5,13 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { Mail, Lock, Eye, EyeOff, Loader2, ArrowRight } from 'lucide-react';
 import { signInSchema } from './validation';
 import { useSignIn } from './hooks/useSignIn';
+import { useRateLimit } from '@/hooks/useRateLimit';
+
+const formatCountdown = (s) => {
+  const m = Math.floor(s / 60);
+  const sec = String(s % 60).padStart(2, '0');
+  return `${m}:${sec}`;
+};
 
 const SignInForm = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -16,6 +23,7 @@ const SignInForm = () => {
   } = useForm({ resolver: yupResolver(signInSchema) });
 
   const { mutate, isPending } = useSignIn();
+  const { blocked, secondsLeft } = useRateLimit({ urlIncludes: '/auth/' });
 
   const onSubmit = (data) => mutate(data);
 
@@ -86,7 +94,7 @@ const SignInForm = () => {
       {/* Submit */}
       <button
         type="submit"
-        disabled={isPending}
+        disabled={isPending || blocked}
         className="w-full h-11 rounded-xl bg-teal-600 hover:bg-teal-700 disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold shadow-lg shadow-teal-600/30 transition-all flex items-center justify-center gap-2 group"
       >
         {isPending ? (
@@ -94,6 +102,8 @@ const SignInForm = () => {
             <Loader2 className="w-4 h-4 animate-spin" />
             Signing in…
           </>
+        ) : blocked ? (
+          <>Try again in {formatCountdown(secondsLeft)}</>
         ) : (
           <>
             Sign in

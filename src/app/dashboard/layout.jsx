@@ -1,6 +1,7 @@
 'use client';
 import { useAuth } from '@/hooks/useAuth';
 import { Loader2 } from 'lucide-react';
+import SubscriptionGuard from '@/component/SubscriptionGuard';
 
 export default function DashboardLayout({ children }) {
   const { hasHydrated, accessToken, refreshToken, loading } = useAuth();
@@ -21,5 +22,5 @@ export default function DashboardLayout({ children }) {
     );
   }
 
-  return <>{children}</>;
+  return <SubscriptionGuard>{children}</SubscriptionGuard>;
 }
