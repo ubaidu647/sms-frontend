@@ -1,0 +1,25 @@
+export const COLORS = {
+  brand: '#00918e',
+  brandDark: '#007a77',
+  brandLight: '#33b9b5',
+  accent: '#ffdc34',
+  bg: '#f6f6f6',
+  card: '#ffffff',
+  border: '#e5e7eb',
+  text: '#111827',
+  muted: '#6b7280',
+  mutedSoft: '#9ca3af',
+  red: '#ef4444',
+
+  statTeal: '#2F8F7A',
+  statAmber: '#E0A328',
+  statRed: '#D94A2A',
+  statBlue: '#2E6BE6',
+
+  pillGreenBg: '#dcfce7',
+  pillGreenFg: '#166534',
+  pillYellowBg: '#fef3c7',
+  pillYellowFg: '#92400e',
+  pillRedBg: '#fee2e2',
+  pillRedFg: '#991b1b',
+};
