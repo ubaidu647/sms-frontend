@@ -1,6 +1,5 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "nextjs",
-  "buildCommand": "next build",
-  "ignoreCommand": "cd ../.. && npx nx-ignore @sms/student"
+  "buildCommand": "next build"
 }
