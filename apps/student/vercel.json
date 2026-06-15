@@ -2,5 +2,5 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "nextjs",
   "buildCommand": "next build",
-  "ignoreCommand": "npx nx-ignore @sms/student"
+  "ignoreCommand": "cd ../.. && npx nx-ignore @sms/student"
 }
