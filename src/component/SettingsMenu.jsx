@@ -5,6 +5,7 @@ import { useRouter } from 'expo-router';
 import { useAuth } from '../hooks/useAuth';
 import { useUserStore } from '../store/userStore';
 import { useColors } from '../theme/useColors';
+import { useTranslations } from '../i18n';
 
 const USER_MGMT_ROLES = ['super-admin', 'admin', 'subadmin'];
 
@@ -13,6 +14,7 @@ export default function SettingsMenu({ open, anchor, onClose }) {
   const { logout } = useAuth();
   const C = useColors();
   const router = useRouter();
+  const t = useTranslations('topbar');
 
   const roleName =
     (typeof user?.role === 'string' ? user.role : user?.role?.name) ?? 'Member';
@@ -48,7 +50,7 @@ export default function SettingsMenu({ open, anchor, onClose }) {
 
           <MenuRow
             icon="settings"
-            label="Settings"
+            label={t('settings')}
             color={C.text}
             iconColor={C.muted}
             onPress={() => {
@@ -60,7 +62,7 @@ export default function SettingsMenu({ open, anchor, onClose }) {
           {showUserMgmt && (
             <MenuRow
               icon="users"
-              label="User Management"
+              label={t('userManagement')}
               color={C.text}
               iconColor={C.muted}
               onPress={() => {
@@ -78,7 +80,7 @@ export default function SettingsMenu({ open, anchor, onClose }) {
 
           <MenuRow
             icon="log-out"
-            label="Log out"
+            label={t('logout')}
             color="#dc2626"
             iconColor="#dc2626"
             onPress={() => {

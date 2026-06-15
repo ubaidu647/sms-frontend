@@ -1,0 +1,186 @@
+{
+  "topbar": {
+    "greeting": "Hello,",
+    "settings": "Settings",
+    "userManagement": "User Management",
+    "logout": "Logout",
+    "switchToLight": "Switch to light mode",
+    "switchToDark": "Switch to dark mode"
+  },
+  "sidebar": {
+    "schoolPortal": "School Portal",
+    "billing": "Billing",
+    "branches": "Branches",
+    "staff": "Staff",
+    "role": "Role",
+    "classes": "Classes",
+    "subjects": "Subjects",
+    "students": "Students",
+    "attendance": "Attendance",
+    "staffAttendance": "Staff Attendance",
+    "staffSalary": "Staff Salary",
+    "salaryDashboard": "Dashboard",
+    "salaryStructures": "Salary Structures",
+    "payslips": "Payslips",
+    "policy": "Policy",
+    "teacherAssignments": "Teacher Assignments",
+    "exams": "Exams",
+    "timetable": "Timetable",
+    "fees": "Fees",
+    "announcements": "Announcements",
+    "transport": "Transport",
+    "vehicles": "Vehicles",
+    "routes": "Routes",
+    "assignments": "Assignments",
+    "branchProfile": "Branch Profile",
+    "reports": "Reports",
+    "reportStudentFeeDefaulter": "Student Fee Defaulter",
+    "logout": "Logout"
+  },
+  "classes": {
+    "title": "Classes",
+    "subtitle": "Manage classes and their sections"
+  },
+  "students": {
+    "title": "Students",
+    "subtitle": "Manage student enrollments and records",
+    "ownTitle": "My Profile",
+    "ownSubtitle": "Your own student profile."
+  },
+  "staff": {
+    "title": "Staff",
+    "subtitle": "Manage staff members and their accounts",
+    "ownTitle": "My Profile",
+    "ownSubtitle": "Your own staff profile."
+  },
+  "subjects": {
+    "title": "Subjects",
+    "subtitle": "Manage subjects offered in each class",
+    "ownTitle": "My Subjects",
+    "ownSubtitle": "Subjects you are assigned to teach."
+  },
+  "teacherAssignments": {
+    "title": "Teacher Assignments",
+    "subtitle": "Map teachers to subjects across classes and sections",
+    "ownTitle": "My Teaching Assignments",
+    "ownSubtitle": "The classes and subjects you are assigned to teach."
+  },
+  "attendance": {
+    "title": "Attendance",
+    "subtitle": "Mark and review student attendance",
+    "ownTitle": "Attendance",
+    "ownSubtitle": "Your own attendance history."
+  },
+  "staffAttendance": {
+    "title": "Staff Attendance",
+    "subtitle": "Mark and review daily staff attendance for payroll",
+    "ownTitle": "Staff Attendance",
+    "ownSubtitle": "Your own attendance history."
+  },
+  "timetable": {
+    "title": "Timetable",
+    "subtitle": "Define period configs, build section schedules and review live status",
+    "ownTitle": "My Schedule",
+    "ownSubtitle": "Your personal timetable."
+  },
+  "exams": {
+    "title": "Exams",
+    "subtitle": "Plan exams, schedule subjects, enter marks and publish results"
+  },
+  "branches": {
+    "title": "Branches",
+    "subtitle": "Manage branch locations and their report branding"
+  },
+  "roles": {
+    "title": "Roles",
+    "subtitle": "Manage staff roles and permissions"
+  },
+  "announcements": {
+    "title": "Announcements",
+    "subtitle": "Compose and manage notices, events, and urgent updates for your audience."
+  },
+  "announcementsFeed": {
+    "title": "Announcements",
+    "subtitle": "Notices, events, and important updates targeted to you."
+  },
+  "payments": {
+    "title": "Payments",
+    "subtitle": "Recorded fee payments & receipts. Void here if a cheque bounces or a refund is needed."
+  },
+  "vouchers": {
+    "title": "Vouchers",
+    "subtitle": "Monthly fee vouchers — generated, paid, and tracked."
+  },
+  "feeStructures": {
+    "title": "Fee Structures",
+    "subtitle": "One structure per class per academic year. Define monthly, one-time, annual, and quarterly components."
+  },
+  "payslips": {
+    "title": "Payslips",
+    "subtitle": "Generate, edit, and pay monthly payslips for staff."
+  },
+  "salaryStructures": {
+    "title": "Salary Structures",
+    "subtitle": "Define basic salary, allowances, and deductions per staff member."
+  },
+  "payrollDashboard": {
+    "title": "Payroll Dashboard",
+    "subtitle": "Branch-level totals and payslip status for the selected month."
+  },
+  "salaryPolicy": {
+    "title": "Salary Policy",
+    "subtitle": "Define attendance-driven deduction and bonus rules. One policy per staff type, applied automatically when payslips are generated."
+  },
+  "routes": {
+    "title": "Routes",
+    "subtitle": "Define pickup/drop routes with stops, fees, and an assigned vehicle."
+  },
+  "vehicles": {
+    "title": "Vehicles",
+    "subtitle": "Buses, vans and other vehicles available for student transport."
+  },
+  "transportAssignments": {
+    "title": "Transport Assignments",
+    "subtitle": "Students assigned to routes and stops with locked-in monthly fees."
+  },
+  "collectionReport": {
+    "title": "Collection Report",
+    "subtitle": "Daily / monthly cashbook by payment method."
+  },
+  "outstandingFees": {
+    "title": "Outstanding Fees",
+    "subtitle": "Defaulters ranked by outstanding amount."
+  },
+  "studentFeeDefaulters": {
+    "title": "Student Fee Defaulters",
+    "subtitle": "Period statement of unpaid vouchers, grouped by branch."
+  },
+  "organizations": {
+    "title": "Organizations",
+    "subtitle": "Manage all your organizations"
+  },
+  "settings": {
+    "title": "Settings",
+    "subtitle": "Personalize how the app looks and feels.",
+    "appearance": {
+      "title": "Appearance",
+      "subtitle": "Pick a theme. You can change it anytime."
+    },
+    "theme": {
+      "light": "Light",
+      "lightDesc": "Clean and bright",
+      "dark": "Dark",
+      "darkDesc": "Easy on the eyes",
+      "system": "System",
+      "systemDesc": "Match device setting",
+      "toast": "Theme set to {theme}"
+    },
+    "language": {
+      "title": "Language",
+      "subtitle": "Choose the language you prefer for the interface.",
+      "comingSoon": "Coming soon",
+      "footnote": "Your choice is saved. Translations will roll out across the app gradually.",
+      "toast": "Language set to {lang}"
+    }
+  }
+}

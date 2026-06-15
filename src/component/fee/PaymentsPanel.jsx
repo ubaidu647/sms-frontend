@@ -28,18 +28,21 @@ import { hasAnyAction, resolveScope } from '../../utils/permissions';
 import { useColors } from '../../theme/useColors';
 import { COLORS } from '../../theme/colors';
 import SmallActionModal from './SmallActionModal';
+import PaymentDetailModal from './PaymentDetailModal';
 
-function PaymentCard({ p, canVoid, onVoid, C }) {
+function PaymentCard({ p, canVoid, onVoid, onView, C }) {
   const cfg = PAYMENT_METHOD_PILL[p.method] || PAYMENT_METHOD_PILL.other;
   return (
-    <View
-      style={[
+    <Pressable
+      onPress={onView}
+      style={({ pressed }) => [
         styles.card,
         {
           backgroundColor: C.card,
           borderColor: C.border,
           opacity: p.isVoid ? 0.7 : 1,
         },
+        pressed && { opacity: p.isVoid ? 0.6 : 0.92 },
       ]}
     >
       <View style={styles.cardHeader}>
@@ -91,7 +94,7 @@ function PaymentCard({ p, canVoid, onVoid, C }) {
           <Text style={styles.voidReasonText}>Reason: {p.voidReason}</Text>
         </View>
       )}
-    </View>
+    </Pressable>
   );
 }
 
@@ -119,6 +122,7 @@ export default function PaymentsPanel() {
   const [limit] = useState(20);
   const [showFilters, setShowFilters] = useState(false);
   const [voidTarget, setVoidTarget] = useState(null);
+  const [detailTarget, setDetailTarget] = useState(null);
 
   const { data: branchData } = useBranchesDropdown({ enabled: isOrgLevel });
   const branches = branchData?.data || [];
@@ -389,6 +393,7 @@ export default function PaymentsPanel() {
             p={item}
             canVoid={canVoid}
             onVoid={() => setVoidTarget(item)}
+            onView={() => setDetailTarget(item)}
             C={C}
           />
         )}
@@ -438,6 +443,12 @@ export default function PaymentsPanel() {
         ]}
         onClose={() => setVoidTarget(null)}
         onSubmit={(vals) => voidMut.mutate({ reason: vals.reason.trim() })}
+      />
+
+      <PaymentDetailModal
+        open={!!detailTarget}
+        payment={detailTarget}
+        onClose={() => setDetailTarget(null)}
       />
     </View>
   );

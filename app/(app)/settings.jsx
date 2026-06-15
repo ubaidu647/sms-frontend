@@ -14,6 +14,7 @@ import { useThemeStore } from '../../src/store/themeStore';
 import { useLanguageStore, LANGUAGES } from '../../src/store/languageStore';
 import { useColors } from '../../src/theme/useColors';
 import { COLORS } from '../../src/theme/colors';
+import { useTranslations } from '../../src/i18n';
 
 const THEME_OPTIONS = [
   {
@@ -51,6 +52,7 @@ export default function SettingsScreen() {
   const setTheme = useThemeStore((s) => s.setTheme);
   const language = useLanguageStore((s) => s.language);
   const setLanguage = useLanguageStore((s) => s.setLanguage);
+  const t = useTranslations('settings');
 
   const [themeChoice, setThemeChoice] = useState(currentTheme);
 
@@ -59,24 +61,16 @@ export default function SettingsScreen() {
     if (id === 'system') {
       const osScheme = Appearance.getColorScheme(); // 'light' | 'dark' | null
       setTheme(osScheme === 'dark' ? 'dark' : 'light');
-      Toast.show({ type: 'success', text1: 'Theme: System' });
     } else {
       setTheme(id);
-      Toast.show({
-        type: 'success',
-        text1: `Theme: ${id.charAt(0).toUpperCase() + id.slice(1)}`,
-      });
     }
+    Toast.show({ type: 'success', text1: t('theme.toast', { theme: t(`theme.${id}`) }) });
   };
 
   const handleLanguageSelect = (code) => {
     const lang = LANGUAGES.find((l) => l.code === code);
     setLanguage(code);
-    Toast.show({
-      type: 'success',
-      text1: `Language: ${lang?.label ?? code}`,
-      text2: 'Coming soon — strings still in English',
-    });
+    Toast.show({ type: 'success', text1: t('language.toast', { lang: lang?.label ?? code }) });
   };
 
   return (
@@ -90,10 +84,8 @@ export default function SettingsScreen() {
             <Feather name="settings" size={20} color={COLORS.brand} />
           </View>
           <View style={{ flex: 1 }}>
-            <Text style={[styles.heroTitle, { color: C.text }]}>Settings</Text>
-            <Text style={[styles.heroSub, { color: C.muted }]}>
-              Personalize your experience — appearance and language.
-            </Text>
+            <Text style={[styles.heroTitle, { color: C.text }]}>{t('title')}</Text>
+            <Text style={[styles.heroSub, { color: C.muted }]}>{t('subtitle')}</Text>
           </View>
         </View>
 
@@ -104,10 +96,8 @@ export default function SettingsScreen() {
               <Feather name="droplet" size={16} color="#4f46e5" />
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={[styles.sectionTitle, { color: C.text }]}>Appearance</Text>
-              <Text style={[styles.sectionSub, { color: C.muted }]}>
-                Choose a theme. System follows your device.
-              </Text>
+              <Text style={[styles.sectionTitle, { color: C.text }]}>{t('appearance.title')}</Text>
+              <Text style={[styles.sectionSub, { color: C.muted }]}>{t('appearance.subtitle')}</Text>
             </View>
           </View>
 
@@ -138,8 +128,8 @@ export default function SettingsScreen() {
                   >
                     <Feather name={opt.icon} size={24} color={opt.accent} />
                   </LinearGradient>
-                  <Text style={[styles.themeLabel, { color: C.text }]}>{opt.label}</Text>
-                  <Text style={[styles.themeDesc, { color: C.mutedSoft }]}>{opt.desc}</Text>
+                  <Text style={[styles.themeLabel, { color: C.text }]}>{t(`theme.${opt.id}`)}</Text>
+                  <Text style={[styles.themeDesc, { color: C.mutedSoft }]}>{t(`theme.${opt.id}Desc`)}</Text>
                 </Pressable>
               );
             })}
@@ -153,14 +143,8 @@ export default function SettingsScreen() {
               <Feather name="globe" size={16} color="#059669" />
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={[styles.sectionTitle, { color: C.text }]}>Language</Text>
-              <Text style={[styles.sectionSub, { color: C.muted }]}>
-                Pick your interface language.
-              </Text>
-            </View>
-            <View style={styles.soonPill}>
-              <Feather name="zap" size={10} color="#b45309" />
-              <Text style={styles.soonPillText}>Coming Soon</Text>
+              <Text style={[styles.sectionTitle, { color: C.text }]}>{t('language.title')}</Text>
+              <Text style={[styles.sectionSub, { color: C.muted }]}>{t('language.subtitle')}</Text>
             </View>
           </View>
 
@@ -201,9 +185,7 @@ export default function SettingsScreen() {
 
           <View style={[styles.footnote, { borderTopColor: C.border }]}>
             <Feather name="info" size={12} color={C.mutedSoft} />
-            <Text style={[styles.footnoteText, { color: C.muted }]}>
-              Multi-language support is in progress. Your choice is saved for when it ships.
-            </Text>
+            <Text style={[styles.footnoteText, { color: C.muted }]}>{t('language.footnote')}</Text>
           </View>
         </View>
       </ScrollView>

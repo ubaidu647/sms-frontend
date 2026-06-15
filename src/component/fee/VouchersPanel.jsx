@@ -32,6 +32,7 @@ import { useColors } from '../../theme/useColors';
 import { COLORS } from '../../theme/colors';
 import GenerateSectionModal from './GenerateSectionModal';
 import GenerateStudentModal from './GenerateStudentModal';
+import StudentPickerModal from './StudentPickerModal';
 
 function VoucherCard({ v, onTap, C }) {
   const cfg = VOUCHER_STATUS_PILL[v.status] || VOUCHER_STATUS_PILL.unpaid;
@@ -161,6 +162,7 @@ export default function VouchersPanel() {
   const [genSectionOpen, setGenSectionOpen] = useState(false);
   const [genSectionMode, setGenSectionMode] = useState('generate');
   const [genStudentOpen, setGenStudentOpen] = useState(false);
+  const [pickerOpen, setPickerOpen] = useState(false);
 
   const { data: branchData } = useBranchesDropdown({ enabled: isOrgLevel });
   const branches = branchData?.data || [];
@@ -302,6 +304,20 @@ export default function VouchersPanel() {
           </Pressable>
         </View>
       )}
+
+      <Pressable
+        onPress={() => setPickerOpen(true)}
+        style={({ pressed }) => [
+          styles.consolidatedBtn,
+          { borderColor: '#c7d2fe', backgroundColor: '#eef2ff' },
+          pressed && { opacity: 0.85 },
+        ]}
+      >
+        <Feather name="layers" size={14} color="#3730a3" />
+        <Text style={[styles.secondaryBtnText, { color: '#3730a3' }]}>
+          Consolidated Arrears Slip
+        </Text>
+      </Pressable>
 
       {showFilters && (
         <View style={[styles.filtersCard, { backgroundColor: C.card, borderColor: C.border }]}>
@@ -664,6 +680,7 @@ export default function VouchersPanel() {
         open={genStudentOpen}
         onClose={() => setGenStudentOpen(false)}
       />
+      <StudentPickerModal open={pickerOpen} onClose={() => setPickerOpen(false)} />
     </View>
   );
 }
@@ -707,6 +724,16 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   secondaryBtnText: { fontWeight: '700', fontSize: 12 },
+
+  consolidatedBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    height: 40,
+    borderRadius: 10,
+    borderWidth: 1,
+  },
 
   filtersCard: { borderRadius: 14, padding: 12, borderWidth: 1, gap: 10 },
   label: { fontSize: 10, letterSpacing: 1.1, fontWeight: '700', marginBottom: 4 },

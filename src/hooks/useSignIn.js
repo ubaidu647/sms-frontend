@@ -3,6 +3,7 @@ import Toast from 'react-native-toast-message';
 import { router } from 'expo-router';
 import apiClient from '../services/apiClient';
 import { useAuth } from './useAuth';
+import { isSuperAdmin } from '../utils/permissions';
 
 export function useSignIn() {
   const { login } = useAuth();
@@ -15,7 +16,11 @@ export function useSignIn() {
       const payload = response.data || response;
       login(payload);
       Toast.show({ type: 'success', text1: 'Logged in successfully!' });
-      router.replace('/(app)/dashboard');
+      // Super-admins go to the system module; everyone else to the school dashboard.
+      const dest = isSuperAdmin(payload.user?.role)
+        ? '/(app)/system/organizations'
+        : '/(app)/dashboard';
+      router.replace(dest);
     },
     onError: (err) => {
       const message =

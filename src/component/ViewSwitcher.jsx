@@ -14,7 +14,7 @@ import { COLORS } from '../theme/colors';
 import { useColors } from '../theme/useColors';
 
 export const VIEW_OPTIONS = [
-  { id: 'general-1', label: 'General 1', group: 'general' },
+  { id: 'general-1', label: 'Live Summary', group: 'general' },
   { id: 'general-2', label: 'General 2', group: 'general' },
   { id: 'general-3', label: 'General 3', group: 'general' },
   { id: 'general-4', label: 'General 4', group: 'general' },

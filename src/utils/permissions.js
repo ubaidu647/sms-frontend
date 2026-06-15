@@ -42,3 +42,7 @@ export const hasAnyAction = (role, keys) => {
   const actions = role?.actions || [];
   return keys.some((k) => actions.includes(k));
 };
+
+// System super-admin — owns the Organizations/Packages/Subscriptions module.
+// Matches web middleware which keys off role.name === 'super-admin'.
+export const isSuperAdmin = (role) => role?.name === 'super-admin';

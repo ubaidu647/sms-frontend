@@ -6,6 +6,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useAuth } from '../../src/hooks/useAuth';
 import TopBar from '../../src/component/TopBar';
 import DrawerMenu from '../../src/component/Drawer';
+import SubscriptionGuard from '../../src/component/SubscriptionGuard';
 import { useColors, useIsDark } from '../../src/theme/useColors';
 
 export default function AppLayout() {
@@ -21,6 +22,7 @@ export default function AppLayout() {
     <SafeAreaView style={[styles.safe, { backgroundColor: C.bg }]} edges={['top']}>
       <StatusBar style={isDark ? 'light' : 'dark'} />
       <TopBar onMenu={() => setDrawerOpen(true)} />
+      <SubscriptionGuard />
       <View style={[styles.body, { backgroundColor: C.bg }]}>
         <Stack
           screenOptions={{

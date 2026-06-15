@@ -4,6 +4,7 @@ import { Feather } from '@expo/vector-icons';
 import { useUserStore } from '../store/userStore';
 import { useThemeStore } from '../store/themeStore';
 import { useColors, useIsDark } from '../theme/useColors';
+import { useTranslations } from '../i18n';
 import SettingsMenu from './SettingsMenu';
 
 export default function TopBar({ onMenu }) {
@@ -11,6 +12,7 @@ export default function TopBar({ onMenu }) {
   const toggleTheme = useThemeStore((s) => s.toggleTheme);
   const isDark = useIsDark();
   const C = useColors();
+  const t = useTranslations('topbar');
   const name = user?.name?.split(' ')?.[0] ?? 'there';
 
   const [menuOpen, setMenuOpen] = useState(false);
@@ -63,7 +65,7 @@ export default function TopBar({ onMenu }) {
           <Feather name="menu" size={22} color={C.topbarText} />
         </Pressable>
         <Text style={[styles.greeting, { color: C.topbarText }]} numberOfLines={1}>
-          Hello, <Text style={styles.greetingName}>{name}</Text> 👋
+          {t('greeting')} <Text style={styles.greetingName}>{name}</Text> 👋
         </Text>
       </View>
 

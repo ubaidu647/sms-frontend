@@ -27,14 +27,22 @@ import { hasAnyAction, resolveScope } from '../../utils/permissions';
 import { useColors } from '../../theme/useColors';
 import { COLORS } from '../../theme/colors';
 import FeeStructureFormModal from './FeeStructureFormModal';
+import StructureDetailModal from './StructureDetailModal';
 
-function StructureCard({ s, canUpdate, canDelete, onEdit, onDelete, C }) {
+function StructureCard({ s, canUpdate, canDelete, onEdit, onDelete, onView, C }) {
   const totals = (s.components || []).reduce(
     (acc, c) => acc + (Number(c.amount) || 0),
     0,
   );
   return (
-    <View style={[styles.card, { backgroundColor: C.card, borderColor: C.border }]}>
+    <Pressable
+      onPress={onView}
+      style={({ pressed }) => [
+        styles.card,
+        { backgroundColor: C.card, borderColor: C.border },
+        pressed && { opacity: 0.92 },
+      ]}
+    >
       <View style={styles.headerRow}>
         <View style={{ flex: 1, minWidth: 0 }}>
           <Text style={[styles.name, { color: C.text }]} numberOfLines={1}>
@@ -123,7 +131,7 @@ function StructureCard({ s, canUpdate, canDelete, onEdit, onDelete, C }) {
           )}
         </View>
       )}
-    </View>
+    </Pressable>
   );
 }
 
@@ -164,6 +172,7 @@ export default function StructuresPanel() {
 
   const [addOpen, setAddOpen] = useState(false);
   const [editTarget, setEditTarget] = useState(null);
+  const [viewTarget, setViewTarget] = useState(null);
 
   const { data: branchData } = useBranchesDropdown({ enabled: isOrgLevel });
   const branches = branchData?.data || [];
@@ -442,6 +451,7 @@ export default function StructuresPanel() {
             canDelete={canDelete}
             onEdit={() => setEditTarget(item)}
             onDelete={() => onDelete(item)}
+            onView={() => setViewTarget(item)}
             C={C}
           />
         )}
@@ -475,6 +485,11 @@ export default function StructuresPanel() {
         open={!!editTarget}
         structure={editTarget}
         onClose={() => setEditTarget(null)}
+      />
+      <StructureDetailModal
+        open={!!viewTarget}
+        structure={viewTarget}
+        onClose={() => setViewTarget(null)}
       />
     </View>
   );
