@@ -1,5 +1,5 @@
 {
-  "name": "sms-web",
+  "name": "sms-workspace",
   "version": "0.1.0",
   "private": true,
   "workspaces": [
@@ -7,15 +7,18 @@
     "packages/*"
   ],
   "scripts": {
-    "dev": "turbo run dev",
-    "dev:admin": "turbo run dev --filter=@sms/admin",
-    "dev:student": "turbo run dev --filter=@sms/student",
-    "build": "turbo run build",
-    "lint": "turbo run lint",
+    "dev": "nx run-many -t dev --projects=@sms/admin,@sms/student",
+    "dev:admin": "nx dev @sms/admin",
+    "dev:student": "nx dev @sms/student",
+    "mobile": "nx start @sms/mobile",
+    "mobile:android": "nx android @sms/mobile",
+    "build": "nx run-many -t build",
+    "lint": "nx run-many -t lint",
+    "graph": "nx graph",
     "format": "prettier --write ."
   },
   "devDependencies": {
-    "turbo": "^2.5.5"
+    "nx": "^20.3.0"
   },
   "packageManager": "npm@10.0.0"
 }

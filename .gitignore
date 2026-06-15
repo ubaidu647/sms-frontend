@@ -17,8 +17,14 @@ coverage
 .next/
 out/
 
-# turbo
-.turbo
+# nx
+.nx/cache
+.nx/workspace-data
+
+# expo / react-native
+.expo
+*.orig.*
+web-build/
 
 # production
 build
