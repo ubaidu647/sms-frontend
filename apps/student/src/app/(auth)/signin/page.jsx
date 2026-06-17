@@ -6,7 +6,7 @@ const SignInPage = () => {
   return (
     <div className="min-h-screen flex bg-white">
       {/* ─── Left brand panel (NodeCampus navy + gold) ─── */}
-      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-gradient-to-br from-blue-600 via-blue-700 to-blue-900 text-white p-12 flex-col justify-between">
+      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-gradient-to-br from-[#00918e] via-[#007e7b] to-[#005f5c] text-white p-12 flex-col justify-between">
         <div className="absolute -top-32 -left-32 w-96 h-96 rounded-full bg-[#f5b21c]/20 blur-3xl" />
         <div className="absolute -bottom-32 -right-32 w-96 h-96 rounded-full bg-[#f5b21c]/10 blur-3xl" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(245,178,28,0.08),transparent_60%)]" />
@@ -58,7 +58,7 @@ const SignInPage = () => {
         <div className="w-full max-w-md">
           {/* Mobile brand */}
           <div className="lg:hidden flex items-center gap-2 mb-10 w-fit">
-            <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-600/30">
+            <div className="w-10 h-10 rounded-xl bg-[#00918e] flex items-center justify-center shadow-lg shadow-[#00918e]/30">
               <GraduationCap className="w-5 h-5 text-[#f5b21c]" />
             </div>
             <span className="text-lg font-bold tracking-tight text-gray-900">

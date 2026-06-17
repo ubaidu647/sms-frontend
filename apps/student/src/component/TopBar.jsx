@@ -66,7 +66,7 @@ export const Topbar = ({ user = {}, onMenuClick }) => {
           </button>
         )}
         <h1 className="text-base sm:text-xl font-semibold text-gray-800 dark:text-gray-100 truncate">
-          Hi, <span className="text-blue-600 dark:text-blue-400">{user?.name || 'Student'}</span>
+          Hi, <span className="text-[#00918e] dark:text-[#33b3b0]">{user?.name || 'Student'}</span>
         </h1>
         <span className="text-xl hidden sm:inline">👋</span>
       </div>

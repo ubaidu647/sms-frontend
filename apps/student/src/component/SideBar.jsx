@@ -88,13 +88,13 @@ export const Sidebar = ({ isMobileOpen = false, onMobileClose }) => {
       <aside
         ref={sidebarRef}
         style={{ width: `${sidebarWidth}px`, height: '100vh' }}
-        className={`bg-blue-600 dark:bg-slate-900 p-4 flex-shrink-0 transition-transform md:transition-none flex flex-col overscroll-contain fixed md:sticky top-0 left-0 z-50 md:self-start ${
+        className={`bg-[#00918e] dark:bg-slate-900 p-4 flex-shrink-0 transition-transform md:transition-none flex flex-col overscroll-contain fixed md:sticky top-0 left-0 z-50 md:self-start ${
           isMobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
         }`}
       >
         <div
           onMouseDown={startResizing}
-          className="hidden md:block absolute top-0 right-0 w-1 h-full cursor-col-resize hover:bg-blue-500 dark:hover:bg-slate-700 transition-colors z-50"
+          className="hidden md:block absolute top-0 right-0 w-1 h-full cursor-col-resize hover:bg-[#00a8a4] dark:hover:bg-slate-700 transition-colors z-50"
         />
 
         <div className="flex items-center justify-between mb-6">
@@ -102,8 +102,8 @@ export const Sidebar = ({ isMobileOpen = false, onMobileClose }) => {
             <Link href="/dashboard" className="flex items-center gap-3 no-underline">
               <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center flex-shrink-0">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="#2563eb" />
-                  <path d="M2 17L12 22L22 17V12L12 17L2 12V17Z" fill="#2563eb" />
+                  <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="#00918e" />
+                  <path d="M2 17L12 22L22 17V12L12 17L2 12V17Z" fill="#00918e" />
                 </svg>
               </div>
               <h2 className="text-white font-bold text-xl truncate">Student Portal</h2>
@@ -114,8 +114,8 @@ export const Sidebar = ({ isMobileOpen = false, onMobileClose }) => {
               className="w-10 h-10 bg-white rounded-lg flex items-center justify-center"
             >
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="#2563eb" />
-                <path d="M2 17L12 22L22 17V12L12 17L2 12V17Z" fill="#2563eb" />
+                <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="#00918e" />
+                <path d="M2 17L12 22L22 17V12L12 17L2 12V17Z" fill="#00918e" />
               </svg>
             </Link>
           )}
@@ -124,7 +124,7 @@ export const Sidebar = ({ isMobileOpen = false, onMobileClose }) => {
               setIsCollapsed(!isCollapsed);
               setSidebarWidth(isCollapsed ? 240 : 80);
             }}
-            className="w-9 h-9 flex items-center justify-center text-white hover:bg-blue-700 dark:hover:bg-slate-800 rounded-md transition-colors flex-shrink-0"
+            className="w-9 h-9 flex items-center justify-center text-white hover:bg-[#00736f] dark:hover:bg-slate-800 rounded-md transition-colors flex-shrink-0"
           >
             {isCollapsed ? (
               <ChevronDown className="w-5 h-5 rotate-90" />
@@ -144,8 +144,8 @@ export const Sidebar = ({ isMobileOpen = false, onMobileClose }) => {
                 href={item.path}
                 className={`w-full h-14 ${
                   isCollapsed ? 'justify-center px-0' : 'justify-start px-0'
-                } rounded-full transition-colors hover:bg-blue-700 ${
-                  itemIsActive ? 'bg-blue-700' : 'bg-transparent'
+                } rounded-full transition-colors hover:bg-[#00736f] ${
+                  itemIsActive ? 'bg-[#00736f]' : 'bg-transparent'
                 } flex items-center cursor-pointer no-underline`}
               >
                 <div
@@ -176,7 +176,7 @@ export const Sidebar = ({ isMobileOpen = false, onMobileClose }) => {
             onClick={handleLogout}
             className={`w-full h-14 ${
               isCollapsed ? 'justify-center px-0' : 'justify-start px-0'
-            } rounded-full transition-colors hover:bg-blue-700 dark:hover:bg-slate-800 bg-transparent flex items-center`}
+            } rounded-full transition-colors hover:bg-[#00736f] dark:hover:bg-slate-800 bg-transparent flex items-center`}
           >
             <div
               className={`flex items-center gap-2.5 ${isCollapsed ? 'px-10' : 'px-7'} overflow-hidden w-full`}
@@ -192,10 +192,10 @@ export const Sidebar = ({ isMobileOpen = false, onMobileClose }) => {
 
       {/* Top + right fill bars (match the admin shell) */}
       <div
-        className="hidden md:block bg-blue-600 dark:bg-slate-900 fixed top-0 h-25.5 z-0"
+        className="hidden md:block bg-[#00918e] dark:bg-slate-900 fixed top-0 h-25.5 z-0"
         style={{ left: `${sidebarWidth}px`, right: 0 }}
       />
-      <div className="hidden md:block bg-blue-600 dark:bg-slate-900 fixed top-0 right-0 w-25.5 h-full z-0" />
+      <div className="hidden md:block bg-[#00918e] dark:bg-slate-900 fixed top-0 right-0 w-25.5 h-full z-0" />
     </>
   );
 };

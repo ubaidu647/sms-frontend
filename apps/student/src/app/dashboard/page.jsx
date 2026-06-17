@@ -36,11 +36,11 @@ export default function StudentDashboard() {
               href={c.href}
               className="group rounded-2xl bg-white dark:bg-[#1f1f1f] border border-gray-200 dark:border-gray-800 p-5 transition-shadow hover:shadow-lg no-underline"
             >
-              <div className="w-11 h-11 rounded-xl bg-blue-600 flex items-center justify-center">
+              <div className="w-11 h-11 rounded-xl bg-[#00918e] flex items-center justify-center">
                 <Icon className="w-5 h-5 text-white" />
               </div>
               <div className="mt-4 text-sm text-gray-500 dark:text-gray-400">{c.label}</div>
-              <div className="mt-0.5 font-semibold text-gray-900 dark:text-gray-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+              <div className="mt-0.5 font-semibold text-gray-900 dark:text-gray-100 group-hover:text-[#00918e] dark:group-hover:text-[#33b3b0] transition-colors">
                 {c.value}
               </div>
             </Link>

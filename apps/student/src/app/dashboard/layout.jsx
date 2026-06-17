@@ -25,7 +25,7 @@ export default function DashboardLayout({ children }) {
   if (!hasHydrated || (!accessToken && !refreshToken)) {
     return (
       <div className="h-screen flex justify-center items-center">
-        <Loader2 className="animate-spin w-10 h-10 text-blue-600" />
+        <Loader2 className="animate-spin w-10 h-10 text-[#00918e]" />
       </div>
     );
   }
