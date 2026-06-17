@@ -14,13 +14,18 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: 'NodeCampus — Student Login',
+  title: 'NodeCampus — Student',
   description: 'Sign in to your NodeCampus student account.',
 };
+
+const noFlashTheme = `(function(){try{var s=JSON.parse(localStorage.getItem('theme-storage'));var t=s&&s.state&&s.state.theme;if(t==='dark')document.documentElement.classList.add('dark');}catch(e){}})();`;
 
 export default function RootLayout({ children }) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: noFlashTheme }} />
+      </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <Providers>
           {children}
