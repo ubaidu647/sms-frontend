@@ -1,5 +1,7 @@
 import './globals.css';
 import { Geist, Geist_Mono } from 'next/font/google';
+import { Toaster } from 'react-hot-toast';
+import Providers from './Providers';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -12,20 +14,18 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: 'NodeCampus — Student',
-  description: 'Student dashboard',
+  title: 'NodeCampus — Student Login',
+  description: 'Sign in to your NodeCampus student account.',
 };
-
-const noFlashTheme = `(function(){try{var s=JSON.parse(localStorage.getItem('theme-storage'));var t=s&&s.state&&s.state.theme;if(t==='dark')document.documentElement.classList.add('dark');}catch(e){}})();`;
 
 export default function RootLayout({ children }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <head>
-        <script dangerouslySetInnerHTML={{ __html: noFlashTheme }} />
-      </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        {children}
+        <Providers>
+          {children}
+          <Toaster position="top-right" reverseOrder={false} />
+        </Providers>
       </body>
     </html>
   );
