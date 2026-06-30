@@ -4,6 +4,7 @@ import {
   ChevronUp,
   LogOut,
   BookOpen,
+  ClipboardList,
   GraduationCap,
   Users,
   ClipboardCheck,
@@ -72,6 +73,14 @@ const navigationItems = [
     base: 'view-subject',
     hasSubmenu: false,
     path: '/dashboard/school/subjects',
+  },
+  {
+    labelKey: 'homework',
+    iconComponent: ClipboardList,
+    key: 'homework',
+    base: 'view-homework',
+    hasSubmenu: false,
+    path: '/dashboard/school/homework',
   },
   {
     labelKey: 'students',

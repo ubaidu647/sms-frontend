@@ -10,7 +10,7 @@ export function useSignIn() {
 
   return useMutation({
     mutationFn: async (data) => {
-      const res = await apiClient.post('/auth/login', data);
+      const res = await apiClient.post('/auth/student/login', data);
       return res.data; // API body: { data: { token, refreshToken, user }, ... }
     },
     onSuccess: (response) => {

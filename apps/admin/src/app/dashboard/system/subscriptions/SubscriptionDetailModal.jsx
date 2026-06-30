@@ -102,6 +102,15 @@ export default function SubscriptionDetailModal({ isOpen, onClose, subscription 
                   .join(', ') || 'None'}
               </span>
             </div>
+            <div className="mb-2">
+              <span className="text-gray-500 dark:text-gray-400">Dashboards: </span>
+              <span className="text-gray-800 dark:text-gray-200 capitalize">
+                {Object.entries(snap?.dashboards || {})
+                  .filter(([, on]) => on)
+                  .map(([k]) => k)
+                  .join(', ') || 'None'}
+              </span>
+            </div>
             <div>
               <span className="text-gray-500 dark:text-gray-400">Features: </span>
               <span className="text-gray-800 dark:text-gray-200">

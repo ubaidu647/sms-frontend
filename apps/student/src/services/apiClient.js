@@ -22,7 +22,7 @@ apiClient.interceptors.response.use(
   (error) => {
     const status = error.response?.status;
     const url = error.config?.url || '';
-    if (status === 401 && !url.includes('/auth/login')) {
+    if (status === 401 && !url.includes('/auth/student/login')) {
       useTokenStore.getState().clearTokens();
       clearAuthCookies();
       if (typeof window !== 'undefined') window.location.replace('/signin');

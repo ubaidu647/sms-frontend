@@ -1,6 +1,7 @@
 'use client';
 import React, { useState, useMemo } from 'react';
 import { Table } from '@/component/Table';
+import Switch from '@/component/Switch';
 import { Plus, Search, Eye, Edit, Ban, CheckCircle, ArrowRightLeft, X } from 'lucide-react';
 import AddStudentModal from './AddStudentModal';
 import EditStudentModal from './EditStudentModal';
@@ -154,6 +155,29 @@ export default function StudentsPage() {
   });
   const sections = sectionData?.data || [];
 
+  // Per-student dashboard access — explicit set so the switch sends exactly what it shows.
+  const dashboardAccessMutation = useMutation({
+    mutationFn: ({ id, isDashboardAllowed }) =>
+      patchData({ url: `/student/${id}/dashboard-access`, payload: { isDashboardAllowed }, token }),
+    onSuccess: (res, { id }) => {
+      // Write the new value straight into the cache. We deliberately do NOT
+      // invalidate/refetch here: dashboard access isn't a list filter, and until
+      // /student/list returns `isDashboardAllowed`, a refetch would drop the field
+      // and snap the switch back to "Allowed". Server response is authoritative.
+      queryClient.setQueriesData({ queryKey: ['students'] }, (old) => {
+        if (!old) return old;
+        return {
+          ...old,
+          data: (old.data || []).map((s) =>
+            s._id === id ? { ...s, isDashboardAllowed: res.data.isDashboardAllowed } : s,
+          ),
+        };
+      });
+      toast.success(res.message || 'Dashboard access updated');
+    },
+    onError: (err) => toast.error(err.message || 'Failed to update dashboard access'),
+  });
+
   const columns = useMemo(
     () => [
       {
@@ -273,8 +297,42 @@ export default function StudentsPage() {
           </span>
         ),
       },
+      {
+        header: 'Dashboard',
+        accessor: 'isDashboardAllowed',
+        render: (_, row) => {
+          // Backend defaults the field to true, so treat a missing value as allowed.
+          const allowed = row.isDashboardAllowed !== false;
+          // Same gate as Block/Unblock: update permission and (branch-scoped users) own branch.
+          const canManage =
+            canUpdate && !isOwnOnly && (canActOnAllBranches || row.branch?._id === userBranchId);
+          if (!canManage) {
+            return (
+              <span
+                className={`inline-flex px-3 py-1 rounded-full text-xs font-medium ${
+                  allowed ? 'bg-green-100 text-green-800' : 'bg-gray-200 text-gray-600'
+                }`}
+              >
+                {allowed ? 'Allowed' : 'Disabled'}
+              </span>
+            );
+          }
+          const pending =
+            dashboardAccessMutation.isPending && dashboardAccessMutation.variables?.id === row._id;
+          return (
+            <Switch
+              checked={allowed}
+              disabled={pending}
+              onChange={(next) =>
+                dashboardAccessMutation.mutate({ id: row._id, isDashboardAllowed: next })
+              }
+              label={`Dashboard access for ${row.user?.name || 'student'}`}
+            />
+          );
+        },
+      },
     ],
-    [],
+    [canUpdate, isOwnOnly, canActOnAllBranches, userBranchId, dashboardAccessMutation],
   );
 
   const visibleColumns = useMemo(() => columns.map((c) => c.accessor), [columns]);

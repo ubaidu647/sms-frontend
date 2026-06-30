@@ -5,10 +5,13 @@ import {
   ChevronUp,
   LogOut,
   LayoutDashboard,
-  Video,
-  MessageSquare,
-  ClipboardCheck,
+  CalendarCheck,
   BarChart3,
+  BookOpen,
+  Wallet,
+  CalendarDays,
+  Megaphone,
+  UserRound,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -16,12 +19,16 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 
 // Flat student menu. Mirrors the admin sidebar's look; no role/permission gating.
+// One entry per backend-backed dashboard section.
 const navigationItems = [
   { label: 'Dashboard', iconComponent: LayoutDashboard, path: '/dashboard' },
-  { label: 'Live Classes', iconComponent: Video, path: '/dashboard/live-classes' },
-  { label: 'Live Chat', iconComponent: MessageSquare, path: '/dashboard/chat' },
-  { label: 'Live Tests', iconComponent: ClipboardCheck, path: '/dashboard/tests' },
+  { label: 'Attendance', iconComponent: CalendarCheck, path: '/dashboard/attendance' },
+  { label: 'Homework', iconComponent: BookOpen, path: '/dashboard/homework' },
   { label: 'Results', iconComponent: BarChart3, path: '/dashboard/results' },
+  { label: 'Fees', iconComponent: Wallet, path: '/dashboard/fees' },
+  { label: 'Timetable', iconComponent: CalendarDays, path: '/dashboard/timetable' },
+  { label: 'Announcements', iconComponent: Megaphone, path: '/dashboard/announcements' },
+  { label: 'Profile', iconComponent: UserRound, path: '/dashboard/profile' },
 ];
 
 export const Sidebar = ({ isMobileOpen = false, onMobileClose }) => {

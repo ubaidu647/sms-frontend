@@ -126,6 +126,20 @@ export const ACTIONS = {
   ENTER_ALL_BRANCH_MARKS: 'enter-all-branch-marks',
   VIEW_ALL_BRANCH_MARKS: 'view-all-branch-marks',
 
+  // ── Homework ──────────────────────────────────────
+  CREATE_HOMEWORK: 'create-homework',
+  VIEW_HOMEWORK: 'view-homework',
+  UPDATE_HOMEWORK: 'update-homework',
+  DELETE_HOMEWORK: 'delete-homework',
+  GRADE_HOMEWORK: 'grade-homework',
+
+  // ── Homework (org-level) ──────────────────────────
+  CREATE_ALL_BRANCH_HOMEWORK: 'create-all-branch-homework',
+  VIEW_ALL_BRANCH_HOMEWORK: 'view-all-branch-homework',
+  UPDATE_ALL_BRANCH_HOMEWORK: 'update-all-branch-homework',
+  DELETE_ALL_BRANCH_HOMEWORK: 'delete-all-branch-homework',
+  GRADE_ALL_BRANCH_HOMEWORK: 'grade-all-branch-homework',
+
   // ── Timetable ─────────────────────────────────────
   CREATE_TIMETABLE: 'create-timetable',
   VIEW_TIMETABLE: 'view-timetable',
@@ -271,6 +285,7 @@ export const AVAILABLE_MENUS = [
   { key: 'staff', label: 'Staff' },
   { key: 'class', label: 'Classes' },
   { key: 'subject', label: 'Subjects' },
+  { key: 'homework', label: 'Homework' },
   { key: 'student', label: 'Students' },
   { key: 'attendance', label: 'Attendance' },
   { key: 'staff-attendance', label: 'Staff Attendance' },
@@ -347,6 +362,18 @@ export const AVAILABLE_ACTIONS = [
   { key: ACTIONS.CREATE_ALL_BRANCH_SUBJECT, label: 'Create All Branch', menu: 'subject' },
   { key: ACTIONS.UPDATE_ALL_BRANCH_SUBJECT, label: 'Update All Branch', menu: 'subject' },
   { key: ACTIONS.DELETE_ALL_BRANCH_SUBJECT, label: 'Delete All Branch', menu: 'subject' },
+
+  // Homework
+  { key: ACTIONS.VIEW_HOMEWORK, label: 'View', menu: 'homework' },
+  { key: ACTIONS.CREATE_HOMEWORK, label: 'Create', menu: 'homework' },
+  { key: ACTIONS.UPDATE_HOMEWORK, label: 'Update', menu: 'homework' },
+  { key: ACTIONS.DELETE_HOMEWORK, label: 'Delete', menu: 'homework' },
+  { key: ACTIONS.GRADE_HOMEWORK, label: 'Grade', menu: 'homework' },
+  { key: ACTIONS.VIEW_ALL_BRANCH_HOMEWORK, label: 'View All Branch', menu: 'homework' },
+  { key: ACTIONS.CREATE_ALL_BRANCH_HOMEWORK, label: 'Create All Branch', menu: 'homework' },
+  { key: ACTIONS.UPDATE_ALL_BRANCH_HOMEWORK, label: 'Update All Branch', menu: 'homework' },
+  { key: ACTIONS.DELETE_ALL_BRANCH_HOMEWORK, label: 'Delete All Branch', menu: 'homework' },
+  { key: ACTIONS.GRADE_ALL_BRANCH_HOMEWORK, label: 'Grade All Branch', menu: 'homework' },
 
   // Student
   { key: ACTIONS.VIEW_STUDENT, label: 'View', menu: 'student' },

@@ -48,6 +48,14 @@ export default function BillingPage() {
 
   const { data: historyData, isLoading: historyLoading } = useMySubscriptionHistory();
   const history = historyData?.data ?? [];
+  const entitlements = historyData?.custom ?? null;
+
+  const activePlatforms = Object.entries(entitlements?.platforms || {})
+    .filter(([, on]) => on)
+    .map(([k]) => k);
+  const activeDashboards = Object.entries(entitlements?.dashboards || {})
+    .filter(([, on]) => on)
+    .map(([k]) => k);
 
   const [selectedInvoice, setSelectedInvoice] = useState(null);
   const [invoiceOpen, setInvoiceOpen] = useState(false);
@@ -183,10 +191,18 @@ export default function BillingPage() {
                 <div>
                   <span className="text-gray-500 dark:text-gray-400">Platforms: </span>
                   <span className="text-gray-800 dark:text-gray-200 capitalize">
-                    {Object.entries(current.packageSnapshot?.platforms || {})
-                      .filter(([, on]) => on)
-                      .map(([k]) => k)
-                      .join(', ') || 'None'}
+                    {(activePlatforms.length
+                      ? activePlatforms
+                      : Object.entries(current.packageSnapshot?.platforms || {})
+                          .filter(([, on]) => on)
+                          .map(([k]) => k)
+                    ).join(', ') || 'None'}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-gray-500 dark:text-gray-400">Dashboards: </span>
+                  <span className="text-gray-800 dark:text-gray-200 capitalize">
+                    {activeDashboards.join(', ') || 'None'}
                   </span>
                 </div>
                 <div>

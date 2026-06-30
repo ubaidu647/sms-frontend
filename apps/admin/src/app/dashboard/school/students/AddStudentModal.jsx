@@ -2,12 +2,15 @@
 import React, { useEffect, useState } from 'react';
 import { Modal } from '@/component/Modal';
 import Button from '@/component/Button';
+import Switch from '@/component/Switch';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import toast from 'react-hot-toast';
+import { Info } from 'lucide-react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { fetchData, postData } from '@/utils/api';
+import { useMyCurrentSubscription } from '@/app/dashboard/school/billing/hooks/useBilling';
 import { useTokenStore } from '@/store/tokenStore';
 import { useUserStore } from '@/store/userStore';
 
@@ -116,6 +119,9 @@ const schema = yup.object().shape({
   feeWaiver: yup.boolean().optional(),
   feeNotes: yup.string().optional(),
 
+  // Dashboard access (defaults ON)
+  isDashboardAllowed: yup.boolean().optional(),
+
   // Previous school (transfer only)
   previousSchool: yup.object().shape({
     name: yup.string().optional(),
@@ -187,6 +193,7 @@ export default function AddStudentModal({ isOpen, onClose, onSuccess }) {
       feeDiscount: '',
       feeWaiver: false,
       feeNotes: '',
+      isDashboardAllowed: true,
     },
   });
 
@@ -194,6 +201,7 @@ export default function AddStudentModal({ isOpen, onClose, onSuccess }) {
   const selectedClassId = watch('classId');
   const academicYear = watch('academicYear');
   const admissionType = watch('admissionType');
+  const isDashboardAllowed = watch('isDashboardAllowed');
 
   // For non-org users, lock branchId to their own branch
   useEffect(() => {
@@ -291,6 +299,12 @@ export default function AddStudentModal({ isOpen, onClose, onSuccess }) {
   });
   const sections = sectionData?.data || [];
 
+  // Package-level: is the student dashboard included in the school's current plan?
+  // Only an explicit `false` counts as "not in plan". Informational only — access can
+  // still be granted here so it takes effect once the plan is upgraded.
+  const { data: subData } = useMyCurrentSubscription({ enabled: isOpen && !!token });
+  const studentDashboardNotInPlan = subData?.data?.packageSnapshot?.dashboards?.student === false;
+
   const mutation = useMutation({
     mutationFn: (payload) => postData({ url: '/student/create', payload, token }),
     onError: (err) => {
@@ -324,6 +338,7 @@ export default function AddStudentModal({ isOpen, onClose, onSuccess }) {
       'feeDiscount',
       'feeWaiver',
       'feeNotes',
+      'isDashboardAllowed',
     ];
     scalarFields.forEach((k) => {
       const v = data[k];
@@ -590,6 +605,40 @@ export default function AddStudentModal({ isOpen, onClose, onSuccess }) {
                 <input {...register('phone')} placeholder="+923001234567" className={inputCls} />
               </Field>
             </div>
+          </div>
+
+          {/* Access */}
+          <div>
+            <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">
+              Access
+            </h3>
+            <div className="flex items-center justify-between gap-4 p-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+              <div className="min-w-0">
+                <div className="text-sm font-semibold text-gray-700 dark:text-gray-200">
+                  Allow dashboard access
+                </div>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                  Lets the student log in to their dashboard. You can change this later.
+                </p>
+              </div>
+              <Switch
+                checked={!!isDashboardAllowed}
+                onChange={(v) => setValue('isDashboardAllowed', v)}
+                label="Allow dashboard access"
+              />
+            </div>
+            {studentDashboardNotInPlan && (
+              <div className="mt-3 flex items-start gap-3 p-3 rounded-xl border border-amber-200 bg-amber-50 dark:border-amber-900/50 dark:bg-amber-950/30">
+                <Info className="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+                <p className="text-sm text-amber-800 dark:text-amber-300">
+                  <span className="font-semibold">
+                    Student dashboard isn’t included in your current plan.
+                  </span>{' '}
+                  You can still allow access here, but the student won’t be able to log in until the
+                  plan is upgraded. To enable it, upgrade your plan or contact your administrator.
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Enrollment */}

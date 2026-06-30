@@ -10,10 +10,11 @@ import {
 // schoolId in the queryKey — the cache is naturally scoped to the logged-in
 // school (and cleared on logout when the query client resets).
 
-export const useMyCurrentSubscription = () =>
+export const useMyCurrentSubscription = (options = {}) =>
   useQuery({
     queryKey: ['billing', 'me', 'subscription', 'current'],
     queryFn: getMyCurrentSubscription,
+    ...options,
   });
 
 export const useMySubscriptionHistory = () =>
