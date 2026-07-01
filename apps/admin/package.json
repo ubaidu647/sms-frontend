@@ -21,10 +21,12 @@
     "lucide-react": "^0.545.0",
     "next": "^15.5.18",
     "next-intl": "^4.12.0",
+    "qrcode.react": "^4.2.0",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "react-hook-form": "^7.66.0",
     "react-hot-toast": "^2.6.0",
+    "socket.io-client": "^4.8.3",
     "yup": "^1.7.1",
     "zustand": "^5.0.8"
   },

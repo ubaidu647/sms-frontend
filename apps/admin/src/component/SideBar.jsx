@@ -21,12 +21,13 @@ import {
   BadgeDollarSign,
   BarChart3,
   TrendingDown,
+  TrendingUp,
   CreditCard,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { canSee, canEditScope } from '@/utils/permissions';
+import { canSee, canEditScope, hasAnyAction } from '@/utils/permissions';
 import { useAuth } from '@/hooks/useAuth';
 
 // `key` controls which menus appear in the role form / are stored on the role.
@@ -235,6 +236,14 @@ const navigationItems = [
         iconComponent: TrendingDown,
         key: 'report-student-fee-defaulter',
         path: '/dashboard/school/reports/defaulters',
+      },
+      {
+        labelKey: 'reportStudentProgress',
+        iconComponent: TrendingUp,
+        key: 'report-student-progress',
+        path: '/dashboard/school/reports/progress',
+        canAccess: (role) =>
+          role?.isPredefined || hasAnyAction(role, ['view-student', 'view-all-branch-student']),
       },
     ],
   },

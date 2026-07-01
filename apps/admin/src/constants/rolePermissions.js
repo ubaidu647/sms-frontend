@@ -258,6 +258,14 @@ export const ACTIONS = {
   VIEW_ALL_BRANCH_STAFF_SALARY_POLICY: 'view-all-branch-staff-salary-policy',
   UPDATE_ALL_BRANCH_STAFF_SALARY_POLICY: 'update-all-branch-staff-salary-policy',
 
+  // ── WhatsApp notifications (per-branch settings + session) ─
+  VIEW_WHATSAPP_SETTINGS: 'view-whatsapp-settings',
+  UPDATE_WHATSAPP_SETTINGS: 'update-whatsapp-settings',
+
+  // ── WhatsApp notifications (org-level — across all branches) ─
+  VIEW_ALL_BRANCH_WHATSAPP_SETTINGS: 'view-all-branch-whatsapp-settings',
+  UPDATE_ALL_BRANCH_WHATSAPP_SETTINGS: 'update-all-branch-whatsapp-settings',
+
   // ── Billing & subscription (read-only self-serve) ─
   VIEW_BILLING: 'view-billing',
 
@@ -296,6 +304,7 @@ export const AVAILABLE_MENUS = [
   { key: 'announcement', label: 'Announcements' },
   { key: 'report', label: 'Reports' },
   { key: 'report-student-fee-defaulter', label: 'Reports — Student Fee Defaulter' },
+  { key: 'report-student-progress', label: 'Reports — Student Progress' },
   { key: 'vehicle', label: 'Transport — Vehicles' },
   { key: 'route', label: 'Transport — Routes' },
   { key: 'transport-assignment', label: 'Transport — Assignments' },
@@ -303,6 +312,7 @@ export const AVAILABLE_MENUS = [
   { key: 'salary-structure', label: 'Staff Salary — Structures' },
   { key: 'payslip', label: 'Staff Salary — Payslips' },
   { key: 'salary-policy', label: 'Staff Salary — Policy' },
+  { key: 'whatsapp', label: 'WhatsApp Notifications' },
   { key: 'billing', label: 'Billing' },
 ];
 
@@ -635,6 +645,16 @@ export const AVAILABLE_ACTIONS = [
   },
   { key: ACTIONS.VIEW_OWN_STAFF_SALARY, label: 'View Own', menu: 'salary-structure', scope: 'own' },
   { key: ACTIONS.VIEW_OWN_PAYSLIP, label: 'View Own', menu: 'payslip', scope: 'own' },
+
+  // WhatsApp Notifications — branch-scoped settings + the unofficial QR session
+  { key: ACTIONS.VIEW_WHATSAPP_SETTINGS, label: 'View', menu: 'whatsapp' },
+  { key: ACTIONS.UPDATE_WHATSAPP_SETTINGS, label: 'Update', menu: 'whatsapp' },
+  { key: ACTIONS.VIEW_ALL_BRANCH_WHATSAPP_SETTINGS, label: 'View All Branch', menu: 'whatsapp' },
+  {
+    key: ACTIONS.UPDATE_ALL_BRANCH_WHATSAPP_SETTINGS,
+    label: 'Update All Branch',
+    menu: 'whatsapp',
+  },
 
   // Billing — read-only; paying/changing the plan stays super-admin only
   { key: ACTIONS.VIEW_BILLING, label: 'View', menu: 'billing' },

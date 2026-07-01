@@ -36,7 +36,35 @@
     "branchProfile": "برانچ پروفائل",
     "reports": "رپورٹس",
     "reportStudentFeeDefaulter": "فیس نادہندہ طلباء",
+    "reportStudentProgress": "طالب علم پیش رفت رپورٹ",
     "logout": "لاگ آؤٹ"
+  },
+  "reportStudentProgress": {
+    "title": "طالب علم پیش رفت رپورٹ",
+    "subtitle": "منتخب ماڈیولز میں طالب علم کے لیے قابلِ پرنٹ پیش رفت رپورٹ بنائیں۔",
+    "selectStudent": "طالب علم",
+    "studentPlaceholder": "نام یا داخلہ نمبر لکھیں...",
+    "fromDate": "تاریخ سے",
+    "toDate": "تاریخ تک",
+    "dateRangeError": "شروع کی تاریخ اختتامی تاریخ پر یا اس سے پہلے ہونی چاہیے۔",
+    "selectModules": "ماڈیولز",
+    "moduleRequired": "کم از کم ایک ماڈیول منتخب کریں۔",
+    "modules": {
+      "attendance": "حاضری",
+      "exams": "امتحانات",
+      "homework": "ہوم ورک",
+      "fees": "فیس",
+      "transport": "ٹرانسپورٹ",
+      "timetable": "ٹائم ٹیبل",
+      "announcements": "اعلانات"
+    },
+    "generate": "رپورٹ بنائیں",
+    "generating": "بن رہی ہے…",
+    "downloadPdf": "PDF ڈاؤن لوڈ کریں",
+    "generatingPdf": "بن رہی ہے…",
+    "print": "پرنٹ",
+    "emptyState": "طالب علم منتخب کریں، تاریخ کی حد اور ماڈیولز چنیں، پھر رپورٹ بنائیں۔",
+    "accessDenied": "آپ کو طالب علم پیش رفت رپورٹس دیکھنے کی اجازت نہیں ہے۔"
   },
   "classes": {
     "title": "کلاسز",

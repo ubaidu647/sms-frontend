@@ -36,7 +36,35 @@
     "branchProfile": "Branch Profile",
     "reports": "Reports",
     "reportStudentFeeDefaulter": "Student Fee Defaulter",
+    "reportStudentProgress": "Student Progress Report",
     "logout": "Logout"
+  },
+  "reportStudentProgress": {
+    "title": "Student Progress Report",
+    "subtitle": "Generate a printable progress report for a student across selected modules.",
+    "selectStudent": "Student",
+    "studentPlaceholder": "Type name or admission #...",
+    "fromDate": "From Date",
+    "toDate": "To Date",
+    "dateRangeError": "From date must be on or before the to date.",
+    "selectModules": "Modules",
+    "moduleRequired": "Select at least one module.",
+    "modules": {
+      "attendance": "Attendance",
+      "exams": "Exams",
+      "homework": "Homework",
+      "fees": "Fees",
+      "transport": "Transport",
+      "timetable": "Timetable",
+      "announcements": "Announcements"
+    },
+    "generate": "Generate Report",
+    "generating": "Generating…",
+    "downloadPdf": "Download PDF",
+    "generatingPdf": "Generating…",
+    "print": "Print",
+    "emptyState": "Pick a student, choose a date range and modules, then generate the report.",
+    "accessDenied": "You do not have permission to view student progress reports."
   },
   "classes": {
     "title": "Classes",

@@ -36,7 +36,35 @@
     "branchProfile": "ملف الفرع",
     "reports": "التقارير",
     "reportStudentFeeDefaulter": "الطلاب المتأخرون في الرسوم",
+    "reportStudentProgress": "تقرير تقدم الطالب",
     "logout": "تسجيل الخروج"
+  },
+  "reportStudentProgress": {
+    "title": "تقرير تقدم الطالب",
+    "subtitle": "أنشئ تقرير تقدم قابلاً للطباعة للطالب عبر الوحدات المحددة.",
+    "selectStudent": "الطالب",
+    "studentPlaceholder": "اكتب الاسم أو رقم القيد...",
+    "fromDate": "من تاريخ",
+    "toDate": "إلى تاريخ",
+    "dateRangeError": "يجب أن يكون تاريخ البداية في أو قبل تاريخ النهاية.",
+    "selectModules": "الوحدات",
+    "moduleRequired": "اختر وحدة واحدة على الأقل.",
+    "modules": {
+      "attendance": "الحضور",
+      "exams": "الامتحانات",
+      "homework": "الواجبات",
+      "fees": "الرسوم",
+      "transport": "النقل",
+      "timetable": "الجدول الدراسي",
+      "announcements": "الإعلانات"
+    },
+    "generate": "إنشاء التقرير",
+    "generating": "جارٍ الإنشاء…",
+    "downloadPdf": "تنزيل PDF",
+    "generatingPdf": "جارٍ الإنشاء…",
+    "print": "طباعة",
+    "emptyState": "اختر طالبًا، وحدد النطاق الزمني والوحدات، ثم أنشئ التقرير.",
+    "accessDenied": "ليس لديك إذن لعرض تقارير تقدم الطلاب."
   },
   "classes": {
     "title": "الفصول",

@@ -285,6 +285,7 @@ export default function StudentDetailModal({
               <Row label="Name" value={s.father.name} />
               <Row label="CNIC" value={s.father.cnic} />
               <Row label="Phone" value={s.father.phone} />
+              <Row label="WhatsApp Notification Number" value={s.father.whatsappNumber} />
               <Row label="Email" value={s.father.email} />
               <Row label="Occupation" value={s.father.occupation} />
               <Row

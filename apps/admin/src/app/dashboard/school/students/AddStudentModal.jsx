@@ -65,6 +65,18 @@ const schema = yup.object().shape({
   bForm: yup.string().optional(),
   placeOfBirth: yup.string().optional(),
   phone: yup.string().optional(),
+  whatsappNumber: yup
+    .string()
+    .optional()
+    .test(
+      'wa-digits',
+      'Enter a valid number (8–15 digits with country code, e.g. 923001234567)',
+      (v) => {
+        if (!v) return true; // optional — empty is fine
+        const d = v.replace(/\D/g, '');
+        return d.length >= 8 && d.length <= 15;
+      },
+    ),
 
   // Father (required name)
   father: yup.object().shape({
@@ -190,6 +202,7 @@ export default function AddStudentModal({ isOpen, onClose, onSuccess }) {
       bForm: '',
       placeOfBirth: '',
       phone: '',
+      whatsappNumber: '',
       feeDiscount: '',
       feeWaiver: false,
       feeNotes: '',
@@ -345,13 +358,15 @@ export default function AddStudentModal({ isOpen, onClose, onSuccess }) {
       if (v !== '' && v !== null && v !== undefined) fd.append(k, String(v));
     });
 
-    // Father — required name + optional rest
+    // Father — required name + optional rest. whatsappNumber is the student's
+    // WhatsApp notification number, sent nested under father per the API.
     fd.append(
       'father',
       JSON.stringify({
         name: data.father?.name,
         cnic: data.father?.cnic || undefined,
         phone: data.father?.phone || undefined,
+        whatsappNumber: data.whatsappNumber || undefined,
         email: data.father?.email || undefined,
         occupation: data.father?.occupation || undefined,
         monthlyIncome: data.father?.monthlyIncome ?? undefined,
@@ -784,6 +799,17 @@ export default function AddStudentModal({ isOpen, onClose, onSuccess }) {
                   placeholder="+923001234567"
                   className={inputCls}
                 />
+              </Field>
+              <Field label="WhatsApp Notification Number" error={errors.whatsappNumber?.message}>
+                <input
+                  {...register('whatsappNumber')}
+                  placeholder="923001234567"
+                  inputMode="numeric"
+                  className={inputCls}
+                />
+                <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                  This is for WhatsApp notification.
+                </p>
               </Field>
               <Field label="Email" error={errors.father?.email?.message}>
                 <input

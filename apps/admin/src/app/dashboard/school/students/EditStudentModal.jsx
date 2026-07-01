@@ -38,6 +38,18 @@ const schema = yup.object().shape({
   bForm: yup.string().optional(),
   placeOfBirth: yup.string().optional(),
   phone: yup.string().optional(),
+  whatsappNumber: yup
+    .string()
+    .optional()
+    .test(
+      'wa-digits',
+      'Enter a valid number (8–15 digits with country code, e.g. 923001234567)',
+      (v) => {
+        if (!v) return true; // optional — empty clears it (fallback chain)
+        const d = v.replace(/\D/g, '');
+        return d.length >= 8 && d.length <= 15;
+      },
+    ),
 
   academicStatus: yup.string().optional(),
   isActive: yup.string().optional(),
@@ -99,6 +111,7 @@ export default function EditStudentModal({ isOpen, onClose, onSuccess, student }
         bForm: student.bForm || '',
         placeOfBirth: student.placeOfBirth || '',
         phone: student.phone || '',
+        whatsappNumber: student.father?.whatsappNumber || '',
         academicStatus: student.academicStatus || '',
         isActive: student.isActive === false ? 'false' : 'true',
         feeDiscount: student.feeDiscount ?? '',
@@ -237,15 +250,13 @@ export default function EditStudentModal({ isOpen, onClose, onSuccess, student }
       return hasAny ? obj : null;
     };
 
-    const father = buildNested('father', [
-      'name',
-      'cnic',
-      'phone',
-      'email',
-      'occupation',
-      'monthlyIncome',
-    ]);
-    if (father) fd.append('father', JSON.stringify(father));
+    const father =
+      buildNested('father', ['name', 'cnic', 'phone', 'email', 'occupation', 'monthlyIncome']) ||
+      {};
+    // WhatsApp notification number lives on the father. Always include it so an
+    // empty value clears it (reverts to the guardian/parent fallback chain).
+    father.whatsappNumber = data.whatsappNumber ?? '';
+    fd.append('father', JSON.stringify(father));
 
     const mother = buildNested('mother', ['name', 'cnic', 'phone', 'occupation']);
     if (mother) fd.append('mother', JSON.stringify(mother));
@@ -398,6 +409,17 @@ export default function EditStudentModal({ isOpen, onClose, onSuccess, student }
             </Field>
             <Field label="Phone">
               <input {...register('father.phone')} className={inputCls} />
+            </Field>
+            <Field label="WhatsApp Notification Number" error={errors.whatsappNumber?.message}>
+              <input
+                {...register('whatsappNumber')}
+                placeholder="923001234567"
+                inputMode="numeric"
+                className={inputCls}
+              />
+              <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                This is for WhatsApp notification.
+              </p>
             </Field>
             <Field label="Email">
               <input {...register('father.email')} type="email" className={inputCls} />
