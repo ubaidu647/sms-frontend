@@ -33,7 +33,8 @@ export default function MarkStaffAttendancePanel() {
   const userBranchId = user?.branchId || user?.branch?._id || '';
 
   // Filters — draft state holds in-progress UI values; applied state drives the roster query.
-  const [draftDate, setDraftDate] = useState(todayISO());
+  // Date is intentionally NOT drafted: it's the day being marked, so it must drive the
+  // roster and the save payload the moment it's picked (no Search click required).
   const [draftBranchId, setDraftBranchId] = useState(isOrgLevel ? '' : userBranchId);
   const [draftStaffType, setDraftStaffType] = useState('');
 
@@ -42,7 +43,6 @@ export default function MarkStaffAttendancePanel() {
   const [staffType, setStaffType] = useState('');
 
   const applyFilters = () => {
-    setDate(draftDate);
     setBranchId(draftBranchId);
     setStaffType(draftStaffType);
   };
@@ -50,7 +50,6 @@ export default function MarkStaffAttendancePanel() {
   const clearFilters = () => {
     const t = todayISO();
     const bId = isOrgLevel ? '' : userBranchId;
-    setDraftDate(t);
     setDraftBranchId(bId);
     setDraftStaffType('');
     setDate(t);
@@ -270,9 +269,9 @@ export default function MarkStaffAttendancePanel() {
               <CalendarDays className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500 pointer-events-none" />
               <input
                 type="date"
-                value={draftDate}
+                value={date}
                 max={todayISO()}
-                onChange={(e) => setDraftDate(e.target.value)}
+                onChange={(e) => setDate(e.target.value)}
                 className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 outline-none focus:border-teal-500"
               />
             </div>

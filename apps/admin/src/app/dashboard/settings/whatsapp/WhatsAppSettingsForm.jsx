@@ -26,6 +26,17 @@ const ATTENDANCE_STATUSES = [
 
 const PLACEHOLDERS = '{studentName} · {date} · {status} · {arrivalTime} · {branchName}';
 
+// Per-status example templates shown as the textarea placeholder (blank = backend default).
+// Wrap an optional segment in [ ... ] so it's dropped when its placeholder has no value —
+// e.g. [ at {arrivalTime}] disappears when arrivalTime is empty.
+const PLACEHOLDER_EXAMPLES = {
+  late: 'Dear Parent, your child {studentName} arrived LATE on {date}[ at {arrivalTime}] — {branchName}.',
+};
+
+const placeholderFor = (key, label) =>
+  PLACEHOLDER_EXAMPLES[key] ||
+  `Dear Parent, {studentName} is marked ${label.toLowerCase()} on {date}.`;
+
 const STATUS_BADGE = {
   connected: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300',
   connecting: 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300',
@@ -507,7 +518,8 @@ export default function WhatsAppSettingsForm({
         <div className="flex items-start gap-2 mb-4 text-xs text-gray-500 dark:text-gray-400">
           <Info className="w-4 h-4 mt-0.5 flex-shrink-0" />
           <span>
-            Leave a template blank to use the backend default. Placeholders: {PLACEHOLDERS}
+            Leave a template blank to use the backend default. Placeholders: {PLACEHOLDERS}. Wrap
+            an optional part in [ ] so it drops when empty — e.g. [ at {'{arrivalTime}'}].
           </span>
         </div>
         <div className="space-y-3">
@@ -530,7 +542,7 @@ export default function WhatsAppSettingsForm({
                   <textarea
                     className={`${inputCls} mt-2 resize-y`}
                     rows={2}
-                    placeholder={`Dear Parent, {studentName} is marked ${label.toLowerCase()} on {date}.`}
+                    placeholder={placeholderFor(key, label)}
                     value={st.template}
                     onChange={(e) => setStatus(key, { template: e.target.value })}
                     disabled={disabled || !form.attendanceEnabled}

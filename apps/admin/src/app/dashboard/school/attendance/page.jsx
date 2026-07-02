@@ -25,7 +25,7 @@ export default function AttendancePage() {
   // Own-scope: render the personal attendance history view only.
   if (isOwnOnly) {
     return (
-      <div className="md:flex-1 md:min-h-0 md:overflow-hidden flex flex-col bg-gray-50 dark:bg-gray-800 p-3 sm:p-6 rounded-2xl sm:rounded-[50px]">
+      <div className="md:flex-1 md:min-h-0 md:overflow-y-auto flex flex-col bg-gray-50 dark:bg-gray-800 p-3 sm:p-6 rounded-2xl sm:rounded-[50px]">
         <div className="max-w-7xl mx-auto w-full md:flex-1 md:min-h-0 flex flex-col">
           <div className="mb-6 min-w-0">
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100">
@@ -50,7 +50,7 @@ export default function AttendancePage() {
     tabs.push({ key: 'unmarked', label: 'Unmarked Sections', icon: AlertTriangle });
 
   return (
-    <div className="md:flex-1 md:min-h-0 md:overflow-hidden flex flex-col bg-gray-50 dark:bg-gray-800 p-3 sm:p-6 rounded-2xl sm:rounded-[50px]">
+    <div className="md:flex-1 md:min-h-0 md:overflow-y-auto flex flex-col bg-gray-50 dark:bg-gray-800 p-3 sm:p-6 rounded-2xl sm:rounded-[50px]">
       <div className="max-w-7xl mx-auto w-full md:flex-1 md:min-h-0 flex flex-col">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
