@@ -518,8 +518,8 @@ export default function WhatsAppSettingsForm({
         <div className="flex items-start gap-2 mb-4 text-xs text-gray-500 dark:text-gray-400">
           <Info className="w-4 h-4 mt-0.5 flex-shrink-0" />
           <span>
-            Leave a template blank to use the backend default. Placeholders: {PLACEHOLDERS}. Wrap
-            an optional part in [ ] so it drops when empty — e.g. [ at {'{arrivalTime}'}].
+            Leave a template blank to use the backend default. Placeholders: {PLACEHOLDERS}. Wrap an
+            optional part in [ ] so it drops when empty — e.g. [ at {'{arrivalTime}'}].
           </span>
         </div>
         <div className="space-y-3">
