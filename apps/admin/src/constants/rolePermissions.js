@@ -172,6 +172,44 @@ export const ACTIONS = {
   VIEW_ALL_BRANCH_PAYMENT: 'view-all-branch-payment',
   VOID_ALL_BRANCH_PAYMENT: 'void-all-branch-payment',
 
+  // ── Accounting: chart of accounts ─────────────────
+  CREATE_ACCOUNT: 'create-account',
+  VIEW_ACCOUNT: 'view-account',
+  UPDATE_ACCOUNT: 'update-account',
+  DELETE_ACCOUNT: 'delete-account',
+
+  // ── Accounting: chart of accounts (org-level) ─────
+  CREATE_ALL_BRANCH_ACCOUNT: 'create-all-branch-account',
+  VIEW_ALL_BRANCH_ACCOUNT: 'view-all-branch-account',
+  UPDATE_ALL_BRANCH_ACCOUNT: 'update-all-branch-account',
+  DELETE_ALL_BRANCH_ACCOUNT: 'delete-all-branch-account',
+
+  // ── Accounting: journal entries ───────────────────
+  CREATE_JOURNAL: 'create-journal',
+  VIEW_JOURNAL: 'view-journal',
+  VOID_JOURNAL: 'void-journal',
+
+  // ── Accounting: journal entries (org-level) ───────
+  CREATE_ALL_BRANCH_JOURNAL: 'create-all-branch-journal',
+  VIEW_ALL_BRANCH_JOURNAL: 'view-all-branch-journal',
+  VOID_ALL_BRANCH_JOURNAL: 'void-all-branch-journal',
+
+  // ── Accounting: account mapping (auto-post config) ─
+  VIEW_ACCOUNT_MAPPING: 'view-account-mapping',
+  UPDATE_ACCOUNT_MAPPING: 'update-account-mapping',
+  VIEW_ALL_BRANCH_ACCOUNT_MAPPING: 'view-all-branch-account-mapping',
+  UPDATE_ALL_BRANCH_ACCOUNT_MAPPING: 'update-all-branch-account-mapping',
+
+  // ── Accounting: financial reports ─────────────────
+  VIEW_FINANCIAL_REPORT: 'view-financial-report',
+  VIEW_ALL_BRANCH_FINANCIAL_REPORT: 'view-all-branch-financial-report',
+
+  // ── Accounting: period locking ────────────────────
+  VIEW_ACCOUNTING_PERIOD: 'view-accounting-period',
+  MANAGE_ACCOUNTING_PERIOD: 'manage-accounting-period',
+  VIEW_ALL_BRANCH_ACCOUNTING_PERIOD: 'view-all-branch-accounting-period',
+  MANAGE_ALL_BRANCH_ACCOUNTING_PERIOD: 'manage-all-branch-accounting-period',
+
   // ── Reports ───────────────────────────────────────
   STUDENT_DEFAULTS_LIST_VIEW: 'student-defaults-list-view',
   STUDENT_DEFAULTS_LIST_VIEW_ALL_BRANCH: 'student-defaults-list-view-all-branch',
@@ -301,6 +339,11 @@ export const AVAILABLE_MENUS = [
   { key: 'exam', label: 'Exams' },
   { key: 'timetable', label: 'Timetable' },
   { key: 'fee', label: 'Fees' },
+  { key: 'account', label: 'Accounting — Chart of Accounts' },
+  { key: 'journal', label: 'Accounting — Journal Entries' },
+  { key: 'account-mapping', label: 'Accounting — Account Mapping' },
+  { key: 'financial-report', label: 'Accounting — Financial Reports' },
+  { key: 'accounting-period', label: 'Accounting — Period Locking' },
   { key: 'announcement', label: 'Announcements' },
   { key: 'report', label: 'Reports' },
   { key: 'report-student-fee-defaulter', label: 'Reports — Student Fee Defaulter' },
@@ -491,6 +534,64 @@ export const AVAILABLE_ACTIONS = [
   { key: ACTIONS.RECORD_ALL_BRANCH_PAYMENT, label: 'Record Payment All Branch', menu: 'fee' },
   { key: ACTIONS.VIEW_ALL_BRANCH_PAYMENT, label: 'View Payment All Branch', menu: 'fee' },
   { key: ACTIONS.VOID_ALL_BRANCH_PAYMENT, label: 'Void Payment All Branch', menu: 'fee' },
+
+  // Accounting — Chart of Accounts
+  { key: ACTIONS.VIEW_ACCOUNT, label: 'View', menu: 'account' },
+  { key: ACTIONS.CREATE_ACCOUNT, label: 'Create', menu: 'account' },
+  { key: ACTIONS.UPDATE_ACCOUNT, label: 'Update', menu: 'account' },
+  { key: ACTIONS.DELETE_ACCOUNT, label: 'Delete', menu: 'account' },
+  { key: ACTIONS.VIEW_ALL_BRANCH_ACCOUNT, label: 'View All Branch', menu: 'account' },
+  { key: ACTIONS.CREATE_ALL_BRANCH_ACCOUNT, label: 'Create All Branch', menu: 'account' },
+  { key: ACTIONS.UPDATE_ALL_BRANCH_ACCOUNT, label: 'Update All Branch', menu: 'account' },
+  { key: ACTIONS.DELETE_ALL_BRANCH_ACCOUNT, label: 'Delete All Branch', menu: 'account' },
+
+  // Accounting — Journal Entries
+  { key: ACTIONS.VIEW_JOURNAL, label: 'View', menu: 'journal' },
+  { key: ACTIONS.CREATE_JOURNAL, label: 'Create', menu: 'journal' },
+  { key: ACTIONS.VOID_JOURNAL, label: 'Void', menu: 'journal' },
+  { key: ACTIONS.VIEW_ALL_BRANCH_JOURNAL, label: 'View All Branch', menu: 'journal' },
+  { key: ACTIONS.CREATE_ALL_BRANCH_JOURNAL, label: 'Create All Branch', menu: 'journal' },
+  { key: ACTIONS.VOID_ALL_BRANCH_JOURNAL, label: 'Void All Branch', menu: 'journal' },
+
+  // Accounting — Account Mapping
+  { key: ACTIONS.VIEW_ACCOUNT_MAPPING, label: 'View', menu: 'account-mapping' },
+  { key: ACTIONS.UPDATE_ACCOUNT_MAPPING, label: 'Update', menu: 'account-mapping' },
+  {
+    key: ACTIONS.VIEW_ALL_BRANCH_ACCOUNT_MAPPING,
+    label: 'View All Branch',
+    menu: 'account-mapping',
+  },
+  {
+    key: ACTIONS.UPDATE_ALL_BRANCH_ACCOUNT_MAPPING,
+    label: 'Update All Branch',
+    menu: 'account-mapping',
+  },
+
+  // Accounting — Financial Reports
+  { key: ACTIONS.VIEW_FINANCIAL_REPORT, label: 'View', menu: 'financial-report' },
+  {
+    key: ACTIONS.VIEW_ALL_BRANCH_FINANCIAL_REPORT,
+    label: 'View All Branch',
+    menu: 'financial-report',
+  },
+
+  // Accounting — Period Locking
+  { key: ACTIONS.VIEW_ACCOUNTING_PERIOD, label: 'View', menu: 'accounting-period' },
+  {
+    key: ACTIONS.MANAGE_ACCOUNTING_PERIOD,
+    label: 'Manage (Close/Reopen)',
+    menu: 'accounting-period',
+  },
+  {
+    key: ACTIONS.VIEW_ALL_BRANCH_ACCOUNTING_PERIOD,
+    label: 'View All Branch',
+    menu: 'accounting-period',
+  },
+  {
+    key: ACTIONS.MANAGE_ALL_BRANCH_ACCOUNTING_PERIOD,
+    label: 'Manage All Branch',
+    menu: 'accounting-period',
+  },
 
   // Reports — Student Fee Defaulter
   {

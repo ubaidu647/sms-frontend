@@ -23,6 +23,8 @@ import {
   TrendingDown,
   TrendingUp,
   CreditCard,
+  Landmark,
+  ListTree,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -177,6 +179,29 @@ const navigationItems = [
     base: 'view-fee',
     hasSubmenu: false,
     path: '/dashboard/school/fees',
+  },
+  {
+    labelKey: 'accounting',
+    iconComponent: Landmark,
+    key: 'accounting',
+    hasSubmenu: true,
+    path: '/dashboard/school/accounting',
+    submenu: [
+      {
+        labelKey: 'chartOfAccounts',
+        iconComponent: ListTree,
+        key: 'account',
+        base: 'view-account',
+        path: '/dashboard/school/accounting/accounts',
+      },
+      {
+        labelKey: 'journalEntries',
+        iconComponent: BookOpen,
+        key: 'journal',
+        base: 'view-journal',
+        path: '/dashboard/school/accounting/journals',
+      },
+    ],
   },
   {
     labelKey: 'announcements',
