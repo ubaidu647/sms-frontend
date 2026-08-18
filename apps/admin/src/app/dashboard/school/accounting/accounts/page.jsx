@@ -1,5 +1,6 @@
 'use client';
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Table } from '@/component/Table';
 import {
   Plus,
@@ -24,7 +25,12 @@ import toast from 'react-hot-toast';
 import AccountFormModal from './AccountFormModal';
 import AccountDetailModal from './AccountDetailModal';
 import ConfirmModal from '../ConfirmModal';
-import { ACCOUNT_TYPES, ACCOUNT_TYPE_COLORS } from '@/constants/accounting';
+import {
+  ACCOUNT_TYPES,
+  ACCOUNT_TYPE_COLORS,
+  ACCOUNT_CATEGORY_COLORS,
+  ACCOUNT_CATEGORY_LABELS,
+} from '@/constants/accounting';
 
 const TypeBadge = ({ type }) => (
   <span
@@ -35,6 +41,16 @@ const TypeBadge = ({ type }) => (
     {type}
   </span>
 );
+
+// Only cash/bank are worth calling out — 'other' is the norm and would be noise.
+const CategoryBadge = ({ category, className = '' }) =>
+  ACCOUNT_CATEGORY_COLORS[category] ? (
+    <span
+      className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${ACCOUNT_CATEGORY_COLORS[category]} ${className}`}
+    >
+      {ACCOUNT_CATEGORY_LABELS[category]}
+    </span>
+  ) : null;
 
 // One tree row + its descendants. Indentation scales with `level`; groups get a
 // chevron toggle, leaves get a spacer so codes stay aligned.
@@ -48,9 +64,49 @@ function AccountTreeNode({
   canDelete,
   canViewLedger,
 }) {
-  const [menuOpen, setMenuOpen] = useState(false);
+  // The row menu renders in a portal: the tree scrolls inside an
+  // overflow-hidden card, so an absolutely-positioned menu on the last rows was
+  // clipped instead of overflowing the card.
+  const [menuAnchor, setMenuAnchor] = useState(null);
+  const menuOpen = !!menuAnchor;
+  const triggerRef = useRef(null);
+
   const hasChildren = (node.children || []).length > 0;
   const isOpen = expanded.has(node._id);
+
+  const menuItems = [
+    { value: 'view', label: 'View', icon: Eye },
+    ...(canViewLedger && !node.isGroup
+      ? [{ value: 'ledger', label: 'Ledger', icon: Receipt }]
+      : []),
+    ...(canUpdate && !node.isSystem ? [{ value: 'edit', label: 'Edit', icon: Edit }] : []),
+    ...(canDelete && !node.isSystem && !hasChildren
+      ? [{ value: 'delete', label: 'Delete', icon: Trash2, danger: true }]
+      : []),
+  ];
+
+  const openMenu = () => {
+    const rect = triggerRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const height = menuItems.length * 36 + 8;
+    const spaceBelow = window.innerHeight - rect.bottom;
+    // Flip above the trigger when the menu would run past the viewport bottom.
+    const top = spaceBelow < height + 12 ? Math.max(8, rect.top - height - 4) : rect.bottom + 4;
+    setMenuAnchor({ top, left: Math.max(8, rect.right - 144) });
+  };
+
+  // Fixed coordinates are captured on open, so any scroll or resize would leave
+  // the menu floating away from its row — close it instead.
+  useEffect(() => {
+    if (!menuOpen) return;
+    const close = () => setMenuAnchor(null);
+    window.addEventListener('scroll', close, true);
+    window.addEventListener('resize', close);
+    return () => {
+      window.removeEventListener('scroll', close, true);
+      window.removeEventListener('resize', close);
+    };
+  }, [menuOpen]);
 
   return (
     <>
@@ -81,6 +137,7 @@ function AccountTreeNode({
         </span>
 
         <TypeBadge type={node.type} />
+        <CategoryBadge category={node.category} />
 
         {node.isControlAccount && (
           <span className="hidden sm:inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-teal-100 text-teal-800">
@@ -93,67 +150,45 @@ function AccountTreeNode({
           </span>
         )}
 
-        <div className="ml-auto relative flex-shrink-0">
+        <div className="ml-auto flex-shrink-0">
           <button
+            ref={triggerRef}
             type="button"
-            onClick={() => setMenuOpen((v) => !v)}
+            onClick={() => (menuOpen ? setMenuAnchor(null) : openMenu())}
             className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 opacity-60 group-hover:opacity-100"
           >
             <MoreVertical className="w-4 h-4" />
           </button>
-          {menuOpen && (
-            <>
-              <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} />
-              <div className="absolute right-0 top-8 z-20 w-36 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg py-1 text-sm">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setMenuOpen(false);
-                    onAction('view', node);
-                  }}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"
+          {menuOpen &&
+            typeof document !== 'undefined' &&
+            createPortal(
+              <>
+                <div className="fixed inset-0 z-40" onClick={() => setMenuAnchor(null)} />
+                <div
+                  className="fixed z-50 w-36 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg py-1 text-sm"
+                  style={{ top: menuAnchor.top, left: menuAnchor.left }}
                 >
-                  <Eye className="w-4 h-4" /> View
-                </button>
-                {canViewLedger && !node.isGroup && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setMenuOpen(false);
-                      onAction('ledger', node);
-                    }}
-                    className="w-full flex items-center gap-2 px-3 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"
-                  >
-                    <Receipt className="w-4 h-4" /> Ledger
-                  </button>
-                )}
-                {canUpdate && !node.isSystem && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setMenuOpen(false);
-                      onAction('edit', node);
-                    }}
-                    className="w-full flex items-center gap-2 px-3 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"
-                  >
-                    <Edit className="w-4 h-4" /> Edit
-                  </button>
-                )}
-                {canDelete && !node.isSystem && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setMenuOpen(false);
-                      onAction('delete', node);
-                    }}
-                    className="w-full flex items-center gap-2 px-3 py-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40"
-                  >
-                    <Trash2 className="w-4 h-4" /> Delete
-                  </button>
-                )}
-              </div>
-            </>
-          )}
+                  {menuItems.map(({ value, label, icon: Icon, danger }) => (
+                    <button
+                      key={value}
+                      type="button"
+                      onClick={() => {
+                        setMenuAnchor(null);
+                        onAction(value, node);
+                      }}
+                      className={`w-full flex items-center gap-2 px-3 py-2 ${
+                        danger
+                          ? 'text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40'
+                          : 'text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800'
+                      }`}
+                    >
+                      <Icon className="w-4 h-4" /> {label}
+                    </button>
+                  ))}
+                </div>
+              </>,
+              document.body,
+            )}
         </div>
       </div>
 
@@ -355,6 +390,7 @@ export default function AccountsPage() {
         accessor: 'isControlAccount',
         render: (_v, row) => (
           <div className="flex flex-wrap gap-1">
+            <CategoryBadge category={row.category} />
             {row.isControlAccount && (
               <span className="px-2 py-0.5 rounded-full text-xs bg-teal-100 text-teal-800">
                 Control

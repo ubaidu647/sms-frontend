@@ -27,6 +27,7 @@ import {
   formatMonth,
   PAYMENT_METHOD_COLORS,
   VOUCHER_STATUS_COLORS,
+  paymentAccountLabel,
 } from '@/constants/fee';
 import VoidVoucherModal from '../VoidVoucherModal';
 import LateFeeModal from '../LateFeeModal';
@@ -338,8 +339,9 @@ export default function VoucherDetailPage() {
                               className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${
                                 PAYMENT_METHOD_COLORS[p.method] || 'bg-gray-100 text-gray-700'
                               }`}
+                              title={p.method}
                             >
-                              {p.method}
+                              {paymentAccountLabel(p)}
                             </span>
                           </td>
                           <td

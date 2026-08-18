@@ -38,7 +38,7 @@ export default function MyBranchProfilePage() {
             {canViewBranches && (
               <>
                 <Link
-                  href="/dashboard/school/branches"
+                  href="/dashboard/business-settings/branches"
                   className="flex items-center gap-1 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100"
                 >
                   <ArrowLeft className="w-4 h-4" />
@@ -64,7 +64,7 @@ export default function MyBranchProfilePage() {
           </div>
           {isOrgLevel && (
             <Link
-              href="/dashboard/school/branches/profiles"
+              href="/dashboard/business-settings/branches/profiles"
               className="text-sm text-teal-700 dark:text-teal-400 hover:underline"
             >
               View all branch profiles →

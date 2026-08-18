@@ -6,14 +6,10 @@ import toast from 'react-hot-toast';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { postData } from '@/utils/api';
 import { useTokenStore } from '@/store/tokenStore';
-import {
-  PAYMENT_METHODS,
-  PAYMENT_METHOD_COLORS,
-  REFERENCE_REQUIRED_METHODS,
-  formatMoney,
-  formatMonth,
-  todayYMD,
-} from '@/constants/fee';
+import PaymentAccountSelect from '@/component/PaymentAccountSelect';
+import PaymentReceiptPrint, { printReceipt } from '@/component/PaymentReceiptPrint';
+import { useUserStore } from '@/store/userStore';
+import { PAYMENT_METHOD_COLORS, formatMoney, formatMonth, todayYMD } from '@/constants/fee';
 
 const inputCls =
   'w-full px-3 py-2 border border-gray-200 rounded-lg outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 text-sm text-gray-900 bg-white';
@@ -25,13 +21,16 @@ export default function PayConsolidatedModal({
   studentId,
   outstandingTotal = 0,
   studentLabel,
+  branchId,
 }) {
   const { accessToken: token } = useTokenStore();
+  const { user } = useUserStore();
   const queryClient = useQueryClient();
 
   const [amount, setAmount] = useState(0);
   const [paymentDate, setPaymentDate] = useState(todayYMD());
-  const [method, setMethod] = useState('cash');
+  // The cash/bank head the money lands in — it also determines the method.
+  const [account, setAccount] = useState(null);
   const [referenceNumber, setReferenceNumber] = useState('');
   const [notes, setNotes] = useState('');
   const [submitError, setSubmitError] = useState('');
@@ -41,7 +40,7 @@ export default function PayConsolidatedModal({
     if (isOpen) {
       setAmount(outstandingTotal || 0);
       setPaymentDate(todayYMD());
-      setMethod('cash');
+      setAccount(null);
       setReferenceNumber('');
       setNotes('');
       setSubmitError('');
@@ -72,7 +71,8 @@ export default function PayConsolidatedModal({
     },
   });
 
-  const refRequired = REFERENCE_REQUIRED_METHODS.includes(method);
+  // Bank money must stay traceable to a cheque number / transaction id.
+  const isBank = account?.category === 'bank';
 
   const submit = () => {
     setSubmitError('');
@@ -82,15 +82,16 @@ export default function PayConsolidatedModal({
       return setSubmitError(`Amount cannot exceed outstanding ${formatMoney(outstandingTotal)}`);
     if (!/^\d{4}-\d{2}-\d{2}$/.test(paymentDate))
       return setSubmitError('Payment date must be YYYY-MM-DD');
-    if (!PAYMENT_METHODS.includes(method)) return setSubmitError('Invalid payment method');
-    if (refRequired && !referenceNumber.trim())
-      return setSubmitError('Reference number is required for this method');
+    if (!account) return setSubmitError('Select the cash or bank account the money came into');
+    if (isBank && !referenceNumber.trim())
+      return setSubmitError('Reference number is required for a bank account');
 
     const payload = {
       studentId,
       amount: num,
       paymentDate,
-      method,
+      method: isBank ? 'bank-transfer' : 'cash',
+      ledgerAccountId: account._id,
     };
     if (referenceNumber.trim()) payload.referenceNumber = referenceNumber.trim();
     if (notes.trim()) payload.notes = notes.trim();
@@ -144,7 +145,7 @@ export default function PayConsolidatedModal({
                 size: 'px-10 py-3 text-md min-h-[3rem]',
                 textColor: 'text-white',
               }}
-              handleClick={() => window.print()}
+              handleClick={printReceipt}
             />
           )}
         </div>
@@ -197,34 +198,32 @@ export default function PayConsolidatedModal({
                 className={inputCls}
               />
             </div>
-            <div>
-              <label className={labelCls}>
-                Method<span className="text-red-500">*</span>
-              </label>
-              <select
-                value={method}
-                onChange={(e) => setMethod(e.target.value)}
-                className={inputCls}
-              >
-                {PAYMENT_METHODS.map((m) => (
-                  <option key={m} value={m}>
-                    {m}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className={labelCls}>
-                Reference / Cheque #{refRequired && <span className="text-red-500 ml-0.5">*</span>}
-              </label>
-              <input
-                type="text"
-                value={referenceNumber}
-                onChange={(e) => setReferenceNumber(e.target.value)}
-                placeholder={refRequired ? 'Required' : 'Optional'}
-                className={inputCls}
+            <div className={isBank ? '' : 'col-span-2'}>
+              <PaymentAccountSelect
+                branchId={branchId}
+                value={account?._id || ''}
+                onChange={(acc) => {
+                  setAccount(acc);
+                  if (acc?.category !== 'bank') setReferenceNumber('');
+                }}
+                labelCls={labelCls}
+                inputCls={inputCls}
               />
             </div>
+            {isBank && (
+              <div>
+                <label className={labelCls}>
+                  Reference / Cheque #<span className="text-red-500 ml-0.5">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={referenceNumber}
+                  onChange={(e) => setReferenceNumber(e.target.value)}
+                  placeholder="Transaction id / cheque no"
+                  className={inputCls}
+                />
+              </div>
+            )}
           </div>
 
           <div>
@@ -239,13 +238,31 @@ export default function PayConsolidatedModal({
           </div>
         </div>
       ) : (
-        <ResultView result={result} />
+        <ResultView
+          result={result}
+          branchId={branchId}
+          studentLabel={studentLabel}
+          account={account}
+          referenceNumber={referenceNumber}
+          notes={notes}
+          paymentDate={paymentDate}
+          receivedBy={user?.name}
+        />
       )}
     </Modal>
   );
 }
 
-function ResultView({ result }) {
+function ResultView({
+  result,
+  branchId,
+  studentLabel,
+  account,
+  referenceNumber,
+  notes,
+  paymentDate,
+  receivedBy,
+}) {
   const payments = result?.payments || [];
   const affected = result?.affectedVouchers || [];
   // pair receipts with their voucher row by index (API returns them in matching order)
@@ -338,6 +355,33 @@ function ResultView({ result }) {
           </span>
         </div>
       )}
+
+      {/* Screen-invisible; this is what Print puts on paper. */}
+      <PaymentReceiptPrint
+        branchId={branchId}
+        title="Fee Receipt (Arrears)"
+        receiptNumber={payments
+          .map((p) => p?.receiptNumber)
+          .filter(Boolean)
+          .join(', ')}
+        date={paymentDate}
+        amount={result?.totalApplied}
+        accountLabel={account ? `${account.code} · ${account.name}` : payments[0]?.method}
+        referenceNumber={referenceNumber}
+        notes={notes}
+        receivedBy={receivedBy}
+        student={{ name: studentLabel }}
+        items={rows.map(({ voucher, payment }) => ({
+          label: `Voucher ${voucher.voucherNumber} · ${formatMonth(voucher.month)}${
+            payment?.receiptNumber ? ` · ${payment.receiptNumber}` : ''
+          }`,
+          amount: voucher.applied,
+        }))}
+        summary={[
+          { label: 'Total Applied', value: formatMoney(result?.totalApplied) },
+          { label: 'Remaining Outstanding', value: formatMoney(result?.remainingOutstanding) },
+        ]}
+      />
     </div>
   );
 }

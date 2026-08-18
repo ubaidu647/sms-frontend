@@ -1,23 +1,22 @@
 {
   "topbar": {
     "greeting": "السلام علیکم،",
-    "settings": "ترتیبات",
+    "settings": "عمومی ترتیبات",
     "userManagement": "صارف کا انتظام",
+    "businessSettings": "کاروباری ترتیبات",
+    "billing": "بلنگ",
     "logout": "لاگ آؤٹ",
     "switchToLight": "روشن موڈ پر جائیں",
     "switchToDark": "گہرے موڈ پر جائیں"
   },
   "sidebar": {
     "schoolPortal": "اسکول پورٹل",
-    "billing": "بلنگ",
-    "branches": "برانچز",
-    "staff": "عملہ",
-    "role": "کردار",
     "classes": "کلاسز",
     "subjects": "مضامین",
     "homework": "ہوم ورک",
     "students": "طلباء",
     "attendance": "حاضری",
+    "studentAttendance": "طلباء کی حاضری",
     "staffAttendance": "عملے کی حاضری",
     "staffSalary": "عملے کی تنخواہ",
     "salaryDashboard": "ڈیش بورڈ",
@@ -31,16 +30,27 @@
     "accounting": "اکاؤنٹنگ",
     "chartOfAccounts": "چارٹ آف اکاؤنٹس",
     "journalEntries": "جرنل انٹریاں",
+    "accountLedger": "اکاؤنٹ لیجر",
+    "accountMapping": "اکاؤنٹ میپنگ",
+    "accountingPeriods": "اکاؤنٹنگ ادوار",
     "announcements": "اعلانات",
     "transport": "ٹرانسپورٹ",
     "vehicles": "گاڑیاں",
     "routes": "راستے",
     "assignments": "تفویض",
-    "branchProfile": "برانچ پروفائل",
     "reports": "رپورٹس",
     "reportStudentFeeDefaulter": "فیس نادہندہ طلباء",
     "reportStudentProgress": "طالب علم پیش رفت رپورٹ",
-    "logout": "لاگ آؤٹ"
+    "reportTrialBalance": "ٹرائل بیلنس",
+    "reportIncomeStatement": "آمدنی گوشوارہ",
+    "reportBalanceSheet": "بیلنس شیٹ",
+    "reportPartyLedger": "پارٹی لیجر",
+    "logout": "لاگ آؤٹ",
+    "sectionSchool": "اسکول",
+    "sectionFinance": "مالیات",
+    "sectionOperations": "آپریشنز",
+    "sectionInsights": "رپورٹنگ",
+    "academicSetup": "تعلیمی سیٹ اپ"
   },
   "reportStudentProgress": {
     "title": "طالب علم پیش رفت رپورٹ",
@@ -192,7 +202,7 @@
     "subtitle": "اپنی تمام تنظیموں کا انتظام کریں"
   },
   "settings": {
-    "title": "ترتیبات",
+    "title": "عمومی ترتیبات",
     "subtitle": "اپنی پسند کے مطابق ایپ کو ترتیب دیں۔",
     "appearance": {
       "title": "ظاہری شکل",

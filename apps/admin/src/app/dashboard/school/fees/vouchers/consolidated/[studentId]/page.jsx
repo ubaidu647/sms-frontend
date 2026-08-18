@@ -352,6 +352,7 @@ export default function ConsolidatedVoucherPage() {
         studentId={studentId}
         outstandingTotal={outstanding}
         studentLabel={student?.user?.name}
+        branchId={branchIdForProfile}
       />
     </>
   );

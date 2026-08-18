@@ -13,7 +13,6 @@ import {
   CalendarClock,
   Wallet,
   Megaphone,
-  Building2,
   Bus,
   Map,
   UserCheck,
@@ -22,9 +21,13 @@ import {
   BarChart3,
   TrendingDown,
   TrendingUp,
-  CreditCard,
   Landmark,
   ListTree,
+  Receipt,
+  Link2,
+  Lock,
+  Scale,
+  Users2,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -37,55 +40,15 @@ import { useAuth } from '@/hooks/useAuth';
 // back to canSee(role, base) so own-scope users see the menu even if the admin
 // only granted them view-own-X.
 const navigationItems = [
+  // Order is by how often a school actually touches each screen, grouped into
+  // sections (`section` → sidebar heading). Staff and Roles are not here on
+  // purpose: they moved under User Management in the topbar
+  // (/dashboard/user-management), since they administer system access rather
+  // than school operations. Branches, Branch Profile and WhatsApp likewise
+  // moved to Business Settings (/dashboard/business-settings), and Billing to
+  // /dashboard/billing — all reached from the topbar menu.
   {
-    labelKey: 'branches',
-    icon: 'https://c.animaapp.com/mi4xjeskxZrnLa/img/frame-1.svg',
-    key: 'branch',
-    base: 'view-branch',
-    hasSubmenu: false,
-    path: '/dashboard/school/branches',
-  },
-  {
-    labelKey: 'staff',
-    icon: 'https://c.animaapp.com/mi4xjeskxZrnLa/img/layer-18.svg',
-    key: 'staff',
-    base: 'view-staff',
-    hasSubmenu: false,
-    path: '/dashboard/school/staff',
-  },
-  {
-    labelKey: 'role',
-    icon: 'https://c.animaapp.com/mi4xjeskxZrnLa/img/frame-3.svg',
-    key: 'role',
-    base: 'view-role',
-    hasSubmenu: false,
-    path: '/dashboard/school/roles',
-  },
-  {
-    labelKey: 'classes',
-    iconComponent: GraduationCap,
-    key: 'class',
-    base: 'view-class',
-    hasSubmenu: false,
-    path: '/dashboard/school/classes',
-  },
-  {
-    labelKey: 'subjects',
-    iconComponent: BookOpen,
-    key: 'subject',
-    base: 'view-subject',
-    hasSubmenu: false,
-    path: '/dashboard/school/subjects',
-  },
-  {
-    labelKey: 'homework',
-    iconComponent: ClipboardList,
-    key: 'homework',
-    base: 'view-homework',
-    hasSubmenu: false,
-    path: '/dashboard/school/homework',
-  },
-  {
+    section: 'sectionSchool',
     labelKey: 'students',
     iconComponent: Users,
     key: 'student',
@@ -94,22 +57,146 @@ const navigationItems = [
     path: '/dashboard/school/students',
   },
   {
+    // Grouped: both are "who was present today", and the parent shows whenever
+    // either register is granted (see isItemVisible).
+    section: 'sectionSchool',
     labelKey: 'attendance',
     iconComponent: ClipboardCheck,
     key: 'attendance',
-    base: 'view-attendance',
-    hasSubmenu: false,
+    hasSubmenu: true,
     path: '/dashboard/school/attendance',
+    submenu: [
+      {
+        labelKey: 'studentAttendance',
+        iconComponent: ClipboardCheck,
+        key: 'attendance',
+        base: 'view-attendance',
+        path: '/dashboard/school/attendance',
+      },
+      {
+        labelKey: 'staffAttendance',
+        iconComponent: CalendarCheck,
+        key: 'staff-attendance',
+        base: 'view-staff-attendance',
+        path: '/dashboard/school/staff-attendance',
+      },
+    ],
   },
   {
-    labelKey: 'staffAttendance',
-    iconComponent: CalendarCheck,
-    key: 'staff-attendance',
-    base: 'view-staff-attendance',
+    section: 'sectionSchool',
+    labelKey: 'timetable',
+    iconComponent: CalendarClock,
+    key: 'timetable',
+    base: 'view-timetable',
     hasSubmenu: false,
-    path: '/dashboard/school/staff-attendance',
+    path: '/dashboard/school/timetable',
   },
   {
+    section: 'sectionSchool',
+    labelKey: 'homework',
+    iconComponent: ClipboardList,
+    key: 'homework',
+    base: 'view-homework',
+    hasSubmenu: false,
+    path: '/dashboard/school/homework',
+  },
+  {
+    section: 'sectionSchool',
+    labelKey: 'exams',
+    iconComponent: FileText,
+    key: 'exam',
+    base: 'view-exam',
+    hasSubmenu: false,
+    path: '/dashboard/school/exams',
+  },
+  {
+    section: 'sectionSchool',
+    // Configure-once academic structure — grouped so the daily-use items above
+    // stay at the top level.
+    labelKey: 'academicSetup',
+    iconComponent: GraduationCap,
+    hasSubmenu: true,
+    path: '/dashboard/school/classes',
+    submenu: [
+      {
+        labelKey: 'classes',
+        iconComponent: GraduationCap,
+        key: 'class',
+        base: 'view-class',
+        path: '/dashboard/school/classes',
+      },
+      {
+        labelKey: 'subjects',
+        iconComponent: BookOpen,
+        key: 'subject',
+        base: 'view-subject',
+        path: '/dashboard/school/subjects',
+      },
+      {
+        labelKey: 'teacherAssignments',
+        iconComponent: BookUser,
+        key: 'teaching-assignment',
+        base: 'view-teaching-assignment',
+        path: '/dashboard/school/teacher-assignments',
+      },
+    ],
+  },
+  {
+    section: 'sectionFinance',
+    labelKey: 'fees',
+    iconComponent: Wallet,
+    key: 'fee',
+    base: 'view-fee',
+    hasSubmenu: false,
+    path: '/dashboard/school/fees',
+  },
+  {
+    section: 'sectionFinance',
+    labelKey: 'accounting',
+    iconComponent: Landmark,
+    key: 'accounting',
+    hasSubmenu: true,
+    path: '/dashboard/school/accounting',
+    submenu: [
+      {
+        labelKey: 'chartOfAccounts',
+        iconComponent: ListTree,
+        key: 'account',
+        base: 'view-account',
+        path: '/dashboard/school/accounting/accounts',
+      },
+      {
+        labelKey: 'journalEntries',
+        iconComponent: BookOpen,
+        key: 'journal',
+        base: 'view-journal',
+        path: '/dashboard/school/accounting/journals',
+      },
+      {
+        labelKey: 'accountLedger',
+        iconComponent: Receipt,
+        key: 'journal',
+        base: 'view-journal',
+        path: '/dashboard/school/accounting/ledger',
+      },
+      {
+        labelKey: 'accountMapping',
+        iconComponent: Link2,
+        key: 'account-mapping',
+        base: 'view-account-mapping',
+        path: '/dashboard/school/accounting/mapping',
+      },
+      {
+        labelKey: 'accountingPeriods',
+        iconComponent: Lock,
+        key: 'accounting-period',
+        base: 'view-accounting-period',
+        path: '/dashboard/school/accounting/periods',
+      },
+    ],
+  },
+  {
+    section: 'sectionFinance',
     labelKey: 'staffSalary',
     iconComponent: BadgeDollarSign,
     key: 'staff-salary',
@@ -149,69 +236,7 @@ const navigationItems = [
     ],
   },
   {
-    labelKey: 'teacherAssignments',
-    iconComponent: BookUser,
-    key: 'teaching-assignment',
-    base: 'view-teaching-assignment',
-    hasSubmenu: false,
-    path: '/dashboard/school/teacher-assignments',
-  },
-  {
-    labelKey: 'exams',
-    iconComponent: FileText,
-    key: 'exam',
-    base: 'view-exam',
-    hasSubmenu: false,
-    path: '/dashboard/school/exams',
-  },
-  {
-    labelKey: 'timetable',
-    iconComponent: CalendarClock,
-    key: 'timetable',
-    base: 'view-timetable',
-    hasSubmenu: false,
-    path: '/dashboard/school/timetable',
-  },
-  {
-    labelKey: 'fees',
-    iconComponent: Wallet,
-    key: 'fee',
-    base: 'view-fee',
-    hasSubmenu: false,
-    path: '/dashboard/school/fees',
-  },
-  {
-    labelKey: 'accounting',
-    iconComponent: Landmark,
-    key: 'accounting',
-    hasSubmenu: true,
-    path: '/dashboard/school/accounting',
-    submenu: [
-      {
-        labelKey: 'chartOfAccounts',
-        iconComponent: ListTree,
-        key: 'account',
-        base: 'view-account',
-        path: '/dashboard/school/accounting/accounts',
-      },
-      {
-        labelKey: 'journalEntries',
-        iconComponent: BookOpen,
-        key: 'journal',
-        base: 'view-journal',
-        path: '/dashboard/school/accounting/journals',
-      },
-    ],
-  },
-  {
-    labelKey: 'announcements',
-    iconComponent: Megaphone,
-    key: 'announcement',
-    base: 'view-announcement',
-    hasSubmenu: false,
-    path: '/dashboard/school/announcements',
-  },
-  {
+    section: 'sectionOperations',
     labelKey: 'transport',
     iconComponent: Bus,
     key: 'transport',
@@ -242,14 +267,16 @@ const navigationItems = [
     ],
   },
   {
-    labelKey: 'branchProfile',
-    iconComponent: Building2,
-    key: 'branch-profile',
-    base: 'view-branch-profile',
+    section: 'sectionOperations',
+    labelKey: 'announcements',
+    iconComponent: Megaphone,
+    key: 'announcement',
+    base: 'view-announcement',
     hasSubmenu: false,
-    path: '/dashboard/school/branches/profile',
+    path: '/dashboard/school/announcements',
   },
   {
+    section: 'sectionInsights',
     labelKey: 'reports',
     iconComponent: BarChart3,
     key: 'report',
@@ -270,15 +297,36 @@ const navigationItems = [
         canAccess: (role) =>
           role?.isPredefined || hasAnyAction(role, ['view-student', 'view-all-branch-student']),
       },
+      // Financial reports — one entry per statement instead of in-page tabs.
+      {
+        labelKey: 'reportTrialBalance',
+        iconComponent: Scale,
+        key: 'financial-report',
+        base: 'view-financial-report',
+        path: '/dashboard/school/accounting/reports/trial-balance',
+      },
+      {
+        labelKey: 'reportIncomeStatement',
+        iconComponent: TrendingUp,
+        key: 'financial-report',
+        base: 'view-financial-report',
+        path: '/dashboard/school/accounting/reports/income-statement',
+      },
+      {
+        labelKey: 'reportBalanceSheet',
+        iconComponent: Landmark,
+        key: 'financial-report',
+        base: 'view-financial-report',
+        path: '/dashboard/school/accounting/reports/balance-sheet',
+      },
+      {
+        labelKey: 'reportPartyLedger',
+        iconComponent: Users2,
+        key: 'financial-report',
+        base: 'view-financial-report',
+        path: '/dashboard/school/accounting/reports/party',
+      },
     ],
-  },
-  {
-    labelKey: 'billing',
-    iconComponent: CreditCard,
-    key: 'billing',
-    base: 'view-billing',
-    hasSubmenu: false,
-    path: '/dashboard/school/billing',
   },
 ];
 
@@ -341,6 +389,14 @@ export const Sidebar = ({
     return menus.includes(item.key) || (item.base && canSee(user?.role, item.base));
   };
 
+  // First visible item of each section — that row gets the section heading
+  // above it, so a heading never shows for a section the user cannot see.
+  const sectionHeadIndex = {};
+  navigationItems.forEach((item, idx) => {
+    if (!item.section || sectionHeadIndex[item.section] !== undefined) return;
+    if (isItemVisible(item)) sectionHeadIndex[item.section] = idx;
+  });
+
   useEffect(() => {
     setExpandedItems((prev) => {
       const next = new Set(prev);
@@ -387,14 +443,14 @@ export const Sidebar = ({
       {/* Mobile backdrop */}
       <div
         onClick={onMobileClose}
-        className={`md:hidden fixed inset-0 z-40 bg-black/50 backdrop-blur-sm transition-opacity ${
+        className={`md:hidden fixed inset-0 z-40 bg-black/50 backdrop-blur-sm transition-opacity print:hidden ${
           isMobileOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}
       />
       <aside
         ref={sidebarRef}
         style={{ width: `${sidebarWidth}px`, height: '100vh' }}
-        className={`bg-teal-600 dark:bg-slate-900 p-4 flex-shrink-0 transition-transform md:transition-none flex flex-col overscroll-contain fixed md:sticky top-0 left-0 z-50 md:self-start ${
+        className={`bg-teal-600 dark:bg-slate-900 p-4 flex-shrink-0 transition-transform md:transition-none flex flex-col overscroll-contain fixed md:sticky top-0 left-0 z-50 md:self-start print:hidden ${
           isMobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
         }`}
       >
@@ -457,8 +513,17 @@ export const Sidebar = ({
             if (!isItemVisible(item)) return null;
             const itemIsActive = item.hasSubmenu ? isParentActive(item) : isActive(item.path);
             const itemLabel = t(item.labelKey);
+            const showSectionHeading = sectionHeadIndex[item.section] === index;
             return (
               <div key={index} className="w-full">
+                {showSectionHeading &&
+                  (isCollapsed ? (
+                    <div className="my-2 mx-auto w-6 border-t border-white/20" />
+                  ) : (
+                    <div className="px-7 pt-4 pb-1 text-[11px] font-semibold uppercase tracking-wider text-white/50">
+                      {t(item.section)}
+                    </div>
+                  ))}
                 {item.hasSubmenu ? (
                   <button
                     onClick={() => toggleExpand(index)}

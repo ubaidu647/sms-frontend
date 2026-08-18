@@ -119,3 +119,175 @@ body {
     animation: none;
   }
 }
+
+/* ── Printable payment receipt ────────────────────────────────────────────────
+   Receipts are printed from inside a dialog, so a plain window.print() would
+   put the dashboard, the dialog frame and its buttons on paper. The receipt is
+   portalled to <body> instead: while printing, every other top-level node is
+   dropped and only this sheet remains. Deliberately plain CSS — the printed
+   page must not depend on the app's theme or dark mode. */
+.receipt-print-portal {
+  display: none;
+}
+
+@media print {
+  body.printing-receipt > *:not(.receipt-print-portal) {
+    display: none !important;
+  }
+
+  body.printing-receipt .receipt-print-portal {
+    display: block;
+  }
+
+  /* Same result for Ctrl+P: whenever a receipt is on the page, it is the only
+     thing worth printing, whether or not the Print button set the body class. */
+  body:has(.receipt-print-portal) > *:not(.receipt-print-portal) {
+    display: none !important;
+  }
+
+  body:has(.receipt-print-portal) .receipt-print-portal {
+    display: block;
+  }
+
+  @page {
+    margin: 12mm;
+  }
+
+  .receipt-sheet {
+    font-family: Arial, Helvetica, sans-serif;
+    color: #000;
+    background: #fff;
+    font-size: 12px;
+    line-height: 1.45;
+  }
+
+  .receipt-head {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    border-bottom: 2px solid #000;
+    padding-bottom: 10px;
+  }
+
+  .receipt-logo {
+    width: 72px;
+    height: 72px;
+    object-fit: contain;
+  }
+
+  .receipt-head-text h1 {
+    font-size: 20px;
+    font-weight: 800;
+    margin: 0;
+  }
+
+  .receipt-head-text p {
+    margin: 2px 0 0;
+    font-size: 11px;
+  }
+
+  .receipt-tagline {
+    font-style: italic;
+  }
+
+  .receipt-title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-top: 14px;
+  }
+
+  .receipt-title-row h2 {
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin: 0;
+  }
+
+  .receipt-meta {
+    text-align: right;
+    font-size: 11px;
+  }
+
+  .receipt-meta strong {
+    display: inline-block;
+    min-width: 62px;
+  }
+
+  .receipt-info,
+  .receipt-items,
+  .receipt-summary {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 12px;
+  }
+
+  .receipt-info th,
+  .receipt-summary th {
+    text-align: left;
+    font-weight: 600;
+    color: #444;
+    width: 15%;
+    padding: 4px 6px;
+  }
+
+  .receipt-info td {
+    padding: 4px 6px;
+    width: 35%;
+    border-bottom: 1px solid #ddd;
+  }
+
+  .receipt-items th,
+  .receipt-items td {
+    padding: 6px;
+    border-bottom: 1px solid #ddd;
+    text-align: left;
+  }
+
+  .receipt-items thead th {
+    border-bottom: 1px solid #000;
+    font-weight: 700;
+  }
+
+  .receipt-items tfoot td {
+    font-weight: 700;
+    border-top: 1px solid #000;
+    border-bottom: none;
+  }
+
+  .receipt-summary td {
+    padding: 4px 6px;
+  }
+
+  .num {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .receipt-notes {
+    margin-top: 10px;
+    font-size: 11px;
+  }
+
+  .receipt-signs {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 48px;
+    font-size: 11px;
+  }
+
+  .receipt-signs > div {
+    border-top: 1px solid #000;
+    padding-top: 4px;
+    width: 40%;
+    text-align: center;
+  }
+
+  .receipt-foot {
+    margin-top: 16px;
+    text-align: center;
+    font-size: 10px;
+    color: #555;
+  }
+}

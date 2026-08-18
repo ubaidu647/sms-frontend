@@ -3,7 +3,7 @@ import React, { useMemo, useState } from 'react';
 import { CreditCard, Receipt, Eye } from 'lucide-react';
 import { Table } from '@/component/Table';
 import MyInvoiceModal from './MyInvoiceModal';
-import SubscriptionDetailModal from '../../system/subscriptions/SubscriptionDetailModal';
+import SubscriptionDetailModal from '../system/subscriptions/SubscriptionDetailModal';
 import {
   useMyCurrentSubscription,
   useMySubscriptionHistory,
@@ -17,7 +17,7 @@ import {
   SUB_STATUS_COLORS,
   INVOICE_STATUS_COLORS,
   graceCutoff,
-} from '../../system/packages/format';
+} from '../system/packages/format';
 
 const StatusPill = ({ status, colors }) => (
   <span

@@ -7,6 +7,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { fetchData, postData } from '@/utils/api';
 import { useTokenStore } from '@/store/tokenStore';
 import { useUserStore } from '@/store/userStore';
+import CashBankAccountSelect from '@/component/CashBankAccountSelect';
 import { todayYMD, formatMoney } from '@/constants/accounting';
 
 const inputCls =
@@ -15,7 +16,7 @@ const labelCls = 'block text-xs font-semibold text-gray-700 dark:text-gray-300 m
 
 // Party sub-ledger kinds we can offer a searchable picker for; everything else
 // falls back to a manual party-id field.
-const PARTY_TYPES = ['student', 'staff', 'vendor', 'supplier'];
+const PARTY_TYPES = ['student', 'staff', 'vendor'];
 
 const COPY = {
   payment: {
@@ -62,6 +63,7 @@ export default function VoucherFormModal({
   const [amount, setAmount] = useState('');
   const [description, setDescription] = useState('');
   const [mode, setMode] = useState('cash'); // payment/receipt
+  const [cashBankAccountId, setCashBankAccountId] = useState(''); // payment/receipt
   const [accountId, setAccountId] = useState(''); // payment/receipt
   const [fromAccountId, setFromAccountId] = useState(''); // contra
   const [toAccountId, setToAccountId] = useState(''); // contra
@@ -78,6 +80,7 @@ export default function VoucherFormModal({
     setAmount('');
     setDescription('');
     setMode('cash');
+    setCashBankAccountId('');
     setAccountId('');
     setFromAccountId('');
     setToAccountId('');
@@ -115,6 +118,21 @@ export default function VoucherFormModal({
     () => (accountData?.data || []).filter((a) => !a.isGroup),
     [accountData],
   );
+
+  // Contra moves money between cash and bank heads, so it only offers accounts
+  // categorised as such. Payments/receipts fill the cash-or-bank side from the
+  // mapping, so their counter-account list leaves those heads out.
+  // A chart created before categories existed has none — rather than show an
+  // empty picker, fall back to the full postable list there.
+  const cashBankAccounts = useMemo(
+    () => accounts.filter((a) => a.category === 'cash' || a.category === 'bank'),
+    [accounts],
+  );
+  const selectableAccounts = useMemo(() => {
+    if (!cashBankAccounts.length) return accounts;
+    if (isContra) return cashBankAccounts;
+    return accounts.filter((a) => a.category !== 'cash' && a.category !== 'bank');
+  }, [accounts, cashBankAccounts, isContra]);
 
   const selectedAccount = useMemo(
     () => accounts.find((a) => a._id === accountId),
@@ -206,6 +224,7 @@ export default function VoucherFormModal({
       payload = { ...base, fromAccountId, toAccountId };
     } else {
       payload = { ...base, mode, accountId };
+      if (cashBankAccountId) payload.cashBankAccountId = cashBankAccountId;
       if (description.trim()) payload.description = description.trim();
       if (needsParty) {
         payload.partyType = partyType;
@@ -218,9 +237,11 @@ export default function VoucherFormModal({
   const accountOptions = (
     <>
       <option value="">Select account…</option>
-      {accounts.map((a) => (
+      {selectableAccounts.map((a) => (
         <option key={a._id} value={a._id}>
-          {a.code} · {a.name} ({a.type}){a.isControlAccount ? ' — control' : ''}
+          {a.code} · {a.name} ({a.type})
+          {a.category === 'cash' || a.category === 'bank' ? ` — ${a.category}` : ''}
+          {a.isControlAccount ? ' — control' : ''}
         </option>
       ))}
     </>
@@ -398,6 +419,19 @@ export default function VoucherFormModal({
             </>
           ) : (
             <>
+              {/* Which cash/bank head the money moves through — only asked when
+                  the branch keeps more than one of that kind. */}
+              <div className="sm:col-span-2">
+                <CashBankAccountSelect
+                  method={mode}
+                  branchId={effectiveBranch}
+                  value={cashBankAccountId}
+                  onChange={setCashBankAccountId}
+                  labelCls={labelCls}
+                  inputCls={inputCls}
+                />
+              </div>
+
               <div className="sm:col-span-2">
                 <label className={labelCls}>
                   {copy.accountLabel}

@@ -25,7 +25,57 @@ export const ACCOUNT_TYPE_COLORS = {
 export const ACCOUNT_STATUSES = ['active', 'inactive'];
 
 // Sub-ledger kinds a control account can track parties against.
-export const SUB_LEDGER_TYPES = ['student', 'staff', 'supplier'];
+export const SUB_LEDGER_TYPES = ['student', 'staff', 'vendor'];
+
+/* ---------------------------- Money category ---------------------------- */
+// Every postable (level-3 / subsidiary) account declares its money nature when
+// it's created. This is what makes an account eligible for the cash/bank mapping
+// roles — without it the ledger has no way to tell a cash head from any other
+// asset account, so cash and bank could not be mapped.
+export const ACCOUNT_CATEGORIES = ['cash', 'bank', 'other'];
+
+export const ACCOUNT_CATEGORY_LABELS = {
+  cash: 'Cash',
+  bank: 'Bank',
+  other: 'Other',
+};
+
+export const ACCOUNT_CATEGORY_HINTS = {
+  cash: 'Cash in hand / petty cash — usually one per branch',
+  bank: 'A bank or online payment account',
+  other: 'Everything else — income, expense, receivable, payable…',
+};
+
+export const ACCOUNT_CATEGORY_COLORS = {
+  cash: 'bg-emerald-100 text-emerald-800',
+  bank: 'bg-sky-100 text-sky-800',
+};
+
+// Cash/bank heads are money the school holds, so they only make sense as assets.
+export const CATEGORY_ACCOUNT_TYPE = 'asset';
+
+// Which kind of account a payment method settles into. Mirrors the backend's
+// methodToCashOrBank: only literal cash is cash; every other method (transfer,
+// online, cheque, card…) moves through a bank account.
+export function methodToCashOrBank(method) {
+  return method === 'cash' ? 'cash' : 'bank';
+}
+
+/* --------------------------- Chart hierarchy --------------------------- */
+// Codes are 4 digits and positional: level-1 roots are seeded (1000/2000/…),
+// level-2 groups step by 100 inside their root, level-3 postable accounts step
+// by 1 inside their group. Only levels 1–2 are groups; only level 3 can post.
+export const ACCOUNT_MAX_LEVEL = 3;
+export const ACCOUNT_CODE_REGEX = /^\d{4}$/;
+
+// Range a manual code override must fall inside, given the chosen parent.
+// Level-2 children must sit on a hundred boundary; level-3 children on any unit.
+export function childCodeRange(parent) {
+  const base = Number(parent?.code);
+  if (!base) return null;
+  if (parent.level === 1) return { from: base + 100, to: base + 900, step: 100 };
+  return { from: base + 1, to: base + 99, step: 1 };
+}
 
 /* ------------------------------- Journals ------------------------------- */
 
@@ -69,9 +119,11 @@ export const VOUCHER_TYPE_COLORS = {
 };
 
 // Auto-post config roles (used by the mapping section, Phase 2).
+// Cash and bank are deliberately absent. Those accounts are per-branch (and a
+// branch may hold several banks), so they are declared in the Chart of Accounts
+// with a cash/bank category and chosen on the transaction itself — there is
+// nothing school-wide to configure. See CashBankAccountSelect.
 export const MAPPING_ROLES = [
-  { role: 'cash', label: 'Cash', hint: 'Debited on cash fee receipts' },
-  { role: 'bank', label: 'Bank', hint: 'Debited on bank/online receipts' },
   { role: 'fee-income', label: 'Fee Income', hint: 'Credited on every fee payment' },
   { role: 'salary-expense', label: 'Salary Expense', hint: 'Debited on payslip payments' },
   {

@@ -6,6 +6,7 @@ import { useTokenStore } from '@/store/tokenStore';
 import { useUserStore } from '@/store/userStore';
 import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import { fetchData } from '@/utils/api';
+import AccountCombobox from '@/component/AccountCombobox';
 import {
   JOURNAL_SOURCE_COLORS,
   formatDate,
@@ -54,7 +55,10 @@ export default function AccountLedgerPage() {
     staleTime: 30000,
   });
   const accounts = useMemo(
-    () => (accountData?.data || []).filter((a) => !a.isGroup),
+    () =>
+      (accountData?.data || [])
+        .filter((a) => !a.isGroup)
+        .sort((a, b) => String(a.code).localeCompare(String(b.code))),
     [accountData],
   );
 
@@ -106,18 +110,13 @@ export default function AccountLedgerPage() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-5 print:hidden">
-          <select
+          <AccountCombobox
+            accounts={accounts}
             value={accountId}
-            onChange={(e) => setAccountId(e.target.value)}
-            className={`${inputWrap} min-w-[220px]`}
-          >
-            <option value="">Select account…</option>
-            {accounts.map((a) => (
-              <option key={a._id} value={a._id}>
-                {a.code} · {a.name}
-              </option>
-            ))}
-          </select>
+            onChange={(id) => setAccountId(id)}
+            className="w-full sm:w-72"
+            buttonClassName={inputWrap}
+          />
           <input
             type="date"
             value={draftFrom}

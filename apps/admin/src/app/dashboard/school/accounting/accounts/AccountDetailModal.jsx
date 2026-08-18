@@ -4,7 +4,12 @@ import { Modal } from '@/component/Modal';
 import { useQuery } from '@tanstack/react-query';
 import { fetchData } from '@/utils/api';
 import { useTokenStore } from '@/store/tokenStore';
-import { ACCOUNT_TYPE_COLORS, formatDate } from '@/constants/accounting';
+import {
+  ACCOUNT_TYPE_COLORS,
+  ACCOUNT_CATEGORY_COLORS,
+  ACCOUNT_CATEGORY_LABELS,
+  formatDate,
+} from '@/constants/accounting';
 
 const Row = ({ label, children }) => (
   <div className="flex justify-between gap-4 py-2 border-b border-gray-100 dark:border-gray-800 text-sm">
@@ -52,6 +57,13 @@ export default function AccountDetailModal({ isOpen, onClose, accountId }) {
             >
               {acc.status || 'active'}
             </span>
+            {ACCOUNT_CATEGORY_COLORS[acc.category] && (
+              <span
+                className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${ACCOUNT_CATEGORY_COLORS[acc.category]}`}
+              >
+                {ACCOUNT_CATEGORY_LABELS[acc.category]}
+              </span>
+            )}
             {acc.isControlAccount && (
               <span className="inline-flex px-2.5 py-1 rounded-full text-xs font-medium bg-teal-100 text-teal-800">
                 Control{acc.subLedgerType ? ` · ${acc.subLedgerType}` : ''}
@@ -72,6 +84,9 @@ export default function AccountDetailModal({ isOpen, onClose, accountId }) {
           <Row label="Code">{acc.code}</Row>
           <Row label="Name">{acc.name}</Row>
           <Row label="Type">{acc.type}</Row>
+          {!acc.isGroup && (
+            <Row label="Category">{ACCOUNT_CATEGORY_LABELS[acc.category] || 'Other'}</Row>
+          )}
           <Row label="Level">{acc.level}</Row>
           <Row label="Parent">
             {acc.parentId?.name ? `${acc.parentId.code} · ${acc.parentId.name}` : '— (top level)'}

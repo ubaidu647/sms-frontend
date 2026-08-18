@@ -1,10 +1,50 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useRouter } from 'next/navigation';
-import { Bell, Settings, Users, LogOut, ChevronDown, Sun, Moon, Menu } from 'lucide-react';
+import {
+  Bell,
+  Settings,
+  Users,
+  Building2,
+  CreditCard,
+  LogOut,
+  ChevronDown,
+  Sun,
+  Moon,
+  Menu,
+} from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useThemeStore } from '@/store/themeStore';
 import { useAuth } from '@/hooks/useAuth';
+import { canSee } from '@/utils/permissions';
+import { ACTIONS } from '@/constants/rolePermissions';
+import { canOpenUserManagement } from '@/app/dashboard/user-management/tabs';
+import { canOpenBusinessSettings } from '@/app/dashboard/business-settings/tabs';
+
+// Admin destinations that are not day-to-day school work. Order here is the
+// order in the menu: personal preferences, then the org setup, then who may use
+// it, then what it costs. `show` decides visibility from the role's grants.
+const MENU_ITEMS = [
+  { key: 'settings', icon: Settings, href: '/dashboard/settings', show: () => true },
+  {
+    key: 'businessSettings',
+    icon: Building2,
+    href: '/dashboard/business-settings',
+    show: canOpenBusinessSettings,
+  },
+  {
+    key: 'userManagement',
+    icon: Users,
+    href: '/dashboard/user-management',
+    show: canOpenUserManagement,
+  },
+  {
+    key: 'billing',
+    icon: CreditCard,
+    href: '/dashboard/billing',
+    show: (role) => canSee(role, ACTIONS.VIEW_BILLING),
+  },
+];
 
 export const Topbar = ({ user = {}, userRole = {}, onMenuClick }) => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -18,9 +58,9 @@ export const Topbar = ({ user = {}, userRole = {}, onMenuClick }) => {
   const t = useTranslations('topbar');
   const { logout } = useAuth();
 
-  const showUserManagement = ['super-admin', 'admin', 'subadmin'].includes(
-    userRole?.name?.toLowerCase(),
-  );
+  // Gated on the actual grants, not on role names — a custom role with
+  // view-staff or view-role gets in, a role merely named "admin" does not.
+  const menuItems = MENU_ITEMS.filter((item) => item.show(userRole));
 
   // Recompute anchor on open + on scroll/resize so the portal-rendered menu
   // stays glued to the trigger button across viewport changes.
@@ -56,7 +96,7 @@ export const Topbar = ({ user = {}, userRole = {}, onMenuClick }) => {
   }, [isProfileOpen]);
 
   return (
-    <div className="fixed top-0 left-0 right-0 md:static z-30 bg-[rgb(246,246,246)] dark:bg-[#161616] md:bg-transparent md:dark:bg-transparent h-16 flex items-center justify-between px-3 sm:px-6 gap-2 flex-shrink-0 border-b border-gray-200 dark:border-gray-800 md:border-0">
+    <div className="fixed top-0 left-0 right-0 md:static z-30 bg-[rgb(246,246,246)] dark:bg-[#161616] md:bg-transparent md:dark:bg-transparent h-16 flex items-center justify-between px-3 sm:px-6 gap-2 flex-shrink-0 border-b border-gray-200 dark:border-gray-800 md:border-0 print:hidden">
       {/* Left side - Menu button (mobile) + User greeting */}
       <div className="flex items-center gap-2 min-w-0">
         {onMenuClick && (
@@ -132,25 +172,19 @@ export const Topbar = ({ user = {}, userRole = {}, onMenuClick }) => {
               </p>
             </div>
 
-            <button
-              onClick={() => {
-                setIsProfileOpen(false);
-                router.push('/dashboard/settings');
-              }}
-              className="w-full flex items-center gap-3 px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-left"
-            >
-              <Settings className="w-4 h-4 text-gray-600 dark:text-gray-300" />
-              <span className="text-sm text-gray-700 dark:text-gray-200">{t('settings')}</span>
-            </button>
-
-            {showUserManagement && (
-              <button className="w-full flex items-center gap-3 px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-left">
-                <Users className="w-4 h-4 text-gray-600 dark:text-gray-300" />
-                <span className="text-sm text-gray-700 dark:text-gray-200">
-                  {t('userManagement')}
-                </span>
+            {menuItems.map(({ key, icon: Icon, href }) => (
+              <button
+                key={key}
+                onClick={() => {
+                  setIsProfileOpen(false);
+                  router.push(href);
+                }}
+                className="w-full flex items-center gap-3 px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-left"
+              >
+                <Icon className="w-4 h-4 text-gray-600 dark:text-gray-300" />
+                <span className="text-sm text-gray-700 dark:text-gray-200">{t(key)}</span>
               </button>
-            )}
+            ))}
 
             <div className="border-t border-gray-200 dark:border-gray-700 mt-2 pt-2">
               <button

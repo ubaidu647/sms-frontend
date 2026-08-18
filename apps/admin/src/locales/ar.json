@@ -1,23 +1,22 @@
 {
   "topbar": {
     "greeting": "مرحباً،",
-    "settings": "الإعدادات",
+    "settings": "الإعدادات العامة",
     "userManagement": "إدارة المستخدمين",
+    "businessSettings": "إعدادات النشاط",
+    "billing": "الفوترة",
     "logout": "تسجيل الخروج",
     "switchToLight": "التبديل إلى الوضع الفاتح",
     "switchToDark": "التبديل إلى الوضع الداكن"
   },
   "sidebar": {
     "schoolPortal": "بوابة المدرسة",
-    "billing": "الفوترة",
-    "branches": "الفروع",
-    "staff": "الموظفون",
-    "role": "الدور",
     "classes": "الفصول",
     "subjects": "المواد",
     "homework": "الواجبات",
     "students": "الطلاب",
     "attendance": "الحضور",
+    "studentAttendance": "حضور الطلاب",
     "staffAttendance": "حضور الموظفين",
     "staffSalary": "رواتب الموظفين",
     "salaryDashboard": "لوحة التحكم",
@@ -31,16 +30,27 @@
     "accounting": "المحاسبة",
     "chartOfAccounts": "دليل الحسابات",
     "journalEntries": "قيود اليومية",
+    "accountLedger": "دفتر الأستاذ",
+    "accountMapping": "ربط الحسابات",
+    "accountingPeriods": "الفترات المحاسبية",
     "announcements": "الإعلانات",
     "transport": "النقل",
     "vehicles": "المركبات",
     "routes": "المسارات",
     "assignments": "التعيينات",
-    "branchProfile": "ملف الفرع",
     "reports": "التقارير",
     "reportStudentFeeDefaulter": "الطلاب المتأخرون في الرسوم",
     "reportStudentProgress": "تقرير تقدم الطالب",
-    "logout": "تسجيل الخروج"
+    "reportTrialBalance": "ميزان المراجعة",
+    "reportIncomeStatement": "قائمة الدخل",
+    "reportBalanceSheet": "الميزانية العمومية",
+    "reportPartyLedger": "دفتر أستاذ الأطراف",
+    "logout": "تسجيل الخروج",
+    "sectionSchool": "المدرسة",
+    "sectionFinance": "المالية",
+    "sectionOperations": "العمليات",
+    "sectionInsights": "التحليلات",
+    "academicSetup": "الإعداد الأكاديمي"
   },
   "reportStudentProgress": {
     "title": "تقرير تقدم الطالب",
@@ -192,7 +202,7 @@
     "subtitle": "إدارة جميع مؤسساتك"
   },
   "settings": {
-    "title": "الإعدادات",
+    "title": "الإعدادات العامة",
     "subtitle": "خصص شكل التطبيق وأسلوبه.",
     "appearance": {
       "title": "المظهر",

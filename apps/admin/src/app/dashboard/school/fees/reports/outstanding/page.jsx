@@ -241,12 +241,15 @@ export default function OutstandingReportPage() {
                           {formatMoney(s.outstandingTotal)}
                         </td>
                         <td className="px-6 py-3 text-right">
+                          {/* No academicYear: this report is year-agnostic, so
+                              passing one would hide arrears carried over from an
+                              earlier year. Omitting it lets the vouchers page
+                              clear its year filter for a student-scoped view. */}
                           <Link
                             href={{
                               pathname: '/dashboard/school/fees/vouchers',
                               query: {
                                 studentId: s.studentId,
-                                academicYear: academicYear || '',
                                 ...(classId ? { classId } : {}),
                                 ...(sectionId ? { sectionId } : {}),
                                 ...(branchId ? { branchId } : {}),

@@ -12,6 +12,8 @@ import {
   formatMonth,
   PAYMENT_METHOD_COLORS,
   VOUCHER_STATUS_COLORS,
+  paymentAccount,
+  paymentAccountLabel,
 } from '@/constants/fee';
 
 export default function PaymentDetailModal({ isOpen, onClose, paymentId }) {
@@ -154,8 +156,9 @@ export default function PaymentDetailModal({ isOpen, onClose, paymentId }) {
                     className={`inline-flex px-3 py-1 rounded-full text-sm font-medium capitalize ${
                       PAYMENT_METHOD_COLORS[p.method] || 'bg-gray-100 text-gray-700'
                     }`}
+                    title={p.method}
                   >
-                    {p.method}
+                    {paymentAccountLabel(p)}
                   </span>
                   {p.isVoid && (
                     <span className="inline-flex px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-700 dark:text-red-400">
@@ -205,7 +208,15 @@ export default function PaymentDetailModal({ isOpen, onClose, paymentId }) {
                   <tbody>
                     <DetailRow label="Receipt #" value={p.receiptNumber} mono />
                     <DetailRow label="Date" value={formatDate(p.paymentDate)} />
-                    <DetailRow label="Method" value={p.method} capitalize />
+                    <DetailRow
+                      label="Method"
+                      value={
+                        paymentAccount(p)
+                          ? `${paymentAccount(p).code} · ${paymentAccount(p).name}`
+                          : p.method
+                      }
+                      capitalize
+                    />
                     <DetailRow label="Reference #" value={p.referenceNumber || '—'} />
                     <DetailRow
                       label="Received By"

@@ -23,6 +23,22 @@ export const PAYMENT_METHOD_COLORS = {
 
 export const REFERENCE_REQUIRED_METHODS = ['bank-transfer', 'cheque', 'online'];
 
+/**
+ * The cash/bank head the money landed in, named exactly as it is in the Chart
+ * of Accounts (e.g. "Meezan Bank — Main"). Handles both response shapes: the
+ * list aggregate returns `ledgerAccount`, the detail populate returns the
+ * account on `ledgerAccountId`. Falls back to the raw method for payments
+ * recorded before a ledger account was captured.
+ */
+export function paymentAccount(payment) {
+  const acc = payment?.ledgerAccount || payment?.ledgerAccountId;
+  return acc && typeof acc === 'object' && acc.name ? acc : null;
+}
+
+export function paymentAccountLabel(payment) {
+  return paymentAccount(payment)?.name || payment?.method || '—';
+}
+
 export function currentAcademicYear() {
   const y = new Date().getFullYear();
   return `${y}-${y + 1}`;

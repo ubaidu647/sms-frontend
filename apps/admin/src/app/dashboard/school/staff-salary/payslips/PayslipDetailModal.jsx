@@ -6,6 +6,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { fetchData, postData, putData } from '@/utils/api';
 import { useTokenStore } from '@/store/tokenStore';
 import { useUserStore } from '@/store/userStore';
+import CashBankAccountSelect from '@/component/CashBankAccountSelect';
 import toast from 'react-hot-toast';
 import {
   PAYSLIP_STATUS_COLORS,
@@ -567,6 +568,8 @@ function PayForm({ payslip, onClose, onDone }) {
   const [paymentDate, setPaymentDate] = useState(new Date().toISOString().slice(0, 10));
   const [paymentMethod, setPaymentMethod] = useState('bank-transfer');
   const [paymentReference, setPaymentReference] = useState('');
+  // Empty unless the branch keeps several cash/bank accounts — see the picker.
+  const [ledgerAccountId, setLedgerAccountId] = useState('');
   const [paidAmount, setPaidAmount] = useState(payslip.netSalary ?? '');
   const [notes, setNotes] = useState('');
   const [err, setErr] = useState('');
@@ -596,6 +599,7 @@ function PayForm({ payslip, onClose, onDone }) {
     if (REFERENCE_REQUIRED_METHODS.includes(paymentMethod) && !paymentReference?.trim())
       return setErr('Reference is required for this payment method');
     const payload = { paymentDate, paymentMethod };
+    if (ledgerAccountId) payload.ledgerAccountId = ledgerAccountId;
     if (paymentReference?.trim()) payload.paymentReference = paymentReference.trim();
     if (paidAmount !== '' && !Number.isNaN(Number(paidAmount)))
       payload.paidAmount = Number(paidAmount);
@@ -660,7 +664,17 @@ function PayForm({ payslip, onClose, onDone }) {
             className={inputCls}
           />
         </div>
-        <div className="sm:col-span-2">
+        <div className="col-span-2">
+          <CashBankAccountSelect
+            method={paymentMethod}
+            branchId={payslip.branchId?._id || payslip.branchId}
+            value={ledgerAccountId}
+            onChange={setLedgerAccountId}
+            labelCls={labelCls}
+            inputCls={inputCls}
+          />
+        </div>
+        <div className="col-span-2">
           <label className={labelCls}>Notes</label>
           <textarea
             rows={2}

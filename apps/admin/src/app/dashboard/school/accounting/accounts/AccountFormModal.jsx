@@ -6,25 +6,46 @@ import toast from 'react-hot-toast';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { fetchData, postData, putData } from '@/utils/api';
 import { useTokenStore } from '@/store/tokenStore';
-import { useUserStore } from '@/store/userStore';
-import { ACCOUNT_TYPES, ACCOUNT_STATUSES, SUB_LEDGER_TYPES } from '@/constants/accounting';
+import {
+  ACCOUNT_STATUSES,
+  SUB_LEDGER_TYPES,
+  ACCOUNT_CATEGORIES,
+  ACCOUNT_CATEGORY_LABELS,
+  ACCOUNT_CATEGORY_HINTS,
+  CATEGORY_ACCOUNT_TYPE,
+  ACCOUNT_CODE_REGEX,
+  childCodeRange,
+} from '@/constants/accounting';
 
 const inputCls =
   'w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 text-sm text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-900 placeholder:text-gray-400';
+const readOnlyCls =
+  'w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-sm text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800';
 const labelCls = 'block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1';
+
+// Flatten the account tree into a depth-tagged list, keeping only groups —
+// levels 1 and 2 are the only legal parents (a level-3 account is postable, and
+// the chart stops at 3 levels).
+const flattenGroups = (nodes, depth = 0, out = []) => {
+  (nodes || []).forEach((n) => {
+    if (n.isGroup) {
+      out.push({ ...n, depth });
+      flattenGroups(n.children, depth + 1, out);
+    }
+  });
+  return out;
+};
 
 export default function AccountFormModal({ isOpen, onClose, account, branchId, isOrgLevel }) {
   const isEdit = !!account;
   const { accessToken: token } = useTokenStore();
-  const { user } = useUserStore();
   const queryClient = useQueryClient();
 
-  const userBranchId = user?.branchId || user?.branch?._id || '';
-
-  const [code, setCode] = useState('');
   const [name, setName] = useState('');
-  const [type, setType] = useState('expense');
   const [parentId, setParentId] = useState('');
+  const [codeOverride, setCodeOverride] = useState('');
+  const [showCodeOverride, setShowCodeOverride] = useState(false);
+  const [category, setCategory] = useState('other');
   const [isControlAccount, setIsControlAccount] = useState(false);
   const [subLedgerType, setSubLedgerType] = useState('');
   const [appliesToAllBranches, setAppliesToAllBranches] = useState(true);
@@ -37,50 +58,64 @@ export default function AccountFormModal({ isOpen, onClose, account, branchId, i
   useEffect(() => {
     if (!isOpen) return;
     if (isEdit) {
-      setCode(account.code || '');
       setName(account.name || '');
-      setType(account.type || 'expense');
       setParentId(account.parentId?._id || account.parentId || '');
+      setCategory(account.category || 'other');
       setIsControlAccount(!!account.isControlAccount);
       setSubLedgerType(account.subLedgerType || '');
       setAppliesToAllBranches(account.appliesToAllBranches !== false);
-      setBranchIds(account.branchIds || []);
+      setBranchIds((account.branchIds || []).map((b) => b?._id || b));
       setDescription(account.description || '');
       setStatus(account.status || 'active');
     } else {
-      setCode('');
       setName('');
-      setType('expense');
       setParentId('');
+      setCategory('other');
       setIsControlAccount(false);
       setSubLedgerType('');
       setAppliesToAllBranches(true);
-      setBranchIds(!isOrgLevel && userBranchId ? [userBranchId] : []);
+      setBranchIds([]);
       setDescription('');
       setStatus('active');
     }
+    setCodeOverride('');
+    setShowCodeOverride(false);
     setSubmitError('');
     setSuccessState(false);
-  }, [isOpen, isEdit, account, isOrgLevel, userBranchId]);
+  }, [isOpen, isEdit, account]);
 
-  // Parent options — flat account list scoped to the same branch context as the page.
-  const { data: parentData } = useQuery({
-    queryKey: ['account-parents', branchId],
+  // Parent options come from the tree so we can tell groups from postable
+  // accounts and show the hierarchy; only needed while creating.
+  const { data: treeData } = useQuery({
+    queryKey: ['account-tree', branchId],
     queryFn: () =>
       fetchData({
-        url: '/account/list',
+        url: '/account/tree',
         page: 1,
         limit: 1000,
         token,
         branchId: branchId || undefined,
       }),
-    enabled: !!token && isOpen,
+    enabled: !!token && isOpen && !isEdit,
     staleTime: 30000,
   });
-  const parentOptions = useMemo(
-    () => (parentData?.data || []).filter((a) => !isEdit || a._id !== account?._id),
-    [parentData, isEdit, account],
+  const parentOptions = useMemo(() => flattenGroups(treeData?.data), [treeData]);
+  const parent = useMemo(
+    () => parentOptions.find((p) => p._id === parentId) || null,
+    [parentOptions, parentId],
   );
+
+  // Level is derived from the parent: under a root (level 1) you get a level-2
+  // group; under a level-2 group you get a level-3 postable account.
+  const childLevel = parent ? parent.level + 1 : null;
+  const childIsGroup = childLevel === 2;
+  const canBeControl = isEdit ? account?.level === 3 : childLevel === 3;
+  const codeRange = parent ? childCodeRange(parent) : null;
+
+  // Only a postable asset account can be a cash or bank head — that's the flag
+  // the ledger's cash/bank mapping reads, so it's picked at creation time.
+  const accountType = isEdit ? account?.type : parent?.type;
+  const canSetCategory = canBeControl && accountType === CATEGORY_ACCOUNT_TYPE;
 
   const { data: branchData } = useQuery({
     queryKey: ['branches-dropdown'],
@@ -116,11 +151,25 @@ export default function AccountFormModal({ isOpen, onClose, account, branchId, i
   });
 
   const validate = () => {
-    if (!code?.trim()) return 'Account code is required';
     if (!name?.trim()) return 'Account name is required';
-    if (!ACCOUNT_TYPES.includes(type)) return 'Invalid account type';
+    if (!isEdit && !parentId) return 'Parent account is required';
+    if (!isEdit && showCodeOverride && codeOverride.trim()) {
+      const c = codeOverride.trim();
+      if (!ACCOUNT_CODE_REGEX.test(c)) return 'Code must be exactly 4 digits';
+      const num = Number(c);
+      if (codeRange && (num < codeRange.from || num > codeRange.to))
+        return `Code ${c} is outside parent ${parent.code}'s range (${codeRange.from}–${codeRange.to})`;
+      if (codeRange?.step === 100 && num % 100 !== 0)
+        return `Code ${c} must be a multiple of 100 from parent ${parent.code}`;
+    }
+    if (isControlAccount && !canBeControl)
+      return 'Only a level-3 (postable) account can be a control account';
     if (isControlAccount && !subLedgerType) return 'Control accounts need a sub-ledger type';
-    if (!appliesToAllBranches && !branchIds.length)
+    if (category !== 'other' && !canSetCategory)
+      return 'Only a postable account under Assets can be a cash or bank account';
+    if (category !== 'other' && isControlAccount)
+      return 'A cash or bank account cannot also be a party control account';
+    if (isOrgLevel && !appliesToAllBranches && !branchIds.length)
       return 'Select at least one branch, or mark it as applying to all branches';
     return null;
   };
@@ -133,18 +182,36 @@ export default function AccountFormModal({ isOpen, onClose, account, branchId, i
       toast.error(err);
       return;
     }
+
     const payload = {
-      code: code.trim(),
       name: name.trim(),
-      type,
-      appliesToAllBranches,
-      branchIds: appliesToAllBranches ? [] : branchIds,
-      isControlAccount,
       description: description.trim() || undefined,
-      status,
     };
-    if (parentId) payload.parentId = parentId;
-    if (isControlAccount && subLedgerType) payload.subLedgerType = subLedgerType;
+    // Control flags only exist on postable (level-3) accounts — send them only
+    // where they're legal, and drop subLedgerType entirely when not a control.
+    if (canBeControl) payload.isControlAccount = isControlAccount;
+    if (isControlAccount) payload.subLedgerType = subLedgerType;
+    // Send the category wherever it's legal, including 'other' — that's how an
+    // account previously tagged cash/bank gets cleared again on edit.
+    if (canSetCategory) payload.category = category;
+
+    // Branch-tier users don't get a scope choice — the server pins the account
+    // to their own branch whatever we send, so we send nothing.
+    if (isOrgLevel) {
+      payload.appliesToAllBranches = appliesToAllBranches;
+      if (!appliesToAllBranches) payload.branchIds = branchIds;
+    }
+
+    if (isEdit) {
+      payload.status = status;
+    } else {
+      // code/level/isGroup are all derived server-side; type must match the parent.
+      payload.parentId = parentId;
+      payload.type = parent?.type;
+      payload.status = status;
+      if (showCodeOverride && codeOverride.trim()) payload.code = codeOverride.trim();
+    }
+
     mutation.mutate(payload);
   };
 
@@ -155,8 +222,8 @@ export default function AccountFormModal({ isOpen, onClose, account, branchId, i
       title={isEdit ? 'Edit Account' : 'New Account'}
       subtitle={
         isEdit
-          ? 'Update this ledger account. Code and type are best kept stable once posted to.'
-          : 'Add a ledger account under the chart of accounts hierarchy.'
+          ? 'Code, type and parent are fixed once an account exists — rename, re-scope or retire it here.'
+          : 'Pick a parent group; the code, level and type are derived from it.'
       }
       size="lg"
       footer={
@@ -196,159 +263,300 @@ export default function AccountFormModal({ isOpen, onClose, account, branchId, i
           </div>
         )}
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label className={labelCls}>
-              Code<span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              value={code}
-              onChange={(e) => setCode(e.target.value)}
-              placeholder="5104"
-              className={inputCls}
-            />
-          </div>
-          <div>
-            <label className={labelCls}>
-              Type<span className="text-red-500">*</span>
-            </label>
-            <select
-              value={type}
-              onChange={(e) => setType(e.target.value)}
-              className={`${inputCls} capitalize`}
-            >
-              {ACCOUNT_TYPES.map((tp) => (
-                <option key={tp} value={tp} className="capitalize">
-                  {tp}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="sm:col-span-2">
-            <label className={labelCls}>
-              Name<span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Internet Charges"
-              className={inputCls}
-            />
-          </div>
-          <div className="sm:col-span-2">
-            <label className={labelCls}>Parent Account</label>
-            <select
-              value={parentId}
-              onChange={(e) => setParentId(e.target.value)}
-              className={inputCls}
-            >
-              <option value="">— None (top level) —</option>
-              {parentOptions.map((a) => (
-                <option key={a._id} value={a._id}>
-                  {a.code} · {a.name}
-                  {a.type ? ` (${a.type})` : ''}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="sm:col-span-2">
-            <label className={labelCls}>Description</label>
-            <textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              rows={2}
-              placeholder="Monthly ISP bill"
-              className={inputCls}
-            />
-          </div>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-6 pt-1">
-          <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
-            <input
-              type="checkbox"
-              checked={isControlAccount}
-              onChange={(e) => {
-                setIsControlAccount(e.target.checked);
-                if (!e.target.checked) setSubLedgerType('');
-              }}
-            />
-            Control account (tracks a party sub-ledger)
-          </label>
-          {isControlAccount && (
-            <select
-              value={subLedgerType}
-              onChange={(e) => setSubLedgerType(e.target.value)}
-              className={`${inputCls} w-auto capitalize`}
-            >
-              <option value="">Sub-ledger type…</option>
-              {SUB_LEDGER_TYPES.map((s) => (
-                <option key={s} value={s} className="capitalize">
-                  {s}
-                </option>
-              ))}
-            </select>
-          )}
-        </div>
-
-        <div className="border-t border-gray-100 dark:border-gray-800 pt-4">
-          <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
-            <input
-              type="checkbox"
-              checked={appliesToAllBranches}
-              onChange={(e) => setAppliesToAllBranches(e.target.checked)}
-            />
-            Applies to all branches
-          </label>
-
-          {!appliesToAllBranches && (
-            <div className="mt-3">
-              <label className={labelCls}>Branches</label>
-              {isOrgLevel ? (
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-40 overflow-y-auto p-2 border border-gray-200 dark:border-gray-700 rounded-lg">
-                  {branches.length ? (
-                    branches.map((b) => (
-                      <label
-                        key={b._id}
-                        className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300"
-                      >
-                        <input
-                          type="checkbox"
-                          checked={branchIds.includes(b._id)}
-                          onChange={() => toggleBranch(b._id)}
-                        />
-                        {b.name}
-                      </label>
-                    ))
-                  ) : (
-                    <span className="text-xs text-gray-400">Loading branches…</span>
-                  )}
-                </div>
-              ) : (
-                <p className="text-xs text-gray-500">This account will be scoped to your branch.</p>
-              )}
+        {isEdit ? (
+          /* Fixed identity — shown for context, never editable. */
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3 bg-gray-50 dark:bg-gray-800/60 rounded-lg">
+            <div>
+              <span className={labelCls}>Code</span>
+              <div className="font-mono text-sm text-gray-900 dark:text-gray-100">
+                {account?.code}
+              </div>
             </div>
-          )}
-        </div>
+            <div>
+              <span className={labelCls}>Type</span>
+              <div className="text-sm capitalize text-gray-900 dark:text-gray-100">
+                {account?.type}
+              </div>
+            </div>
+            <div>
+              <span className={labelCls}>Level</span>
+              <div className="text-sm text-gray-900 dark:text-gray-100">
+                {account?.level}
+                <span className="text-xs text-gray-500 ml-1">
+                  {account?.isGroup ? '(group)' : '(postable)'}
+                </span>
+              </div>
+            </div>
+            <div>
+              <span className={labelCls}>Parent</span>
+              <div className="text-sm text-gray-900 dark:text-gray-100 truncate">
+                {account?.parentId?.name
+                  ? `${account.parentId.code} · ${account.parentId.name}`
+                  : account?.parent?.name
+                    ? `${account.parent.code} · ${account.parent.name}`
+                    : '—'}
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="sm:col-span-2">
+              <label className={labelCls}>
+                Parent Account<span className="text-red-500">*</span>
+              </label>
+              <select
+                value={parentId}
+                onChange={(e) => {
+                  setParentId(e.target.value);
+                  setCodeOverride('');
+                  setCategory('other');
+                  setIsControlAccount(false);
+                  setSubLedgerType('');
+                }}
+                className={inputCls}
+              >
+                <option value="">— Select a group account —</option>
+                {parentOptions.map((a) => (
+                  <option key={a._id} value={a._id}>
+                    {'  '.repeat(a.depth)}
+                    {a.code} · {a.name}
+                  </option>
+                ))}
+              </select>
+              <p className="text-xs text-gray-500 mt-1">
+                {parent
+                  ? `Creates a level-${childLevel} ${
+                      childIsGroup ? 'group (holds other accounts)' : 'postable account'
+                    } · type ${parent.type} · code ${codeRange?.from}–${codeRange?.to}`
+                  : 'Only group accounts (levels 1–2) can hold children. The 5 roots are seeded and cannot be recreated.'}
+              </p>
+            </div>
 
-        {isEdit && (
-          <div>
-            <label className={labelCls}>Status</label>
-            <select
-              value={status}
-              onChange={(e) => setStatus(e.target.value)}
-              className={`${inputCls} capitalize`}
-            >
-              {ACCOUNT_STATUSES.map((s) => (
-                <option key={s} value={s} className="capitalize">
-                  {s}
-                </option>
-              ))}
-            </select>
+            <div className="sm:col-span-2">
+              <label className={labelCls}>
+                Name<span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Cash in Hand — Main Branch"
+                className={inputCls}
+              />
+            </div>
+
+            <div>
+              <label className={labelCls}>Type</label>
+              <input
+                type="text"
+                value={parent?.type || ''}
+                readOnly
+                placeholder="From parent"
+                className={`${readOnlyCls} capitalize`}
+              />
+            </div>
+            <div>
+              <label className={labelCls}>Code</label>
+              {showCodeOverride ? (
+                <input
+                  type="text"
+                  value={codeOverride}
+                  onChange={(e) => setCodeOverride(e.target.value)}
+                  inputMode="numeric"
+                  maxLength={4}
+                  placeholder={codeRange ? String(codeRange.from) : '1104'}
+                  className={`${inputCls} font-mono`}
+                />
+              ) : (
+                <input
+                  type="text"
+                  value="Auto-generated"
+                  readOnly
+                  className={readOnlyCls}
+                  onClick={() => setShowCodeOverride(true)}
+                />
+              )}
+              <button
+                type="button"
+                onClick={() => {
+                  setShowCodeOverride((v) => !v);
+                  setCodeOverride('');
+                }}
+                className="text-xs text-teal-700 dark:text-teal-400 hover:underline mt-1"
+              >
+                {showCodeOverride ? 'Use the next available code' : 'Set the code manually'}
+              </button>
+            </div>
+
+            <div className="sm:col-span-2">
+              <label className={labelCls}>Description</label>
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                rows={2}
+                placeholder="Petty cash float held at the branch office"
+                className={inputCls}
+              />
+            </div>
           </div>
         )}
+
+        {isEdit && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="sm:col-span-2">
+              <label className={labelCls}>
+                Name<span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className={inputCls}
+              />
+            </div>
+            <div className="sm:col-span-2">
+              <label className={labelCls}>Description</label>
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                rows={2}
+                className={inputCls}
+              />
+            </div>
+            <div>
+              <label className={labelCls}>Status</label>
+              <select
+                value={status}
+                onChange={(e) => setStatus(e.target.value)}
+                className={`${inputCls} capitalize`}
+              >
+                {ACCOUNT_STATUSES.map((s) => (
+                  <option key={s} value={s} className="capitalize">
+                    {s}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+        )}
+
+        {/* Money category — what makes an account mappable as cash or bank. */}
+        {canSetCategory && (
+          <div className="border-t border-gray-100 dark:border-gray-800 pt-4">
+            <label className={labelCls}>Category</label>
+            <div className="grid grid-cols-3 gap-2">
+              {ACCOUNT_CATEGORIES.map((c) => (
+                <button
+                  key={c}
+                  type="button"
+                  onClick={() => {
+                    setCategory(c);
+                    if (c !== 'other') {
+                      setIsControlAccount(false);
+                      setSubLedgerType('');
+                    }
+                  }}
+                  className={`px-3 py-2 rounded-lg border text-sm text-left ${
+                    category === c
+                      ? 'border-teal-500 bg-teal-50 dark:bg-teal-950/40 text-teal-800 dark:text-teal-300'
+                      : 'border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300'
+                  }`}
+                >
+                  <span className="font-medium block">{ACCOUNT_CATEGORY_LABELS[c]}</span>
+                  <span className="text-xs text-gray-500 leading-tight block mt-0.5">
+                    {ACCOUNT_CATEGORY_HINTS[c]}
+                  </span>
+                </button>
+              ))}
+            </div>
+            <p className="text-xs text-gray-500 mt-1.5">
+              Fee collection, salary payments and vouchers post the money side to this branch’s Cash
+              or Bank account. Create one per branch — and one per bank you hold; the collector
+              picks which when there is more than one.
+            </p>
+          </div>
+        )}
+
+        {/* Control-account flags — postable (level 3) accounts only. */}
+        {canBeControl && category === 'other' && (
+          <div className="flex flex-wrap items-center gap-6 pt-1">
+            <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+              <input
+                type="checkbox"
+                checked={isControlAccount}
+                onChange={(e) => {
+                  setIsControlAccount(e.target.checked);
+                  if (!e.target.checked) setSubLedgerType('');
+                }}
+              />
+              Control account (tracks a party sub-ledger)
+            </label>
+            {isControlAccount && (
+              <select
+                value={subLedgerType}
+                onChange={(e) => setSubLedgerType(e.target.value)}
+                className={`${inputCls} w-auto capitalize`}
+              >
+                <option value="">Sub-ledger type…</option>
+                {SUB_LEDGER_TYPES.map((s) => (
+                  <option key={s} value={s} className="capitalize">
+                    {s}
+                  </option>
+                ))}
+              </select>
+            )}
+          </div>
+        )}
+
+        <div className="border-t border-gray-100 dark:border-gray-800 pt-4">
+          {isOrgLevel ? (
+            <>
+              <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                <input
+                  type="checkbox"
+                  checked={appliesToAllBranches}
+                  onChange={(e) => setAppliesToAllBranches(e.target.checked)}
+                />
+                Applies to all branches
+              </label>
+
+              {!appliesToAllBranches && (
+                <div className="mt-3">
+                  <label className={labelCls}>
+                    Branches<span className="text-red-500">*</span>
+                  </label>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-40 overflow-y-auto p-2 border border-gray-200 dark:border-gray-700 rounded-lg">
+                    {branches.length ? (
+                      branches.map((b) => (
+                        <label
+                          key={b._id}
+                          className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={branchIds.includes(b._id)}
+                            onChange={() => toggleBranch(b._id)}
+                          />
+                          {b.name}
+                        </label>
+                      ))
+                    ) : (
+                      <span className="text-xs text-gray-400">Loading branches…</span>
+                    )}
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">
+                    A child account can only cover branches its parent covers.
+                  </p>
+                </div>
+              )}
+            </>
+          ) : (
+            <p className="text-xs text-gray-500">
+              This account is scoped to your branch. Per-branch accounts — cash in hand, for
+              instance — belong to one branch only.
+            </p>
+          )}
+        </div>
       </div>
     </Modal>
   );

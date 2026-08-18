@@ -16,7 +16,6 @@ import toast from 'react-hot-toast';
 import { useTranslations } from 'next-intl';
 import { useThemeStore } from '@/store/themeStore';
 import { useLanguageStore, LANGUAGES } from '@/store/languageStore';
-import WhatsAppSettingsSection from './whatsapp/WhatsAppSettingsSection';
 
 const THEME_OPTIONS = [
   {
@@ -198,8 +197,6 @@ export default function SettingsPage() {
           </div>
         </footer>
       </section>
-
-      <WhatsAppSettingsSection />
     </div>
   );
 }

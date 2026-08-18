@@ -63,7 +63,7 @@ export default function BranchDetailPage() {
       <div className="md:flex-1 md:min-h-0 md:overflow-hidden flex flex-col bg-gray-50 dark:bg-gray-800 p-3 sm:p-6 rounded-2xl sm:rounded-[50px]">
         <div className="max-w-5xl mx-auto w-full">
           <button
-            onClick={() => router.push('/dashboard/school/branches')}
+            onClick={() => router.push('/dashboard/business-settings/branches')}
             className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 mb-4"
           >
             <ArrowLeft className="w-4 h-4" /> Back to branches
@@ -82,7 +82,7 @@ export default function BranchDetailPage() {
     <div className="md:flex-1 md:min-h-0 md:overflow-hidden flex flex-col bg-gray-50 dark:bg-gray-800 p-3 sm:p-6 rounded-2xl sm:rounded-[50px]">
       <div className="max-w-5xl mx-auto w-full pb-6">
         <button
-          onClick={() => router.push('/dashboard/school/branches')}
+          onClick={() => router.push('/dashboard/business-settings/branches')}
           className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 mb-4"
         >
           <ArrowLeft className="w-4 h-4" /> Back to branches
@@ -109,7 +109,7 @@ export default function BranchDetailPage() {
               )}
             </div>
             <Link
-              href={`/dashboard/school/branches/${branch._id}/profile`}
+              href={`/dashboard/business-settings/branches/${branch._id}/profile`}
               className="flex items-center gap-2 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 text-sm"
             >
               <Pencil className="w-4 h-4" /> Edit Profile

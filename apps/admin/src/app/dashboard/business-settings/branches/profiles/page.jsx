@@ -74,7 +74,7 @@ export default function AllBranchProfilesPage() {
             {canViewBranches && (
               <>
                 <Link
-                  href="/dashboard/school/branches"
+                  href="/dashboard/business-settings/branches"
                   className="flex items-center gap-1 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100"
                 >
                   <ArrowLeft className="w-4 h-4" />
@@ -89,7 +89,7 @@ export default function AllBranchProfilesPage() {
             </h1>
           </div>
           <Link
-            href="/dashboard/school/branches/profile"
+            href="/dashboard/business-settings/branches/profile"
             className="text-sm text-teal-700 dark:text-teal-400 hover:underline"
           >
             My branch profile →
@@ -199,7 +199,7 @@ export default function AllBranchProfilesPage() {
                       )}
                       <button
                         onClick={() =>
-                          router.push(`/dashboard/school/branches/${branch._id}/profile`)
+                          router.push(`/dashboard/business-settings/branches/${branch._id}/profile`)
                         }
                         disabled={!hasProfile && !canCreate}
                         title={!hasProfile && !canCreate ? 'You need create permission' : undefined}

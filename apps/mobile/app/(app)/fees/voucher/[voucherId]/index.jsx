@@ -24,6 +24,7 @@ import {
   formatDate,
   formatMoney,
   formatMonth,
+  paymentAccountLabel,
   titleCase,
 } from '../../../../../src/constants/fee';
 import RecordPaymentModal from '../../../../../src/component/fee/RecordPaymentModal';
@@ -241,7 +242,7 @@ export default function VoucherDetailPage() {
                     {p.isVoid && <Text style={{ color: '#991b1b' }}> · VOID</Text>}
                   </Text>
                   <Text style={[styles.paymentMeta, { color: C.muted }]} numberOfLines={1}>
-                    {formatDate(p.paymentDate)} · {titleCase(p.method)}
+                    {formatDate(p.paymentDate)} · {paymentAccountLabel(p)}
                   </Text>
                 </View>
                 <Text style={[styles.paymentAmount, { color: p.isVoid ? '#991b1b' : C.text }]}>

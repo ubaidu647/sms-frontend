@@ -39,7 +39,7 @@ export default function BranchProfileEditPage() {
         <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
           <div className="flex items-center gap-3">
             <Link
-              href="/dashboard/school/branches/profiles"
+              href="/dashboard/business-settings/branches/profiles"
               className="flex items-center gap-1 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100"
             >
               <ArrowLeft className="w-4 h-4" />

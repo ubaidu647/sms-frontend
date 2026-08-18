@@ -1,23 +1,22 @@
 {
   "topbar": {
     "greeting": "Hello,",
-    "settings": "Settings",
+    "settings": "General Settings",
     "userManagement": "User Management",
+    "businessSettings": "Business Settings",
+    "billing": "Billing",
     "logout": "Logout",
     "switchToLight": "Switch to light mode",
     "switchToDark": "Switch to dark mode"
   },
   "sidebar": {
     "schoolPortal": "School Portal",
-    "billing": "Billing",
-    "branches": "Branches",
-    "staff": "Staff",
-    "role": "Role",
     "classes": "Classes",
     "subjects": "Subjects",
     "homework": "Homework",
     "students": "Students",
     "attendance": "Attendance",
+    "studentAttendance": "Student Attendance",
     "staffAttendance": "Staff Attendance",
     "staffSalary": "Staff Salary",
     "salaryDashboard": "Dashboard",
@@ -31,16 +30,27 @@
     "accounting": "Accounting",
     "chartOfAccounts": "Chart of Accounts",
     "journalEntries": "Journal Entries",
+    "accountLedger": "Account Ledger",
+    "accountMapping": "Account Mapping",
+    "accountingPeriods": "Accounting Periods",
     "announcements": "Announcements",
     "transport": "Transport",
     "vehicles": "Vehicles",
     "routes": "Routes",
     "assignments": "Assignments",
-    "branchProfile": "Branch Profile",
     "reports": "Reports",
     "reportStudentFeeDefaulter": "Student Fee Defaulter",
     "reportStudentProgress": "Student Progress Report",
-    "logout": "Logout"
+    "reportTrialBalance": "Trial Balance",
+    "reportIncomeStatement": "Income Statement",
+    "reportBalanceSheet": "Balance Sheet",
+    "reportPartyLedger": "Party Ledger",
+    "logout": "Logout",
+    "sectionSchool": "School",
+    "sectionFinance": "Finance",
+    "sectionOperations": "Operations",
+    "sectionInsights": "Insights",
+    "academicSetup": "Academic Setup"
   },
   "reportStudentProgress": {
     "title": "Student Progress Report",
@@ -192,7 +202,7 @@
     "subtitle": "Manage all your organizations"
   },
   "settings": {
-    "title": "Settings",
+    "title": "General Settings",
     "subtitle": "Personalize how the app looks and feels.",
     "appearance": {
       "title": "Appearance",

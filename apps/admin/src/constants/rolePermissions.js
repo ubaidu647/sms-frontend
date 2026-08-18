@@ -325,10 +325,15 @@ export const ACTIONS = {
 };
 
 export const AVAILABLE_MENUS = [
-  { key: 'branch', label: 'Branch' },
-  { key: 'branch-profile', label: 'Branch Profile' },
-  { key: 'role', label: 'Roles' },
-  { key: 'staff', label: 'Staff' },
+  // Branches, Branch Profile and WhatsApp are administered from Business
+  // Settings (topbar), not the sidebar; the menu keys stay so their actions
+  // remain grantable on a role.
+  { key: 'branch', label: 'Business Settings — Branches' },
+  { key: 'branch-profile', label: 'Business Settings — Branch Profile' },
+  // Staff and Roles are administered from User Management (topbar), not the
+  // sidebar; the menu keys stay so their actions remain grantable on a role.
+  { key: 'staff', label: 'User Management — Staff' },
+  { key: 'role', label: 'User Management — Roles' },
   { key: 'class', label: 'Classes' },
   { key: 'subject', label: 'Subjects' },
   { key: 'homework', label: 'Homework' },
@@ -355,7 +360,7 @@ export const AVAILABLE_MENUS = [
   { key: 'salary-structure', label: 'Staff Salary — Structures' },
   { key: 'payslip', label: 'Staff Salary — Payslips' },
   { key: 'salary-policy', label: 'Staff Salary — Policy' },
-  { key: 'whatsapp', label: 'WhatsApp Notifications' },
+  { key: 'whatsapp', label: 'Business Settings — WhatsApp Notifications' },
   { key: 'billing', label: 'Billing' },
 ];
 

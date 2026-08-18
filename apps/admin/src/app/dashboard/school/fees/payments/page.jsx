@@ -9,7 +9,13 @@ import { fetchData } from '@/utils/api';
 import VoidPaymentModal from './VoidPaymentModal';
 import PaymentDetailModal from './PaymentDetailModal';
 import { resolveScope, hasAnyAction } from '@/utils/permissions';
-import { PAYMENT_METHODS, PAYMENT_METHOD_COLORS, formatDate, formatMoney } from '@/constants/fee';
+import {
+  PAYMENT_METHODS,
+  PAYMENT_METHOD_COLORS,
+  formatDate,
+  formatMoney,
+  paymentAccountLabel,
+} from '@/constants/fee';
 import { useTranslations } from 'next-intl';
 
 export default function PaymentsPage() {
@@ -159,13 +165,14 @@ export default function PaymentsPage() {
       {
         header: 'Method',
         accessor: 'method',
-        render: (m) => (
+        render: (m, row) => (
           <span
             className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${
               PAYMENT_METHOD_COLORS[m] || 'bg-gray-100 text-gray-700'
             }`}
+            title={m}
           >
-            {m}
+            {paymentAccountLabel(row)}
           </span>
         ),
       },

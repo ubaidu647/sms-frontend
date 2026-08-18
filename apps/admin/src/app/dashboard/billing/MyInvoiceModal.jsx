@@ -1,7 +1,7 @@
 'use client';
 import React from 'react';
 import { Modal } from '@/component/Modal';
-import { fmtMoney, fmtDate, INVOICE_STATUS_COLORS } from '../../system/packages/format';
+import { fmtMoney, fmtDate, INVOICE_STATUS_COLORS } from '../system/packages/format';
 
 // Read-only invoice view for the school admin. The whole invoice object comes
 // straight from GET /invoice/me (no extra fetch), and there is no "Mark as paid"

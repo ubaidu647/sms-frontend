@@ -10,7 +10,7 @@ import toast from 'react-hot-toast';
 import { Info } from 'lucide-react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { fetchData, postData } from '@/utils/api';
-import { useMyCurrentSubscription } from '@/app/dashboard/school/billing/hooks/useBilling';
+import { useMyCurrentSubscription } from '@/app/dashboard/billing/hooks/useBilling';
 import { useTokenStore } from '@/store/tokenStore';
 import { useUserStore } from '@/store/userStore';
 

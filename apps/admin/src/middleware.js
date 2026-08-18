@@ -38,6 +38,14 @@ export function middleware(req) {
 
   const systemRoles = ['super-admin', 'admin', 'sub-admin'];
 
+  // Staff/Roles and the business setup (branches, branch profile, WhatsApp) live
+  // outside /dashboard/school — they are reached from the topbar menu, so those
+  // routes have to be allowed too or every system role would bounce to
+  // /unauthorized.
+  const USER_MANAGEMENT = '/dashboard/user-management';
+  const BUSINESS_SETTINGS = '/dashboard/business-settings';
+  const BILLING = '/dashboard/billing';
+
   // --- System roles
   if (systemRoles.includes(roleName)) {
     if (roleName === 'super-admin') {
@@ -46,13 +54,19 @@ export function middleware(req) {
         return NextResponse.redirect(new URL('/dashboard/system', req.url));
       }
 
-      const allowedRoutes = ['/dashboard/system', '/dashboard/school'];
+      const allowedRoutes = [
+        '/dashboard/system',
+        '/dashboard/school',
+        USER_MANAGEMENT,
+        BUSINESS_SETTINGS,
+        BILLING,
+      ];
       if (!allowedRoutes.some((r) => pathname.startsWith(r))) {
         return NextResponse.redirect(new URL('/unauthorized', req.url));
       }
     } else {
       // admin or sub-admin → school dashboard
-      const allowedRoutes = ['/dashboard/school'];
+      const allowedRoutes = ['/dashboard/school', USER_MANAGEMENT, BUSINESS_SETTINGS, BILLING];
       if (pathname === '/dashboard') {
         return NextResponse.redirect(new URL('/dashboard/school', req.url));
       }

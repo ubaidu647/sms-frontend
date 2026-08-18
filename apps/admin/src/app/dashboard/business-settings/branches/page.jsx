@@ -11,12 +11,6 @@ import { useQuery } from '@tanstack/react-query';
 import { fetchData } from '@/utils/api';
 import { useTranslations } from 'next-intl';
 
-function twoMonthsBeforeISO() {
-  const d = new Date();
-  d.setMonth(d.getMonth() - 2);
-  return d.toISOString().slice(0, 10);
-}
-
 export default function BranchesPage() {
   const router = useRouter();
   const { accessToken: token } = useTokenStore();
@@ -28,35 +22,25 @@ export default function BranchesPage() {
     isAdmin || actions.includes('view-all-branch-profile') || actions.includes('view-branch');
   const canCreateBranch = isAdmin || actions.includes('create-branch');
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const defaultFromDate = twoMonthsBeforeISO();
-  const defaultToDate = new Date().toISOString().slice(0, 10);
+  // No date range here on purpose: a branch is long-lived, so filtering the list
+  // by creation date only ever hid branches the user was looking for.
   const [draftSearch, setDraftSearch] = useState('');
-  const [draftFromDate, setDraftFromDate] = useState(defaultFromDate);
-  const [draftToDate, setDraftToDate] = useState(defaultToDate);
   const [draftStatusFilter, setDraftStatusFilter] = useState('');
   const [search, setSearch] = useState('');
-  const [fromDate, setFromDate] = useState(defaultFromDate);
-  const [toDate, setToDate] = useState(defaultToDate);
   const [statusFilter, setStatusFilter] = useState('');
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(20);
 
   const applyFilters = () => {
     setSearch(draftSearch);
-    setFromDate(draftFromDate);
-    setToDate(draftToDate);
     setStatusFilter(draftStatusFilter);
     setPage(1);
   };
 
   const clearFilters = () => {
     setDraftSearch('');
-    setDraftFromDate(defaultFromDate);
-    setDraftToDate(defaultToDate);
     setDraftStatusFilter('');
     setSearch('');
-    setFromDate(defaultFromDate);
-    setToDate(defaultToDate);
     setStatusFilter('');
     setPage(1);
   };
@@ -118,7 +102,7 @@ export default function BranchesPage() {
 
   const visibleColumns = useMemo(() => columns.map((c) => c.accessor), [columns]);
 
-  const queryKey = ['branches', page, limit, search, fromDate, toDate, statusFilter];
+  const queryKey = ['branches', page, limit, search, statusFilter];
 
   const { data } = useQuery({
     queryKey,
@@ -132,8 +116,6 @@ export default function BranchesPage() {
         columnFilters,
         columnFiltersOr,
         token,
-        from: fromDate,
-        to: toDate,
       });
       return res;
     },
@@ -146,8 +128,9 @@ export default function BranchesPage() {
   const handleAddBranchSuccess = () => {};
 
   const handleRowAction = (action, row) => {
-    if (action === 'profile') router.push(`/dashboard/school/branches/${row._id}/profile`);
-    if (action === 'view') router.push(`/dashboard/school/branches/${row._id}`);
+    if (action === 'profile')
+      router.push(`/dashboard/business-settings/branches/${row._id}/profile`);
+    if (action === 'view') router.push(`/dashboard/business-settings/branches/${row._id}`);
   };
 
   const rowActions = [
@@ -169,7 +152,7 @@ export default function BranchesPage() {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:items-center gap-2 lg:gap-2 lg:flex-wrap">
             <Link
-              href="/dashboard/school/branches/profile"
+              href="/dashboard/business-settings/branches/profile"
               className="flex items-center justify-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors shadow-sm"
             >
               <Building2 className="w-5 h-5" />
@@ -177,7 +160,7 @@ export default function BranchesPage() {
             </Link>
             {canViewAllProfiles && (
               <Link
-                href="/dashboard/school/branches/profiles"
+                href="/dashboard/business-settings/branches/profiles"
                 className="flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors shadow-sm"
               >
                 <LayoutGrid className="w-5 h-5" />
@@ -217,24 +200,6 @@ export default function BranchesPage() {
             >
               <Search className="w-5 h-5" />
             </button>
-          </div>
-
-          {/* Date range */}
-          <div className="w-full lg:w-auto bg-white dark:bg-gray-900 p-2 rounded-lg border border-gray-200 dark:border-gray-700 flex items-center gap-2 flex-wrap">
-            <label className="text-sm text-gray-600 dark:text-gray-400">From</label>
-            <input
-              type="date"
-              value={draftFromDate}
-              onChange={(e) => setDraftFromDate(e.target.value)}
-              className="outline-none text-sm flex-1 min-w-0 text-gray-900 dark:text-gray-100 bg-transparent"
-            />
-            <label className="text-sm text-gray-600 dark:text-gray-400">To</label>
-            <input
-              type="date"
-              value={draftToDate}
-              onChange={(e) => setDraftToDate(e.target.value)}
-              className="outline-none text-sm flex-1 min-w-0 text-gray-900 dark:text-gray-100 bg-transparent"
-            />
           </div>
 
           {/* Status */}

@@ -1,6 +1,7 @@
 'use client';
 import React, { useEffect, useMemo, useState } from 'react';
-import { Save, Zap, ZapOff } from 'lucide-react';
+import { Save, Zap, ZapOff, Info } from 'lucide-react';
+import Link from 'next/link';
 import { useTokenStore } from '@/store/tokenStore';
 import { useUserStore } from '@/store/userStore';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -174,6 +175,28 @@ export default function MappingPage() {
               }`}
             />
           </button>
+        </div>
+
+        {/* Cash and bank are not mapped here — they are per-branch and a branch
+            can hold several, so they are picked on the transaction instead. */}
+        <div className="flex gap-3 bg-sky-50 dark:bg-sky-950/30 border border-sky-200 dark:border-sky-900 rounded-xl p-4 mb-5">
+          <Info className="w-5 h-5 text-sky-600 flex-shrink-0 mt-0.5" />
+          <div className="text-sm text-sky-900 dark:text-sky-200">
+            <div className="font-semibold">Cash and bank are not configured here</div>
+            <p className="text-sky-800 dark:text-sky-300 mt-0.5">
+              Cash is held per branch and a branch can bank with more than one institution, so there
+              is no single school-wide answer. Create those accounts in the{' '}
+              <Link
+                href="/dashboard/school/accounting/accounts"
+                className="underline font-medium hover:text-sky-950 dark:hover:text-sky-100"
+              >
+                Chart of Accounts
+              </Link>{' '}
+              with the category <strong>Cash</strong> or <strong>Bank</strong>. Fee collection,
+              salary payments and vouchers then use that branch’s account — and ask which one when
+              the branch keeps several.
+            </p>
+          </div>
         </div>
 
         {/* Role → account */}

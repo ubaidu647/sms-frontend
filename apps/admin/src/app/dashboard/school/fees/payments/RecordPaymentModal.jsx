@@ -6,12 +6,10 @@ import toast from 'react-hot-toast';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { postData } from '@/utils/api';
 import { useTokenStore } from '@/store/tokenStore';
-import {
-  PAYMENT_METHODS,
-  REFERENCE_REQUIRED_METHODS,
-  formatMoney,
-  todayYMD,
-} from '@/constants/fee';
+import PaymentAccountSelect from '@/component/PaymentAccountSelect';
+import PaymentReceiptPrint, { printReceipt } from '@/component/PaymentReceiptPrint';
+import { useUserStore } from '@/store/userStore';
+import { formatMoney, formatMonth, todayYMD } from '@/constants/fee';
 
 const inputCls =
   'w-full px-3 py-2 border border-gray-200 rounded-lg outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 text-sm text-gray-900 bg-white';
@@ -19,11 +17,14 @@ const labelCls = 'block text-xs font-semibold text-gray-700 mb-1';
 
 export default function RecordPaymentModal({ isOpen, onClose, voucher }) {
   const { accessToken: token } = useTokenStore();
+  const { user } = useUserStore();
   const queryClient = useQueryClient();
 
   const [amount, setAmount] = useState(0);
   const [paymentDate, setPaymentDate] = useState(todayYMD());
-  const [method, setMethod] = useState('cash');
+  // The cash/bank head the money lands in. It also *is* the payment method:
+  // a cash head means cash, a bank head means a bank transfer.
+  const [account, setAccount] = useState(null);
   const [referenceNumber, setReferenceNumber] = useState('');
   const [notes, setNotes] = useState('');
   const [submitError, setSubmitError] = useState('');
@@ -33,7 +34,7 @@ export default function RecordPaymentModal({ isOpen, onClose, voucher }) {
     if (isOpen) {
       setAmount(voucher?.balanceAmount ?? 0);
       setPaymentDate(todayYMD());
-      setMethod('cash');
+      setAccount(null);
       setReferenceNumber('');
       setNotes('');
       setSubmitError('');
@@ -57,7 +58,17 @@ export default function RecordPaymentModal({ isOpen, onClose, voucher }) {
     },
   });
 
-  const refRequired = REFERENCE_REQUIRED_METHODS.includes(method);
+  // Bank money must stay traceable to a cheque number / transaction id.
+  const isBank = account?.category === 'bank';
+
+  // The voucher arrives either from the list (aggregated: student/class/section)
+  // or from the detail page (populated: studentId/classId/sectionId).
+  const studentDoc = voucher?.student || voucher?.studentId;
+  const classDoc = voucher?.class || voucher?.classId;
+  const sectionDoc = voucher?.section || voucher?.sectionId;
+  const branchDoc = voucher?.branchId;
+  const branchIdValue = typeof branchDoc === 'object' ? branchDoc?._id : branchDoc;
+  const branchName = typeof branchDoc === 'object' ? branchDoc?.name : undefined;
 
   const submit = () => {
     setSubmitError('');
@@ -65,14 +76,16 @@ export default function RecordPaymentModal({ isOpen, onClose, voucher }) {
     if (!num || num <= 0) return setSubmitError('Amount must be > 0');
     if (num > (voucher?.balanceAmount ?? 0))
       return setSubmitError(`Amount exceeds balance ${formatMoney(voucher?.balanceAmount)}`);
-    if (refRequired && !referenceNumber.trim())
-      return setSubmitError('Reference number is required for this method');
+    if (!account) return setSubmitError('Select the cash or bank account the money came into');
+    if (isBank && !referenceNumber.trim())
+      return setSubmitError('Reference number is required for a bank account');
 
     const payload = {
       voucherId: voucher._id,
       amount: num,
       paymentDate,
-      method,
+      method: isBank ? 'bank-transfer' : 'cash',
+      ledgerAccountId: account._id,
     };
     if (referenceNumber.trim()) payload.referenceNumber = referenceNumber.trim();
     if (notes.trim()) payload.notes = notes.trim();
@@ -126,7 +139,7 @@ export default function RecordPaymentModal({ isOpen, onClose, voucher }) {
                 size: 'px-10 py-3 text-md min-h-[3rem]',
                 textColor: 'text-white',
               }}
-              handleClick={() => window.print()}
+              handleClick={printReceipt}
             />
           )}
         </div>
@@ -171,34 +184,32 @@ export default function RecordPaymentModal({ isOpen, onClose, voucher }) {
                 className={inputCls}
               />
             </div>
-            <div>
-              <label className={labelCls}>
-                Method<span className="text-red-500">*</span>
-              </label>
-              <select
-                value={method}
-                onChange={(e) => setMethod(e.target.value)}
-                className={inputCls}
-              >
-                {PAYMENT_METHODS.map((m) => (
-                  <option key={m} value={m}>
-                    {m}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className={labelCls}>
-                Reference / Cheque #{refRequired && <span className="text-red-500 ml-0.5">*</span>}
-              </label>
-              <input
-                type="text"
-                value={referenceNumber}
-                onChange={(e) => setReferenceNumber(e.target.value)}
-                placeholder={refRequired ? 'Required' : 'Optional'}
-                className={inputCls}
+            <div className={isBank ? '' : 'col-span-2'}>
+              <PaymentAccountSelect
+                branchId={voucher.branchId?._id || voucher.branchId}
+                value={account?._id || ''}
+                onChange={(acc) => {
+                  setAccount(acc);
+                  if (acc?.category !== 'bank') setReferenceNumber('');
+                }}
+                labelCls={labelCls}
+                inputCls={inputCls}
               />
             </div>
+            {isBank && (
+              <div>
+                <label className={labelCls}>
+                  Reference / Cheque #<span className="text-red-500 ml-0.5">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={referenceNumber}
+                  onChange={(e) => setReferenceNumber(e.target.value)}
+                  placeholder="Transaction id / cheque no"
+                  className={inputCls}
+                />
+              </div>
+            )}
           </div>
 
           <div>
@@ -224,8 +235,9 @@ export default function RecordPaymentModal({ isOpen, onClose, voucher }) {
             <div className="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-3">
               {formatMoney(receipt.payment.amount)}
             </div>
-            <div className="text-sm text-gray-600 dark:text-gray-400 mt-1 capitalize">
-              {receipt.payment.method}
+            <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+              {account ? `${account.code} · ${account.name}` : receipt.payment.method}
+              {receipt.payment.referenceNumber ? ` · ${receipt.payment.referenceNumber}` : ''}
             </div>
           </div>
           <div className="grid grid-cols-3 gap-2 text-sm">
@@ -244,6 +256,37 @@ export default function RecordPaymentModal({ isOpen, onClose, voucher }) {
           <div className="text-center text-xs text-gray-500 dark:text-gray-400 capitalize">
             Voucher status: <strong>{receipt.voucher.status}</strong>
           </div>
+
+          {/* Screen-invisible; this is what Print Receipt actually puts on paper. */}
+          <PaymentReceiptPrint
+            branchId={branchIdValue}
+            branchName={branchName}
+            receiptNumber={receipt.payment.receiptNumber}
+            date={receipt.payment.paymentDate}
+            amount={receipt.payment.amount}
+            accountLabel={account ? `${account.code} · ${account.name}` : receipt.payment.method}
+            referenceNumber={receipt.payment.referenceNumber}
+            notes={receipt.payment.notes}
+            receivedBy={user?.name}
+            student={{
+              name: studentDoc?.user?.name || studentDoc?.userId?.name,
+              admissionNumber: studentDoc?.admissionNumber,
+              classLabel: [classDoc?.name, sectionDoc?.name].filter(Boolean).join(' — '),
+            }}
+            items={[
+              {
+                label: `Voucher ${receipt.voucher.voucherNumber} · ${formatMonth(
+                  receipt.voucher.month,
+                )}`,
+                amount: receipt.payment.amount,
+              },
+            ]}
+            summary={[
+              { label: 'Voucher Total', value: formatMoney(receipt.voucher.totalAmount) },
+              { label: 'Total Paid', value: formatMoney(receipt.voucher.paidAmount) },
+              { label: 'Balance', value: formatMoney(receipt.voucher.balanceAmount) },
+            ]}
+          />
         </div>
       )}
     </Modal>
