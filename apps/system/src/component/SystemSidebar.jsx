@@ -8,25 +8,25 @@ const systemNavItems = [
     label: 'Dashboard',
     icon: 'https://c.animaapp.com/mi4xjeskxZrnLa/img/bold.svg',
     key: 'dashboard',
-    path: '/dashboard/system',
+    path: '/dashboard',
   },
   {
     label: 'Organizations',
     icon: 'https://c.animaapp.com/mi4xjeskxZrnLa/img/frame-1.svg',
     key: 'organizations',
-    path: '/dashboard/system/organizations',
+    path: '/dashboard/organizations',
   },
   {
     label: 'Packages',
     icon: 'https://c.animaapp.com/mi4xjeskxZrnLa/img/frame-1.svg',
     key: 'packages',
-    path: '/dashboard/system/packages',
+    path: '/dashboard/packages',
   },
   {
     label: 'Subscriptions',
     icon: 'https://c.animaapp.com/mi4xjeskxZrnLa/img/frame-1.svg',
     key: 'subscriptions',
-    path: '/dashboard/system/subscriptions',
+    path: '/dashboard/subscriptions',
   },
 ];
 

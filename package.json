@@ -7,9 +7,10 @@
     "packages/*"
   ],
   "scripts": {
-    "dev": "nx run-many -t dev --projects=@sms/admin,@sms/student",
+    "dev": "nx run-many -t dev --projects=@sms/admin,@sms/student,@sms/system",
     "dev:admin": "nx dev @sms/admin",
     "dev:student": "nx dev @sms/student",
+    "dev:system": "nx dev @sms/system",
     "mobile": "nx start @sms/mobile",
     "mobile:android": "nx android @sms/mobile",
     "build": "nx run-many -t build",

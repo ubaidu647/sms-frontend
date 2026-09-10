@@ -1,79 +1,24 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { useRouter } from 'next/navigation';
-import {
-  Bell,
-  Settings,
-  Users,
-  Building2,
-  CreditCard,
-  LogOut,
-  ChevronDown,
-  Sun,
-  Moon,
-  Menu,
-  ServerCog,
-} from 'lucide-react';
+import { Bell, Settings, LogOut, ChevronDown, Sun, Moon, Menu } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useThemeStore } from '@/store/themeStore';
 import { useAuth } from '@/hooks/useAuth';
-import { canSee } from '@/utils/permissions';
-import { ACTIONS } from '@/constants/rolePermissions';
-import { canOpenUserManagement } from '@/app/dashboard/user-management/tabs';
-import { canOpenBusinessSettings } from '@/app/dashboard/business-settings/tabs';
 
-const SYSTEM_CONSOLE_URL = process.env.NEXT_PUBLIC_SYSTEM_URL || 'http://localhost:3002';
-
-// Admin destinations that are not day-to-day school work. Order here is the
-// order in the menu: personal preferences, then the org setup, then who may use
-// it, then what it costs. `show` decides visibility from the role's grants.
-const MENU_ITEMS = [
-  { key: 'settings', icon: Settings, href: '/dashboard/settings', show: () => true },
-  {
-    key: 'businessSettings',
-    icon: Building2,
-    href: '/dashboard/business-settings',
-    show: canOpenBusinessSettings,
-  },
-  {
-    key: 'userManagement',
-    icon: Users,
-    href: '/dashboard/user-management',
-    show: canOpenUserManagement,
-  },
-  {
-    key: 'billing',
-    icon: CreditCard,
-    href: '/dashboard/billing',
-    show: (role) => canSee(role, ACTIONS.VIEW_BILLING),
-  },
-  // Tenant/package/subscription administration lives in a separate app
-  // (@sms/system). Cross-origin, so it opens in a new tab instead of a
-  // router push, and stays hidden for everyone but super-admin.
-  {
-    key: 'systemConsole',
-    icon: ServerCog,
-    href: SYSTEM_CONSOLE_URL,
-    external: true,
-    show: (role) => role?.name === 'super-admin',
-  },
-];
-
-export const Topbar = ({ user = {}, userRole = {}, onMenuClick }) => {
+// System-console topbar. Unlike the admin app's version there is no menu of
+// school destinations (business settings, user management, billing) — those are
+// per-tenant screens and live in the admin app. Here the dropdown is just the
+// identity card plus sign out.
+export const Topbar = ({ user, userRole, onMenuClick }) => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [anchorRect, setAnchorRect] = useState(null);
   const buttonRef = useRef(null);
   const menuRef = useRef(null);
-  const router = useRouter();
   const theme = useThemeStore((s) => s.theme);
   const toggleTheme = useThemeStore((s) => s.toggleTheme);
   const isDark = theme === 'dark';
   const t = useTranslations('topbar');
   const { logout } = useAuth();
-
-  // Gated on the actual grants, not on role names — a custom role with
-  // view-staff or view-role gets in, a role merely named "admin" does not.
-  const menuItems = MENU_ITEMS.filter((item) => item.show(userRole));
 
   // Recompute anchor on open + on scroll/resize so the portal-rendered menu
   // stays glued to the trigger button across viewport changes.
@@ -122,7 +67,7 @@ export const Topbar = ({ user = {}, userRole = {}, onMenuClick }) => {
           </button>
         )}
         <h1 className="text-base sm:text-xl font-semibold text-gray-800 dark:text-gray-100 truncate">
-          {t('greeting')} <span className="text-teal-600 dark:text-teal-400">{user.name}</span>
+          {t('greeting')} <span className="text-teal-600 dark:text-teal-400">{user?.name}</span>
         </h1>
         <span className="text-xl hidden sm:inline">👋</span>
       </div>
@@ -149,7 +94,7 @@ export const Topbar = ({ user = {}, userRole = {}, onMenuClick }) => {
           <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
         </button>
 
-        {/* Settings Dropdown */}
+        {/* Profile Dropdown */}
         <button
           ref={buttonRef}
           onClick={() => setIsProfileOpen((v) => !v)}
@@ -172,7 +117,7 @@ export const Topbar = ({ user = {}, userRole = {}, onMenuClick }) => {
             ref={menuRef}
             style={{
               position: 'fixed',
-              top: Math.min(anchorRect.top + 8, window.innerHeight - 8 - 220),
+              top: Math.min(anchorRect.top + 8, window.innerHeight - 8 - 120),
               right: Math.max(anchorRect.right, 8),
               width: '14rem',
             }}
@@ -185,22 +130,7 @@ export const Topbar = ({ user = {}, userRole = {}, onMenuClick }) => {
               </p>
             </div>
 
-            {menuItems.map(({ key, icon: Icon, href, external }) => (
-              <button
-                key={key}
-                onClick={() => {
-                  setIsProfileOpen(false);
-                  if (external) window.open(href, '_blank', 'noopener,noreferrer');
-                  else router.push(href);
-                }}
-                className="w-full flex items-center gap-3 px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-left"
-              >
-                <Icon className="w-4 h-4 text-gray-600 dark:text-gray-300" />
-                <span className="text-sm text-gray-700 dark:text-gray-200">{t(key)}</span>
-              </button>
-            ))}
-
-            <div className="border-t border-gray-200 dark:border-gray-700 mt-2 pt-2">
+            <div className="mt-2 pt-2">
               <button
                 onClick={() => {
                   setIsProfileOpen(false);

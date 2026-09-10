@@ -1,0 +1,293 @@
+@import 'tailwindcss';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+  --surface: #ffffff;
+  --surface-muted: #f6f6f6;
+  --border: #e5e7eb;
+}
+
+.dark {
+  --background: #0a0a0a;
+  --foreground: #ededed;
+  --surface: #161616;
+  --surface-muted: #1f1f1f;
+  --border: #2a2a2a;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+
+  /* Brand palette — built around #00918E */
+  --color-teal-50: #e8f6f5;
+  --color-teal-100: #ccecea;
+  --color-teal-200: #9adcd9;
+  --color-teal-300: #66cbc7;
+  --color-teal-400: #33b9b5;
+  --color-teal-500: #00a8a4;
+  --color-teal-600: #00918e;
+  --color-teal-700: #007a77;
+  --color-teal-800: #006360;
+  --color-teal-900: #004c4a;
+
+  /* Direct alias if you want explicit brand classes */
+  --color-brand: #00918e;
+  --color-brand-50: #e8f6f5;
+  --color-brand-100: #ccecea;
+  --color-brand-500: #00a8a4;
+  --color-brand-600: #00918e;
+  --color-brand-700: #007a77;
+  --color-brand-800: #006360;
+
+  /* Accent palette — built around #FFDC34 (active state, highlights) */
+  --color-yellow-50: #fffbe5;
+  --color-yellow-100: #fff5b8;
+  --color-yellow-200: #ffec85;
+  --color-yellow-300: #ffdc34;
+  --color-yellow-400: #f5c81c;
+  --color-yellow-500: #e0b400;
+  --color-yellow-600: #b89300;
+  --color-yellow-700: #8a6e00;
+  --color-yellow-800: #5c4900;
+  --color-yellow-900: #3d3000;
+
+  --color-accent: #ffdc34;
+  --color-accent-300: #ffdc34;
+  --color-accent-400: #f5c81c;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Tints legacy <img> sidebar icons to the accent yellow #FFDC34 when active.
+   Lucide icons inherit color via currentColor, so they don't need this. */
+.sidebar-icon-active {
+  filter: brightness(0) saturate(100%) invert(86%) sepia(38%) saturate(1860%) hue-rotate(348deg)
+    brightness(102%) contrast(101%);
+}
+
+@utility scrollbar-hide {
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
+
+  &::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+    background: transparent !important;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Continuous right-to-left scrolling banner. The track holds two identical
+   copies of the content; shifting by -50% loops seamlessly. */
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee {
+  animation: marquee 30s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-marquee {
+    animation: none;
+  }
+}
+
+/* ── Printable payment receipt ────────────────────────────────────────────────
+   Receipts are printed from inside a dialog, so a plain window.print() would
+   put the dashboard, the dialog frame and its buttons on paper. The receipt is
+   portalled to <body> instead: while printing, every other top-level node is
+   dropped and only this sheet remains. Deliberately plain CSS — the printed
+   page must not depend on the app's theme or dark mode. */
+.receipt-print-portal {
+  display: none;
+}
+
+@media print {
+  body.printing-receipt > *:not(.receipt-print-portal) {
+    display: none !important;
+  }
+
+  body.printing-receipt .receipt-print-portal {
+    display: block;
+  }
+
+  /* Same result for Ctrl+P: whenever a receipt is on the page, it is the only
+     thing worth printing, whether or not the Print button set the body class. */
+  body:has(.receipt-print-portal) > *:not(.receipt-print-portal) {
+    display: none !important;
+  }
+
+  body:has(.receipt-print-portal) .receipt-print-portal {
+    display: block;
+  }
+
+  @page {
+    margin: 12mm;
+  }
+
+  .receipt-sheet {
+    font-family: Arial, Helvetica, sans-serif;
+    color: #000;
+    background: #fff;
+    font-size: 12px;
+    line-height: 1.45;
+  }
+
+  .receipt-head {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    border-bottom: 2px solid #000;
+    padding-bottom: 10px;
+  }
+
+  .receipt-logo {
+    width: 72px;
+    height: 72px;
+    object-fit: contain;
+  }
+
+  .receipt-head-text h1 {
+    font-size: 20px;
+    font-weight: 800;
+    margin: 0;
+  }
+
+  .receipt-head-text p {
+    margin: 2px 0 0;
+    font-size: 11px;
+  }
+
+  .receipt-tagline {
+    font-style: italic;
+  }
+
+  .receipt-title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-top: 14px;
+  }
+
+  .receipt-title-row h2 {
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin: 0;
+  }
+
+  .receipt-meta {
+    text-align: right;
+    font-size: 11px;
+  }
+
+  .receipt-meta strong {
+    display: inline-block;
+    min-width: 62px;
+  }
+
+  .receipt-info,
+  .receipt-items,
+  .receipt-summary {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 12px;
+  }
+
+  .receipt-info th,
+  .receipt-summary th {
+    text-align: left;
+    font-weight: 600;
+    color: #444;
+    width: 15%;
+    padding: 4px 6px;
+  }
+
+  .receipt-info td {
+    padding: 4px 6px;
+    width: 35%;
+    border-bottom: 1px solid #ddd;
+  }
+
+  .receipt-items th,
+  .receipt-items td {
+    padding: 6px;
+    border-bottom: 1px solid #ddd;
+    text-align: left;
+  }
+
+  .receipt-items thead th {
+    border-bottom: 1px solid #000;
+    font-weight: 700;
+  }
+
+  .receipt-items tfoot td {
+    font-weight: 700;
+    border-top: 1px solid #000;
+    border-bottom: none;
+  }
+
+  .receipt-summary td {
+    padding: 4px 6px;
+  }
+
+  .num {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .receipt-notes {
+    margin-top: 10px;
+    font-size: 11px;
+  }
+
+  .receipt-signs {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 48px;
+    font-size: 11px;
+  }
+
+  .receipt-signs > div {
+    border-top: 1px solid #000;
+    padding-top: 4px;
+    width: 40%;
+    text-align: center;
+  }
+
+  .receipt-foot {
+    margin-top: 16px;
+    text-align: center;
+    font-size: 10px;
+    color: #555;
+  }
+}

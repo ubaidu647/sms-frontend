@@ -9,7 +9,9 @@ export function useSignIn() {
   const router = useRouter();
   return useMutation({
     mutationFn: async (data) => {
-      const res = await apiClient.post('/auth/login', data);
+      // Dedicated super-admin portal. /auth/login is the school portal and now
+      // refuses a super-admin outright, so this must not fall back to it.
+      const res = await apiClient.post('/auth/system/login', data);
       return res.data; // axios wraps response in data
     },
     onSuccess: (response) => {
@@ -22,9 +24,9 @@ export function useSignIn() {
       )}; path=/; max-age=86400;`;
       toast.success('Logged in successfully!');
 
-      // Always push to /dashboard — middleware reads the auth-role cookie
-      // (set above) and forwards every school role to /dashboard/school.
-      // Tenant/billing administration is a separate app (@sms/system).
+      // This console only admits super-admin. Middleware reads the auth-role
+      // cookie set above and bounces any other role to /unauthorized, so we
+      // can always push to /dashboard here.
       router.push('/dashboard');
     },
     onError: (err) => {

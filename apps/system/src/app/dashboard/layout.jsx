@@ -5,8 +5,19 @@ import { SystemSidebar } from '@/component/SystemSidebar';
 import { Topbar } from '@/component/TopBar';
 
 export default function SystemLayout({ children }) {
-  const { user, logout } = useAuth();
+  const { user, logout, hasHydrated } = useAuth();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+
+  // The token/user stores are persisted in localStorage, so on the server (and
+  // on the very first client paint) they are still null. Hold the shell back
+  // until rehydration rather than rendering a greeting with no name.
+  if (!hasHydrated) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-[rgb(246,246,246)] dark:bg-[#161616]">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-teal-600 border-t-transparent" />
+      </div>
+    );
+  }
 
   return (
     <div className="w-full md:w-[99%] flex h-screen overflow-hidden">

@@ -17,7 +17,6 @@ export function middleware(req) {
   const actions = role?.actions || [];
   const pathname = req.nextUrl.pathname;
 
-  console.log('roleName', roleName);
   // Public routes
   const publicPaths = ['/signin', '/forgot-password'];
 
@@ -36,6 +35,9 @@ export function middleware(req) {
     return NextResponse.next();
   }
 
+  // Named roles the backend ships with. The super-admin's tenant/billing console
+  // is a separate app (@sms/system, port 3002) — here they are treated exactly
+  // like an admin, i.e. school-scoped.
   const systemRoles = ['super-admin', 'admin', 'sub-admin'];
 
   // Staff/Roles and the business setup (branches, branch profile, WhatsApp) live
@@ -46,33 +48,15 @@ export function middleware(req) {
   const BUSINESS_SETTINGS = '/dashboard/business-settings';
   const BILLING = '/dashboard/billing';
 
-  // --- System roles
+  // --- System roles (super-admin, admin, sub-admin) all land on the school app.
   if (systemRoles.includes(roleName)) {
-    if (roleName === 'super-admin') {
-      // Super-admin goes to system dashboard by default
-      if (pathname === '/dashboard') {
-        return NextResponse.redirect(new URL('/dashboard/system', req.url));
-      }
+    const allowedRoutes = ['/dashboard/school', USER_MANAGEMENT, BUSINESS_SETTINGS, BILLING];
 
-      const allowedRoutes = [
-        '/dashboard/system',
-        '/dashboard/school',
-        USER_MANAGEMENT,
-        BUSINESS_SETTINGS,
-        BILLING,
-      ];
-      if (!allowedRoutes.some((r) => pathname.startsWith(r))) {
-        return NextResponse.redirect(new URL('/unauthorized', req.url));
-      }
-    } else {
-      // admin or sub-admin → school dashboard
-      const allowedRoutes = ['/dashboard/school', USER_MANAGEMENT, BUSINESS_SETTINGS, BILLING];
-      if (pathname === '/dashboard') {
-        return NextResponse.redirect(new URL('/dashboard/school', req.url));
-      }
-      if (!allowedRoutes.some((r) => pathname.startsWith(r))) {
-        return NextResponse.redirect(new URL('/unauthorized', req.url));
-      }
+    if (pathname === '/dashboard') {
+      return NextResponse.redirect(new URL('/dashboard/school', req.url));
+    }
+    if (!allowedRoutes.some((r) => pathname.startsWith(r))) {
+      return NextResponse.redirect(new URL('/unauthorized', req.url));
     }
 
     return NextResponse.next();

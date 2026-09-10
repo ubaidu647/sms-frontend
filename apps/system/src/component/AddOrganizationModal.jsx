@@ -10,9 +10,9 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { postData } from '@/utils/api';
-import { useOrganizationStore } from '../app/dashboard/system/organizations/store/organizationStore';
-import { usePackages } from '../app/dashboard/system/packages/hooks/usePackages';
-import { fmtMoney } from '../app/dashboard/system/packages/format';
+import { useOrganizationStore } from '@/app/dashboard/organizations/store/organizationStore';
+import { usePackages } from '@/app/dashboard/packages/hooks/usePackages';
+import { fmtMoney } from '@/app/dashboard/packages/format';
 // Validation schema
 const organizationSchema = yup.object().shape({
   name: yup.string().required('School name is required'),
