@@ -2,6 +2,8 @@
 import React from 'react';
 import { Modal } from '@/component/Modal';
 import { useQuery } from '@tanstack/react-query';
+import QueryErrorState from '@/component/QueryErrorState';
+import { retryUnless4xx } from '@/utils/queryError';
 import apiClient from '@/services/apiClient';
 import { useTokenStore } from '@/store/tokenStore';
 import { FileText } from 'lucide-react';
@@ -18,17 +20,20 @@ import {
 export default function AnnouncementDetailModal({ isOpen, onClose, announcementId }) {
   const { accessToken: token } = useTokenStore();
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, error } = useQuery({
     queryKey: ['announcement', announcementId],
     queryFn: async () => (await apiClient.get(`/announcement/${announcementId}`)).data,
     enabled: !!token && isOpen && !!announcementId,
+    retry: retryUnless4xx,
   });
 
   const a = data?.data;
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={a?.title || 'Announcement'} size="lg">
-      {isLoading || !a ? (
+      {isError ? (
+        <QueryErrorState error={error} fallback="Could not load this announcement" />
+      ) : isLoading || !a ? (
         <div className="text-sm text-gray-500 dark:text-gray-400">Loading...</div>
       ) : (
         <div className="space-y-5">

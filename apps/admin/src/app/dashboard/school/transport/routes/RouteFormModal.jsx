@@ -150,6 +150,10 @@ export default function RouteFormModal({ isOpen, onClose, route }) {
     onSuccess: (res) => {
       toast.success(res?.message || (isEdit ? 'Route updated' : 'Route created'));
       queryClient.invalidateQueries({ queryKey: ['routes'] });
+      // A vehicle swap moves the route's riders, so rosters/assignments change too.
+      queryClient.invalidateQueries({ queryKey: ['transport-assignments'] });
+      queryClient.invalidateQueries({ queryKey: ['vehicle-roster'] });
+      queryClient.invalidateQueries({ queryKey: ['route-roster'] });
       setSuccessState(true);
       setTimeout(() => {
         setSuccessState(false);
@@ -216,14 +220,25 @@ export default function RouteFormModal({ isOpen, onClose, route }) {
       }),
     };
 
-    if (code?.trim()) payload.code = code.trim();
-    if (description?.trim()) payload.description = description.trim();
-    if (vehicleId) payload.vehicleId = vehicleId;
-    if (distanceKm !== '' && !Number.isNaN(Number(distanceKm)))
-      payload.distanceKm = Number(distanceKm);
-    if (estimatedDurationMin !== '' && !Number.isNaN(Number(estimatedDurationMin)))
-      payload.estimatedDurationMin = Number(estimatedDurationMin);
-    if (notes?.trim()) payload.notes = notes.trim();
+    // On edit an emptied optional field must be SENT so the backend clears it:
+    // vehicleId/code/distance/duration → null (a blank code would collide on the
+    // per-school unique code index), description/notes → ''. On create, omit.
+    const optional = (value, cleared) => {
+      if (value !== undefined) return value;
+      return isEdit ? cleared : undefined;
+    };
+    const num = (v) => (v !== '' && !Number.isNaN(Number(v)) ? Number(v) : undefined);
+    const optionalFields = {
+      code: optional(code?.trim() || undefined, null),
+      description: optional(description?.trim() || undefined, ''),
+      vehicleId: optional(vehicleId || undefined, null),
+      distanceKm: optional(num(distanceKm), null),
+      estimatedDurationMin: optional(num(estimatedDurationMin), null),
+      notes: optional(notes?.trim() || undefined, ''),
+    };
+    Object.entries(optionalFields).forEach(([k, v]) => {
+      if (v !== undefined) payload[k] = v;
+    });
 
     if (!isEdit) payload.branchId = branchId;
 

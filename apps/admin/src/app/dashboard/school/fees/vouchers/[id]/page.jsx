@@ -17,6 +17,8 @@ import {
   Globe,
 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
+import QueryErrorState from '@/component/QueryErrorState';
+import { retryUnless4xx } from '@/utils/queryError';
 import apiClient from '@/services/apiClient';
 import { useTokenStore } from '@/store/tokenStore';
 import { useUserStore } from '@/store/userStore';
@@ -60,10 +62,11 @@ export default function VoucherDetailPage() {
   const canVoidPayment =
     !isOwnOnly && hasAnyAction(user?.role, ['void-payment', 'void-all-branch-payment']);
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, error } = useQuery({
     queryKey: ['voucher', voucherId],
     queryFn: async () => (await apiClient.get(`/fee/voucher/${voucherId}`)).data,
     enabled: !!token && !!voucherId,
+    retry: retryUnless4xx,
   });
 
   const voucher = data?.data;
@@ -117,6 +120,14 @@ export default function VoucherDetailPage() {
       setDownloadingPdf(false);
     }
   };
+
+  if (isError) {
+    return (
+      <div className="p-6 max-w-4xl mx-auto">
+        <QueryErrorState error={error} fallback="Could not load this voucher" />
+      </div>
+    );
+  }
 
   if (isLoading || !voucher) {
     return <div className="p-6 text-sm text-gray-500 dark:text-gray-400">Loading voucher...</div>;

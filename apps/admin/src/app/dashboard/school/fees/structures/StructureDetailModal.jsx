@@ -2,6 +2,8 @@
 import React from 'react';
 import { Modal } from '@/component/Modal';
 import { useQuery } from '@tanstack/react-query';
+import QueryErrorState from '@/component/QueryErrorState';
+import { retryUnless4xx } from '@/utils/queryError';
 import apiClient from '@/services/apiClient';
 import { useTokenStore } from '@/store/tokenStore';
 import { formatMoney, MONTH_OPTIONS } from '@/constants/fee';
@@ -11,17 +13,20 @@ const monthLabel = (m) => MONTH_OPTIONS.find((x) => x.value === Number(m))?.labe
 export default function StructureDetailModal({ isOpen, onClose, structureId }) {
   const { accessToken: token } = useTokenStore();
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, error } = useQuery({
     queryKey: ['fee-structure', structureId],
     queryFn: async () => (await apiClient.get(`/fee/structure/${structureId}`)).data,
     enabled: !!token && isOpen && !!structureId,
+    retry: retryUnless4xx,
   });
 
   const s = data?.data;
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Fee Structure" subtitle={s?.name} size="lg">
-      {isLoading || !s ? (
+      {isError ? (
+        <QueryErrorState error={error} fallback="Could not load this fee structure" />
+      ) : isLoading || !s ? (
         <div className="text-sm text-gray-500 dark:text-gray-400">Loading...</div>
       ) : (
         <div className="space-y-5">

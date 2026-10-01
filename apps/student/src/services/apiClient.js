@@ -1,33 +1,90 @@
-import axios from 'axios';
-import { useTokenStore } from '@/store/tokenStore';
-import { clearAuthCookies } from '@/utils/clearAuthCookies';
+import axios from "axios";
+import { useTokenStore } from "@/store/tokenStore";
+import { clearAuthCookies } from "@/utils/clearAuthCookies";
+import {
+  withSessionHeaders,
+  AUTH_MODE_HEADERS,
+  readCsrfToken,
+} from "@/utils/session";
 
 const apiClient = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4001',
+  baseURL: process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4001/api",
+  // The session is an httpOnly cookie, so every request must carry cookies.
   withCredentials: true,
-  headers: { 'Content-Type': 'application/json' },
+  headers: { "Content-Type": "application/json" },
 });
 
-// Attach the access token to every request.
-apiClient.interceptors.request.use((config) => {
-  const token = useTokenStore.getState().accessToken;
-  if (token) config.headers.Authorization = `Bearer ${token}`;
-  return config;
-});
+// No Authorization header: the browser attaches the session cookie itself.
+apiClient.interceptors.request.use(withSessionHeaders);
 
-// On 401 (expired/invalid session) clear auth and send the student back to login.
-// A failed login itself returns 401 too, so skip the redirect for that endpoint.
+function logoutAndRedirect() {
+  useTokenStore.getState().clearTokens();
+  clearAuthCookies();
+  if (typeof window !== "undefined") window.location.replace("/signin");
+}
+
+// One refresh in flight at a time; concurrent 401s wait for it and retry.
+let refreshPromise = null;
+
+function refreshSession() {
+  if (!refreshPromise) {
+    refreshPromise = axios
+      .post(
+        `${apiClient.defaults.baseURL}/auth/refresh`,
+        {},
+        {
+          withCredentials: true,
+          headers: {
+            ...AUTH_MODE_HEADERS,
+            "X-CSRF-Token": readCsrfToken() || "",
+          },
+        },
+      )
+      .finally(() => {
+        refreshPromise = null;
+      });
+  }
+  return refreshPromise;
+}
+
+// On 401 the access cookie has expired: refresh once from the refresh cookie
+// and retry. Only when the refresh itself fails is the session really over. A
+// failed login returns 401 too, so skip the login endpoint entirely.
 apiClient.interceptors.response.use(
   (res) => res,
-  (error) => {
+  async (error) => {
+    const orig = error.config || {};
     const status = error.response?.status;
-    const url = error.config?.url || '';
-    if (status === 401 && !url.includes('/auth/student/login')) {
-      useTokenStore.getState().clearTokens();
-      clearAuthCookies();
-      if (typeof window !== 'undefined') window.location.replace('/signin');
+    const url = orig.url || "";
+
+    if (
+      status !== 401 ||
+      orig.skipAuthRefresh ||
+      url.includes("/auth/student/login")
+    ) {
+      return Promise.reject(error);
     }
-    return Promise.reject(error);
+
+    if (orig._retry) {
+      logoutAndRedirect();
+      return Promise.reject(error);
+    }
+
+    orig._retry = true;
+    // No session cookie at all → nothing to refresh; don't spend the shared
+    // refresh rate-limit budget asking.
+    if (!readCsrfToken()) {
+      logoutAndRedirect();
+      return Promise.reject(error);
+    }
+    try {
+      await refreshSession();
+      return apiClient(orig);
+    } catch (refreshError) {
+      // A throttled refresh is "slow down", not "session invalid".
+      if (refreshError.response?.status !== 429) logoutAndRedirect();
+      return Promise.reject(error);
+    }
   },
 );
 

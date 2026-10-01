@@ -2,6 +2,8 @@
 import React from 'react';
 import { Modal } from '@/component/Modal';
 import { useQuery } from '@tanstack/react-query';
+import QueryErrorState from '@/component/QueryErrorState';
+import { retryUnless4xx } from '@/utils/queryError';
 import { fetchData } from '@/utils/api';
 import { useTokenStore } from '@/store/tokenStore';
 import {
@@ -21,10 +23,11 @@ const Row = ({ label, children }) => (
 export default function AccountDetailModal({ isOpen, onClose, accountId }) {
   const { accessToken: token } = useTokenStore();
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, error } = useQuery({
     queryKey: ['account-detail', accountId],
     queryFn: () => fetchData({ url: `/account/${accountId}`, token }),
     enabled: !!token && isOpen && !!accountId,
+    retry: retryUnless4xx,
   });
   const acc = data?.data;
 
@@ -36,7 +39,9 @@ export default function AccountDetailModal({ isOpen, onClose, accountId }) {
       subtitle={acc?.serialNumber}
       size="md"
     >
-      {isLoading || !acc ? (
+      {isError ? (
+        <QueryErrorState error={error} fallback="Could not load this account" />
+      ) : isLoading || !acc ? (
         <div className="py-12 text-center text-gray-400 text-sm">Loading…</div>
       ) : (
         <div>

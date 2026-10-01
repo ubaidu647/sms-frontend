@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { SESSION_COOKIE, ROLE_COOKIE } from '@/utils/session';
 
 // The system console serves exactly one audience: super-admin. Every other role
 // belongs in the admin app, so the gate here is a single role check rather than
@@ -10,8 +11,11 @@ import { NextResponse } from 'next/server';
 const PUBLIC_PATHS = ['/signin', '/forgot-password'];
 
 export function middleware(req) {
-  const token = req.cookies.get('auth-storage')?.value || null;
-  const roleRaw = req.cookies.get('auth-role')?.value || null;
+  // `sms_at_system` is the API's httpOnly session cookie for this portal (shared
+  // across *.nodecampus.online). Its presence is a routing hint only — the API
+  // validates it on every request.
+  const token = req.cookies.get(SESSION_COOKIE)?.value || null;
+  const roleRaw = req.cookies.get(ROLE_COOKIE)?.value || null;
   const { pathname } = req.nextUrl;
 
   let role = null;

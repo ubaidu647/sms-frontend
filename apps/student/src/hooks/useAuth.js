@@ -1,28 +1,47 @@
-import { useTokenStore } from '@/store/tokenStore';
-import { useUserStore } from '@/store/userStore';
-import { clearAuthCookies } from '@/utils/clearAuthCookies';
+import { useQueryClient } from "@tanstack/react-query";
+import apiClient from "@/services/apiClient";
+import { useTokenStore } from "@/store/tokenStore";
+import { useUserStore } from "@/store/userStore";
+import { clearAuthCookies } from "@/utils/clearAuthCookies";
+
+// One logout per page load, shared by every useAuth() instance (TopBar and
+// SideBar each hold one). The hard reload below resets it.
+let logoutInFlight = false;
 
 // Thin auth helper shared by the sign-in flow.
 export function useAuth() {
-  const setTokens = useTokenStore((s) => s.setTokens);
+  const queryClient = useQueryClient();
+  const markSignedIn = useTokenStore((s) => s.markSignedIn);
   const clearTokens = useTokenStore((s) => s.clearTokens);
   const setUser = useUserStore((s) => s.setUser);
   const clearUser = useUserStore((s) => s.clearUser);
   const user = useUserStore((s) => s.user);
 
-  // payload = { token | accessToken, refreshToken, user }
+  // payload = { user } — the tokens arrived as httpOnly cookies, never here.
   const login = (payload) => {
-    setTokens({
-      accessToken: payload.token || payload.accessToken || null,
-      refreshToken: payload.refreshToken || null,
-    });
+    logoutInFlight = false;
+    // Never let a previous student's cached data leak into this session.
+    queryClient.clear();
+    markSignedIn();
     if (payload.user) setUser(payload.user);
   };
 
-  const logout = () => {
+  // Only the API can clear the httpOnly session cookies, so wait for it before
+  // navigating away. A failure still falls through to local cleanup. Then drop
+  // the React Query cache and hard-reload to /signin so no in-memory data from
+  // this student survives for the next one (matches the admin app).
+  const logout = async () => {
+    if (logoutInFlight) return;
+    logoutInFlight = true;
+    await apiClient
+      .post("/auth/logout", {}, { skipAuthRefresh: true })
+      .catch((err) => console.warn("logout API call failed", err));
     clearTokens();
     clearUser();
     clearAuthCookies();
+    queryClient.cancelQueries();
+    queryClient.clear();
+    if (typeof window !== "undefined") window.location.replace("/signin");
   };
 
   return { user, login, logout };

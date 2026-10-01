@@ -9,6 +9,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { io } from 'socket.io-client';
+import apiClient from '@/services/apiClient';
 import toast from 'react-hot-toast';
 import {
   getMySettings,
@@ -19,8 +20,10 @@ import {
 } from '@/services/whatsapp';
 
 // Socket.IO lives on the API origin (default namespace), not under the /api path.
+// Derive it from the same base URL the REST client uses (which includes /api),
+// so the two can never drift apart.
 const API_ORIGIN = (() => {
-  const raw = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4001';
+  const raw = apiClient.defaults.baseURL || 'http://localhost:4001/api';
   try {
     return new URL(raw).origin;
   } catch {
@@ -153,24 +156,42 @@ export function useWhatsAppSession({ branchId, filterBranchId, enabled = true } 
     }
   }, [branchId, stopPolling]);
 
-  // Live updates via Socket.IO, filtered to this branch. Events are emitted
-  // globally, so we compare the payload's branchId against filterBranchId. When
-  // filterBranchId is unknown we accept the event rather than drop it silently.
+  // Live updates via Socket.IO. The socket authenticates with this portal's
+  // session cookie and only receives events for the branch it asks to watch —
+  // the server checks we may see that branch. Unknown branch → the server falls
+  // back to the user's own branch.
   useEffect(() => {
     if (!enabled) return undefined;
     const mine = (bId) => !filterBranchId || !bId || String(bId) === String(filterBranchId);
 
-    const socket = io(API_ORIGIN, { transports: ['websocket', 'polling'] });
+    const socket = io(API_ORIGIN, { transports: ['websocket', 'polling'], withCredentials: true });
     socketRef.current = socket;
 
     socket.on('connect', () => {
-      socketLive.current = true;
+      // Re-sent on every (re)connect: rooms do not survive a reconnect.
+      socket.emit('whatsapp:watch', filterBranchId ? String(filterBranchId) : undefined, (res) => {
+        socketLive.current = !!res?.ok; // not allowed → keep polling the status endpoint
+      });
     });
     socket.on('disconnect', () => {
       socketLive.current = false;
     });
-    socket.on('connect_error', () => {
+    // A rejected handshake is not retried by socket.io. The usual cause is an
+    // access cookie past its 15 minutes: refresh the session through the API
+    // client (its 401 handler does that), then reconnect — once per failure
+    // streak, falling back to polling if it still won't take.
+    let authRetried = false;
+    socket.on('connect_error', (err) => {
       socketLive.current = false; // fall back to polling
+      if (err?.message !== 'unauthorized' || authRetried) return;
+      authRetried = true;
+      apiClient
+        .get('/auth/me')
+        .then(() => socket.connect())
+        .catch(() => {});
+    });
+    socket.on('connect', () => {
+      authRetried = false;
     });
     socket.on('whatsapp:qr', ({ branchId: bId, qr: nextQr }) => {
       if (mine(bId)) setQr(nextQr || null);

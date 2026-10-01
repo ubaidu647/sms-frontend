@@ -1,5 +1,5 @@
-'use client';
-import React, { useState, useRef, useEffect } from 'react';
+"use client";
+import React, { useState, useRef, useEffect } from "react";
 import {
   ChevronDown,
   ChevronUp,
@@ -12,23 +12,34 @@ import {
   CalendarDays,
   Megaphone,
   UserRound,
-} from 'lucide-react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@/hooks/useAuth';
+} from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useAuth } from "@/hooks/useAuth";
 
 // Flat student menu. Mirrors the admin sidebar's look; no role/permission gating.
 // One entry per backend-backed dashboard section.
 const navigationItems = [
-  { label: 'Dashboard', iconComponent: LayoutDashboard, path: '/dashboard' },
-  { label: 'Attendance', iconComponent: CalendarCheck, path: '/dashboard/attendance' },
-  { label: 'Homework', iconComponent: BookOpen, path: '/dashboard/homework' },
-  { label: 'Results', iconComponent: BarChart3, path: '/dashboard/results' },
-  { label: 'Fees', iconComponent: Wallet, path: '/dashboard/fees' },
-  { label: 'Timetable', iconComponent: CalendarDays, path: '/dashboard/timetable' },
-  { label: 'Announcements', iconComponent: Megaphone, path: '/dashboard/announcements' },
-  { label: 'Profile', iconComponent: UserRound, path: '/dashboard/profile' },
+  { label: "Dashboard", iconComponent: LayoutDashboard, path: "/dashboard" },
+  {
+    label: "Attendance",
+    iconComponent: CalendarCheck,
+    path: "/dashboard/attendance",
+  },
+  { label: "Homework", iconComponent: BookOpen, path: "/dashboard/homework" },
+  { label: "Results", iconComponent: BarChart3, path: "/dashboard/results" },
+  { label: "Fees", iconComponent: Wallet, path: "/dashboard/fees" },
+  {
+    label: "Timetable",
+    iconComponent: CalendarDays,
+    path: "/dashboard/timetable",
+  },
+  {
+    label: "Announcements",
+    iconComponent: Megaphone,
+    path: "/dashboard/announcements",
+  },
+  { label: "Profile", iconComponent: UserRound, path: "/dashboard/profile" },
 ];
 
 export const Sidebar = ({ isMobileOpen = false, onMobileClose }) => {
@@ -37,7 +48,6 @@ export const Sidebar = ({ isMobileOpen = false, onMobileClose }) => {
   const [isResizing, setIsResizing] = useState(false);
   const sidebarRef = useRef(null);
   const pathname = usePathname();
-  const router = useRouter();
   const { logout } = useAuth();
 
   // Auto-close the mobile drawer when navigating to a new route.
@@ -53,13 +63,13 @@ export const Sidebar = ({ isMobileOpen = false, onMobileClose }) => {
 
   // Dashboard is exact-match; others highlight on the path or its children.
   const isActive = (itemPath) =>
-    itemPath === '/dashboard'
-      ? pathname === '/dashboard'
-      : pathname === itemPath || pathname.startsWith(itemPath + '/');
+    itemPath === "/dashboard"
+      ? pathname === "/dashboard"
+      : pathname === itemPath || pathname.startsWith(itemPath + "/");
 
-  const handleLogout = () => {
-    logout();
-    router.replace('/signin');
+  const handleLogout = async () => {
+    // logout() clears the query cache and hard-reloads to /signin itself.
+    await logout();
   };
 
   useEffect(() => {
@@ -74,12 +84,12 @@ export const Sidebar = ({ isMobileOpen = false, onMobileClose }) => {
     const handleMouseUp = () => setIsResizing(false);
 
     if (isResizing) {
-      document.addEventListener('mousemove', handleMouseMove);
-      document.addEventListener('mouseup', handleMouseUp);
+      document.addEventListener("mousemove", handleMouseMove);
+      document.addEventListener("mouseup", handleMouseUp);
     }
     return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
     };
   }, [isResizing]);
 
@@ -89,14 +99,14 @@ export const Sidebar = ({ isMobileOpen = false, onMobileClose }) => {
       <div
         onClick={onMobileClose}
         className={`md:hidden fixed inset-0 z-40 bg-black/50 backdrop-blur-sm transition-opacity ${
-          isMobileOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+          isMobileOpen ? "opacity-100" : "opacity-0 pointer-events-none"
         }`}
       />
       <aside
         ref={sidebarRef}
-        style={{ width: `${sidebarWidth}px`, height: '100vh' }}
+        style={{ width: `${sidebarWidth}px`, height: "100vh" }}
         className={`bg-[#00918e] dark:bg-slate-900 p-4 flex-shrink-0 transition-transform md:transition-none flex flex-col overscroll-contain fixed md:sticky top-0 left-0 z-50 md:self-start ${
-          isMobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
+          isMobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
         }`}
       >
         <div
@@ -106,21 +116,41 @@ export const Sidebar = ({ isMobileOpen = false, onMobileClose }) => {
 
         <div className="flex items-center justify-between mb-6">
           {!isCollapsed ? (
-            <Link href="/dashboard" className="flex items-center gap-3 no-underline">
+            <Link
+              href="/dashboard"
+              className="flex items-center gap-3 no-underline"
+            >
               <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center flex-shrink-0">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
                   <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="#00918e" />
-                  <path d="M2 17L12 22L22 17V12L12 17L2 12V17Z" fill="#00918e" />
+                  <path
+                    d="M2 17L12 22L22 17V12L12 17L2 12V17Z"
+                    fill="#00918e"
+                  />
                 </svg>
               </div>
-              <h2 className="text-white font-bold text-xl truncate">Student Portal</h2>
+              <h2 className="text-white font-bold text-xl truncate">
+                Student Portal
+              </h2>
             </Link>
           ) : (
             <Link
               href="/dashboard"
               className="w-10 h-10 bg-white rounded-lg flex items-center justify-center"
             >
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
                 <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="#00918e" />
                 <path d="M2 17L12 22L22 17V12L12 17L2 12V17Z" fill="#00918e" />
               </svg>
@@ -150,22 +180,22 @@ export const Sidebar = ({ isMobileOpen = false, onMobileClose }) => {
                 key={index}
                 href={item.path}
                 className={`w-full h-14 ${
-                  isCollapsed ? 'justify-center px-0' : 'justify-start px-0'
+                  isCollapsed ? "justify-center px-0" : "justify-start px-0"
                 } rounded-full transition-colors hover:bg-[#00736f] ${
-                  itemIsActive ? 'bg-[#00736f]' : 'bg-transparent'
+                  itemIsActive ? "bg-[#00736f]" : "bg-transparent"
                 } flex items-center cursor-pointer no-underline`}
               >
                 <div
-                  className={`flex items-center gap-2.5 ${isCollapsed ? 'px-3' : 'px-7'} w-full overflow-hidden`}
+                  className={`flex items-center gap-2.5 ${isCollapsed ? "px-3" : "px-7"} w-full overflow-hidden`}
                 >
                   <Icon
                     className="w-5 h-5 flex-shrink-0"
-                    style={{ color: itemIsActive ? '#FFDC34' : '#ffffff' }}
+                    style={{ color: itemIsActive ? "#FFDC34" : "#ffffff" }}
                   />
                   {!isCollapsed && (
                     <span
                       className={`flex-1 text-left font-medium text-base truncate ${
-                        itemIsActive ? 'text-yellow-300' : 'text-white'
+                        itemIsActive ? "text-yellow-300" : "text-white"
                       }`}
                       title={item.label}
                     >
@@ -182,15 +212,17 @@ export const Sidebar = ({ isMobileOpen = false, onMobileClose }) => {
           <button
             onClick={handleLogout}
             className={`w-full h-14 ${
-              isCollapsed ? 'justify-center px-0' : 'justify-start px-0'
+              isCollapsed ? "justify-center px-0" : "justify-start px-0"
             } rounded-full transition-colors hover:bg-[#00736f] dark:hover:bg-slate-800 bg-transparent flex items-center`}
           >
             <div
-              className={`flex items-center gap-2.5 ${isCollapsed ? 'px-10' : 'px-7'} overflow-hidden w-full`}
+              className={`flex items-center gap-2.5 ${isCollapsed ? "px-10" : "px-7"} overflow-hidden w-full`}
             >
               <LogOut className="w-5 h-5 flex-shrink-0 text-white" />
               {!isCollapsed && (
-                <span className="font-medium text-base text-white truncate">Logout</span>
+                <span className="font-medium text-base text-white truncate">
+                  Logout
+                </span>
               )}
             </div>
           </button>

@@ -3,6 +3,7 @@ import toast from 'react-hot-toast';
 import apiClient from '@/services/apiClient';
 import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
+import { writeRoleCookie } from '@/utils/session';
 
 export function useSignIn() {
   const { login } = useAuth();
@@ -13,13 +14,11 @@ export function useSignIn() {
       return res.data; // axios wraps response in data
     },
     onSuccess: (response) => {
-      // `response` is the API body { data: { token, refreshToken, user }, status, message }
+      // `response` is the API body { data: { user }, status, message } — the tokens
+      // came back as httpOnly cookies and are never visible to this page.
       const payload = response.data || response;
-      login(payload); // stores user + tokens in Zustand
-      document.cookie = `auth-storage=${payload.token || payload.accessToken || ''}; path=/; max-age=86400;`;
-      document.cookie = `auth-role=${encodeURIComponent(
-        JSON.stringify(payload.user?.role || {}),
-      )}; path=/; max-age=86400;`;
+      login(payload); // stores the user and marks the session
+      writeRoleCookie(payload.user?.role);
       toast.success('Logged in successfully!');
 
       // Always push to /dashboard — middleware reads the auth-role cookie

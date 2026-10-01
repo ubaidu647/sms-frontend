@@ -1,10 +1,11 @@
 export const COMPONENT_TYPES = ['fixed', 'percent'];
 
-export const PAYSLIP_STATUSES = ['draft', 'finalized', 'paid', 'cancelled'];
+export const PAYSLIP_STATUSES = ['draft', 'finalized', 'partially-paid', 'paid', 'cancelled'];
 
 export const PAYSLIP_STATUS_COLORS = {
   draft: 'bg-gray-100 text-gray-700',
   finalized: 'bg-blue-100 text-blue-800',
+  'partially-paid': 'bg-amber-100 text-amber-800',
   paid: 'bg-green-100 text-green-700',
   cancelled: 'bg-red-100 text-red-700',
 };

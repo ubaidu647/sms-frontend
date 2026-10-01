@@ -71,7 +71,7 @@ export default function PaymentReceiptPrint({
   // name, phone and email, which beats printing a receipt headed "School".
   const { data: schoolData } = useQuery({
     queryKey: ['school', 'self'],
-    queryFn: async () => (await apiClient.get('/school', { params: { page: 1, limit: 1 } })).data,
+    queryFn: async () => (await apiClient.get('/schools', { params: { page: 1, limit: 1 } })).data,
     enabled: !!token && profileFetched && !profile,
     retry: false,
     staleTime: 30 * 60 * 1000,

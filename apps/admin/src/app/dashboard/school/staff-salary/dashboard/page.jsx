@@ -10,7 +10,15 @@ import {
   currentMonth,
   PAYSLIP_STATUS_COLORS,
 } from '@/constants/staffSalary';
-import { Wallet, CheckCircle2, Clock, XCircle, FileText, TrendingUp } from 'lucide-react';
+import {
+  Wallet,
+  CheckCircle2,
+  Clock,
+  XCircle,
+  FileText,
+  TrendingUp,
+  DollarSign,
+} from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 export default function PayrollDashboardPage() {
@@ -54,6 +62,7 @@ export default function PayrollDashboardPage() {
   const counts = {
     draft: summary?.draft || 0,
     finalized: summary?.finalized || 0,
+    'partially-paid': summary?.['partially-paid'] || 0,
     paid: summary?.paid || 0,
     cancelled: summary?.cancelled || 0,
   };
@@ -143,9 +152,14 @@ export default function PayrollDashboardPage() {
               <h3 className="text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-widest mb-4">
                 Status Breakdown
               </h3>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
                 <StatusTile status="draft" count={counts.draft || 0} icon={Clock} />
                 <StatusTile status="finalized" count={counts.finalized || 0} icon={FileText} />
+                <StatusTile
+                  status="partially-paid"
+                  count={counts['partially-paid'] || 0}
+                  icon={DollarSign}
+                />
                 <StatusTile status="paid" count={counts.paid || 0} icon={CheckCircle2} />
                 <StatusTile status="cancelled" count={counts.cancelled || 0} icon={XCircle} />
               </div>

@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { Printer, Download, Receipt, School, Phone, Mail, MapPin, Globe } from 'lucide-react';
 import { Modal } from '@/component/Modal';
 import { useQuery } from '@tanstack/react-query';
+import QueryErrorState from '@/component/QueryErrorState';
+import { retryUnless4xx } from '@/utils/queryError';
 import apiClient from '@/services/apiClient';
 import { useTokenStore } from '@/store/tokenStore';
 import {
@@ -21,10 +23,11 @@ export default function PaymentDetailModal({ isOpen, onClose, paymentId }) {
   const [downloadingPdf, setDownloadingPdf] = useState(false);
   const printableRef = useRef(null);
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, error } = useQuery({
     queryKey: ['payment', paymentId],
     queryFn: async () => (await apiClient.get(`/fee/payment/${paymentId}`)).data,
     enabled: !!token && isOpen && !!paymentId,
+    retry: retryUnless4xx,
   });
 
   const p = data?.data;
@@ -114,7 +117,9 @@ export default function PaymentDetailModal({ isOpen, onClose, paymentId }) {
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Payment Receipt" size="xl">
-      {isLoading || !p ? (
+      {isError ? (
+        <QueryErrorState error={error} fallback="Could not load this payment" />
+      ) : isLoading || !p ? (
         <div className="text-sm text-gray-500 dark:text-gray-400">Loading...</div>
       ) : (
         <>

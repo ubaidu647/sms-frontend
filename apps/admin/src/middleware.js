@@ -1,8 +1,12 @@
 import { NextResponse } from 'next/server';
+import { SESSION_COOKIE, ROLE_COOKIE } from '@/utils/session';
 
 export function middleware(req) {
-  const token = req.cookies.get('auth-storage')?.value || null;
-  const roleRaw = req.cookies.get('auth-role')?.value || null;
+  // `sms_at_admin` is the API's httpOnly session cookie for this portal (shared
+  // across *.nodecampus.online). Its presence is a routing hint only — the API
+  // validates it on every request.
+  const token = req.cookies.get(SESSION_COOKIE)?.value || null;
+  const roleRaw = req.cookies.get(ROLE_COOKIE)?.value || null;
 
   let role = null;
   if (roleRaw) {
@@ -14,7 +18,12 @@ export function middleware(req) {
   }
 
   const roleName = role?.name || null;
-  const actions = role?.actions || [];
+  // The cookie holds a slim role ({ name, isPredefined, hasActions }); a cookie
+  // written before that change still carries the full `actions` array.
+  const hasActions =
+    typeof role?.hasActions === 'boolean'
+      ? role.hasActions
+      : Array.isArray(role?.actions) && role.actions.length > 0;
   const pathname = req.nextUrl.pathname;
 
   // Public routes
@@ -65,7 +74,7 @@ export function middleware(req) {
   // --- Dynamic / unknown roles (not system roles)
   if (!systemRoles.includes(roleName)) {
     if (pathname.startsWith('/dashboard')) {
-      if (actions.length === 0) {
+      if (!hasActions) {
         // No actions → unauthorized
         return NextResponse.redirect(new URL('/unauthorized', req.url));
       }

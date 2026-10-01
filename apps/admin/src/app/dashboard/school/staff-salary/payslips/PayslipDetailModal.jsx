@@ -73,6 +73,7 @@ export default function PayslipDetailModal({ isOpen, onClose, payslipId }) {
   const status = payslip?.status;
   const isDraft = status === 'draft';
   const isFinalized = status === 'finalized';
+  const isPartiallyPaid = status === 'partially-paid';
   const isPaid = status === 'paid';
   const isCancelled = status === 'cancelled';
 
@@ -111,7 +112,7 @@ export default function PayslipDetailModal({ isOpen, onClose, payslipId }) {
                 textColor: 'text-gray-700',
               }}
             />
-            {canCancel && !isCancelled && !isPaid && (
+            {canCancel && !isCancelled && !isPaid && !isPartiallyPaid && (
               <Button
                 label="Cancel Payslip"
                 handleClick={() => setShowCancel(true)}
@@ -140,7 +141,7 @@ export default function PayslipDetailModal({ isOpen, onClose, payslipId }) {
                 }}
               />
             )}
-            {canPay && (isDraft || isFinalized) && (
+            {canPay && (isDraft || isFinalized || isPartiallyPaid) && (
               <Button
                 label="Mark Paid"
                 handleClick={() => setShowPay(true)}
@@ -394,9 +395,39 @@ function PayslipBody({ payslip, showPay, setShowPay, showCancel, setShowCancel }
                 via {PAYMENT_METHOD_LABELS[payslip.paymentMethod] || payslip.paymentMethod}
               </div>
             )}
+            {payslip.balanceAmount > 0 && (
+              <div className="text-xs font-semibold text-amber-700 dark:text-amber-400 mt-1">
+                Remaining {formatMoney(payslip.balanceAmount, cur)}
+              </div>
+            )}
           </div>
         )}
       </div>
+
+      {payslip.payments?.length > 0 && (
+        <div className="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
+          <div className="px-4 py-2 text-xs font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800">
+            Payments ({payslip.payments.length})
+          </div>
+          <table className="w-full text-sm">
+            <tbody>
+              {payslip.payments.map((p, i) => (
+                <tr key={p._id || i} className="border-t border-gray-100 dark:border-gray-800">
+                  <td className="px-4 py-2 text-gray-500 dark:text-gray-400">#{i + 1}</td>
+                  <td className="px-4 py-2">{formatDate(p.paymentDate)}</td>
+                  <td className="px-4 py-2">
+                    {PAYMENT_METHOD_LABELS[p.paymentMethod] || p.paymentMethod || '—'}
+                    {p.paymentReference ? ` • ${p.paymentReference}` : ''}
+                  </td>
+                  <td className="px-4 py-2 text-right font-semibold">
+                    {formatMoney(p.amount, cur)}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       {/* Attendance snapshot */}
       {payslip.attendance && (
@@ -570,7 +601,10 @@ function PayForm({ payslip, onClose, onDone }) {
   const [paymentReference, setPaymentReference] = useState('');
   // Empty unless the branch keeps several cash/bank accounts — see the picker.
   const [ledgerAccountId, setLedgerAccountId] = useState('');
-  const [paidAmount, setPaidAmount] = useState(payslip.netSalary ?? '');
+  // Defaults to what is still owed, so one click settles the payslip; enter a
+  // smaller figure to pay an instalment.
+  const remaining = payslip.balanceAmount ?? payslip.netSalary ?? 0;
+  const [paidAmount, setPaidAmount] = useState(remaining);
   const [notes, setNotes] = useState('');
   const [err, setErr] = useState('');
 
@@ -581,8 +615,8 @@ function PayForm({ payslip, onClose, onDone }) {
         payload,
         token,
       }),
-    onSuccess: () => {
-      toast.success('Payslip marked as paid');
+    onSuccess: (res) => {
+      toast.success(res?.message || 'Payslip marked as paid');
       onDone();
       onClose();
     },
@@ -601,15 +635,26 @@ function PayForm({ payslip, onClose, onDone }) {
     const payload = { paymentDate, paymentMethod };
     if (ledgerAccountId) payload.ledgerAccountId = ledgerAccountId;
     if (paymentReference?.trim()) payload.paymentReference = paymentReference.trim();
-    if (paidAmount !== '' && !Number.isNaN(Number(paidAmount)))
-      payload.paidAmount = Number(paidAmount);
+    // A fully deducted payslip (nothing owed) is settled without an amount.
+    if (remaining > 0 && paidAmount !== '' && !Number.isNaN(Number(paidAmount))) {
+      const amount = Number(paidAmount);
+      if (amount <= 0) return setErr('Amount must be greater than 0');
+      if (amount > remaining) return setErr(`Amount cannot exceed the remaining ${remaining}`);
+      payload.paidAmount = amount;
+    }
     if (notes?.trim()) payload.notes = notes.trim();
     mut.mutate(payload);
   };
 
   return (
     <div className="border border-teal-200 bg-teal-50/40 rounded-xl p-4 space-y-3">
-      <h4 className="text-sm font-bold text-teal-800">Mark as Paid</h4>
+      <h4 className="text-sm font-bold text-teal-800">
+        {payslip.status === 'partially-paid' ? 'Pay Next Instalment' : 'Record Payment'}
+      </h4>
+      <p className="text-xs text-gray-600 dark:text-gray-400">
+        Remaining: <span className="font-semibold">{remaining}</span>. Pay less to record an
+        instalment — the payslip stays partially paid until the balance is cleared.
+      </p>
       {err && (
         <div className="p-2 bg-red-50 dark:bg-red-950/40 border border-red-200 rounded text-red-700 dark:text-red-400 text-xs">
           {err}
@@ -655,10 +700,11 @@ function PayForm({ payslip, onClose, onDone }) {
           />
         </div>
         <div>
-          <label className={labelCls}>Paid Amount</label>
+          <label className={labelCls}>Amount</label>
           <input
             type="number"
             min={0}
+            max={remaining}
             value={paidAmount}
             onChange={(e) => setPaidAmount(e.target.value)}
             className={inputCls}
@@ -696,7 +742,7 @@ function PayForm({ payslip, onClose, onDone }) {
           disabled={mut.isPending}
           className="px-4 py-1.5 bg-teal-600 text-white rounded-lg text-sm font-medium hover:bg-teal-700 disabled:opacity-60"
         >
-          {mut.isPending ? 'Saving…' : 'Confirm Paid'}
+          {mut.isPending ? 'Saving…' : 'Confirm Payment'}
         </button>
       </div>
     </div>

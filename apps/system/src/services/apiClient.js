@@ -2,6 +2,7 @@ import axios from 'axios';
 import toast from 'react-hot-toast';
 import { useTokenStore } from '@/store/tokenStore';
 import { clearAuthCookies } from '@/utils/clearAuthCookies';
+import { withSessionHeaders, AUTH_MODE_HEADERS, readCsrfToken } from '@/utils/session';
 
 // Default retry window when the Retry-After header can't be read. Browsers won't
 // expose Retry-After / RateLimit-* cross-origin unless the backend adds them to
@@ -28,16 +29,14 @@ function handleRateLimited(response, url) {
 }
 
 const apiClient = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4001',
+  baseURL: process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4001/api',
+  // The session is an httpOnly cookie, so every request must carry cookies.
   withCredentials: true,
   headers: { 'Content-Type': 'application/json' },
 });
 
-apiClient.interceptors.request.use((c) => {
-  const t = useTokenStore.getState().accessToken;
-  if (t) c.headers.Authorization = `Bearer ${t}`;
-  return c;
-});
+// No Authorization header: the browser attaches the session cookie itself.
+apiClient.interceptors.request.use(withSessionHeaders);
 
 function handleLogoutAndRedirect() {
   useTokenStore.getState().clearTokens();
@@ -45,15 +44,33 @@ function handleLogoutAndRedirect() {
   if (typeof window !== 'undefined') window.location.replace('/signin');
 }
 
-let isRefreshing = false;
-let refreshSubscribers = [];
+// One refresh in flight at a time; concurrent 401s wait on the same promise.
+let refreshPromise = null;
+
+function refreshSession() {
+  if (!refreshPromise) {
+    refreshPromise = axios
+      .post(
+        `${apiClient.defaults.baseURL}/auth/refresh`,
+        {},
+        {
+          withCredentials: true,
+          headers: { ...AUTH_MODE_HEADERS, 'X-CSRF-Token': readCsrfToken() || '' },
+        },
+      )
+      .finally(() => {
+        refreshPromise = null;
+      });
+  }
+  return refreshPromise;
+}
 
 apiClient.interceptors.response.use(
   (r) => r,
   async (error) => {
-    const orig = error.config;
+    const orig = error.config || {};
     const status = error.response?.status;
-    const store = useTokenStore.getState();
+    const url = orig.url || '';
 
     // 402 = subscription gate blocked a write (expired/cancelled/none). Signal the
     // SubscriptionGuard to re-check state immediately so the banner/block shows
@@ -65,58 +82,40 @@ apiClient.interceptors.response.use(
     // 429 = rate limited (login or global throttle). Surface the message and let
     // the form count down — but keep the session intact and let the caller reject.
     if (status === 429) {
-      handleRateLimited(error.response, orig?.url);
+      handleRateLimited(error.response, url);
       return Promise.reject(error);
     }
 
-    if (status === 401 && !orig._retry && !orig.url.includes('/auth/system/login')) {
+    // 401 = the access cookie expired (or is gone). Refresh once from the
+    // refresh cookie and replay; only a failed refresh ends the session.
+    if (
+      status === 401 &&
+      !orig._retry &&
+      !orig.skipAuthRefresh &&
+      !url.includes('/auth/system/login')
+    ) {
       orig._retry = true;
-
-      if (!store.refreshToken) {
+      // No session cookie at all → nothing to refresh. Asking anyway only
+      // burns the shared refresh rate-limit budget of everyone on this network.
+      if (!readCsrfToken()) {
+        if (orig.skipLogoutRedirect) return Promise.reject(error);
         handleLogoutAndRedirect();
         return Promise.reject(error);
       }
-
-      const retry = new Promise((resolve) => {
-        refreshSubscribers.push((newT) => {
-          if (newT) {
-            orig.headers.Authorization = `Bearer ${newT}`;
-            resolve(apiClient(orig));
-          } else resolve(null);
-        });
-      });
-
-      if (!isRefreshing) {
-        isRefreshing = true;
-        try {
-          const res = await axios.post(
-            `${apiClient.defaults.baseURL}/auth/refresh`,
-            { refreshToken: store.refreshToken },
-            { withCredentials: true },
-          );
-          const { accessToken, refreshToken } = res.data.data;
-          store.setTokens({ accessToken, refreshToken });
-          console.log('useTokenStore.getState().accessToken', useTokenStore.getState().accessToken);
-          refreshSubscribers.forEach((cb) => cb(accessToken));
-          refreshSubscribers = [];
-          return retry;
-        } catch (e) {
-          refreshSubscribers.forEach((cb) => cb(null));
-          refreshSubscribers = [];
-          // A throttled refresh is "slow down", not "session invalid" — keep the
-          // user logged in, show the message, and let the original call reject.
-          if (e.response?.status === 429) {
-            handleRateLimited(e.response, '/auth/refresh');
-            return Promise.reject(e);
-          }
-          handleLogoutAndRedirect();
-          // return Promise.reject(e);
-          return Promise.resolve(null);
-        } finally {
-          isRefreshing = false;
+      try {
+        await refreshSession();
+        return apiClient(orig);
+      } catch (e) {
+        // A throttled refresh is "slow down", not "session invalid".
+        if (e.response?.status === 429) {
+          handleRateLimited(e.response, '/auth/refresh');
+          return Promise.reject(e);
         }
+        // The caller handles a dead session itself (session restore).
+        if (orig.skipLogoutRedirect) return Promise.reject(error);
+        handleLogoutAndRedirect();
+        return Promise.reject(error);
       }
-      return retry;
     }
     return Promise.reject(error);
   },

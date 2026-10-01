@@ -1,20 +1,26 @@
-'use client';
-import React, { useState, useRef, useEffect } from 'react';
-import { createPortal } from 'react-dom';
-import { useRouter } from 'next/navigation';
-import { Bell, Settings, LogOut, ChevronDown, Sun, Moon, Menu } from 'lucide-react';
-import { useThemeStore } from '@/store/themeStore';
-import { useAuth } from '@/hooks/useAuth';
+"use client";
+import React, { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
+import {
+  Bell,
+  Settings,
+  LogOut,
+  ChevronDown,
+  Sun,
+  Moon,
+  Menu,
+} from "lucide-react";
+import { useThemeStore } from "@/store/themeStore";
+import { useAuth } from "@/hooks/useAuth";
 
 export const Topbar = ({ user = {}, onMenuClick }) => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [anchorRect, setAnchorRect] = useState(null);
   const buttonRef = useRef(null);
   const menuRef = useRef(null);
-  const router = useRouter();
   const theme = useThemeStore((s) => s.theme);
   const toggleTheme = useThemeStore((s) => s.toggleTheme);
-  const isDark = theme === 'dark';
+  const isDark = theme === "dark";
   const { logout } = useAuth();
 
   useEffect(() => {
@@ -26,30 +32,33 @@ export const Topbar = ({ user = {}, onMenuClick }) => {
       }
     };
     update();
-    window.addEventListener('resize', update);
-    window.addEventListener('scroll', update, true);
+    window.addEventListener("resize", update);
+    window.addEventListener("scroll", update, true);
     return () => {
-      window.removeEventListener('resize', update);
-      window.removeEventListener('scroll', update, true);
+      window.removeEventListener("resize", update);
+      window.removeEventListener("scroll", update, true);
     };
   }, [isProfileOpen]);
 
   useEffect(() => {
     if (!isProfileOpen) return;
     const handleClickOutside = (event) => {
-      if (buttonRef.current?.contains(event.target) || menuRef.current?.contains(event.target)) {
+      if (
+        buttonRef.current?.contains(event.target) ||
+        menuRef.current?.contains(event.target)
+      ) {
         return;
       }
       setIsProfileOpen(false);
     };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isProfileOpen]);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     setIsProfileOpen(false);
-    logout();
-    router.replace('/signin');
+    // logout() clears the query cache and hard-reloads to /signin itself.
+    await logout();
   };
 
   return (
@@ -66,7 +75,10 @@ export const Topbar = ({ user = {}, onMenuClick }) => {
           </button>
         )}
         <h1 className="text-base sm:text-xl font-semibold text-gray-800 dark:text-gray-100 truncate">
-          Hi, <span className="text-[#00918e] dark:text-[#33b3b0]">{user?.name || 'Student'}</span>
+          Hi,{" "}
+          <span className="text-[#00918e] dark:text-[#33b3b0]">
+            {user?.name || "Student"}
+          </span>
         </h1>
         <span className="text-xl hidden sm:inline">👋</span>
       </div>
@@ -75,8 +87,8 @@ export const Topbar = ({ user = {}, onMenuClick }) => {
       <div className="flex items-center gap-1 sm:gap-4 flex-shrink-0">
         <button
           onClick={toggleTheme}
-          aria-label={isDark ? 'Switch to light' : 'Switch to dark'}
-          title={isDark ? 'Switch to light' : 'Switch to dark'}
+          aria-label={isDark ? "Switch to light" : "Switch to dark"}
+          title={isDark ? "Switch to light" : "Switch to dark"}
           className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
         >
           {isDark ? (
@@ -98,7 +110,7 @@ export const Topbar = ({ user = {}, onMenuClick }) => {
         >
           <Settings className="w-6 h-6 text-gray-600 dark:text-gray-300" />
           <ChevronDown
-            className={`w-4 h-4 text-gray-600 dark:text-gray-300 transition-transform ${isProfileOpen ? 'rotate-180' : ''}`}
+            className={`w-4 h-4 text-gray-600 dark:text-gray-300 transition-transform ${isProfileOpen ? "rotate-180" : ""}`}
           />
         </button>
       </div>
@@ -106,24 +118,24 @@ export const Topbar = ({ user = {}, onMenuClick }) => {
       {/* Profile dropdown (portal) */}
       {isProfileOpen &&
         anchorRect &&
-        typeof document !== 'undefined' &&
+        typeof document !== "undefined" &&
         createPortal(
           <div
             ref={menuRef}
             style={{
-              position: 'fixed',
+              position: "fixed",
               top: Math.min(anchorRect.top + 8, window.innerHeight - 8 - 160),
               right: Math.max(anchorRect.right, 8),
-              width: '14rem',
+              width: "14rem",
             }}
             className="bg-white dark:bg-gray-900 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-2 z-[60]"
           >
             <div className="px-4 py-2 border-b border-gray-200 dark:border-gray-700">
               <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">
-                {user?.name || 'Student'}
+                {user?.name || "Student"}
               </p>
               <p className="text-xs text-gray-500 dark:text-gray-400 capitalize">
-                {user?.role?.name || 'Student'}
+                {user?.role?.name || "Student"}
               </p>
             </div>
 

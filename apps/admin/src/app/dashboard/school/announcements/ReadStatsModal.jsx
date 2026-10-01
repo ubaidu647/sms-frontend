@@ -2,6 +2,8 @@
 import React from 'react';
 import { Modal } from '@/component/Modal';
 import { useQuery } from '@tanstack/react-query';
+import QueryErrorState from '@/component/QueryErrorState';
+import { retryUnless4xx } from '@/utils/queryError';
 import apiClient from '@/services/apiClient';
 import { useTokenStore } from '@/store/tokenStore';
 import { formatDateTime } from '@/constants/announcement';
@@ -10,10 +12,11 @@ export default function ReadStatsModal({ isOpen, onClose, announcement }) {
   const { accessToken: token } = useTokenStore();
   const id = announcement?._id;
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, error } = useQuery({
     queryKey: ['announcement-stats', id],
     queryFn: async () => (await apiClient.get(`/announcement/${id}/read-stats`)).data,
     enabled: !!token && isOpen && !!id,
+    retry: retryUnless4xx,
   });
 
   const stats = data?.data;
@@ -27,7 +30,9 @@ export default function ReadStatsModal({ isOpen, onClose, announcement }) {
       subtitle={announcement?.title}
       size="lg"
     >
-      {isLoading || !stats ? (
+      {isError ? (
+        <QueryErrorState error={error} fallback="Could not load read stats" />
+      ) : isLoading || !stats ? (
         <div className="text-sm text-gray-500 dark:text-gray-400">Loading...</div>
       ) : (
         <div className="space-y-5">

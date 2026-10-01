@@ -2,6 +2,8 @@
 import React from 'react';
 import { Modal } from '@/component/Modal';
 import { useQuery } from '@tanstack/react-query';
+import QueryErrorState from '@/component/QueryErrorState';
+import { retryUnless4xx } from '@/utils/queryError';
 import { fetchData } from '@/utils/api';
 import { useTokenStore } from '@/store/tokenStore';
 import {
@@ -17,10 +19,11 @@ import {
 export default function JournalDetailModal({ isOpen, onClose, journalId }) {
   const { accessToken: token } = useTokenStore();
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, error } = useQuery({
     queryKey: ['journal-detail', journalId],
     queryFn: () => fetchData({ url: `/ledger/journal/${journalId}`, token }),
     enabled: !!token && isOpen && !!journalId,
+    retry: retryUnless4xx,
   });
   const je = data?.data;
 
@@ -32,7 +35,9 @@ export default function JournalDetailModal({ isOpen, onClose, journalId }) {
       subtitle={je?.narration}
       size="lg"
     >
-      {isLoading || !je ? (
+      {isError ? (
+        <QueryErrorState error={error} fallback="Could not load this journal entry" />
+      ) : isLoading || !je ? (
         <div className="py-12 text-center text-gray-400 text-sm">Loading…</div>
       ) : (
         <div className="space-y-4">
