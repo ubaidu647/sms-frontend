@@ -1,5 +1,6 @@
 import axios from "axios";
 import { useTokenStore } from "@/store/tokenStore";
+import { useUserStore } from "@/store/userStore";
 import { clearAuthCookies } from "@/utils/clearAuthCookies";
 import {
   withSessionHeaders,
@@ -19,6 +20,11 @@ apiClient.interceptors.request.use(withSessionHeaders);
 
 function logoutAndRedirect() {
   useTokenStore.getState().clearTokens();
+  // The profile is persisted (localStorage): drop it too, or the next visitor on
+  // this browser boots with the previous user's data. The in-memory query cache
+  // goes with the full-page navigation below.
+  useUserStore.getState().clearUser();
+  useUserStore.persist?.clearStorage?.();
   clearAuthCookies();
   if (typeof window !== "undefined") window.location.replace("/signin");
 }

@@ -36,6 +36,8 @@ export default function ComposeAnnouncementModal({ isOpen, onClose }) {
 
   const isAdmin = !!user?.role?.isPredefined;
   const isOrgLevel = isAdmin || !!user?.role?.actions?.includes('create-all-branch-announcement');
+  // Publishing is its own permission; without it a new notice can only be a draft.
+  const canPublish = isAdmin || !!user?.role?.actions?.includes('publish-announcement');
 
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
@@ -46,7 +48,7 @@ export default function ComposeAnnouncementModal({ isOpen, onClose }) {
   const [expiresAt, setExpiresAt] = useState('');
   const [isPinned, setIsPinned] = useState(false);
   const [requiresAck, setRequiresAck] = useState(false);
-  const [statusChoice, setStatusChoice] = useState('published');
+  const [statusChoice, setStatusChoice] = useState('draft');
   const [file, setFile] = useState(null);
   const [submitError, setSubmitError] = useState('');
   const [successState, setSuccessState] = useState(false);
@@ -62,7 +64,7 @@ export default function ComposeAnnouncementModal({ isOpen, onClose }) {
       setExpiresAt('');
       setIsPinned(false);
       setRequiresAck(false);
-      setStatusChoice('published');
+      setStatusChoice('draft');
       setFile(null);
       setSubmitError('');
       setSuccessState(false);
@@ -121,7 +123,7 @@ export default function ComposeAnnouncementModal({ isOpen, onClose }) {
     fd.append('body', body);
     fd.append('type', type);
     fd.append('priority', priority);
-    fd.append('status', statusChoice);
+    fd.append('status', canPublish ? statusChoice : 'draft');
     fd.append('audience', JSON.stringify(audience));
     if (publishedAt) fd.append('publishedAt', publishedAt);
     if (expiresAt) fd.append('expiresAt', expiresAt);
@@ -276,15 +278,17 @@ export default function ComposeAnnouncementModal({ isOpen, onClose }) {
               />
               Save as draft
             </label>
-            <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
-              <input
-                type="radio"
-                name="status"
-                checked={statusChoice === 'published'}
-                onChange={() => setStatusChoice('published')}
-              />
-              Publish now
-            </label>
+            {canPublish && (
+              <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                <input
+                  type="radio"
+                  name="status"
+                  checked={statusChoice === 'published'}
+                  onChange={() => setStatusChoice('published')}
+                />
+                Publish now
+              </label>
+            )}
           </div>
         </div>
 

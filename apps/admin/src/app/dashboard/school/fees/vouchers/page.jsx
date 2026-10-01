@@ -319,7 +319,8 @@ export default function VouchersPage() {
       items.push({ label: 'Record Payment', value: 'pay', icon: Wallet });
     if (canUpdate && !isFinal)
       items.push({ label: 'Set Late Fee', value: 'late-fee', icon: AlertOctagon });
-    if (canGenerate && row.status !== 'void' && (row.paidAmount || 0) === 0)
+    // Regenerating voids the old voucher, so the server also wants the delete action.
+    if (canGenerate && canDelete && row.status !== 'void' && (row.paidAmount || 0) === 0)
       items.push({ label: 'Regenerate', value: 'regenerate', icon: RefreshCw });
     if (canDelete && row.status !== 'void' && row.status !== 'paid')
       items.push({ label: 'Void', value: 'void', icon: Ban });
@@ -371,7 +372,7 @@ export default function VouchersPage() {
                 Single Student
               </button>
             )}
-            {canGenerate && (
+            {canGenerate && canDelete && (
               <button
                 onClick={() => setRegenSectionOpen(true)}
                 className="flex items-center justify-center gap-2 px-4 py-2 bg-white dark:bg-gray-900 border border-amber-200 text-amber-700 rounded-lg hover:bg-amber-50 transition-colors"

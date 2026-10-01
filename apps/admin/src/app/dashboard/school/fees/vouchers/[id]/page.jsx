@@ -57,8 +57,9 @@ export default function VoucherDetailPage() {
     !isOwnOnly && hasAnyAction(user?.role, ['record-payment', 'record-all-branch-payment']);
   const canUpdate = !isOwnOnly && hasAnyAction(user?.role, ['update-fee', 'update-all-branch-fee']);
   const canDelete = !isOwnOnly && hasAnyAction(user?.role, ['delete-fee', 'delete-all-branch-fee']);
+  // Regenerating voids the old voucher, so the server also wants the delete action.
   const canRegenerate =
-    !isOwnOnly && hasAnyAction(user?.role, ['generate-voucher', 'generate-all-branch-voucher']);
+    canDelete && hasAnyAction(user?.role, ['generate-voucher', 'generate-all-branch-voucher']);
   const canVoidPayment =
     !isOwnOnly && hasAnyAction(user?.role, ['void-payment', 'void-all-branch-payment']);
 

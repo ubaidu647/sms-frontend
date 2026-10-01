@@ -26,6 +26,41 @@ import {
   graceCutoff,
 } from '../packages/format';
 
+const HISTORY_PAGE_SIZE = 100;
+
+// The server pages history; say so when there's more than one page of it.
+function HistoryPager({ page, shown, total, onPage }) {
+  const count = typeof total === 'number' ? total : shown;
+  const pageCount = Math.max(1, Math.ceil(count / HISTORY_PAGE_SIZE));
+  if (pageCount <= 1) return null;
+  const start = (page - 1) * HISTORY_PAGE_SIZE + 1;
+  const btn =
+    'px-3 py-1.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed';
+  return (
+    <div className="flex flex-wrap items-center justify-between gap-3 mt-3 text-xs text-gray-600 dark:text-gray-400">
+      <span>
+        Showing {start}–{start + shown - 1} of {count} subscriptions
+      </span>
+      <div className="flex items-center gap-2">
+        <button type="button" className={btn} disabled={page <= 1} onClick={() => onPage(page - 1)}>
+          Prev
+        </button>
+        <span>
+          Page {page} of {pageCount}
+        </span>
+        <button
+          type="button"
+          className={btn}
+          disabled={page >= pageCount}
+          onClick={() => onPage(page + 1)}
+        >
+          Next
+        </button>
+      </div>
+    </div>
+  );
+}
+
 const useSchools = () =>
   useQuery({
     queryKey: ['organizations', 'picker'],
@@ -59,7 +94,11 @@ export default function SubscriptionsPage() {
   const { data: currentData, isLoading: currentLoading } = useCurrentSubscription(schoolId);
   const current = currentData?.data ?? null;
 
-  const { data: historyData, isLoading: historyLoading } = useSubscriptionHistory(schoolId);
+  const [historyPage, setHistoryPage] = useState(1);
+  const { data: historyData, isLoading: historyLoading } = useSubscriptionHistory(schoolId, {
+    page: historyPage,
+    limit: HISTORY_PAGE_SIZE,
+  });
   const history = historyData?.data ?? [];
 
   const { data: summaryData } = useInvoiceSummary(schoolId);
@@ -139,7 +178,10 @@ export default function SubscriptionsPage() {
           </label>
           <select
             value={schoolId}
-            onChange={(e) => setSchoolId(e.target.value)}
+            onChange={(e) => {
+              setSchoolId(e.target.value);
+              setHistoryPage(1);
+            }}
             disabled={schoolsLoading}
             className="w-full sm:max-w-md px-4 py-2.5 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
           >
@@ -347,6 +389,14 @@ export default function SubscriptionsPage() {
                     if (action === 'details') setDetailOpen(true);
                     if (action === 'invoice') setInvoiceOpen(true);
                   }}
+                />
+              )}
+              {!historyLoading && history.length > 0 && (
+                <HistoryPager
+                  page={historyPage}
+                  shown={history.length}
+                  total={historyData?.total}
+                  onPage={setHistoryPage}
                 />
               )}
             </div>

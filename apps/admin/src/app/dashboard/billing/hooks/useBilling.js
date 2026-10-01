@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import {
   getMyCurrentSubscription,
   getMySubscriptionHistory,
@@ -17,10 +17,11 @@ export const useMyCurrentSubscription = (options = {}) =>
     ...options,
   });
 
-export const useMySubscriptionHistory = () =>
+export const useMySubscriptionHistory = ({ page = 1, limit = 100 } = {}) =>
   useQuery({
-    queryKey: ['billing', 'me', 'subscription', 'history'],
-    queryFn: getMySubscriptionHistory,
+    queryKey: ['billing', 'me', 'subscription', 'history', page, limit],
+    queryFn: () => getMySubscriptionHistory({ page, limit }),
+    placeholderData: keepPreviousData,
   });
 
 export const useMyInvoiceSummary = () =>

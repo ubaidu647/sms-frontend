@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import {
   getCurrentSubscription,
@@ -20,11 +20,12 @@ export const useCurrentSubscription = (schoolId) =>
     enabled: !!schoolId,
   });
 
-export const useSubscriptionHistory = (schoolId) =>
+export const useSubscriptionHistory = (schoolId, { page = 1, limit = 100 } = {}) =>
   useQuery({
-    queryKey: ['subscription', 'history', schoolId],
-    queryFn: () => getSubscriptionHistory(schoolId),
+    queryKey: ['subscription', 'history', schoolId, page, limit],
+    queryFn: () => getSubscriptionHistory(schoolId, { page, limit }),
     enabled: !!schoolId,
+    placeholderData: keepPreviousData,
   });
 
 // Every subscription action re-reads the school's current + history (and the

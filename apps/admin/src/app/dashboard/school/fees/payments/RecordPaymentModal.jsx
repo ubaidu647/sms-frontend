@@ -5,6 +5,7 @@ import Button from '@/component/Button';
 import toast from 'react-hot-toast';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { postData } from '@/utils/api';
+import { idempotencyHeader, newIdempotencyKey } from '@/utils/idempotency';
 import { useTokenStore } from '@/store/tokenStore';
 import PaymentAccountSelect from '@/component/PaymentAccountSelect';
 import PaymentReceiptPrint, { printReceipt } from '@/component/PaymentReceiptPrint';
@@ -29,6 +30,14 @@ export default function RecordPaymentModal({ isOpen, onClose, voucher }) {
   const [notes, setNotes] = useState('');
   const [submitError, setSubmitError] = useState('');
   const [receipt, setReceipt] = useState(null);
+  // One key per opened modal, reused on retries so a resubmit can't double-record.
+  const [idempotencyKey, setIdempotencyKey] = useState(null);
+
+  // Keyed on isOpen alone: a refetch of the voucher/total while open must not
+  // mint a new key, or a retry after a lost response would pay twice.
+  useEffect(() => {
+    if (isOpen) setIdempotencyKey(newIdempotencyKey());
+  }, [isOpen]);
 
   useEffect(() => {
     if (isOpen) {
@@ -43,7 +52,13 @@ export default function RecordPaymentModal({ isOpen, onClose, voucher }) {
   }, [isOpen, voucher]);
 
   const mutation = useMutation({
-    mutationFn: (payload) => postData({ url: '/fee/payment', payload, token }),
+    mutationFn: (payload) =>
+      postData({
+        url: '/fee/payment',
+        payload,
+        token,
+        headers: idempotencyHeader(idempotencyKey),
+      }),
     onSuccess: (res) => {
       toast.success(`Receipt ${res?.data?.payment?.receiptNumber} saved`);
       queryClient.invalidateQueries({ queryKey: ['payments'] });

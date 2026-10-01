@@ -4,6 +4,7 @@ import { useTokenStore } from '@/store/tokenStore';
 import { useUserStore } from '@/store/userStore';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { fetchData, postData } from '@/utils/api';
+import apiClient from '@/services/apiClient';
 import toast from 'react-hot-toast';
 import { Save, CheckCircle2, CalendarDays, Search, X } from 'lucide-react';
 
@@ -138,7 +139,36 @@ export default function MarkAttendancePanel() {
     enabled: !!token && !!draftEffectiveBranchId && !!draftAcademicYear,
     staleTime: 60000,
   });
-  const classes = classData?.data || [];
+  // Sections the caller may mark: [{ classId, sectionId, className, sectionName }].
+  // A 404 (older API without the endpoint) resolves to null → no filtering.
+  const { data: markable } = useQuery({
+    queryKey: ['attendance-my-sections'],
+    queryFn: async () => {
+      try {
+        const res = await apiClient.get('/attendance/my-sections');
+        const list = res?.data?.data ?? res?.data;
+        return Array.isArray(list) ? list : null;
+      } catch (err) {
+        if (err?.response?.status === 404) return null;
+        throw err;
+      }
+    },
+    enabled: !!token,
+    staleTime: 60000,
+    retry: false,
+  });
+  const markableIds = useMemo(() => {
+    if (!Array.isArray(markable)) return null;
+    return {
+      classIds: new Set(markable.map((m) => String(m.classId))),
+      sectionIds: new Set(markable.map((m) => String(m.sectionId))),
+    };
+  }, [markable]);
+
+  const classes = useMemo(() => {
+    const all = classData?.data || [];
+    return markableIds ? all.filter((c) => markableIds.classIds.has(String(c._id))) : all;
+  }, [classData, markableIds]);
 
   // Sections — driven by draftClassId so it cascades on selection without waiting for Search.
   const { data: sectionData } = useQuery({
@@ -147,7 +177,10 @@ export default function MarkAttendancePanel() {
     enabled: !!token && !!draftClassId,
     staleTime: 60000,
   });
-  const sections = sectionData?.data || [];
+  const sections = useMemo(() => {
+    const all = sectionData?.data || [];
+    return markableIds ? all.filter((s) => markableIds.sectionIds.has(String(s._id))) : all;
+  }, [sectionData, markableIds]);
 
   // Reset cascade on draft side — clear class/section when branch or academic year changes.
   useEffect(() => {

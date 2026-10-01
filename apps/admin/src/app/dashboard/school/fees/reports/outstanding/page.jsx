@@ -1,7 +1,8 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
+import ReportPagination from '@/component/ReportPagination';
 import { fetchData } from '@/utils/api';
 import { useTokenStore } from '@/store/tokenStore';
 import { useUserStore } from '@/store/userStore';
@@ -19,6 +20,13 @@ export default function OutstandingReportPage() {
   const [branchId, setBranchId] = useState('');
   const [academicYear, setAcademicYear] = useState(currentAcademicYear());
   const [branchDropdownTouched, setBranchDropdownTouched] = useState(false);
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(100);
+
+  // Any filter change starts again from the first page.
+  useEffect(() => {
+    setPage(1);
+  }, [academicYear, classId, sectionId, branchId, limit]);
 
   const actions = user?.role?.actions || [];
   const isAdmin = !!user?.role?.isPredefined;
@@ -67,6 +75,8 @@ export default function OutstandingReportPage() {
       branchId,
       isOrgLevel,
       userBranchId,
+      page,
+      limit,
     ],
     queryFn: () => {
       const params = {};
@@ -75,9 +85,10 @@ export default function OutstandingReportPage() {
       if (classId) params.classId = classId;
       if (sectionId) params.sectionId = sectionId;
       if (academicYear) params.academicYear = academicYear;
-      return fetchData({ url: '/fee/report/outstanding', token, ...params });
+      return fetchData({ url: '/fee/report/outstanding', token, page, limit, ...params });
     },
     enabled: !!token,
+    placeholderData: keepPreviousData,
   });
 
   const report = data?.data;
@@ -179,9 +190,22 @@ export default function OutstandingReportPage() {
                   Defaulter List
                 </h2>
                 <span className="text-xs text-gray-500 dark:text-gray-400">
-                  {students.length} student(s)
+                  {students.length} of {report.studentCount} student(s)
                 </span>
               </div>
+              {students.length > 0 && (
+                <ReportPagination
+                  className="px-6 py-3 border-b border-gray-200 dark:border-gray-700"
+                  page={report.page || page}
+                  limit={report.limit || limit}
+                  shown={students.length}
+                  total={report.studentCount}
+                  truncated={report.truncated}
+                  onPageChange={setPage}
+                  onLimitChange={setLimit}
+                  noun="students"
+                />
+              )}
               {students.length === 0 ? (
                 <p className="px-6 py-8 text-sm text-gray-500 dark:text-gray-400 text-center">
                   No outstanding fees.

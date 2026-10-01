@@ -13,7 +13,8 @@ import {
   ChevronDown,
   ChevronRight,
 } from 'lucide-react';
-import { useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
+import ReportPagination from '@/component/ReportPagination';
 import { fetchData } from '@/utils/api';
 import apiClient from '@/services/apiClient';
 import { useTokenStore } from '@/store/tokenStore';
@@ -57,6 +58,8 @@ export default function DefaultersReportPage() {
   // Applied state — the actual query input.
   const [applied, setApplied] = useState(null);
   const [filterError, setFilterError] = useState('');
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(250);
 
   // Expandable row state (only used when includeDetails=true)
   const [expandedRows, setExpandedRows] = useState(() => new Set());
@@ -103,11 +106,13 @@ export default function DefaultersReportPage() {
 
   // Main report query — only fires once "Generate" sets `applied`
   const { data: reportEnvelope, isFetching } = useQuery({
-    queryKey: ['defaulters', applied],
+    queryKey: ['defaulters', applied, page, limit],
     queryFn: async () => {
       const params = {
         from: applied.from,
         to: applied.to,
+        page,
+        limit,
       };
       if (applied.branchIds?.length) params.branchIds = applied.branchIds.join(',');
       if (applied.classId) params.classId = applied.classId;
@@ -118,6 +123,7 @@ export default function DefaultersReportPage() {
       return res.data;
     },
     enabled: !!token && !!applied,
+    placeholderData: keepPreviousData,
   });
 
   const report = reportEnvelope?.data;
@@ -138,6 +144,7 @@ export default function DefaultersReportPage() {
       return setFilterError('Minimum outstanding must be a non-negative number');
     }
     setExpandedRows(new Set());
+    setPage(1);
     setApplied({
       from: draftFrom,
       to: draftTo,
@@ -158,6 +165,7 @@ export default function DefaultersReportPage() {
     setDraftMinOutstanding('');
     setDraftIncludeDetails(false);
     setApplied(null);
+    setPage(1);
     setExpandedRows(new Set());
     setFilterError('');
   };
@@ -188,6 +196,12 @@ export default function DefaultersReportPage() {
     lines.push(['Student Fee Defaulters Statement']);
     lines.push([`Period: ${formatDate(report.period.from)} to ${formatDate(report.period.to)}`]);
     lines.push([`Branches: ${(report.totals?.branchesCovered || []).join(', ') || 'All'}`]);
+    if (report.truncated || (report.page || 1) > 1) {
+      const start = ((report.page || 1) - 1) * (report.limit || rows.length) + 1;
+      lines.push([
+        `Rows ${start}-${start + rows.length - 1} of ${totals?.studentCount ?? rows.length} (one page; totals cover all)`,
+      ]);
+    }
     lines.push([]);
     lines.push([
       'S/N',
@@ -697,9 +711,27 @@ export default function DefaultersReportPage() {
                     Defaulter List
                   </div>
                   <span className="text-xs text-gray-500 dark:text-gray-400">
-                    {rows.length} student(s)
+                    {rows.length} of {totals?.studentCount ?? rows.length} student(s)
                   </span>
                 </div>
+                <ReportPagination
+                  className="px-6 py-3 border-b border-gray-200 dark:border-gray-700"
+                  page={report.page || page}
+                  limit={report.limit || limit}
+                  shown={rows.length}
+                  total={totals?.studentCount}
+                  truncated={report.truncated}
+                  onPageChange={(p) => {
+                    setExpandedRows(new Set());
+                    setPage(p);
+                  }}
+                  onLimitChange={(n) => {
+                    setExpandedRows(new Set());
+                    setLimit(n);
+                    setPage(1);
+                  }}
+                  noun="students"
+                />
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead className="bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400">

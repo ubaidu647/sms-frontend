@@ -24,15 +24,17 @@ export const fetchData = async ({
 const isFormData = (v) => typeof FormData !== 'undefined' && v instanceof FormData;
 
 // Let the browser set the multipart boundary by clearing the JSON default.
-const buildConfig = (payload, params) => {
+const buildConfig = (payload, params, headers) => {
   const config = { params };
-  if (isFormData(payload)) config.headers = { 'Content-Type': undefined };
+  if (headers) config.headers = { ...headers };
+  if (isFormData(payload)) config.headers = { ...config.headers, 'Content-Type': undefined };
   return config;
 };
 
-export const postData = async ({ url, payload = {}, token: _token, params = {} }) => {
+// `headers` carries per-request extras such as `Idempotency-Key`.
+export const postData = async ({ url, payload = {}, token: _token, params = {}, headers }) => {
   try {
-    const { data } = await apiClient.post(url, payload, buildConfig(payload, params));
+    const { data } = await apiClient.post(url, payload, buildConfig(payload, params, headers));
     return data;
   } catch (error) {
     throw new Error(error.response?.data?.message || error.message || 'Failed');

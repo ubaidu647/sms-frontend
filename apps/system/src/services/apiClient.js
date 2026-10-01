@@ -1,6 +1,7 @@
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { useTokenStore } from '@/store/tokenStore';
+import { useUserStore } from '@/store/userStore';
 import { clearAuthCookies } from '@/utils/clearAuthCookies';
 import { withSessionHeaders, AUTH_MODE_HEADERS, readCsrfToken } from '@/utils/session';
 
@@ -40,6 +41,11 @@ apiClient.interceptors.request.use(withSessionHeaders);
 
 function handleLogoutAndRedirect() {
   useTokenStore.getState().clearTokens();
+  // The profile is persisted (localStorage): drop it too, or the next visitor on
+  // this browser boots with the previous user's name/role/branch. The in-memory
+  // query cache goes with the full-page navigation below.
+  useUserStore.getState().clearUser();
+  useUserStore.persist?.clearStorage?.();
   clearAuthCookies();
   if (typeof window !== 'undefined') window.location.replace('/signin');
 }

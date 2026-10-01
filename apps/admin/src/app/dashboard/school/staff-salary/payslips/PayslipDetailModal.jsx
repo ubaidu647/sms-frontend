@@ -7,6 +7,7 @@ import { fetchData, postData, putData } from '@/utils/api';
 import { useTokenStore } from '@/store/tokenStore';
 import { useUserStore } from '@/store/userStore';
 import CashBankAccountSelect from '@/component/CashBankAccountSelect';
+import { idempotencyHeader, newIdempotencyKey } from '@/utils/idempotency';
 import toast from 'react-hot-toast';
 import {
   PAYSLIP_STATUS_COLORS,
@@ -17,7 +18,7 @@ import {
   formatMonth,
   formatDate,
 } from '@/constants/staffSalary';
-import { Lock, DollarSign, XCircle, Edit3 } from 'lucide-react';
+import { Lock, DollarSign, XCircle, Edit3, RotateCcw, AlertTriangle } from 'lucide-react';
 
 const inputCls =
   'w-full px-3 py-2 border border-gray-200 rounded-lg outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 text-sm text-gray-900 bg-white placeholder:text-gray-400';
@@ -39,6 +40,8 @@ export default function PayslipDetailModal({ isOpen, onClose, payslipId }) {
     isAdmin || actions.includes('pay-payslip') || actions.includes('pay-all-branch-payslip');
   const canCancel =
     isAdmin || actions.includes('cancel-payslip') || actions.includes('cancel-all-branch-payslip');
+  // Reversing an instalment undoes a payment: the server wants pay AND cancel.
+  const canReverse = canPay && canCancel;
 
   const { data, isFetching } = useQuery({
     queryKey: ['payslip-detail', payslipId],
@@ -172,13 +175,14 @@ export default function PayslipDetailModal({ isOpen, onClose, payslipId }) {
           setShowPay={setShowPay}
           showCancel={showCancel}
           setShowCancel={setShowCancel}
+          canReverse={canReverse}
         />
       )}
     </Modal>
   );
 }
 
-function PayslipBody({ payslip, showPay, setShowPay, showCancel, setShowCancel }) {
+function PayslipBody({ payslip, showPay, setShowPay, showCancel, setShowCancel, canReverse }) {
   const { accessToken: token } = useTokenStore();
   const queryClient = useQueryClient();
 
@@ -196,6 +200,7 @@ function PayslipBody({ payslip, showPay, setShowPay, showCancel, setShowCancel }
   const [bonus, setBonus] = useState(payslip.bonus ?? 0);
   const [tax, setTax] = useState(payslip.tax ?? 0);
   const [notes, setNotes] = useState(payslip.notes || '');
+  const [reversing, setReversing] = useState(null);
 
   const updateMut = useMutation({
     mutationFn: (payload) =>
@@ -404,6 +409,17 @@ function PayslipBody({ payslip, showPay, setShowPay, showCancel, setShowCancel }
         )}
       </div>
 
+      {Number(payslip.shortfall) > 0 && (
+        <div className="flex items-start gap-2 rounded-xl bg-amber-50 border border-amber-200 p-3 text-xs text-amber-800">
+          <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+          <span>
+            <strong>Shortfall {formatMoney(payslip.shortfall, cur)}:</strong> deductions exceeded
+            gross pay by this much. Net salary is floored at 0 — the excess is not carried forward
+            automatically.
+          </span>
+        </div>
+      )}
+
       {payslip.payments?.length > 0 && (
         <div className="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
           <div className="px-4 py-2 text-xs font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800">
@@ -411,22 +427,56 @@ function PayslipBody({ payslip, showPay, setShowPay, showCancel, setShowCancel }
           </div>
           <table className="w-full text-sm">
             <tbody>
-              {payslip.payments.map((p, i) => (
-                <tr key={p._id || i} className="border-t border-gray-100 dark:border-gray-800">
-                  <td className="px-4 py-2 text-gray-500 dark:text-gray-400">#{i + 1}</td>
-                  <td className="px-4 py-2">{formatDate(p.paymentDate)}</td>
-                  <td className="px-4 py-2">
-                    {PAYMENT_METHOD_LABELS[p.paymentMethod] || p.paymentMethod || '—'}
-                    {p.paymentReference ? ` • ${p.paymentReference}` : ''}
-                  </td>
-                  <td className="px-4 py-2 text-right font-semibold">
-                    {formatMoney(p.amount, cur)}
-                  </td>
-                </tr>
-              ))}
+              {payslip.payments.map((p, i) => {
+                const reversed = !!p.reversedAt;
+                const strike = reversed ? 'line-through text-gray-400 dark:text-gray-500' : '';
+                return (
+                  <tr key={p._id || i} className="border-t border-gray-100 dark:border-gray-800">
+                    <td className="px-4 py-2 text-gray-500 dark:text-gray-400">#{i + 1}</td>
+                    <td className={`px-4 py-2 ${strike}`}>{formatDate(p.paymentDate)}</td>
+                    <td className="px-4 py-2">
+                      <span className={strike}>
+                        {PAYMENT_METHOD_LABELS[p.paymentMethod] || p.paymentMethod || '—'}
+                        {p.paymentReference ? ` • ${p.paymentReference}` : ''}
+                      </span>
+                      {reversed && (
+                        <div className="text-xs text-red-600 dark:text-red-400 mt-0.5">
+                          Reversed {formatDate(p.reversedAt)}
+                          {p.reversalReason ? ` — ${p.reversalReason}` : ''}
+                        </div>
+                      )}
+                    </td>
+                    <td className={`px-4 py-2 text-right font-semibold ${strike}`}>
+                      {formatMoney(p.amount, cur)}
+                    </td>
+                    <td className="px-4 py-2 text-right w-px whitespace-nowrap">
+                      {canReverse && !reversed && payslip.status !== 'cancelled' && p._id && (
+                        <button
+                          type="button"
+                          onClick={() => setReversing(p)}
+                          className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-red-700 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-lg border border-red-200"
+                        >
+                          <RotateCcw className="w-3 h-3" />
+                          Reverse
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
+      )}
+
+      {reversing && (
+        <ReverseForm
+          payslip={payslip}
+          payment={reversing}
+          cur={cur}
+          onClose={() => setReversing(null)}
+          onDone={invalidate}
+        />
       )}
 
       {/* Attendance snapshot */}
@@ -607,6 +657,8 @@ function PayForm({ payslip, onClose, onDone }) {
   const [paidAmount, setPaidAmount] = useState(remaining);
   const [notes, setNotes] = useState('');
   const [err, setErr] = useState('');
+  // One key per opened pay form, reused if Confirm is retried after an error.
+  const [idempotencyKey] = useState(() => newIdempotencyKey());
 
   const mut = useMutation({
     mutationFn: (payload) =>
@@ -614,6 +666,7 @@ function PayForm({ payslip, onClose, onDone }) {
         url: `/staff-salary/payslip/${payslip._id}/pay`,
         payload,
         token,
+        headers: idempotencyHeader(idempotencyKey),
       }),
     onSuccess: (res) => {
       toast.success(res?.message || 'Payslip marked as paid');
@@ -743,6 +796,77 @@ function PayForm({ payslip, onClose, onDone }) {
           className="px-4 py-1.5 bg-teal-600 text-white rounded-lg text-sm font-medium hover:bg-teal-700 disabled:opacity-60"
         >
           {mut.isPending ? 'Saving…' : 'Confirm Payment'}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function ReverseForm({ payslip, payment, cur, onClose, onDone }) {
+  const { accessToken: token } = useTokenStore();
+  const [reason, setReason] = useState('');
+  const [err, setErr] = useState('');
+
+  const mut = useMutation({
+    mutationFn: (payload) =>
+      postData({
+        url: `/staff-salary/payslip/${payslip._id}/payments/${payment._id}/reverse`,
+        payload,
+        token,
+      }),
+    onSuccess: (res) => {
+      toast.success(res?.message || 'Payment reversed');
+      onDone();
+      onClose();
+    },
+    onError: (e) => {
+      setErr(e.message || 'Failed to reverse payment');
+      toast.error(e.message || 'Failed to reverse payment');
+    },
+  });
+
+  const submit = () => {
+    setErr('');
+    if (!reason.trim()) return setErr('A reason is required');
+    mut.mutate({ reason: reason.trim() });
+  };
+
+  return (
+    <div className="border border-red-200 bg-red-50/40 rounded-xl p-4 space-y-3">
+      <h4 className="text-sm font-bold text-red-800 dark:text-red-300">
+        Reverse {formatMoney(payment.amount, cur)} paid {formatDate(payment.paymentDate)}
+      </h4>
+      <p className="text-xs text-gray-600 dark:text-gray-400">
+        The instalment stays on record but stops counting toward the paid amount.
+      </p>
+      {err && (
+        <div className="p-2 bg-red-50 dark:bg-red-950/40 border border-red-200 rounded text-red-700 dark:text-red-400 text-xs">
+          {err}
+        </div>
+      )}
+      <div>
+        <label className={labelCls}>Reason</label>
+        <input
+          type="text"
+          value={reason}
+          onChange={(e) => setReason(e.target.value)}
+          placeholder="Wrong amount, bounced transfer, etc."
+          className={inputCls}
+        />
+      </div>
+      <div className="flex gap-2 justify-end">
+        <button
+          onClick={onClose}
+          className="px-4 py-1.5 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800"
+        >
+          Back
+        </button>
+        <button
+          onClick={submit}
+          disabled={mut.isPending}
+          className="px-4 py-1.5 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 disabled:opacity-60"
+        >
+          {mut.isPending ? 'Reversing…' : 'Confirm Reverse'}
         </button>
       </div>
     </div>

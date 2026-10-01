@@ -84,10 +84,13 @@ export const getCurrentSubscription = async (schoolId) => {
   }
 };
 
-// Full history, newest-first (walk previousSubscriptionId for the timeline).
-export const getSubscriptionHistory = async (schoolId) => {
+// History, newest-first (walk previousSubscriptionId for the timeline). The
+// server pages it (default 100, max 500); `total` is the full count.
+export const getSubscriptionHistory = async (schoolId, { page = 1, limit = 100 } = {}) => {
   try {
-    const res = await apiClient.get(`/subscription/school/${schoolId}`);
+    const res = await apiClient.get(`/subscription/school/${schoolId}`, {
+      params: { page, limit },
+    });
     return unwrap(res); // { data: Subscription[], total }
   } catch (error) {
     normalizeError(error);

@@ -7,6 +7,7 @@ import { useUserStore } from '@/store/userStore';
 import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import { fetchData } from '@/utils/api';
 import AccountCombobox from '@/component/AccountCombobox';
+import ReportPagination from '@/component/ReportPagination';
 import {
   JOURNAL_SOURCE_COLORS,
   formatDate,
@@ -32,6 +33,13 @@ export default function AccountLedgerPage() {
   const [draftTo, setDraftTo] = useState('');
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(500);
+
+  // A different account or window starts again from the first page.
+  useEffect(() => {
+    setPage(1);
+  }, [accountId, from, to, limit]);
 
   // Deep-link: when navigated from the Chart of Accounts row action, preselect.
   useEffect(() => {
@@ -68,15 +76,15 @@ export default function AccountLedgerPage() {
   };
 
   const { data, isFetching } = useQuery({
-    queryKey: ['account-ledger', accountId, from, to],
+    queryKey: ['account-ledger', accountId, from, to, page, limit],
     queryFn: () => {
       const params = {};
       if (from) params.from = from;
       if (to) params.to = to;
       return fetchData({
         url: `/ledger/account/${accountId}`,
-        page: 1,
-        limit: 1000,
+        page,
+        limit,
         token,
         ...params,
       });
@@ -85,6 +93,10 @@ export default function AccountLedgerPage() {
     placeholderData: keepPreviousData,
   });
   const ledger = data?.data;
+  const ledgerRows = ledger?.rows || [];
+  // The server's openingBalance is the balance carried into this page (prior
+  // window + earlier pages), so the running balance below stays correct.
+  const showOpening = !!ledger && (page > 1 || !!from || Number(ledger.openingBalance) !== 0);
 
   return (
     <div className="p-3 sm:p-6 print:p-0">
@@ -158,6 +170,19 @@ export default function AccountLedgerPage() {
                   {ledger.account?.type}
                 </span>
               </h2>
+              {(ledger.truncated || page > 1) && (
+                <ReportPagination
+                  className="mb-3"
+                  page={ledger.page || page}
+                  limit={ledger.limit || limit}
+                  shown={ledgerRows.length}
+                  total={typeof ledger.total === 'number' ? ledger.total : undefined}
+                  truncated={ledger.truncated}
+                  onPageChange={setPage}
+                  onLimitChange={setLimit}
+                  noun="postings"
+                />
+              )}
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead className="bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
@@ -171,7 +196,21 @@ export default function AccountLedgerPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {(ledger.rows || []).map((r) => (
+                    {showOpening && (
+                      <tr className="border-t border-gray-100 dark:border-gray-800 bg-gray-50/60 dark:bg-gray-800/40">
+                        <td className="px-3 py-2" />
+                        <td className="px-3 py-2" />
+                        <td className="px-3 py-2 italic text-gray-600 dark:text-gray-400">
+                          {page > 1 ? 'Balance brought forward' : 'Opening balance'}
+                        </td>
+                        <td className="px-3 py-2" />
+                        <td className="px-3 py-2" />
+                        <td className="px-3 py-2 text-right font-mono font-semibold">
+                          {formatMoney(ledger.openingBalance)}
+                        </td>
+                      </tr>
+                    )}
+                    {ledgerRows.map((r) => (
                       <tr key={r._id} className="border-t border-gray-100 dark:border-gray-800">
                         <td className="px-3 py-2 whitespace-nowrap text-gray-600 dark:text-gray-400">
                           {formatDate(r.date)}

@@ -58,9 +58,14 @@ function toFormState(s) {
     official: {
       phoneNumberId: o.official?.phoneNumberId || '',
       wabaId: o.official?.wabaId || '',
-      accessToken: o.official?.accessToken || '',
+      // Never seeded from the server: it only sends `hasAccessToken` + last 4.
+      // Blank means "keep the stored token"; type a new one to replace it.
+      accessToken: '',
       apiVersion: o.official?.apiVersion || 'v21.0',
     },
+    tokenSaved: !!o.official?.hasAccessToken,
+    tokenLast4: o.official?.accessTokenLast4 || '',
+    removeToken: false,
     antiBan: {
       minDelayMs: antiBan.minDelayMs ?? 5000,
       maxDelayMs: antiBan.maxDelayMs ?? 15000,
@@ -177,7 +182,13 @@ export default function WhatsAppSettingsForm({
       },
     };
     if (form.provider === 'official') {
-      payload.official = { ...form.official };
+      const { accessToken, ...rest } = form.official;
+      payload.official = { ...rest };
+      // Omitted = keep the stored token; null = explicitly clear it. The masked
+      // value is never in the form, so it can't be echoed back.
+      const typed = accessToken.trim();
+      if (typed) payload.official.accessToken = typed;
+      else if (form.removeToken) payload.official.accessToken = null;
     } else {
       // Never send unofficial.session — that's owned by the backend.
       payload.unofficial = {
@@ -312,10 +323,58 @@ export default function WhatsAppSettingsForm({
               <input
                 className={inputCls}
                 type="password"
+                autoComplete="new-password"
                 value={form.official.accessToken}
-                onChange={(e) => setOfficial({ accessToken: e.target.value })}
+                onChange={(e) => {
+                  setOfficial({ accessToken: e.target.value });
+                  if (e.target.value) set({ removeToken: false });
+                }}
+                placeholder={
+                  form.tokenSaved && !form.removeToken
+                    ? 'Leave empty to keep the saved token'
+                    : 'Paste the Meta access token'
+                }
                 disabled={disabled}
               />
+              {form.tokenSaved && (
+                <div className="mt-1.5 flex flex-wrap items-center gap-2 text-xs">
+                  {form.removeToken ? (
+                    <>
+                      <span className="text-red-600 dark:text-red-400">
+                        The saved token will be removed when you save.
+                      </span>
+                      {!disabled && (
+                        <button
+                          type="button"
+                          onClick={() => set({ removeToken: false })}
+                          className="font-medium text-teal-700 dark:text-teal-400 hover:underline"
+                        >
+                          Undo
+                        </button>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      <span className="text-gray-500 dark:text-gray-400">
+                        Token saved{form.tokenLast4 ? ` (…${form.tokenLast4})` : ''}. Leave the
+                        field empty to keep it.
+                      </span>
+                      {!disabled && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setOfficial({ accessToken: '' });
+                            set({ removeToken: true });
+                          }}
+                          className="font-medium text-red-600 dark:text-red-400 hover:underline"
+                        >
+                          Remove token
+                        </button>
+                      )}
+                    </>
+                  )}
+                </div>
+              )}
             </div>
             <div>
               <label className={labelCls}>API Version</label>
