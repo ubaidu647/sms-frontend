@@ -14,7 +14,7 @@ import {
   gradeFromPercentage,
 } from '@/constants/exam';
 import { resolveScope } from '@/utils/permissions';
-import { buildMarkEntries, toMark } from '@/utils/marksEntries';
+import { buildMarkEntries, savedStudentIds, toMark } from '@/utils/marksEntries';
 
 export default function MarksEntryPage() {
   const params = useParams();
@@ -187,8 +187,10 @@ export default function MarksEntryPage() {
   const enterMutation = useMutation({
     mutationFn: (payload) => postData({ url: `/exam/${examId}/results/enter`, payload, token }),
     onSuccess: (res) => {
-      const { created = 0, updated = 0 } = res?.data || {};
-      toast.success(`Saved — ${created} created, ${updated} updated`);
+      const { created = 0, updated = 0, cleared = 0 } = res?.data || {};
+      toast.success(
+        `Saved — ${created} created, ${updated} updated${cleared ? `, ${cleared} cleared` : ''}`,
+      );
       queryClient.invalidateQueries({
         queryKey: ['exam-results', examId, examSubjectId, sectionId],
       });
@@ -206,7 +208,11 @@ export default function MarksEntryPage() {
       toast.error('No students in this section');
       return;
     }
-    const entries = buildMarkEntries(students, marks, { hasTheory, hasPractical });
+    const entries = buildMarkEntries(students, marks, {
+      hasTheory,
+      hasPractical,
+      saved: savedStudentIds(existingResults),
+    });
     if (!entries.length) {
       toast.error('Enter at least one mark (or mark a student absent)');
       return;
