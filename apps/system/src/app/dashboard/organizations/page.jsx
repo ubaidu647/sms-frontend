@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { FilterBar } from '@/component/FilterBar';
 import { Table } from '@/component/Table';
 import { Tabs } from '@/component/Tabs';
@@ -8,23 +8,36 @@ import { ColumnSelector } from '@/component/ColumnSelector';
 import { AddOrganizationModal } from '@/component/AddOrganizationModal';
 import { useTokenStore } from '@/store/tokenStore';
 import { useOrganizations, useToggleSchoolStatus } from './hooks/useOrganization';
-import { useOrganizationStore } from './store/organizationStore';
 import { useTranslations } from 'next-intl';
 import ConfirmModal from './ConfirmModal';
 
+const EMPTY_FILTERS = { organizationName: '', createdAt: '', status: '' };
+const SEARCH_DEBOUNCE_MS = 400;
+
 export default function Organization() {
   const { accessToken: token } = useTokenStore();
-  useOrganizations({ token });
   const t = useTranslations('organizations');
-  const organizations = useOrganizationStore((state) => state.organizations);
-  const disabledOrganizations = useOrganizationStore((state) => state.disabledOrganizations);
   const [activeTab, setActiveTab] = useState('active');
-  const [filters, setFilters] = useState({
-    organizationName: '',
-    createdAt: '',
-    packageName: '',
-    status: '',
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(20);
+  // `filters` is what the inputs show; `appliedSearch` is the debounced name
+  // search that actually drives the query (no request per keystroke).
+  const [filters, setFilters] = useState(EMPTY_FILTERS);
+  const [appliedSearch, setAppliedSearch] = useState('');
+  const searchTimer = useRef(null);
+  useEffect(() => () => clearTimeout(searchTimer.current), []);
+
+  const { data, isLoading, isFetching } = useOrganizations({
+    token,
+    page,
+    limit,
+    tab: activeTab,
+    search: appliedSearch,
+    status: filters.status,
+    createdOn: filters.createdAt,
   });
+  const currentData = data?.data ?? [];
+  const total = data?.total ?? 0;
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedColumns, setSelectedColumns] = useState([]);
   const [disableTarget, setDisableTarget] = useState(null);
@@ -32,9 +45,18 @@ export default function Organization() {
 
   const toggleStatus = useToggleSchoolStatus();
 
+  // Only the open tab's total is known (one request per view).
   const tabs = [
-    { label: 'Active Organizations', value: 'active', count: organizations.length },
-    { label: 'Disabled/Deleted', value: 'disabled', count: disabledOrganizations.length },
+    {
+      label: 'Active Organizations',
+      value: 'active',
+      count: activeTab === 'active' && data ? total : undefined,
+    },
+    {
+      label: 'Disabled/Deleted',
+      value: 'disabled',
+      count: activeTab === 'disabled' && data ? total : undefined,
+    },
   ];
 
   const columns = [
@@ -106,17 +128,37 @@ export default function Organization() {
     },
   ];
 
+  // Every change that reshapes the result set resets to page 1 in the same
+  // update, so a stale page number never fires its own request.
   const handleFilterChange = (newFilters) => {
+    const searchChanged = newFilters.organizationName !== filters.organizationName;
     setFilters(newFilters);
+    if (searchChanged) {
+      clearTimeout(searchTimer.current);
+      searchTimer.current = setTimeout(() => {
+        setAppliedSearch(newFilters.organizationName.trim());
+        setPage(1);
+      }, SEARCH_DEBOUNCE_MS);
+    } else {
+      setPage(1);
+    }
   };
 
   const handleClearFilters = () => {
-    setFilters({
-      organizationName: '',
-      createdAt: '',
-      packageName: '',
-      status: '',
-    });
+    clearTimeout(searchTimer.current);
+    setFilters(EMPTY_FILTERS);
+    setAppliedSearch('');
+    setPage(1);
+  };
+
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    setPage(1);
+  };
+
+  const handleLimitChange = (value) => {
+    setLimit(Number(value) || 20);
+    setPage(1);
   };
 
   const handleColumnToggle = (accessor) => {
@@ -187,24 +229,6 @@ export default function Organization() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const filterData = (data) => {
-    return data.filter((item) => {
-      const matchesName =
-        !filters.organizationName ||
-        item.name?.toLowerCase().includes(filters.organizationName.toLowerCase());
-      const matchesDate = !filters.createdAt || item.createdAt === filters.createdAt;
-      const matchesPackage =
-        !filters.packageName ||
-        item.packageName?.toLowerCase() === filters.packageName.toLowerCase();
-      const matchesStatus = !filters.status || item.status === filters.status;
-
-      return matchesName && matchesDate && matchesPackage && matchesStatus;
-    });
-  };
-
-  const currentData =
-    activeTab === 'active' ? filterData(organizations) : filterData(disabledOrganizations);
-
   return (
     <div className="md:flex-1 md:min-h-0 md:overflow-hidden flex flex-col bg-gray-50 dark:bg-gray-800 p-3 sm:p-6 rounded-2xl sm:rounded-[50px]">
       <div className="max-w-7xl mx-auto">
@@ -224,7 +248,7 @@ export default function Organization() {
           </button>
         </div>
 
-        <Tabs tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
+        <Tabs tabs={tabs} activeTab={activeTab} onTabChange={handleTabChange} />
 
         <FilterBar
           filters={filters}
@@ -251,7 +275,18 @@ export default function Organization() {
           showImage={true}
           imageAccessor="image"
           visibleColumns={selectedColumns}
+          page={page}
+          limit={limit}
+          totalItems={total}
+          onPageChange={setPage}
+          onLimitChange={handleLimitChange}
         />
+        {isLoading && (
+          <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">Loading organizations…</p>
+        )}
+        {isFetching && !isLoading && (
+          <p className="mt-2 text-xs text-gray-400 text-right">Updating…</p>
+        )}
         <AddOrganizationModal
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}

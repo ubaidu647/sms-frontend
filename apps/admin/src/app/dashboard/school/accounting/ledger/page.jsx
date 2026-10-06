@@ -36,15 +36,13 @@ export default function AccountLedgerPage() {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(500);
 
-  // A different account or window starts again from the first page.
-  useEffect(() => {
-    setPage(1);
-  }, [accountId, from, to, limit]);
-
   // Deep-link: when navigated from the Chart of Accounts row action, preselect.
   useEffect(() => {
     const q = searchParams.get('accountId');
-    if (q) setAccountId(q);
+    if (q) {
+      setAccountId(q);
+      setPage(1);
+    }
   }, [searchParams]);
 
   const effectiveBranchId = isOrgLevel ? '' : userBranchId;
@@ -70,9 +68,12 @@ export default function AccountLedgerPage() {
     [accountData],
   );
 
+  // A different account or window starts again from the first page. Reset in
+  // the handlers (not an effect) so the change fires a single request.
   const applyFilters = () => {
     setFrom(draftFrom);
     setTo(draftTo);
+    setPage(1);
   };
 
   const { data, isFetching } = useQuery({
@@ -125,7 +126,10 @@ export default function AccountLedgerPage() {
           <AccountCombobox
             accounts={accounts}
             value={accountId}
-            onChange={(id) => setAccountId(id)}
+            onChange={(id) => {
+              setAccountId(id);
+              setPage(1);
+            }}
             className="w-full sm:w-72"
             buttonClassName={inputWrap}
           />
@@ -179,7 +183,10 @@ export default function AccountLedgerPage() {
                   total={typeof ledger.total === 'number' ? ledger.total : undefined}
                   truncated={ledger.truncated}
                   onPageChange={setPage}
-                  onLimitChange={setLimit}
+                  onLimitChange={(n) => {
+                    setLimit(n);
+                    setPage(1);
+                  }}
                   noun="postings"
                 />
               )}

@@ -17,7 +17,7 @@ import { useQuery } from '@tanstack/react-query';
 import apiClient from '@/services/apiClient';
 import { useTokenStore } from '@/store/tokenStore';
 import { useUserStore } from '@/store/userStore';
-import { resolveScope, hasAnyAction } from '@/utils/permissions';
+import { resolveScope, hasAnyAction, canActInBranch } from '@/utils/permissions';
 import { formatDate, formatMoney, formatMonth, VOUCHER_STATUS_COLORS } from '@/constants/fee';
 import PayConsolidatedModal from '../PayConsolidatedModal';
 
@@ -33,7 +33,7 @@ export default function ConsolidatedVoucherPage() {
   const printableRef = useRef(null);
 
   const isOwnOnly = resolveScope(user?.role, 'view-fee') === 'own';
-  const canPay =
+  const canPayAny =
     !isOwnOnly && hasAnyAction(user?.role, ['record-payment', 'record-all-branch-payment']);
 
   const { data, isLoading, isError, error } = useQuery({
@@ -124,6 +124,16 @@ export default function ConsolidatedVoucherPage() {
   const vouchers = slip.vouchers || [];
   const outstanding = totals.outstandingTotal ?? 0;
   const hasArrears = outstanding > 0 && vouchers.length > 0;
+  // A branch-tier collector can only settle vouchers billed by their own branch
+  // (the API restricts the allocation to them); without record-all-branch-payment
+  // there must be at least one such voucher. Falls back to the student's branch
+  // when the vouchers carry no branch.
+  const userBranchId = user?.branchId || user?.branch?._id;
+  const canPay =
+    canPayAny &&
+    (vouchers.some((v) => v.branchId)
+      ? vouchers.some((v) => canActInBranch(user?.role, 'record-payment', userBranchId, v.branchId))
+      : canActInBranch(user?.role, 'record-payment', userBranchId, student?.branch));
 
   return (
     <>

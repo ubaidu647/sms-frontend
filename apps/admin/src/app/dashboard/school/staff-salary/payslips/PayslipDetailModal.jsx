@@ -36,12 +36,8 @@ export default function PayslipDetailModal({ isOpen, onClose, payslipId }) {
   const isAdmin = !!user?.role?.isPredefined;
   const canUpdate =
     isAdmin || actions.includes('update-payslip') || actions.includes('update-all-branch-payslip');
-  const canPay =
-    isAdmin || actions.includes('pay-payslip') || actions.includes('pay-all-branch-payslip');
-  const canCancel =
-    isAdmin || actions.includes('cancel-payslip') || actions.includes('cancel-all-branch-payslip');
-  // Reversing an instalment undoes a payment: the server wants pay AND cancel.
-  const canReverse = canPay && canCancel;
+  const canPayAllBranches = isAdmin || actions.includes('pay-all-branch-payslip');
+  const canCancelAllBranches = isAdmin || actions.includes('cancel-all-branch-payslip');
 
   const { data, isFetching } = useQuery({
     queryKey: ['payslip-detail', payslipId],
@@ -50,6 +46,17 @@ export default function PayslipDetailModal({ isOpen, onClose, payslipId }) {
     staleTime: 0,
   });
   const payslip = data?.data ?? data;
+
+  // Branch reach: the branch-tier action only covers payslips of the user's own
+  // branch; another branch's payslip needs the *-all-branch-* action (API rule).
+  const userBranchId = String(user?.branchId || user?.branch?._id || '');
+  const payslipBranchId = String(payslip?.branchId?._id || payslip?.branchId || '');
+  const inOwnBranch = !!payslipBranchId && payslipBranchId === userBranchId;
+  const canPay = canPayAllBranches || (actions.includes('pay-payslip') && inOwnBranch);
+  const canCancel = canCancelAllBranches || (actions.includes('cancel-payslip') && inOwnBranch);
+  // Reversing an instalment undoes a payment: the server wants pay AND cancel,
+  // and for another branch's payslip both at org (all-branch) level.
+  const canReverse = inOwnBranch ? canPay && canCancel : canPayAllBranches && canCancelAllBranches;
 
   const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: ['payslips'] });

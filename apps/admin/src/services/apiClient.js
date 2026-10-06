@@ -39,7 +39,14 @@ const apiClient = axios.create({
 // No Authorization header: the browser attaches the session cookie itself.
 apiClient.interceptors.request.use(withSessionHeaders);
 
+// Set once this page has ended the session, so late refresh results are ignored.
+let loggedOut = false;
+export function markSessionEnded() {
+  loggedOut = true;
+}
+
 function handleLogoutAndRedirect() {
+  loggedOut = true;
   useTokenStore.getState().clearTokens();
   // The profile is persisted (localStorage): drop it too, or the next visitor on
   // this browser boots with the previous user's name/role/branch. The in-memory
@@ -103,20 +110,33 @@ apiClient.interceptors.response.use(
         handleLogoutAndRedirect();
         return Promise.reject(error);
       }
+      let refreshed = false;
       try {
         await refreshSession();
-        return apiClient(orig);
+        refreshed = true;
       } catch (e) {
+        const refreshStatus = e.response?.status;
         // A throttled refresh is "slow down", not "session invalid".
-        if (e.response?.status === 429) {
+        if (refreshStatus === 429) {
           handleRateLimited(e.response, '/auth/refresh');
           return Promise.reject(e);
+        }
+        // Only an explicit rejection of the refresh cookie ends the session.
+        // 5xx (e.g. 503 on infra errors) and network failures are transient:
+        // keep the session, tell the user, and reject the original request.
+        if (refreshStatus !== 401 && refreshStatus !== 403) {
+          toast.error("Can't reach the server. Please retry.", { id: 'refresh-offline' });
+          return Promise.reject(error);
         }
         // The caller handles a dead session itself (session restore).
         if (orig.skipLogoutRedirect) return Promise.reject(error);
         handleLogoutAndRedirect();
         return Promise.reject(error);
       }
+      // The user may have signed out while the refresh was in flight; don't
+      // replay the request on a session that no longer exists.
+      if (refreshed && loggedOut) return Promise.reject(error);
+      return apiClient(orig);
     }
     return Promise.reject(error);
   },

@@ -125,8 +125,9 @@ export default function ComposeAnnouncementModal({ isOpen, onClose }) {
     fd.append('priority', priority);
     fd.append('status', canPublish ? statusChoice : 'draft');
     fd.append('audience', JSON.stringify(audience));
-    if (publishedAt) fd.append('publishedAt', publishedAt);
-    if (expiresAt) fd.append('expiresAt', expiresAt);
+    // datetime-local has no zone; send the absolute instant the user meant.
+    if (publishedAt) fd.append('publishedAt', new Date(publishedAt).toISOString());
+    if (expiresAt) fd.append('expiresAt', new Date(expiresAt).toISOString());
     if (isPinned) fd.append('isPinned', 'true');
     if (requiresAck) fd.append('requiresAck', 'true');
     if (file) fd.append('attachment', file);

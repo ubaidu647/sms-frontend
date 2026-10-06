@@ -13,6 +13,7 @@ import {
   ASSIGNMENT_STATUSES,
 } from '@/constants/transport';
 import { currentAcademicYear } from '@/constants/fee';
+import { changedFields } from '@/utils/changedFields';
 
 const inputCls =
   'w-full px-3 py-2 border border-gray-200 rounded-lg outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 text-sm text-gray-900 bg-white placeholder:text-gray-400';
@@ -23,6 +24,20 @@ const toYMD = (iso) => {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return '';
   return d.toISOString().slice(0, 10);
+};
+
+/** What the edit form shows for `assignment` when it opens (same rules as its fields). */
+const initialEditValues = (assignment) => {
+  const routeObj = typeof assignment.route === 'object' ? assignment.route : null;
+  return {
+    routeId: routeObj?._id || assignment.routeId?._id || assignment.routeId || '',
+    stopName: assignment.stopName || '',
+    direction: assignment.direction || 'both',
+    monthlyFee: assignment.monthlyFee ?? '',
+    notes: assignment.notes || '',
+    status: assignment.status || 'active',
+    endDate: toYMD(assignment.endDate),
+  };
 };
 
 export default function AssignmentFormModal({ isOpen, onClose, assignment, lockedStudent }) {
@@ -175,24 +190,32 @@ export default function AssignmentFormModal({ isOpen, onClose, assignment, locke
       return;
     }
 
-    const payload = {
-      routeId,
-      stopName,
-      direction,
-    };
-    if (monthlyFee !== '' && !Number.isNaN(Number(monthlyFee)))
-      payload.monthlyFee = Number(monthlyFee);
-    if (notes?.trim()) payload.notes = notes.trim();
+    const fee =
+      monthlyFee !== '' && !Number.isNaN(Number(monthlyFee)) ? Number(monthlyFee) : undefined;
 
-    if (!isEdit) {
-      payload.studentId = studentId;
-      payload.academicYear = academicYear;
-      payload.startDate = startDate;
-    } else {
-      payload.status = status;
-      if (endDate) payload.endDate = endDate;
+    if (isEdit) {
+      // Only what was changed: an ended assignment refuses even its own end
+      // date, so re-sending the form's untouched fields would block the edit.
+      const changed = changedFields(initialEditValues(assignment), {
+        routeId,
+        stopName,
+        direction,
+        ...(fee !== undefined ? { monthlyFee: fee } : {}),
+        notes: notes?.trim() || '',
+        status,
+        endDate: endDate || null,
+      });
+      if (!Object.keys(changed).length) {
+        onClose();
+        return;
+      }
+      mutation.mutate(changed);
+      return;
     }
 
+    const payload = { routeId, stopName, direction, studentId, academicYear, startDate };
+    if (fee !== undefined) payload.monthlyFee = fee;
+    if (notes?.trim()) payload.notes = notes.trim();
     mutation.mutate(payload);
   };
 

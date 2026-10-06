@@ -55,7 +55,7 @@ function SubmittedView({ homework }) {
   const sub = homework.mySubmission;
   if (!sub) return null;
 
-  const graded = homework.submissionStatus === 'graded';
+  const graded = homework.submissionStatus === 'graded' || sub.status === 'graded';
 
   return (
     <Panel title="Your submission">
@@ -188,7 +188,7 @@ export default function HomeworkDetailPage({ params }) {
       <PageHeader
         icon={BookOpen}
         title={homework.title}
-        subtitle={homework.subject?.name}
+        subtitle={homework.subject?.name || homework.subjectId?.name}
         action={
           <div className="flex items-center gap-2">
             <SubmissionBadge status={homework.submissionStatus} />
@@ -203,7 +203,9 @@ export default function HomeworkDetailPage({ params }) {
             {homework.description}
           </p>
           <div className="mt-4 flex flex-wrap items-center gap-4 text-xs text-gray-400 border-t border-gray-100 dark:border-gray-800 pt-3">
-            <span className={`flex items-center gap-1 ${overdue ? 'text-red-500 font-medium' : ''}`}>
+            <span
+              className={`flex items-center gap-1 ${overdue ? 'text-red-500 font-medium' : ''}`}
+            >
               <Clock className="w-3 h-3" /> Due{' '}
               {formatDate(homework.dueDate, {
                 day: 'numeric',

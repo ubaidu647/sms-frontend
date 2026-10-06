@@ -108,15 +108,20 @@ export default function PackagesPage() {
     setSelectedColumns(columns.map((c) => c.accessor));
   }, [columns]);
 
-  // Reset to first page whenever the result set changes shape.
-  useEffect(() => {
+  // Reset to the first page in the same update that changes the result set, so
+  // the old page number never fires a request of its own.
+  const changeTab = (tab) => {
+    setActiveTab(tab);
     setPage(1);
-  }, [activeTab, appliedSearch]);
-
-  const applySearch = () => setAppliedSearch(draftSearch.trim());
+  };
+  const applySearch = () => {
+    setAppliedSearch(draftSearch.trim());
+    setPage(1);
+  };
   const clearSearch = () => {
     setDraftSearch('');
     setAppliedSearch('');
+    setPage(1);
   };
 
   const rowActions = useMemo(
@@ -166,7 +171,7 @@ export default function PackagesPage() {
             { label: 'Inactive', value: 'inactive' },
           ]}
           activeTab={activeTab}
-          onTabChange={setActiveTab}
+          onTabChange={changeTab}
         />
 
         <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 mb-6">

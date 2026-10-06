@@ -14,6 +14,7 @@ import {
   gradeFromPercentage,
 } from '@/constants/exam';
 import { resolveScope } from '@/utils/permissions';
+import { buildMarkEntries, toMark } from '@/utils/marksEntries';
 
 export default function MarksEntryPage() {
   const params = useParams();
@@ -205,27 +206,20 @@ export default function MarksEntryPage() {
       toast.error('No students in this section');
       return;
     }
-    const entries = students.map((s) => {
-      const m = marks[s._id] || {};
-      const entry = { studentId: s._id };
-      if (m.isAbsent) {
-        entry.isAbsent = true;
-      } else {
-        if (hasTheory) entry.theoryObtained = Number(m.theoryObtained) || 0;
-        if (hasPractical) entry.practicalObtained = Number(m.practicalObtained) || 0;
-        if (!hasTheory && !hasPractical) {
-          entry.theoryObtained = Number(m.theoryObtained) || 0;
-        }
-      }
-      if (m.remarks) entry.remarks = m.remarks;
-      return entry;
-    });
+    const entries = buildMarkEntries(students, marks, { hasTheory, hasPractical });
+    if (!entries.length) {
+      toast.error('Enter at least one mark (or mark a student absent)');
+      return;
+    }
     enterMutation.mutate({ examSubjectId, sectionId, entries });
   };
 
   const computedRow = (studentId) => {
     const m = marks[studentId] || {};
     if (m.isAbsent) return { total: 0, pct: 0, grade: '—', passed: false };
+    // Nothing typed yet: no grade, rather than a 0 / F preview.
+    if (toMark(m.theoryObtained) === null && toMark(m.practicalObtained) === null)
+      return { total: '—', pct: '—', grade: '—', passed: true };
     const t = Number(m.theoryObtained) || 0;
     const p = Number(m.practicalObtained) || 0;
     const total = t + p;
@@ -503,7 +497,7 @@ export default function MarksEntryPage() {
                           {m.isAbsent ? '—' : c.total}
                         </td>
                         <td className="px-4 py-2 text-gray-700 dark:text-gray-300">
-                          {m.isAbsent ? '—' : `${c.pct}%`}
+                          {m.isAbsent || c.pct === '—' ? '—' : `${c.pct}%`}
                         </td>
                         <td className="px-4 py-2">
                           {m.isAbsent ? (

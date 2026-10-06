@@ -9,6 +9,7 @@ import toast from 'react-hot-toast';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { putData } from '@/utils/api';
 import { useTokenStore } from '@/store/tokenStore';
+import { useUserStore } from '@/store/userStore';
 
 // Fields the backend allows on a self-update. Everything else (designation,
 // staffType, employmentType, salary, joiningDate, leavingDate, isActive, …)
@@ -66,6 +67,9 @@ const schema = yup.object().shape({
     .transform((v) => (v === '' ? undefined : v))
     .min(6, 'Password must be at least 6 characters')
     .optional(),
+  // Required (checked in onSubmit) when changing the password of your own
+  // account: the API re-verifies it so a hijacked session can't lock you out.
+  currentPassword: yup.string().optional(),
   confirmPassword: yup.string().when('password', {
     is: (val) => !!val,
     then: (s) =>
@@ -93,7 +97,16 @@ function Field({ label, error, children }) {
 
 export default function EditStaffModal({ isOpen, onClose, onSuccess, staff, isSelf = false }) {
   const { accessToken: token } = useTokenStore();
+  const { user } = useUserStore();
   const queryClient = useQueryClient();
+  // Editing your own account — whether via the self-only view or an admin
+  // opening their own row — needs the current password to change it.
+  const staffUserId = String(staff?.user?._id || staff?.userId?._id || staff?.userId || '');
+  const ownUserId = String(user?._id || user?.id || '');
+  const isOwnAccount =
+    isSelf ||
+    (!!staff?._id && !!user?.staffId && String(staff._id) === String(user.staffId)) ||
+    (!!staffUserId && staffUserId === ownUserId);
   const [submitError, setSubmitError] = useState('');
   const [successState, setSuccessState] = useState(false);
   const [photoFile, setPhotoFile] = useState(null);
@@ -104,6 +117,7 @@ export default function EditStaffModal({ isOpen, onClose, onSuccess, staff, isSe
     register,
     handleSubmit,
     reset,
+    setError,
     formState: { errors },
   } = useForm({
     resolver: yupResolver(schema),
@@ -131,6 +145,7 @@ export default function EditStaffModal({ isOpen, onClose, onSuccess, staff, isSe
         leavingReason: staff.leavingReason || '',
         isActive: staff.isActive === false ? 'false' : 'true',
         password: '',
+        currentPassword: '',
         confirmPassword: '',
         'address.street': staff.address?.street || '',
         'address.city': staff.address?.city || '',
@@ -263,7 +278,17 @@ export default function EditStaffModal({ isOpen, onClose, onSuccess, staff, isSe
 
     // Only send password when the user actually typed one — blank keeps the
     // current password. Allowed on own profile too.
-    if (data.password) fd.append('password', data.password);
+    if (data.password) {
+      if (isOwnAccount && !data.currentPassword) {
+        setError('currentPassword', {
+          type: 'required',
+          message: 'Enter your current password to change it',
+        });
+        return;
+      }
+      fd.append('password', data.password);
+      if (isOwnAccount) fd.append('currentPassword', data.currentPassword);
+    }
 
     if (photoFile) fd.append('photo', photoFile);
 
@@ -397,6 +422,17 @@ export default function EditStaffModal({ isOpen, onClose, onSuccess, staff, isSe
             Security
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {isOwnAccount && (
+              <Field label="Current Password" error={errors.currentPassword?.message}>
+                <input
+                  {...register('currentPassword')}
+                  type="password"
+                  autoComplete="current-password"
+                  placeholder="Required to change your password"
+                  className={inputCls}
+                />
+              </Field>
+            )}
             <Field label="New Password" error={errors.password?.message}>
               <input
                 {...register('password')}

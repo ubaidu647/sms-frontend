@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import apiClient from '@/services/apiClient';
+import apiClient, { markSessionEnded } from '@/services/apiClient';
 import { useTokenStore } from '@/store/tokenStore';
 import { useUserStore } from '@/store/userStore';
 import { clearAuthCookies } from '@/utils/clearAuthCookies';
@@ -118,6 +118,7 @@ export const useAuth = () => {
       .post('/auth/logout', {}, { skipAuthRefresh: true })
       .catch((err) => console.warn('logout API call failed', err));
 
+    markSessionEnded();
     clearUser();
     clearTokens();
     hasFetchedUser.current = false;

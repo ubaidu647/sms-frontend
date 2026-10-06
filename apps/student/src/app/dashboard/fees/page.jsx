@@ -104,8 +104,12 @@ function VoucherCard({ voucher: v }) {
           <ul className="space-y-2">
             {lineItems.map((li, i) => (
               <li key={li._id || i} className="flex justify-between text-sm">
-                <span className="text-gray-600 dark:text-gray-300">{li.name || li.label || 'Item'}</span>
-                <span className="text-gray-900 dark:text-gray-100">{formatMoney(li.amount)}</span>
+                <span className="text-gray-600 dark:text-gray-300">
+                  {li.name || li.label || 'Item'}
+                </span>
+                <span className="text-gray-900 dark:text-gray-100">
+                  {formatMoney(li.finalAmount ?? li.amount)}
+                </span>
               </li>
             ))}
             {v.lateFee > 0 && (

@@ -110,18 +110,33 @@ apiClient.interceptors.response.use(
       }
       try {
         await refreshSession();
-        return apiClient(orig);
       } catch (e) {
+        const refreshStatus = e.response?.status;
         // A throttled refresh is "slow down", not "session invalid".
-        if (e.response?.status === 429) {
+        if (refreshStatus === 429) {
           handleRateLimited(e.response, '/auth/refresh');
           return Promise.reject(e);
+        }
+        // Only an explicit rejection of the refresh cookie ends the session. An
+        // infra error (503) or a dropped connection is temporary: keep the user
+        // signed in, tell them, and fail just this request.
+        if (refreshStatus !== 401 && refreshStatus !== 403) {
+          toast.error("Can't reach the server right now. Check your connection and try again.", {
+            id: 'session-refresh-offline',
+          });
+          return Promise.reject(error);
         }
         // The caller handles a dead session itself (session restore).
         if (orig.skipLogoutRedirect) return Promise.reject(error);
         handleLogoutAndRedirect();
         return Promise.reject(error);
       }
+      // The user may have signed out while the refresh was in flight — don't
+      // replay the request into a session that no longer exists.
+      if (!useTokenStore.getState().accessToken && !orig.skipLogoutRedirect) {
+        return Promise.reject(error);
+      }
+      return apiClient(orig);
     }
     return Promise.reject(error);
   },

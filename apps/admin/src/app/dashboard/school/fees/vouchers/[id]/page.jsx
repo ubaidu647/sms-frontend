@@ -22,7 +22,7 @@ import { retryUnless4xx } from '@/utils/queryError';
 import apiClient from '@/services/apiClient';
 import { useTokenStore } from '@/store/tokenStore';
 import { useUserStore } from '@/store/userStore';
-import { resolveScope, hasAnyAction } from '@/utils/permissions';
+import { resolveScope, hasAnyAction, canActInBranch } from '@/utils/permissions';
 import {
   formatDate,
   formatMoney,
@@ -53,7 +53,7 @@ export default function VoucherDetailPage() {
   const printableRef = useRef(null);
 
   const isOwnOnly = resolveScope(user?.role, 'view-fee') === 'own';
-  const canRecordPayment =
+  const canRecordAnyPayment =
     !isOwnOnly && hasAnyAction(user?.role, ['record-payment', 'record-all-branch-payment']);
   const canUpdate = !isOwnOnly && hasAnyAction(user?.role, ['update-fee', 'update-all-branch-fee']);
   const canDelete = !isOwnOnly && hasAnyAction(user?.role, ['delete-fee', 'delete-all-branch-fee']);
@@ -73,6 +73,15 @@ export default function VoucherDetailPage() {
   const voucher = data?.data;
   const payments = voucher?.payments || [];
   const isFinal = voucher?.status === 'paid' || voucher?.status === 'void';
+  // Another branch's voucher needs record-all-branch-payment (API rule).
+  const canRecordPayment =
+    canRecordAnyPayment &&
+    canActInBranch(
+      user?.role,
+      'record-payment',
+      user?.branchId || user?.branch?._id,
+      voucher?.branchId,
+    );
 
   const branchIdForProfile =
     typeof voucher?.branchId === 'object' ? voucher?.branchId?._id : voucher?.branchId;

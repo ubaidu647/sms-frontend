@@ -5,13 +5,13 @@ import { PageHeader } from '@/component/dashboard/Panel';
 import { Loading, ErrorState, EmptyState } from '@/component/dashboard/States';
 
 const DAYS = [
-  ['monday', 'Monday'],
-  ['tuesday', 'Tuesday'],
-  ['wednesday', 'Wednesday'],
-  ['thursday', 'Thursday'],
-  ['friday', 'Friday'],
-  ['saturday', 'Saturday'],
-  ['sunday', 'Sunday'],
+  ['mon', 'Monday'],
+  ['tue', 'Tuesday'],
+  ['wed', 'Wednesday'],
+  ['thu', 'Thursday'],
+  ['fri', 'Friday'],
+  ['sat', 'Saturday'],
+  ['sun', 'Sunday'],
 ];
 
 export default function TimetablePage() {
@@ -67,9 +67,13 @@ export default function TimetablePage() {
 }
 
 function SlotRow({ slot }) {
-  // Non-class slots (e.g. break) carry no subjectId — render customLabel.
-  const isClass = slot.slotType === 'period' && slot.subjectId;
-  const title = isClass ? slot.subjectId?.name : slot.customLabel || 'Break';
+  // Non-lesson slots (break, assembly, …) carry no subjectId — render
+  // customLabel, falling back to the slot type.
+  const isClass = slot.slotType === 'lesson' && slot.subjectId;
+  const typeLabel = slot.slotType
+    ? slot.slotType.charAt(0).toUpperCase() + slot.slotType.slice(1)
+    : 'Break';
+  const title = isClass ? slot.subjectId?.name : slot.customLabel || typeLabel;
 
   return (
     <div
@@ -84,13 +88,11 @@ function SlotRow({ slot }) {
           isClass ? 'bg-[#00918e] text-white' : 'bg-transparent'
         }`}
       >
-        {isClass ? slot.periodNumber ?? '·' : <Coffee className="w-3.5 h-3.5" />}
+        {isClass ? (slot.periodNumber ?? '·') : <Coffee className="w-3.5 h-3.5" />}
       </span>
       <div className="min-w-0 flex-1">
         <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{title}</p>
-        {isClass && slot.room && (
-          <p className="text-xs text-gray-400">Room {slot.room}</p>
-        )}
+        {isClass && slot.room && <p className="text-xs text-gray-400">Room {slot.room}</p>}
       </div>
     </div>
   );

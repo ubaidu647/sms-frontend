@@ -1,5 +1,5 @@
 'use client';
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   AlertTriangle,
@@ -130,6 +130,15 @@ export default function DefaultersReportPage() {
   const rows = report?.rows || [];
   const byBranch = report?.byBranch || [];
   const totals = report?.totals;
+
+  // A page emptied under the user (e.g. dues paid off since it loaded) steps back
+  // to the last page that still has rows instead of stranding them on a blank one.
+  useEffect(() => {
+    if (!report || isFetching || page <= 1 || rows.length > 0) return;
+    const lastPage = Math.max(1, Math.ceil((totals?.studentCount || 0) / Math.max(1, limit)));
+    setExpandedRows(new Set());
+    setPage(Math.min(page - 1, lastPage));
+  }, [report, isFetching, page, limit, rows.length, totals?.studentCount]);
 
   const handleGenerate = () => {
     setFilterError('');
@@ -281,8 +290,11 @@ export default function DefaultersReportPage() {
       .map((row) =>
         row
           .map((cell) => {
-            const v = cell == null ? '' : String(cell);
-            return /[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v;
+            let v = cell == null ? '' : String(cell);
+            // Neutralise spreadsheet formula injection in text cells (names,
+            // phones…): a leading = + - @ tab or CR would be evaluated by Excel.
+            if (typeof cell !== 'number' && /^[=+\-@\t\r]/.test(v)) v = `'${v}`;
+            return /[",\n\r]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v;
           })
           .join(','),
       )
@@ -556,7 +568,7 @@ export default function DefaultersReportPage() {
           <div className="text-sm text-gray-500 dark:text-gray-400">Loading report…</div>
         )}
 
-        {report && rows.length === 0 && (
+        {report && rows.length === 0 && page <= 1 && (
           <div className="bg-white dark:bg-gray-900 border border-green-200 rounded-2xl p-10 text-center">
             <div className="text-lg font-semibold text-green-700 dark:text-green-400">
               No outstanding fees in this period 🎉

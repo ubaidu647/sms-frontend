@@ -47,9 +47,12 @@ export function getSubmitState(hw) {
   if (!hw) return { canSubmit: false, reason: '' };
   if (hw.status !== 'published')
     return { canSubmit: false, reason: 'This homework is not open for submission.' };
-  if (hw.submissionStatus === 'graded')
+  if (hw.submissionStatus === 'graded' || hw.mySubmission?.status === 'graded')
     return { canSubmit: false, reason: 'This has been graded — you can no longer resubmit.' };
   if (hw.isPastDue && !hw.allowLateSubmission)
-    return { canSubmit: false, reason: 'The due date has passed and late submission is not allowed.' };
+    return {
+      canSubmit: false,
+      reason: 'The due date has passed and late submission is not allowed.',
+    };
   return { canSubmit: true, reason: '' };
 }

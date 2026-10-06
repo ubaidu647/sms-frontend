@@ -18,7 +18,7 @@ import { useTokenStore } from '@/store/tokenStore';
 import { useUserStore } from '@/store/userStore';
 import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import { fetchData } from '@/utils/api';
-import { resolveScope, hasAnyAction } from '@/utils/permissions';
+import { resolveScope, hasAnyAction, canActInBranch } from '@/utils/permissions';
 import GenerateSectionModal from './GenerateSectionModal';
 import GenerateStudentModal from './GenerateStudentModal';
 import VoidVoucherModal from './VoidVoucherModal';
@@ -315,7 +315,13 @@ export default function VouchersPage() {
   const rowActions = (row) => {
     const items = [{ label: 'View / Print', value: 'view', icon: Eye }];
     const isFinal = row.status === 'paid' || row.status === 'void';
-    if (canRecordPayment && row.balanceAmount > 0 && row.status !== 'void')
+    // Another branch's voucher needs record-all-branch-payment (API rule).
+    if (
+      canRecordPayment &&
+      canActInBranch(user?.role, 'record-payment', userBranchId, row.branchId) &&
+      row.balanceAmount > 0 &&
+      row.status !== 'void'
+    )
       items.push({ label: 'Record Payment', value: 'pay', icon: Wallet });
     if (canUpdate && !isFinal)
       items.push({ label: 'Set Late Fee', value: 'late-fee', icon: AlertOctagon });
@@ -413,7 +419,8 @@ export default function VouchersPage() {
           <div className="w-full lg:w-auto flex items-center bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 gap-2 col-span-2 sm:col-span-3 md:col-span-2 lg:col-auto">
             <input
               type="text"
-              placeholder="Search voucher / student..."
+              placeholder="Filter this page (voucher / student)..."
+              title="Filters only the vouchers loaded on this page"
               value={draftSearch}
               onChange={(e) => setDraftSearch(e.target.value)}
               onKeyDown={(e) => {
@@ -517,6 +524,11 @@ export default function VouchersPage() {
             Clear
           </button>
         </div>
+        {search && (
+          <p className="-mt-2 mb-3 text-xs text-gray-500 dark:text-gray-400">
+            The text filter only searches the vouchers loaded on this page, not all results.
+          </p>
+        )}
 
         <Table
           columns={columns}

@@ -1,5 +1,5 @@
 'use client';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Modal } from '@/component/Modal';
 import Button from '@/component/Button';
 import toast from 'react-hot-toast';
@@ -30,29 +30,29 @@ export default function RecordPaymentModal({ isOpen, onClose, voucher }) {
   const [notes, setNotes] = useState('');
   const [submitError, setSubmitError] = useState('');
   const [receipt, setReceipt] = useState(null);
-  // One key per opened modal, reused on retries so a resubmit can't double-record.
-  const [idempotencyKey, setIdempotencyKey] = useState(null);
+  // One key per payment attempt: minted on open and again after every recorded
+  // payment, reused only for retries of the same unsubmitted attempt so a
+  // resubmit after a lost response can't double-record.
+  const idempotencyKeyRef = useRef(null);
 
-  // Keyed on isOpen alone: a refetch of the voucher/total while open must not
-  // mint a new key, or a retry after a lost response would pay twice.
+  // Reset on open only. Keyed on isOpen alone: a voucher refetch while open
+  // (e.g. after this payment invalidated it) must neither mint a new key nor
+  // wipe the receipt being shown.
   useEffect(() => {
-    if (isOpen) setIdempotencyKey(newIdempotencyKey());
+    if (!isOpen) return;
+    idempotencyKeyRef.current = newIdempotencyKey();
+    setAmount(voucher?.balanceAmount ?? 0);
+    setPaymentDate(todayYMD());
+    setAccount(null);
+    setReferenceNumber('');
+    setNotes('');
+    setSubmitError('');
+    setReceipt(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
-  useEffect(() => {
-    if (isOpen) {
-      setAmount(voucher?.balanceAmount ?? 0);
-      setPaymentDate(todayYMD());
-      setAccount(null);
-      setReferenceNumber('');
-      setNotes('');
-      setSubmitError('');
-      setReceipt(null);
-    }
-  }, [isOpen, voucher]);
-
   const mutation = useMutation({
-    mutationFn: (payload) =>
+    mutationFn: ({ idempotencyKey, ...payload }) =>
       postData({
         url: '/fee/payment',
         payload,
@@ -60,10 +60,18 @@ export default function RecordPaymentModal({ isOpen, onClose, voucher }) {
         headers: idempotencyHeader(idempotencyKey),
       }),
     onSuccess: (res) => {
+      // This attempt is recorded; the next payment must not replay it.
+      idempotencyKeyRef.current = newIdempotencyKey();
       toast.success(`Receipt ${res?.data?.payment?.receiptNumber} saved`);
       queryClient.invalidateQueries({ queryKey: ['payments'] });
       queryClient.invalidateQueries({ queryKey: ['vouchers'] });
       queryClient.invalidateQueries({ queryKey: ['voucher', voucher?._id] });
+      // Balances moved: the outstanding/defaulters reports and the student's
+      // consolidated slip are now stale too.
+      queryClient.invalidateQueries({ queryKey: ['report-outstanding'] });
+      queryClient.invalidateQueries({ queryKey: ['report-collection'] });
+      queryClient.invalidateQueries({ queryKey: ['defaulters'] });
+      queryClient.invalidateQueries({ queryKey: ['consolidated'] });
       setReceipt(res?.data);
     },
     onError: (err) => {
@@ -104,7 +112,7 @@ export default function RecordPaymentModal({ isOpen, onClose, voucher }) {
     };
     if (referenceNumber.trim()) payload.referenceNumber = referenceNumber.trim();
     if (notes.trim()) payload.notes = notes.trim();
-    mutation.mutate(payload);
+    mutation.mutate({ ...payload, idempotencyKey: idempotencyKeyRef.current });
   };
 
   if (!voucher) return null;

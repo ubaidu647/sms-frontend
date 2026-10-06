@@ -1,8 +1,6 @@
 'use client';
 import React, { useMemo, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
 import { RefreshCw, ArrowLeftRight, Ban, Plus, CreditCard, Eye, Receipt } from 'lucide-react';
-import { fetchData } from '@/utils/api';
 import { Table } from '@/component/Table';
 import ConfirmModal from '../organizations/ConfirmModal';
 import AssignSubscriptionModal from './AssignSubscriptionModal';
@@ -10,6 +8,7 @@ import ChangePlanModal from './ChangePlanModal';
 import SubscriptionDetailModal from './SubscriptionDetailModal';
 import InvoiceModal from './InvoiceModal';
 import GracePeriodField from './GracePeriodField';
+import SchoolPicker from './SchoolPicker';
 import {
   useCurrentSubscription,
   useSubscriptionHistory,
@@ -61,12 +60,6 @@ function HistoryPager({ page, shown, total, onPage }) {
   );
 }
 
-const useSchools = () =>
-  useQuery({
-    queryKey: ['organizations', 'picker'],
-    queryFn: () => fetchData({ url: '/schools', page: 1, limit: 200 }),
-  });
-
 const StatusPill = ({ status }) => (
   <span
     className={`inline-flex px-3 py-1 rounded-full text-xs font-medium capitalize ${
@@ -85,11 +78,10 @@ const LimitStat = ({ label, value }) => (
 );
 
 export default function SubscriptionsPage() {
-  const { data: schoolsData, isLoading: schoolsLoading } = useSchools();
-  const schools = schoolsData?.data ?? [];
-
-  const [schoolId, setSchoolId] = useState('');
-  const selectedSchool = schools.find((s) => s._id === schoolId);
+  // { _id, name } of the picked school — the picker searches the API, so the
+  // selection can't be looked up in a locally loaded list.
+  const [selectedSchool, setSelectedSchool] = useState(null);
+  const schoolId = selectedSchool?._id || '';
 
   const { data: currentData, isLoading: currentLoading } = useCurrentSubscription(schoolId);
   const current = currentData?.data ?? null;
@@ -176,22 +168,13 @@ export default function SubscriptionsPage() {
           <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
             School
           </label>
-          <select
-            value={schoolId}
-            onChange={(e) => {
-              setSchoolId(e.target.value);
+          <SchoolPicker
+            value={selectedSchool}
+            onChange={(school) => {
+              setSelectedSchool(school);
               setHistoryPage(1);
             }}
-            disabled={schoolsLoading}
-            className="w-full sm:max-w-md px-4 py-2.5 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-          >
-            <option value="">{schoolsLoading ? 'Loading schools…' : 'Select a school…'}</option>
-            {schools.map((s) => (
-              <option key={s._id} value={s._id}>
-                {s.name}
-              </option>
-            ))}
-          </select>
+          />
         </div>
 
         {!schoolId ? (

@@ -10,14 +10,19 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { postData } from '@/utils/api';
-import { useOrganizationStore } from '@/app/dashboard/organizations/store/organizationStore';
 import { usePackages } from '@/app/dashboard/packages/hooks/usePackages';
 import { fmtMoney } from '@/app/dashboard/packages/format';
 // Validation schema
 const organizationSchema = yup.object().shape({
   name: yup.string().required('School name is required'),
   email: yup.string().email('Invalid email').required('Email is required'),
-  phone: yup.string(),
+  // Optional. The API stores phone as a number, so allow only digits plus the
+  // usual separators (stripped before sending).
+  phone: yup
+    .string()
+    .test('phone', 'Phone may contain only digits, spaces, dashes and brackets', (v) =>
+      !v || !v.trim() ? true : /^[0-9\s\-()]+$/.test(v.trim()) && /\d/.test(v),
+    ),
   packageId: yup.string().required('Please choose a package'),
   status: yup.string().required(),
   gracePeriodInDays: yup
@@ -32,7 +37,6 @@ const organizationSchema = yup.object().shape({
 
 export const AddOrganizationModal = ({ isOpen, onClose, token, onSuccess = null }) => {
   const queryClient = useQueryClient();
-  const { addOrganization } = useOrganizationStore();
 
   const {
     register,
@@ -93,12 +97,8 @@ export const AddOrganizationModal = ({ isOpen, onClose, token, onSuccess = null 
       }),
 
     onSuccess: (newSchool) => {
-      addOrganization(newSchool.data);
-      console.log('newSchool', newSchool.data);
-      queryClient.setQueryData(['organizations'], (oldData) => {
-        if (!oldData) return [newSchool.data];
-        return [newSchool.data, ...oldData];
-      });
+      // Lists are paginated server-side — refetch rather than splice locally.
+      queryClient.invalidateQueries({ queryKey: ['organizations'] });
 
       onSuccess?.(newSchool.data);
       setSuccessState(true);
@@ -107,7 +107,6 @@ export const AddOrganizationModal = ({ isOpen, onClose, token, onSuccess = null 
       onClose();
     },
     onError: (error) => {
-      console.log('111', error);
       setSubmitError(error.message || 'Failed to create school');
       toast.error(error.message);
     },
@@ -123,6 +122,12 @@ export const AddOrganizationModal = ({ isOpen, onClose, token, onSuccess = null 
     } else {
       payload.gracePeriodInDays = Number(payload.gracePeriodInDays);
     }
+    // Phone is optional: omit it when blank (an empty string fails the API's
+    // number validation). Otherwise send the digits as a string; the API
+    // coerces it to a number.
+    const phoneDigits = (payload.phone || '').replace(/\D/g, '');
+    if (phoneDigits) payload.phone = phoneDigits;
+    else delete payload.phone;
     createSchoolMutation.mutate(payload);
   };
 

@@ -23,11 +23,6 @@ export default function OutstandingReportPage() {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(100);
 
-  // Any filter change starts again from the first page.
-  useEffect(() => {
-    setPage(1);
-  }, [academicYear, classId, sectionId, branchId, limit]);
-
   const actions = user?.role?.actions || [];
   const isAdmin = !!user?.role?.isPredefined;
   const isOrgLevel = isAdmin || actions.includes('view-all-branch-fee');
@@ -69,7 +64,6 @@ export default function OutstandingReportPage() {
   const { data, isFetching } = useQuery({
     queryKey: [
       'report-outstanding',
-      academicYear,
       classId,
       sectionId,
       branchId,
@@ -84,7 +78,9 @@ export default function OutstandingReportPage() {
       else if (branchId) params.branchId = branchId;
       if (classId) params.classId = classId;
       if (sectionId) params.sectionId = sectionId;
-      if (academicYear) params.academicYear = academicYear;
+      // No academicYear: the report is year-agnostic (the backend ignores it) so
+      // arrears carried over from earlier years stay visible. The year box only
+      // scopes the class dropdown.
       return fetchData({ url: '/fee/report/outstanding', token, page, limit, ...params });
     },
     enabled: !!token,
@@ -93,6 +89,14 @@ export default function OutstandingReportPage() {
 
   const report = data?.data;
   const students = report?.students || [];
+
+  // A page emptied under the user (e.g. dues paid off) steps back to the last
+  // page that still has rows instead of stranding them on a blank page.
+  useEffect(() => {
+    if (!report || isFetching || page <= 1 || students.length > 0) return;
+    const lastPage = Math.max(1, Math.ceil((report.studentCount || 0) / Math.max(1, limit)));
+    setPage(Math.min(page - 1, lastPage));
+  }, [report, isFetching, page, limit, students.length]);
 
   return (
     <div className="p-3 sm:p-6">
@@ -107,22 +111,28 @@ export default function OutstandingReportPage() {
         </div>
 
         <div className="flex flex-wrap items-end gap-3 mb-6">
-          <input
-            type="text"
-            placeholder="2025-2026"
-            value={academicYear}
-            onChange={(e) => {
-              setAcademicYear(e.target.value);
-              setClassId('');
-              setSectionId('');
-            }}
-            className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-900 dark:text-gray-100 w-32 outline-none"
-          />
+          <label className="flex flex-col gap-1 text-xs text-gray-500 dark:text-gray-400">
+            Class list year
+            <input
+              type="text"
+              placeholder="2025-2026"
+              value={academicYear}
+              title="Only picks which year's classes to list; dues from every year are shown"
+              onChange={(e) => {
+                setAcademicYear(e.target.value);
+                setClassId('');
+                setSectionId('');
+                setPage(1);
+              }}
+              className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-900 dark:text-gray-100 w-32 outline-none"
+            />
+          </label>
           <select
             value={classId}
             onChange={(e) => {
               setClassId(e.target.value);
               setSectionId('');
+              setPage(1);
             }}
             className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
           >
@@ -135,7 +145,10 @@ export default function OutstandingReportPage() {
           </select>
           <select
             value={sectionId}
-            onChange={(e) => setSectionId(e.target.value)}
+            onChange={(e) => {
+              setSectionId(e.target.value);
+              setPage(1);
+            }}
             disabled={!classId}
             className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
           >
@@ -150,7 +163,10 @@ export default function OutstandingReportPage() {
             <select
               value={branchId}
               onFocus={() => setBranchDropdownTouched(true)}
-              onChange={(e) => setBranchId(e.target.value)}
+              onChange={(e) => {
+                setBranchId(e.target.value);
+                setPage(1);
+              }}
               className="bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
             >
               <option value="">All Branches</option>
@@ -193,7 +209,7 @@ export default function OutstandingReportPage() {
                   {students.length} of {report.studentCount} student(s)
                 </span>
               </div>
-              {students.length > 0 && (
+              {(students.length > 0 || page > 1) && (
                 <ReportPagination
                   className="px-6 py-3 border-b border-gray-200 dark:border-gray-700"
                   page={report.page || page}
@@ -202,7 +218,10 @@ export default function OutstandingReportPage() {
                   total={report.studentCount}
                   truncated={report.truncated}
                   onPageChange={setPage}
-                  onLimitChange={setLimit}
+                  onLimitChange={(n) => {
+                    setLimit(n);
+                    setPage(1);
+                  }}
                   noun="students"
                 />
               )}

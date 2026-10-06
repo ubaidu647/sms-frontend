@@ -1,46 +1,60 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { fetchData, patchData } from '@/utils/api';
-import { useOrganizationStore } from '../store/organizationStore';
 
+// Server-side paginated school list. `tab` picks the active / disabled split
+// (disabled = isActive false OR status suspended); `search` matches the name;
+// `status` narrows to one lifecycle status; `createdOn` (YYYY-MM-DD) to one day.
+// Returns the raw envelope: { data: School[], total }.
 export const useOrganizations = ({
   token,
   page = 1,
   limit = 20,
-  columnFilters = [],
-  columnFiltersOr = [],
+  tab = 'active',
+  search = '',
+  status = '',
+  createdOn = '',
 }) => {
-  const setOrganizations = useOrganizationStore((state) => state.setOrganizations);
+  const columnFilters = [];
+  const columnFiltersOr = [];
+  if (tab === 'disabled') {
+    columnFiltersOr.push({ id: 'isActive', value: false }, { id: 'status', value: 'suspended' });
+  } else {
+    columnFilters.push({ id: 'isActive', value: true });
+  }
+  if (search) columnFilters.push({ id: 'name', value: search });
+  if (status) columnFilters.push({ id: 'status', value: status });
+  const dateParams = createdOn ? { fromDate: createdOn, toDate: createdOn } : {};
 
   return useQuery({
-    queryKey: ['organizations', page, limit, columnFilters, columnFiltersOr],
-    queryFn: async () => {
-      const response = await fetchData({
+    queryKey: ['organizations', 'list', { page, limit, tab, search, status, createdOn }],
+    queryFn: () =>
+      fetchData({
         url: '/schools',
         page,
         limit,
         columnFilters,
         columnFiltersOr,
         token,
-      });
-      setOrganizations(response.data); // splits into active / disabled in the store
-      return response;
-    },
-    keepPreviousData: true,
+        ...dateParams,
+      }),
+    placeholderData: keepPreviousData,
     enabled: !!token,
   });
 };
 
 export const useToggleSchoolStatus = () => {
   const queryClient = useQueryClient();
-  const applyStatusChange = useOrganizationStore((state) => state.applyStatusChange);
 
   return useMutation({
+    // Enabling must also lift a suspension: `isActive:true` alone leaves a
+    // suspended school locked out. Disabling only flips isActive.
     mutationFn: ({ id, isActive }) =>
-      patchData({ url: `/schools/${id}/status`, payload: { isActive } }),
+      patchData({
+        url: `/schools/${id}/status`,
+        payload: isActive ? { isActive: true, status: 'active' } : { isActive: false },
+      }),
     onSuccess: (res) => {
-      const updated = res?.data;
-      if (updated) applyStatusChange(updated);
       toast.success(res?.message || 'School status updated');
       queryClient.invalidateQueries({ queryKey: ['organizations'] });
     },

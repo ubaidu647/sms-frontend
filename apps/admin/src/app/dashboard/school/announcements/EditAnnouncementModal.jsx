@@ -42,6 +42,10 @@ export default function EditAnnouncementModal({ isOpen, onClose, announcement })
 
   const isAdmin = !!user?.role?.isPredefined;
   const isOrgLevel = isAdmin || !!user?.role?.actions?.includes('update-all-branch-announcement');
+  const canPublish = isAdmin || !!user?.role?.actions?.includes('publish-announcement');
+  // On a live notice, re-timing it, pinning it, changing its priority or
+  // demanding acknowledgement are publish decisions (API enforces the same).
+  const publishLocked = announcement?.status === 'published' && !canPublish;
 
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
@@ -116,8 +120,18 @@ export default function EditAnnouncementModal({ isOpen, onClose, announcement })
       isPinned,
       requiresAck,
     };
-    if (publishedAt) payload.publishedAt = publishedAt;
-    if (expiresAt) payload.expiresAt = expiresAt;
+    // Dates go out only when the user changed them, as full UTC instants: a bare
+    // datetime-local string would be read in the server's timezone, and
+    // re-sending an unchanged date on a live notice needs publish rights.
+    // `null` clears the expiry.
+    const initialPublishedAt = toLocalDateTime(announcement.publishedAt);
+    const initialExpiresAt = toLocalDateTime(announcement.expiresAt);
+    if (publishedAt !== initialPublishedAt) {
+      if (publishedAt) payload.publishedAt = new Date(publishedAt).toISOString();
+    }
+    if (expiresAt !== initialExpiresAt) {
+      payload.expiresAt = expiresAt ? new Date(expiresAt).toISOString() : null;
+    }
     mutation.mutate(payload);
   };
 
@@ -207,6 +221,7 @@ export default function EditAnnouncementModal({ isOpen, onClose, announcement })
               <select
                 value={priority}
                 onChange={(e) => setPriority(e.target.value)}
+                disabled={publishLocked}
                 className={inputCls}
               >
                 {ANNOUNCEMENT_PRIORITIES.map((p) => (
@@ -222,6 +237,7 @@ export default function EditAnnouncementModal({ isOpen, onClose, announcement })
                 type="datetime-local"
                 value={publishedAt}
                 onChange={(e) => setPublishedAt(e.target.value)}
+                disabled={publishLocked}
                 className={inputCls}
               />
             </div>
@@ -231,6 +247,7 @@ export default function EditAnnouncementModal({ isOpen, onClose, announcement })
                 type="datetime-local"
                 value={expiresAt}
                 onChange={(e) => setExpiresAt(e.target.value)}
+                disabled={publishLocked}
                 className={inputCls}
               />
             </div>
@@ -241,6 +258,7 @@ export default function EditAnnouncementModal({ isOpen, onClose, announcement })
               <input
                 type="checkbox"
                 checked={isPinned}
+                disabled={publishLocked}
                 onChange={(e) => setIsPinned(e.target.checked)}
               />
               Pin to top
@@ -249,11 +267,18 @@ export default function EditAnnouncementModal({ isOpen, onClose, announcement })
               <input
                 type="checkbox"
                 checked={requiresAck}
+                disabled={publishLocked}
                 onChange={(e) => setRequiresAck(e.target.checked)}
               />
               Require acknowledgement
             </label>
           </div>
+          {publishLocked && (
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              This notice is published. Changing its dates, priority, pin or acknowledgement
+              requires the publish permission.
+            </p>
+          )}
         </div>
 
         <div>

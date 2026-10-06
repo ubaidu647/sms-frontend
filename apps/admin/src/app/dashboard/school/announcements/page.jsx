@@ -127,6 +127,16 @@ export default function AnnouncementsPage() {
     actions.includes('view-announcement') ||
     actions.includes('view-all-branch-announcement');
   const isOrgLevel = isAdmin || actions.includes('view-all-branch-announcement');
+  const canUpdateAllBranches = isAdmin || actions.includes('update-all-branch-announcement');
+  const canDeleteAllBranches = isAdmin || actions.includes('delete-all-branch-announcement');
+  const userBranchId = String(user?.branchId || user?.branch?._id || '');
+  // Mirrors the API's assertCanManage: without the org-level action a user may
+  // only manage notices owned by their own branch — a school-wide notice (no
+  // branchId) or another branch's notice is out of reach.
+  const inOwnBranch = (row) => {
+    const rowBranch = row?.branchId?._id || row?.branchId;
+    return !!rowBranch && !!userBranchId && String(rowBranch) === userBranchId;
+  };
 
   const { data: branchData } = useQuery({
     queryKey: ['branches-dropdown'],
@@ -296,17 +306,23 @@ export default function AnnouncementsPage() {
   const rowActions = (row) => {
     const items = [{ label: 'View', value: 'view', icon: Eye }];
     if (canViewStats) items.push({ label: 'Read Stats', value: 'stats', icon: BarChart3 });
-    if (canUpdate) {
+    const isPublished = row.status === 'published';
+    const canManageRow = canUpdate && (canUpdateAllBranches || inOwnBranch(row));
+    if (canManageRow) {
       items.push({ label: 'Edit', value: 'edit', icon: Edit });
       items.push({ label: 'Attachments', value: 'attachments', icon: Paperclip });
     }
-    if (canPublish && row.status !== 'published') {
+    // Publish / archive are also branch-gated by the update action on the API.
+    if (canPublish && canManageRow && !isPublished) {
       items.push({ label: 'Publish', value: 'publish', icon: Send });
     }
-    if (canPublish && row.status === 'published') {
+    if (canPublish && canManageRow && isPublished) {
       items.push({ label: 'Archive', value: 'archive', icon: Archive });
     }
-    if (canDelete) items.push({ label: 'Delete', value: 'delete', icon: Trash2 });
+    // Deleting a live notice withdraws it from readers — a publish decision.
+    const canDeleteRow =
+      canDelete && (canDeleteAllBranches || inOwnBranch(row)) && (!isPublished || canPublish);
+    if (canDeleteRow) items.push({ label: 'Delete', value: 'delete', icon: Trash2 });
     return items;
   };
 

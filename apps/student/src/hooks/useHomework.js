@@ -28,12 +28,48 @@ export function useHomeworkList({ page = 1, limit = 20 } = {}) {
   });
 }
 
-// 4.2 Detail — same item shape (correctOptionIndex stripped) + mySubmission.
+// End of the due day — mirrors the server's homeworkDueDeadline. A date-only
+// due date is stored as UTC midnight and names that calendar day; any other
+// instant is placed on the local calendar. Used only when the server did not
+// send `isPastDue` itself.
+function dueDeadline(dueDate) {
+  const d = new Date(dueDate);
+  if (Number.isNaN(d.getTime())) return null;
+  const utcMidnight =
+    d.getUTCHours() === 0 &&
+    d.getUTCMinutes() === 0 &&
+    d.getUTCSeconds() === 0 &&
+    d.getUTCMilliseconds() === 0;
+  const end = utcMidnight
+    ? new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate())
+    : new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  end.setHours(23, 59, 59, 999);
+  return end;
+}
+
+// The detail endpoint returns the raw homework (subjectId populated) plus
+// mySubmission; newer servers also derive submissionStatus / isPastDue /
+// subject. Fill those in when absent so the page reads one shape.
+export function normalizeHomeworkDetail(hw) {
+  if (!hw) return hw;
+  const subject =
+    hw.subject ?? (hw.subjectId && typeof hw.subjectId === 'object' ? hw.subjectId : null);
+  const submissionStatus = hw.submissionStatus ?? hw.mySubmission?.status ?? 'pending';
+  let isPastDue = hw.isPastDue;
+  if (typeof isPastDue !== 'boolean') {
+    const deadline = hw.dueDate ? dueDeadline(hw.dueDate) : null;
+    isPastDue = deadline ? Date.now() > deadline.getTime() : false;
+  }
+  return { ...hw, subject, submissionStatus, isPastDue };
+}
+
+// 4.2 Detail — homework (correctOptionIndex stripped) + mySubmission, normalized.
 export function useHomeworkDetail(id) {
   const uid = useUid();
   return useQuery({
     queryKey: ['homework', uid, 'detail', id],
-    queryFn: async () => unwrap(await apiClient.get(`/dashboard/student/homework/${id}`)),
+    queryFn: async () =>
+      normalizeHomeworkDetail(unwrap(await apiClient.get(`/dashboard/student/homework/${id}`))),
     enabled: !!id,
   });
 }
@@ -63,7 +99,7 @@ export function useSubmitHomework(id) {
           ? {
               ...prev,
               mySubmission: submission,
-              submissionStatus: submission?.status,
+              submissionStatus: submission?.status ?? prev.submissionStatus,
             }
           : prev,
       );

@@ -6,6 +6,12 @@ export const FilterBar = ({
   onFilterChange,
   onClearFilters,
   searchPlaceholder = 'Search organizations...',
+  // School lifecycle statuses the API accepts.
+  statusOptions = [
+    { value: 'active', label: 'Active' },
+    { value: 'pending', label: 'Pending' },
+    { value: 'suspended', label: 'Suspended' },
+  ],
 }) => {
   const handleInputChange = (key, value) => {
     onFilterChange({ ...filters, [key]: value });
@@ -15,7 +21,7 @@ export const FilterBar = ({
 
   return (
     <div className="bg-white dark:bg-gray-900 text-black dark:text-gray-100 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 mb-6">
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" />
           <input
@@ -35,26 +41,16 @@ export const FilterBar = ({
         />
 
         <select
-          value={filters.packageName || ''}
-          onChange={(e) => handleInputChange('packageName', e.target.value)}
-          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
-        >
-          <option value="">All Packages</option>
-          <option value="basic">Basic</option>
-          <option value="standard">Standard</option>
-          <option value="premium">Premium</option>
-          <option value="enterprise">Enterprise</option>
-        </select>
-
-        <select
           value={filters.status || ''}
           onChange={(e) => handleInputChange('status', e.target.value)}
           className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
         >
           <option value="">All Status</option>
-          <option value="active">Active</option>
-          <option value="inactive">Inactive</option>
-          <option value="disabled">Disabled</option>
+          {statusOptions.map((o) => (
+            <option key={o.value} value={o.value}>
+              {o.label}
+            </option>
+          ))}
         </select>
       </div>
 

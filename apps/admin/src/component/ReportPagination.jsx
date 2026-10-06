@@ -21,8 +21,10 @@ export default function ReportPagination({
   className = '',
 }) {
   const start = shown > 0 ? (page - 1) * limit + 1 : 0;
-  const end = (page - 1) * limit + shown;
-  const totalCount = typeof total === 'number' ? total : end + (truncated ? 1 : 0);
+  const rawEnd = (page - 1) * limit + shown;
+  const totalCount = typeof total === 'number' ? total : rawEnd + (truncated ? 1 : 0);
+  // An empty page (e.g. one emptied by payments) shows "0–0", never an end past the total.
+  const end = shown > 0 ? rawEnd : 0;
   const pageCount = Math.max(1, Math.ceil(totalCount / Math.max(1, limit)));
   const hasPrev = page > 1;
   const hasNext = !!truncated || page < pageCount;

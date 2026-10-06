@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { listPackages, createPackage, updatePackage, deletePackage } from '@/services/billing';
 
@@ -16,7 +16,7 @@ export const usePackages = ({ page = 1, limit = 20, filters = {}, enabled = true
         search: filters.search,
         isActive: filters.isActive,
       }),
-    keepPreviousData: true,
+    placeholderData: keepPreviousData,
     enabled,
   });
 

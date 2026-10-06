@@ -58,3 +58,17 @@ export const hasAnyAction = (role, keys) => {
   const actions = role?.actions || [];
   return keys.some((k) => actions.includes(k));
 };
+
+// Normalises a branch reference (populated `{ _id, name }` or a raw id) to a string.
+export const branchIdOf = (b) => String(b?._id || b || '');
+
+// Branch reach for a single record: an org-scoped grant covers every branch, a
+// branch-scoped grant only records in the user's own branch. Mirrors the API's
+// `canXAll || record.branchId === user.branchId` checks.
+export const canActInBranch = (role, base, userBranchId, targetBranch) => {
+  const scope = resolveScope(role, base);
+  if (scope === 'all') return true;
+  if (scope !== 'branch') return false;
+  const target = branchIdOf(targetBranch);
+  return !!target && target === branchIdOf(userBranchId);
+};

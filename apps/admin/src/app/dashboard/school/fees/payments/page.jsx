@@ -234,7 +234,8 @@ export default function PaymentsPage() {
           <div className="w-full lg:w-auto flex items-center bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 gap-2 col-span-2 sm:col-span-3 md:col-span-2 lg:col-auto">
             <input
               type="text"
-              placeholder="Search receipt / student / voucher..."
+              placeholder="Filter this page (receipt / student / voucher)..."
+              title="Filters only the payments loaded on this page"
               value={draftSearch}
               onChange={(e) => setDraftSearch(e.target.value)}
               onKeyDown={(e) => {
@@ -315,6 +316,11 @@ export default function PaymentsPage() {
             Clear
           </button>
         </div>
+        {search && (
+          <p className="-mt-2 mb-3 text-xs text-gray-500 dark:text-gray-400">
+            The text filter only searches the payments loaded on this page, not all results.
+          </p>
+        )}
 
         <Table
           columns={columns}

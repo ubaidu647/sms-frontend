@@ -1,18 +1,15 @@
-import axios from "axios";
-import { useTokenStore } from "@/store/tokenStore";
-import { useUserStore } from "@/store/userStore";
-import { clearAuthCookies } from "@/utils/clearAuthCookies";
-import {
-  withSessionHeaders,
-  AUTH_MODE_HEADERS,
-  readCsrfToken,
-} from "@/utils/session";
+import axios from 'axios';
+import toast from 'react-hot-toast';
+import { useTokenStore } from '@/store/tokenStore';
+import { useUserStore } from '@/store/userStore';
+import { clearAuthCookies } from '@/utils/clearAuthCookies';
+import { withSessionHeaders, AUTH_MODE_HEADERS, readCsrfToken } from '@/utils/session';
 
 const apiClient = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4001/api",
+  baseURL: process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4001/api',
   // The session is an httpOnly cookie, so every request must carry cookies.
   withCredentials: true,
-  headers: { "Content-Type": "application/json" },
+  headers: { 'Content-Type': 'application/json' },
 });
 
 // No Authorization header: the browser attaches the session cookie itself.
@@ -26,7 +23,7 @@ function logoutAndRedirect() {
   useUserStore.getState().clearUser();
   useUserStore.persist?.clearStorage?.();
   clearAuthCookies();
-  if (typeof window !== "undefined") window.location.replace("/signin");
+  if (typeof window !== 'undefined') window.location.replace('/signin');
 }
 
 // One refresh in flight at a time; concurrent 401s wait for it and retry.
@@ -42,7 +39,7 @@ function refreshSession() {
           withCredentials: true,
           headers: {
             ...AUTH_MODE_HEADERS,
-            "X-CSRF-Token": readCsrfToken() || "",
+            'X-CSRF-Token': readCsrfToken() || '',
           },
         },
       )
@@ -61,13 +58,9 @@ apiClient.interceptors.response.use(
   async (error) => {
     const orig = error.config || {};
     const status = error.response?.status;
-    const url = orig.url || "";
+    const url = orig.url || '';
 
-    if (
-      status !== 401 ||
-      orig.skipAuthRefresh ||
-      url.includes("/auth/student/login")
-    ) {
+    if (status !== 401 || orig.skipAuthRefresh || url.includes('/auth/student/login')) {
       return Promise.reject(error);
     }
 
@@ -85,12 +78,24 @@ apiClient.interceptors.response.use(
     }
     try {
       await refreshSession();
-      return apiClient(orig);
     } catch (refreshError) {
-      // A throttled refresh is "slow down", not "session invalid".
-      if (refreshError.response?.status !== 429) logoutAndRedirect();
+      // Only an explicit rejection of the refresh cookie ends the session. A
+      // throttle (429), an infra error (503) or a dropped connection is
+      // temporary: keep the user signed in and let them retry.
+      const refreshStatus = refreshError.response?.status;
+      if (refreshStatus === 401 || refreshStatus === 403) {
+        logoutAndRedirect();
+      } else {
+        toast.error("Can't reach the server right now. Check your connection and try again.", {
+          id: 'session-refresh-offline',
+        });
+      }
       return Promise.reject(error);
     }
+    // The user may have signed out while the refresh was in flight — don't
+    // replay the request into a session that no longer exists.
+    if (!useTokenStore.getState().accessToken) return Promise.reject(error);
+    return apiClient(orig);
   },
 );
 
