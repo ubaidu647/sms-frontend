@@ -7,10 +7,12 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { postData } from '@/utils/api';
 import { idempotencyHeader, newIdempotencyKey } from '@/utils/idempotency';
 import { useTokenStore } from '@/store/tokenStore';
+import { invalidateFeeQueries } from '@/utils/feeQueries';
 import PaymentAccountSelect from '@/component/PaymentAccountSelect';
 import PaymentReceiptPrint, { printReceipt } from '@/component/PaymentReceiptPrint';
 import { useUserStore } from '@/store/userStore';
-import { PAYMENT_METHOD_COLORS, formatMoney, formatMonth, todayYMD } from '@/constants/fee';
+import { PAYMENT_METHOD_COLORS, formatMoney, formatMonth } from '@/constants/fee';
+import { localYMD, paymentDateError } from '@/utils/paymentDate';
 
 const inputCls =
   'w-full px-3 py-2 border border-gray-200 rounded-lg outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 text-sm text-gray-900 bg-white';
@@ -29,7 +31,7 @@ export default function PayConsolidatedModal({
   const queryClient = useQueryClient();
 
   const [amount, setAmount] = useState(0);
-  const [paymentDate, setPaymentDate] = useState(todayYMD());
+  const [paymentDate, setPaymentDate] = useState(localYMD());
   // The cash/bank head the money lands in — it also determines the method.
   const [account, setAccount] = useState(null);
   const [referenceNumber, setReferenceNumber] = useState('');
@@ -48,7 +50,7 @@ export default function PayConsolidatedModal({
     if (!isOpen) return;
     idempotencyKeyRef.current = newIdempotencyKey();
     setAmount(outstandingTotal || 0);
-    setPaymentDate(todayYMD());
+    setPaymentDate(localYMD());
     setAccount(null);
     setReferenceNumber('');
     setNotes('');
@@ -74,13 +76,7 @@ export default function PayConsolidatedModal({
           payload?.payments?.length || 0
         } voucher(s)`,
       );
-      queryClient.invalidateQueries({ queryKey: ['consolidated', studentId] });
-      queryClient.invalidateQueries({ queryKey: ['vouchers'] });
-      queryClient.invalidateQueries({ queryKey: ['voucher'] });
-      queryClient.invalidateQueries({ queryKey: ['payments'] });
-      queryClient.invalidateQueries({ queryKey: ['report-outstanding'] });
-      queryClient.invalidateQueries({ queryKey: ['defaulters'] });
-      queryClient.invalidateQueries({ queryKey: ['report-collection'] });
+      invalidateFeeQueries(queryClient);
       setResult(payload);
     },
     onError: (err) => {
@@ -99,8 +95,8 @@ export default function PayConsolidatedModal({
     if (!num || num <= 0) return setSubmitError('Amount must be > 0');
     if (num > outstandingTotal)
       return setSubmitError(`Amount cannot exceed outstanding ${formatMoney(outstandingTotal)}`);
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(paymentDate))
-      return setSubmitError('Payment date must be YYYY-MM-DD');
+    const dateError = paymentDateError(paymentDate);
+    if (dateError) return setSubmitError(dateError);
     if (!account) return setSubmitError('Select the cash or bank account the money came into');
     if (isBank && !referenceNumber.trim())
       return setSubmitError('Reference number is required for a bank account');
@@ -213,6 +209,7 @@ export default function PayConsolidatedModal({
               <input
                 type="date"
                 value={paymentDate}
+                max={localYMD()}
                 onChange={(e) => setPaymentDate(e.target.value)}
                 className={inputCls}
               />

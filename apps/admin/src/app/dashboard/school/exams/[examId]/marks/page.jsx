@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { ArrowLeft, Save, Lock } from 'lucide-react';
 import { useTokenStore } from '@/store/tokenStore';
@@ -14,7 +14,14 @@ import {
   gradeFromPercentage,
 } from '@/constants/exam';
 import { resolveScope } from '@/utils/permissions';
-import { buildMarkEntries, savedStudentIds, toMark } from '@/utils/marksEntries';
+import {
+  buildMarkEntries,
+  invalidMarkStudents,
+  noteEdit,
+  releaseSavedEdits,
+  savedStudentIds,
+  toMark,
+} from '@/utils/marksEntries';
 
 export default function MarksEntryPage() {
   const params = useParams();
@@ -159,38 +166,61 @@ export default function MarksEntryPage() {
     toast.error(msg);
   }, [resultsIsError, resultsError]);
 
+  // Students the user has typed into for the current subject+section. Their
+  // entries are never overwritten by a refetch; only untouched rows are
+  // (re)seeded from the server. Switching subject/section starts fresh.
+  const editedRef = useRef(new Map());
+  const seededScopeRef = useRef(null);
+  const scopeKey = `${examId}|${examSubjectId}|${sectionId}`;
+
   useEffect(() => {
-    if (!students.length) {
-      setMarks({});
-      return;
+    const scopeChanged = seededScopeRef.current !== scopeKey;
+    if (scopeChanged) {
+      seededScopeRef.current = scopeKey;
+      editedRef.current = new Map();
     }
-    const initial = {};
-    students.forEach((s) => {
-      const r = existingResults.find((er) => {
-        const sid = typeof er.studentId === 'object' ? er.studentId?._id : er.studentId;
-        return sid === s._id;
-      });
-      initial[s._id] = {
-        theoryObtained: r?.theoryObtained ?? '',
-        practicalObtained: r?.practicalObtained ?? '',
-        isAbsent: r?.isAbsent ?? false,
-        remarks: r?.remarks ?? '',
-      };
+    const byStudent = new Map();
+    existingResults.forEach((er) => {
+      const sid = typeof er.studentId === 'object' ? er.studentId?._id : er.studentId;
+      if (sid) byStudent.set(sid, er);
     });
-    setMarks(initial);
-  }, [students, existingResults]);
+    setMarks((prev) => {
+      const base = scopeChanged ? {} : prev;
+      const next = {};
+      students.forEach((s) => {
+        const r = byStudent.get(s._id);
+        next[s._id] =
+          editedRef.current.has(s._id) && base[s._id]
+            ? base[s._id]
+            : {
+                theoryObtained: r?.theoryObtained ?? '',
+                practicalObtained: r?.practicalObtained ?? '',
+                isAbsent: r?.isAbsent ?? false,
+                remarks: r?.remarks ?? '',
+              };
+      });
+      return next;
+    });
+  }, [scopeKey, students, existingResults]);
 
   const updateMark = (studentId, patch) => {
+    noteEdit(editedRef.current, studentId);
     setMarks((prev) => ({ ...prev, [studentId]: { ...prev[studentId], ...patch } }));
   };
 
   const enterMutation = useMutation({
     mutationFn: (payload) => postData({ url: `/exam/${examId}/results/enter`, payload, token }),
-    onSuccess: (res) => {
+    // Snapshot the edited rows as the save starts (see releaseSavedEdits).
+    onMutate: () => ({ edited: new Map(editedRef.current) }),
+    onSuccess: (res, _vars, context) => {
       const { created = 0, updated = 0, cleared = 0 } = res?.data || {};
       toast.success(
         `Saved — ${created} created, ${updated} updated${cleared ? `, ${cleared} cleared` : ''}`,
       );
+      // Once saved, the server copy is authoritative again for the rows this
+      // save sent — let the post-save refetch re-seed those. Rows typed into
+      // while the save was in flight stay protected.
+      if (context?.edited) releaseSavedEdits(editedRef.current, context.edited);
       queryClient.invalidateQueries({
         queryKey: ['exam-results', examId, examSubjectId, sectionId],
       });
@@ -206,6 +236,13 @@ export default function MarksEntryPage() {
     }
     if (!students.length) {
       toast.error('No students in this section');
+      return;
+    }
+    const invalid = invalidMarkStudents(students, marks, { hasTheory, hasPractical });
+    if (invalid.length) {
+      const names = invalid.map((s) => s.user?.name || s.rollNumber || s._id);
+      const more = names.length > 3 ? ` +${names.length - 3} more` : '';
+      toast.error(`Some marks are not valid numbers: ${names.slice(0, 3).join(', ')}${more}`);
       return;
     }
     const entries = buildMarkEntries(students, marks, {

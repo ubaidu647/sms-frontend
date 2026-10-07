@@ -5,6 +5,7 @@ import toast from 'react-hot-toast';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { patchData } from '@/utils/api';
 import { useTokenStore } from '@/store/tokenStore';
+import { invalidateFeeQueries } from '@/utils/feeQueries';
 
 export default function VoidVoucherModal({ isOpen, onClose, voucher }) {
   const { accessToken: token } = useTokenStore();
@@ -24,8 +25,7 @@ export default function VoidVoucherModal({ isOpen, onClose, voucher }) {
       }),
     onSuccess: () => {
       toast.success('Voucher voided');
-      queryClient.invalidateQueries({ queryKey: ['vouchers'] });
-      queryClient.invalidateQueries({ queryKey: ['voucher', voucher?._id] });
+      invalidateFeeQueries(queryClient);
       onClose();
     },
     onError: (err) => toast.error(err.message || 'Failed to void voucher'),

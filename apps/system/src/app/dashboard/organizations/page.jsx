@@ -179,28 +179,14 @@ export default function Organization() {
     setSelectedColumns([]);
   };
 
+  // view / edit / package / subscription / delete have no screen yet.
   const handleRowAction = (action, row) => {
     switch (action) {
-      case 'view':
-        console.log('View details:', row);
-        break;
-      case 'edit':
-        console.log('Edit organization:', row);
-        break;
-      case 'package':
-        console.log('View package:', row);
-        break;
-      case 'subscription':
-        console.log('View subscription:', row);
-        break;
       case 'disable':
         setDisableTarget(row);
         break;
       case 'enable':
         setEnableTarget(row);
-        break;
-      case 'delete':
-        console.log('Delete organization:', row);
         break;
       default:
         break;

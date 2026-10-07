@@ -13,7 +13,7 @@ import {
   ASSIGNMENT_STATUSES,
 } from '@/constants/transport';
 import { currentAcademicYear } from '@/constants/fee';
-import { changedFields } from '@/utils/changedFields';
+import { assignmentEditChanges } from '@/utils/changedFields';
 
 const inputCls =
   'w-full px-3 py-2 border border-gray-200 rounded-lg outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 text-sm text-gray-900 bg-white placeholder:text-gray-400';
@@ -196,7 +196,8 @@ export default function AssignmentFormModal({ isOpen, onClose, assignment, locke
     if (isEdit) {
       // Only what was changed: an ended assignment refuses even its own end
       // date, so re-sending the form's untouched fields would block the edit.
-      const changed = changedFields(initialEditValues(assignment), {
+      // A route or stop change also sends the fee on screen, so what is shown is saved.
+      const changed = assignmentEditChanges(initialEditValues(assignment), {
         routeId,
         stopName,
         direction,

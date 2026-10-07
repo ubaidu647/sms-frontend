@@ -183,3 +183,12 @@ export function sumLines(lines = []) {
     { debit: 0, credit: 0 },
   );
 }
+
+// Money in whole paisa, so float noise (0.1 + 0.2) can't decide a comparison.
+export const toPaisa = (x) => Math.round((Number(x) || 0) * 100);
+
+// A journal balances when its debit and credit totals agree to the paisa.
+export function isBalanced(totals) {
+  const debit = toPaisa(totals?.debit);
+  return debit > 0 && debit === toPaisa(totals?.credit);
+}

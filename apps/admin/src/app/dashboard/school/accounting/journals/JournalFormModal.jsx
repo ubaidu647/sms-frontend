@@ -8,7 +8,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { fetchData, postData } from '@/utils/api';
 import { useTokenStore } from '@/store/tokenStore';
 import { useUserStore } from '@/store/userStore';
-import { todayYMD, sumLines, formatMoney } from '@/constants/accounting';
+import { todayYMD, sumLines, isBalanced, formatMoney } from '@/constants/accounting';
 
 const inputCls =
   'w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 text-sm text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-900 placeholder:text-gray-400';
@@ -79,7 +79,7 @@ export default function JournalFormModal({
   );
 
   const totals = useMemo(() => sumLines(lines), [lines]);
-  const balanced = totals.debit > 0 && totals.debit === totals.credit;
+  const balanced = isBalanced(totals);
 
   const updateLine = (i, patch) =>
     setLines((prev) => prev.map((l, idx) => (idx === i ? { ...l, ...patch } : l)));

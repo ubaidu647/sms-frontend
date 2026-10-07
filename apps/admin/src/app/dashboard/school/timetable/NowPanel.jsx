@@ -39,6 +39,11 @@ export default function NowPanel() {
     staleTime: 0,
   });
   const data = nowRes?.data;
+  // With All Branches the branches can be in different periods: `period` is
+  // then null and `branches` carries each branch's own period.
+  const branchPeriods = data?.branches || [];
+  const inSession = !!data?.period || branchPeriods.length > 0;
+  const branchName = (id) => branches.find((b) => b._id === id)?.name || 'Branch';
 
   useEffect(() => {
     const id = setInterval(() => setTick((t) => t + 1), 60_000);
@@ -63,6 +68,18 @@ export default function NowPanel() {
               <p className="text-sm text-gray-600 dark:text-gray-400">
                 {data.period.name} ({data.period.startTime} – {data.period.endTime})
               </p>
+            ) : branchPeriods.length ? (
+              <div className="text-sm text-gray-600 dark:text-gray-400">
+                <p>Periods differ by branch</p>
+                <ul className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                  {branchPeriods.map((b) => (
+                    <li key={b.branchId}>
+                      {branchName(b.branchId)}: {b.period?.name} ({b.period?.startTime} –{' '}
+                      {b.period?.endTime})
+                    </li>
+                  ))}
+                </ul>
+              </div>
             ) : (
               <p className="text-sm text-gray-500 dark:text-gray-400">No active period</p>
             )}
@@ -123,7 +140,7 @@ export default function NowPanel() {
       ) : (
         !isFetching && (
           <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-12 text-center text-gray-500 dark:text-gray-400 text-sm">
-            {data?.period
+            {inSession
               ? 'No classes scheduled for this period.'
               : 'School is not in session right now.'}
           </div>

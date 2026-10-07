@@ -6,6 +6,7 @@ import toast from 'react-hot-toast';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { fetchData, postData } from '@/utils/api';
 import { useTokenStore } from '@/store/tokenStore';
+import { invalidateFeeQueries } from '@/utils/feeQueries';
 import { useUserStore } from '@/store/userStore';
 import { currentAcademicYear, currentMonth } from '@/constants/fee';
 
@@ -82,7 +83,7 @@ export default function GenerateSectionModal({ isOpen, onClose }) {
     mutationFn: (payload) => postData({ url: '/fee/voucher/generate-section', payload, token }),
     onSuccess: (res) => {
       toast.success(res?.message || 'Vouchers generated');
-      queryClient.invalidateQueries({ queryKey: ['vouchers'] });
+      invalidateFeeQueries(queryClient);
       setResult(res?.data);
     },
     onError: (err) => {

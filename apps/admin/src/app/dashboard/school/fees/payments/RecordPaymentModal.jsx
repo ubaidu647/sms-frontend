@@ -7,10 +7,12 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { postData } from '@/utils/api';
 import { idempotencyHeader, newIdempotencyKey } from '@/utils/idempotency';
 import { useTokenStore } from '@/store/tokenStore';
+import { invalidateFeeQueries } from '@/utils/feeQueries';
 import PaymentAccountSelect from '@/component/PaymentAccountSelect';
 import PaymentReceiptPrint, { printReceipt } from '@/component/PaymentReceiptPrint';
 import { useUserStore } from '@/store/userStore';
-import { formatMoney, formatMonth, todayYMD } from '@/constants/fee';
+import { formatMoney, formatMonth } from '@/constants/fee';
+import { localYMD, paymentDateError } from '@/utils/paymentDate';
 
 const inputCls =
   'w-full px-3 py-2 border border-gray-200 rounded-lg outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 text-sm text-gray-900 bg-white';
@@ -22,7 +24,7 @@ export default function RecordPaymentModal({ isOpen, onClose, voucher }) {
   const queryClient = useQueryClient();
 
   const [amount, setAmount] = useState(0);
-  const [paymentDate, setPaymentDate] = useState(todayYMD());
+  const [paymentDate, setPaymentDate] = useState(localYMD());
   // The cash/bank head the money lands in. It also *is* the payment method:
   // a cash head means cash, a bank head means a bank transfer.
   const [account, setAccount] = useState(null);
@@ -42,7 +44,7 @@ export default function RecordPaymentModal({ isOpen, onClose, voucher }) {
     if (!isOpen) return;
     idempotencyKeyRef.current = newIdempotencyKey();
     setAmount(voucher?.balanceAmount ?? 0);
-    setPaymentDate(todayYMD());
+    setPaymentDate(localYMD());
     setAccount(null);
     setReferenceNumber('');
     setNotes('');
@@ -63,15 +65,7 @@ export default function RecordPaymentModal({ isOpen, onClose, voucher }) {
       // This attempt is recorded; the next payment must not replay it.
       idempotencyKeyRef.current = newIdempotencyKey();
       toast.success(`Receipt ${res?.data?.payment?.receiptNumber} saved`);
-      queryClient.invalidateQueries({ queryKey: ['payments'] });
-      queryClient.invalidateQueries({ queryKey: ['vouchers'] });
-      queryClient.invalidateQueries({ queryKey: ['voucher', voucher?._id] });
-      // Balances moved: the outstanding/defaulters reports and the student's
-      // consolidated slip are now stale too.
-      queryClient.invalidateQueries({ queryKey: ['report-outstanding'] });
-      queryClient.invalidateQueries({ queryKey: ['report-collection'] });
-      queryClient.invalidateQueries({ queryKey: ['defaulters'] });
-      queryClient.invalidateQueries({ queryKey: ['consolidated'] });
+      invalidateFeeQueries(queryClient);
       setReceipt(res?.data);
     },
     onError: (err) => {
@@ -99,6 +93,8 @@ export default function RecordPaymentModal({ isOpen, onClose, voucher }) {
     if (!num || num <= 0) return setSubmitError('Amount must be > 0');
     if (num > (voucher?.balanceAmount ?? 0))
       return setSubmitError(`Amount exceeds balance ${formatMoney(voucher?.balanceAmount)}`);
+    const dateError = paymentDateError(paymentDate);
+    if (dateError) return setSubmitError(dateError);
     if (!account) return setSubmitError('Select the cash or bank account the money came into');
     if (isBank && !referenceNumber.trim())
       return setSubmitError('Reference number is required for a bank account');
@@ -203,6 +199,7 @@ export default function RecordPaymentModal({ isOpen, onClose, voucher }) {
               <input
                 type="date"
                 value={paymentDate}
+                max={localYMD()}
                 onChange={(e) => setPaymentDate(e.target.value)}
                 className={inputCls}
               />

@@ -58,7 +58,9 @@ export default function ChangePlanModal({ isOpen, onClose, schoolId, schoolName,
       setError('Please choose the new package.');
       return;
     }
-    if (current?.packageId === packageId || current?.packageSnapshot?.name === selected?.name) {
+    // Compare ids only: two packages may share a name. packageId may arrive populated.
+    const currentPackageId = current?.packageId?._id ?? current?.packageId;
+    if (currentPackageId && String(currentPackageId) === packageId) {
       setError('That is already the current plan. Use Renew instead.');
       return;
     }

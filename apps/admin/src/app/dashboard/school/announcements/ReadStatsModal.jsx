@@ -1,26 +1,44 @@
 'use client';
 import React from 'react';
 import { Modal } from '@/component/Modal';
-import { useQuery } from '@tanstack/react-query';
+import { useInfiniteQuery } from '@tanstack/react-query';
 import QueryErrorState from '@/component/QueryErrorState';
 import { retryUnless4xx } from '@/utils/queryError';
 import apiClient from '@/services/apiClient';
 import { useTokenStore } from '@/store/tokenStore';
 import { formatDateTime } from '@/constants/announcement';
 
+// The reader list is paged on the backend; the counts cover every reader.
+const READS_PAGE_SIZE = 500;
+
 export default function ReadStatsModal({ isOpen, onClose, announcement }) {
   const { accessToken: token } = useTokenStore();
   const id = announcement?._id;
 
-  const { data, isLoading, isError, error } = useQuery({
-    queryKey: ['announcement-stats', id],
-    queryFn: async () => (await apiClient.get(`/announcement/${id}/read-stats`)).data,
-    enabled: !!token && isOpen && !!id,
-    retry: retryUnless4xx,
-  });
+  const { data, isLoading, isError, error, hasNextPage, fetchNextPage, isFetchingNextPage } =
+    useInfiniteQuery({
+      queryKey: ['announcement-stats', id],
+      initialPageParam: 1,
+      queryFn: async ({ pageParam }) =>
+        (
+          await apiClient.get(`/announcement/${id}/read-stats`, {
+            params: { page: pageParam, limit: READS_PAGE_SIZE },
+          })
+        ).data,
+      getNextPageParam: (last, allPages) => {
+        const total = last?.data?.totalReads ?? 0;
+        const loaded = allPages.reduce((n, p) => n + (p?.data?.reads?.length || 0), 0);
+        return loaded < total && last?.data?.reads?.length ? allPages.length + 1 : undefined;
+      },
+      enabled: !!token && isOpen && !!id,
+      retry: retryUnless4xx,
+    });
 
-  const stats = data?.data;
-  const reads = stats?.reads || [];
+  const pages = data?.pages || [];
+  // Counts come from the newest page; readers are every page loaded so far.
+  const stats = pages[pages.length - 1]?.data;
+  const reads = pages.flatMap((p) => p?.data?.reads || []);
+  const totalReads = stats?.totalReads ?? 0;
 
   return (
     <Modal
@@ -105,6 +123,21 @@ export default function ReadStatsModal({ isOpen, onClose, announcement }) {
                     ))}
                   </tbody>
                 </table>
+              </div>
+            )}
+            {reads.length > 0 && totalReads > reads.length && (
+              <div className="flex items-center justify-between gap-3 mt-2">
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  Showing first {reads.length} of {totalReads}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => fetchNextPage()}
+                  disabled={!hasNextPage || isFetchingNextPage}
+                  className="px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 text-xs font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50"
+                >
+                  {isFetchingNextPage ? 'Loading...' : 'Load more'}
+                </button>
               </div>
             )}
           </div>

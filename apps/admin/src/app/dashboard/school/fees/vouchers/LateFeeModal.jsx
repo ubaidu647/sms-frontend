@@ -6,6 +6,7 @@ import toast from 'react-hot-toast';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { patchData } from '@/utils/api';
 import { useTokenStore } from '@/store/tokenStore';
+import { invalidateFeeQueries } from '@/utils/feeQueries';
 
 const inputCls =
   'w-full px-3 py-2 border border-gray-200 rounded-lg outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 text-sm text-gray-900 bg-white';
@@ -33,8 +34,7 @@ export default function LateFeeModal({ isOpen, onClose, voucher }) {
       }),
     onSuccess: () => {
       toast.success('Late fee updated');
-      queryClient.invalidateQueries({ queryKey: ['vouchers'] });
-      queryClient.invalidateQueries({ queryKey: ['voucher', voucher?._id] });
+      invalidateFeeQueries(queryClient);
       onClose();
     },
     onError: (err) => toast.error(err.message || 'Failed to update late fee'),

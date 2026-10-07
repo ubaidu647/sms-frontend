@@ -6,6 +6,7 @@ import toast from 'react-hot-toast';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { fetchData, postData } from '@/utils/api';
 import { useTokenStore } from '@/store/tokenStore';
+import { invalidateFeeQueries } from '@/utils/feeQueries';
 import { currentMonth } from '@/constants/fee';
 
 const inputCls =
@@ -60,7 +61,7 @@ export default function GenerateStudentModal({ isOpen, onClose }) {
       } else {
         toast.success(res?.message || 'Voucher generated');
       }
-      queryClient.invalidateQueries({ queryKey: ['vouchers'] });
+      invalidateFeeQueries(queryClient);
       onClose();
     },
     onError: (err) => {

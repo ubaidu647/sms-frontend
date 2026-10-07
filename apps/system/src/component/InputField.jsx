@@ -20,8 +20,6 @@ export default function InputField({
   register = () => {},
   watch = () => {},
 }) {
-  console.log(register, 'register');
-  console.log(watch, 'watch');
   const [showPassword] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
   const isActive = isFocused || watch(name);

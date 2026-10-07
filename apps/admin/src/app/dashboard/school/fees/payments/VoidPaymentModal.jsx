@@ -5,6 +5,7 @@ import toast from 'react-hot-toast';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { patchData } from '@/utils/api';
 import { useTokenStore } from '@/store/tokenStore';
+import { invalidateFeeQueries } from '@/utils/feeQueries';
 import { formatMoney } from '@/constants/fee';
 
 export default function VoidPaymentModal({ isOpen, onClose, payment }) {
@@ -25,9 +26,7 @@ export default function VoidPaymentModal({ isOpen, onClose, payment }) {
       }),
     onSuccess: () => {
       toast.success('Payment voided');
-      queryClient.invalidateQueries({ queryKey: ['payments'] });
-      queryClient.invalidateQueries({ queryKey: ['vouchers'] });
-      queryClient.invalidateQueries({ queryKey: ['voucher'] });
+      invalidateFeeQueries(queryClient);
       onClose();
     },
     onError: (err) => toast.error(err.message || 'Failed to void payment'),
