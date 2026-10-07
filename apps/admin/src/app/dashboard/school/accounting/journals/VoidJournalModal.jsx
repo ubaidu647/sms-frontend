@@ -6,6 +6,7 @@ import toast from 'react-hot-toast';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { patchData } from '@/utils/api';
 import { useTokenStore } from '@/store/tokenStore';
+import { invalidateLedgerQueries } from '@/utils/ledgerQueries';
 
 const inputCls =
   'w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 text-sm text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-900 placeholder:text-gray-400';
@@ -28,8 +29,7 @@ export default function VoidJournalModal({ isOpen, onClose, journal }) {
       patchData({ url: `/ledger/journal/${journal._id}/void`, payload, token }),
     onSuccess: (res) => {
       toast.success(res?.message || 'Journal entry reversed');
-      queryClient.invalidateQueries({ queryKey: ['journal-list'] });
-      queryClient.invalidateQueries({ queryKey: ['journal-detail', journal._id] });
+      invalidateLedgerQueries(queryClient);
       onClose();
     },
     onError: (err) => {

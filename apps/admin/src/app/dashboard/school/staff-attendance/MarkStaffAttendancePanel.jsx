@@ -7,9 +7,11 @@ import { fetchData, postData } from '@/utils/api';
 import toast from 'react-hot-toast';
 import { Save, CheckCircle2, CalendarDays, Search, X } from 'lucide-react';
 import { STATUS_CONFIG, STAFF_LEAVE_TYPES, STAFF_TYPES } from '@/constants/staffAttendance';
+import { localYMD } from '@/utils/localDate';
+import { invalidateStaffAttendanceQueries } from '@/utils/attendanceQueries';
 
 function todayISO() {
-  return new Date().toISOString().slice(0, 10);
+  return localYMD();
 }
 
 const NEEDS_REASON = ['absent', 'leave', 'half-day', 'late'];
@@ -169,6 +171,7 @@ export default function MarkStaffAttendancePanel() {
       const { created = 0, updated = 0 } = res?.data || {};
       toast.success(`Saved — ${created} created, ${updated} updated`);
       queryClient.invalidateQueries({ queryKey: dailyKey });
+      invalidateStaffAttendanceQueries(queryClient);
     },
     onError: (err) => toast.error(err.message || 'Failed to mark attendance'),
   });

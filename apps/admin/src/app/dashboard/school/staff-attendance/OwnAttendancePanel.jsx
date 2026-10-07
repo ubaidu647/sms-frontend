@@ -5,13 +5,10 @@ import { useTokenStore } from '@/store/tokenStore';
 import { useUserStore } from '@/store/userStore';
 import { fetchData } from '@/utils/api';
 import { CalendarRange } from 'lucide-react';
+import { localYMD, monthsAgoYMD } from '@/utils/localDate';
 
-const monthsAgoISO = (n) => {
-  const d = new Date();
-  d.setMonth(d.getMonth() - n);
-  return d.toISOString().slice(0, 10);
-};
-const todayISO = () => new Date().toISOString().slice(0, 10);
+const monthsAgoISO = (n) => monthsAgoYMD(n);
+const todayISO = () => localYMD();
 
 const STATUS_COLORS = {
   present: 'bg-green-100 text-green-700',

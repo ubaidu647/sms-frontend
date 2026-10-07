@@ -1,3 +1,5 @@
+import { localYMD } from '../utils/localDate.js';
+
 export const FEE_FREQUENCIES = ['monthly', 'one-time', 'annual', 'quarterly'];
 
 export const PAYMENT_METHODS = ['cash', 'bank-transfer', 'online', 'cheque', 'card', 'other'];
@@ -50,7 +52,7 @@ export function currentMonth() {
 }
 
 export function todayYMD() {
-  return new Date().toISOString().slice(0, 10);
+  return localYMD();
 }
 
 export function toYMD(iso) {

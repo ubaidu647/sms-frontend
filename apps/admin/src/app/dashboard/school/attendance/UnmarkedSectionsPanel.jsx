@@ -4,9 +4,10 @@ import { useTokenStore } from '@/store/tokenStore';
 import { useQuery } from '@tanstack/react-query';
 import { fetchData } from '@/utils/api';
 import { AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { localYMD } from '@/utils/localDate';
 
 function todayISO() {
-  return new Date().toISOString().slice(0, 10);
+  return localYMD();
 }
 
 function currentAcademicYear() {

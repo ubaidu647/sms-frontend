@@ -19,6 +19,9 @@ import {
   formatDate,
 } from '@/constants/staffSalary';
 import { Lock, DollarSign, XCircle, Edit3, RotateCcw, AlertTriangle } from 'lucide-react';
+import { localYMD } from '@/utils/localDate';
+import { invalidateLedgerQueries } from '@/utils/ledgerQueries';
+import { percentOf } from '@/utils/money';
 
 const inputCls =
   'w-full px-3 py-2 border border-gray-200 rounded-lg outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 text-sm text-gray-900 bg-white placeholder:text-gray-400';
@@ -62,6 +65,8 @@ export default function PayslipDetailModal({ isOpen, onClose, payslipId }) {
     queryClient.invalidateQueries({ queryKey: ['payslips'] });
     queryClient.invalidateQueries({ queryKey: ['payslip-detail', payslipId] });
     queryClient.invalidateQueries({ queryKey: ['payslip-summary'] });
+    // Pay / reverse / cancel post or reverse journal entries.
+    invalidateLedgerQueries(queryClient);
   };
 
   const finalizeMut = useMutation({
@@ -201,6 +206,8 @@ function PayslipBody({ payslip, showPay, setShowPay, showCancel, setShowCancel, 
     queryClient.invalidateQueries({ queryKey: ['payslips'] });
     queryClient.invalidateQueries({ queryKey: ['payslip-detail', payslip._id] });
     queryClient.invalidateQueries({ queryKey: ['payslip-summary'] });
+    // Pay / reverse / cancel post or reverse journal entries.
+    invalidateLedgerQueries(queryClient);
   };
 
   const [editing, setEditing] = useState(false);
@@ -296,10 +303,7 @@ function PayslipBody({ payslip, showPay, setShowPay, showCancel, setShowCancel, 
                   label={`${a.name}${a.type === 'percent' ? ` (${a.amount}%)` : ''}`}
                   value={
                     a.type === 'percent'
-                      ? formatMoney(
-                          ((Number(payslip.basicSalary) || 0) * (Number(a.amount) || 0)) / 100,
-                          cur,
-                        )
+                      ? formatMoney(percentOf(payslip.basicSalary, a.amount), cur)
                       : formatMoney(a.amount, cur)
                   }
                 />
@@ -340,10 +344,7 @@ function PayslipBody({ payslip, showPay, setShowPay, showCancel, setShowCancel, 
                   label={`${d.name}${d.type === 'percent' ? ` (${d.amount}%)` : ''}`}
                   value={
                     d.type === 'percent'
-                      ? formatMoney(
-                          ((Number(payslip.basicSalary) || 0) * (Number(d.amount) || 0)) / 100,
-                          cur,
-                        )
+                      ? formatMoney(percentOf(payslip.basicSalary, d.amount), cur)
                       : formatMoney(d.amount, cur)
                   }
                 />
@@ -653,7 +654,7 @@ function SnapStat({ label, value, tone }) {
 
 function PayForm({ payslip, onClose, onDone }) {
   const { accessToken: token } = useTokenStore();
-  const [paymentDate, setPaymentDate] = useState(new Date().toISOString().slice(0, 10));
+  const [paymentDate, setPaymentDate] = useState(localYMD());
   const [paymentMethod, setPaymentMethod] = useState('bank-transfer');
   const [paymentReference, setPaymentReference] = useState('');
   // Empty unless the branch keeps several cash/bank accounts — see the picker.

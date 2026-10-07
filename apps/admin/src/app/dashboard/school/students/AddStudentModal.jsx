@@ -13,6 +13,7 @@ import { fetchData, postData } from '@/utils/api';
 import { useMyCurrentSubscription } from '@/app/dashboard/billing/hooks/useBilling';
 import { useTokenStore } from '@/store/tokenStore';
 import { useUserStore } from '@/store/userStore';
+import { localYMD } from '@/utils/localDate';
 
 const ALLOWED_PHOTO_TYPES = [
   'image/jpeg',
@@ -192,7 +193,7 @@ export default function AddStudentModal({ isOpen, onClose, onSuccess }) {
       classId: '',
       sectionId: '',
       academicYear: currentAcademicYear(),
-      admissionDate: new Date().toISOString().slice(0, 10),
+      admissionDate: localYMD(),
       admissionType: 'new',
       dob: '',
       gender: '',
@@ -420,43 +421,13 @@ export default function AddStudentModal({ isOpen, onClose, onSuccess }) {
 
     if (photoFile) fd.append('photo', photoFile);
 
-    // Capture dropdown labels at submit-time for the optimistic cache row —
-    // the create response only returns IDs for class/section/branch, but the
-    // students table renders nested `.name` fields. No /student/list refetch
-    // happens after create (per user preference), so we must hand-shape the row.
-    const selectedClass = classes.find((c) => c._id === data.classId);
-    const selectedSection = sections.find((s) => s._id === data.sectionId);
-    const selectedBranch =
-      branches.find((b) => b._id === data.branchId) ||
-      (data.branchId === userBranchId ? user?.branch : null);
-
     mutation.mutate(fd, {
       onSuccess: (res) => {
         const newStudent = res?.data;
-        if (newStudent) {
-          const enriched = {
-            ...newStudent,
-            user: { name: newStudent.name, email: newStudent.email },
-            isActive: newStudent.isActive ?? true,
-            academicStatus: newStudent.academicStatus ?? 'enrolled',
-            class: selectedClass
-              ? { _id: selectedClass._id, name: selectedClass.name, grade: selectedClass.grade }
-              : null,
-            section: selectedSection
-              ? { _id: selectedSection._id, name: selectedSection.name }
-              : null,
-            branch: selectedBranch ? { _id: selectedBranch._id, name: selectedBranch.name } : null,
-            father: data.father?.name ? { name: data.father.name } : null,
-          };
-          queryClient.setQueriesData({ queryKey: ['students'] }, (old) => {
-            if (!old) return old;
-            return {
-              ...old,
-              data: [enriched, ...(old.data || [])],
-              total: (old.total || 0) + 1,
-            };
-          });
-        }
+        // Refetch the lists rather than splice the row into every cached
+        // page/filter — most of those (other classes, other pages) don't
+        // contain the new student.
+        queryClient.invalidateQueries({ queryKey: ['students'] });
         toast.success(res?.message || 'Student enrolled successfully');
         setCreatedStudent(newStudent || null);
         setSuccessState(true);

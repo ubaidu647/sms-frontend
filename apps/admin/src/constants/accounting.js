@@ -2,6 +2,8 @@
 // /api/account, /api/ledger and /api/ledger/report. Kept alongside constants/fee.js
 // so the finance modules share formatting helpers and vocabulary.
 
+import { localYMD } from '../utils/localDate.js';
+
 export const ACCOUNT_TYPES = ['asset', 'liability', 'equity', 'income', 'expense'];
 
 // Normal balance side per type — drives which column a positive balance lands in
@@ -155,7 +157,7 @@ export function formatDate(iso) {
 }
 
 export function todayYMD() {
-  return new Date().toISOString().slice(0, 10);
+  return localYMD();
 }
 
 export function toYMD(iso) {

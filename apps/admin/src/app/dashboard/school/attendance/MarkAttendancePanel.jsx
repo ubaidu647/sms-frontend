@@ -7,6 +7,8 @@ import { fetchData, postData } from '@/utils/api';
 import apiClient from '@/services/apiClient';
 import toast from 'react-hot-toast';
 import { Save, CheckCircle2, CalendarDays, Search, X } from 'lucide-react';
+import { localYMD } from '@/utils/localDate';
+import { invalidateStudentAttendanceQueries } from '@/utils/attendanceQueries';
 
 const STATUS_CONFIG = [
   {
@@ -48,7 +50,7 @@ const STATUS_CONFIG = [
 ];
 
 function todayISO() {
-  return new Date().toISOString().slice(0, 10);
+  return localYMD();
 }
 
 function currentAcademicYear() {
@@ -261,6 +263,7 @@ export default function MarkAttendancePanel() {
       const { created = 0, updated = 0 } = res?.data || {};
       toast.success(`Saved — ${created} created, ${updated} updated`);
       queryClient.invalidateQueries({ queryKey: dailyKey });
+      invalidateStudentAttendanceQueries(queryClient);
     },
     onError: (err) => toast.error(err.message || 'Failed to mark attendance'),
   });

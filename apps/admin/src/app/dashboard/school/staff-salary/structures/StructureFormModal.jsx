@@ -9,6 +9,7 @@ import { fetchData, postData, putData } from '@/utils/api';
 import { useTokenStore } from '@/store/tokenStore';
 import { useUserStore } from '@/store/userStore';
 import { COMPONENT_TYPES, toYMD } from '@/constants/staffSalary';
+import { formatAmount, round2 } from '@/utils/money';
 
 const inputCls =
   'w-full px-3 py-2 border border-gray-200 rounded-lg outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 text-sm text-gray-900 bg-white placeholder:text-gray-400';
@@ -110,11 +111,12 @@ export default function StructureFormModal({ isOpen, onClose, structure }) {
       }, 0);
     const totalAllowance = sumPart(allowances);
     const totalDeduction = sumPart(deductions);
+    // Summed unrounded like the server's payroll, then rounded for display.
     return {
-      gross: basic + totalAllowance,
-      net: basic + totalAllowance - totalDeduction,
-      totalAllowance,
-      totalDeduction,
+      gross: round2(basic + totalAllowance),
+      net: round2(basic + totalAllowance - totalDeduction),
+      totalAllowance: round2(totalAllowance),
+      totalDeduction: round2(totalDeduction),
     };
   }, [basicSalary, allowances, deductions]);
 
@@ -406,7 +408,7 @@ export default function StructureFormModal({ isOpen, onClose, structure }) {
               Total Allowances
             </div>
             <div className="text-lg font-bold text-gray-900 dark:text-gray-100 mt-1">
-              + {totals.totalAllowance.toLocaleString()}
+              + {formatAmount(totals.totalAllowance)}
             </div>
           </div>
           <div>
@@ -414,7 +416,7 @@ export default function StructureFormModal({ isOpen, onClose, structure }) {
               Total Deductions
             </div>
             <div className="text-lg font-bold text-gray-900 dark:text-gray-100 mt-1">
-              − {totals.totalDeduction.toLocaleString()}
+              − {formatAmount(totals.totalDeduction)}
             </div>
           </div>
           <div>
@@ -422,7 +424,7 @@ export default function StructureFormModal({ isOpen, onClose, structure }) {
               Net (estimate)
             </div>
             <div className="text-lg font-bold text-teal-700 dark:text-teal-400 mt-1">
-              {totals.net.toLocaleString()} {currency}
+              {formatAmount(totals.net)} {currency}
             </div>
           </div>
         </div>

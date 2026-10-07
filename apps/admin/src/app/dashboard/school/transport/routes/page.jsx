@@ -14,6 +14,7 @@ import ConfirmModal from '../ConfirmModal';
 import { ROUTE_STATUSES, ROUTE_STATUS_COLORS } from '@/constants/transport';
 import { formatMoney } from '@/constants/fee';
 import { useTranslations } from 'next-intl';
+import { invalidateRouteQueries } from '@/utils/transportQueries';
 
 export default function RoutesPage() {
   const { accessToken: token } = useTokenStore();
@@ -108,7 +109,7 @@ export default function RoutesPage() {
     mutationFn: (id) => deleteData({ url: `/transport/route/${id}`, token }),
     onSuccess: () => {
       toast.success('Route deactivated');
-      queryClient.invalidateQueries({ queryKey: ['routes'] });
+      invalidateRouteQueries(queryClient);
       setDeleteTarget(null);
     },
     onError: (err) => toast.error(err.message || 'Failed to delete route'),

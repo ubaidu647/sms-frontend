@@ -55,7 +55,18 @@ export const Table = ({
   const filteredColumns = columns.filter((col) => visibleColumnsArray.includes(col.accessor));
 
   // Calculate total pages
-  const totalPages = Math.ceil((totalItems !== undefined ? totalItems : data.length) / limit) || 1;
+  const itemCount = totalItems !== undefined ? totalItems : data.length;
+  const totalPages = Math.ceil(itemCount / limit) || 1;
+
+  // A delete (or a narrower filter) can shrink the list under the current page
+  // — "Page 3 of 2". Step back to the last page that exists. Skipped while the
+  // count is unknown/empty (loading) so a page isn't reset by a blank render.
+  useEffect(() => {
+    if (itemCount > 0 && page > totalPages) {
+      if (onPageChange) onPageChange(totalPages);
+      else setInternalPage(totalPages);
+    }
+  }, [itemCount, page, totalPages, onPageChange]);
 
   // Paginated data
   const paginatedData = useMemo(() => {

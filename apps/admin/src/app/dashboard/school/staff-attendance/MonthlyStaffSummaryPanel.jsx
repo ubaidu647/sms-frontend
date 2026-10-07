@@ -6,9 +6,10 @@ import { useQuery } from '@tanstack/react-query';
 import { fetchData } from '@/utils/api';
 import { STAFF_TYPES, formatWorkedMinutes } from '@/constants/staffAttendance';
 import { formatMoney } from '@/constants/fee';
+import { localYM } from '@/utils/localDate';
 
 function currentMonth() {
-  return new Date().toISOString().slice(0, 7);
+  return localYM();
 }
 
 function pctColor(pct) {

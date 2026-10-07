@@ -8,10 +8,12 @@ import apiClient from '@/services/apiClient';
 import { useTokenStore } from '@/store/tokenStore';
 import { useUserStore } from '@/store/userStore';
 import { hasAnyAction } from '@/utils/permissions';
+import { allowedReportModules } from '@/utils/reportModules';
 import { todayYMD } from '@/constants/fee';
 import { useProgressReport } from './hooks/useProgressReport';
 import StudentPickerInline from './StudentPickerInline';
 import ReportDocument from './ReportDocument';
+import { monthsAgoYMD } from '@/utils/localDate';
 
 const MODULES = [
   'attendance',
@@ -25,9 +27,7 @@ const MODULES = [
 const DEFAULT_MODULES = ['attendance', 'exams', 'homework', 'fees'];
 
 function oneMonthAgoYMD() {
-  const d = new Date();
-  d.setMonth(d.getMonth() - 1);
-  return d.toISOString().slice(0, 10);
+  return monthsAgoYMD(1);
 }
 
 const inputCls =
@@ -46,7 +46,8 @@ export default function StudentProgressReportPage() {
   const [student, setStudent] = useState(null); // { studentId, label, branchId }
   const [fromDate, setFromDate] = useState(oneMonthAgoYMD());
   const [toDate, setToDate] = useState(todayYMD());
-  const [selected, setSelected] = useState(() => new Set(DEFAULT_MODULES));
+  // null = untouched → the defaults the caller is allowed to include.
+  const [picked, setPicked] = useState(null);
   const [generatedAt, setGeneratedAt] = useState('');
 
   const printableRef = useRef(null);
@@ -55,7 +56,18 @@ export default function StudentProgressReportPage() {
   const mutation = useProgressReport();
   const report = mutation.data;
 
-  const branchId = student?.branchId || user?.branchId || user?.branch?._id || null;
+  const userBranchId = user?.branchId || user?.branch?._id || null;
+  const branchId = student?.branchId || userBranchId;
+
+  // Modules the backend would 403 on are never selected nor selectable.
+  const allowedModules = useMemo(
+    () => allowedReportModules(user?.role, { studentBranchId: student?.branchId, userBranchId }),
+    [user?.role, student?.branchId, userBranchId],
+  );
+  const selected = useMemo(
+    () => new Set([...(picked ?? DEFAULT_MODULES)].filter((m) => allowedModules.has(m))),
+    [picked, allowedModules],
+  );
   const { data: profileData } = useQuery({
     queryKey: ['branch-profile', 'branch', branchId],
     queryFn: async () => (await apiClient.get(`/branch-profile/branch/${branchId}`)).data,
@@ -67,12 +79,12 @@ export default function StudentProgressReportPage() {
   const canGenerate =
     !!student?.studentId && !!fromDate && !!toDate && !dateInvalid && selected.size > 0;
 
-  const toggleModule = (key) =>
-    setSelected((prev) => {
-      const next = new Set(prev);
-      next.has(key) ? next.delete(key) : next.add(key);
-      return next;
-    });
+  const toggleModule = (key) => {
+    if (!allowedModules.has(key)) return;
+    const next = new Set(selected);
+    next.has(key) ? next.delete(key) : next.add(key);
+    setPicked(next);
+  };
 
   const handleGenerate = () => {
     if (!canGenerate) return;
@@ -244,12 +256,16 @@ export default function StudentProgressReportPage() {
             <div className="flex flex-wrap gap-2">
               {MODULES.map((m) => {
                 const checked = selected.has(m);
+                const allowed = allowedModules.has(m);
                 return (
                   <button
                     key={m}
                     type="button"
                     onClick={() => toggleModule(m)}
-                    className={`px-3 py-1.5 rounded-full text-sm border transition-colors ${
+                    disabled={!allowed}
+                    title={allowed ? undefined : t('moduleNotPermitted')}
+                    aria-pressed={checked}
+                    className={`px-3 py-1.5 rounded-full text-sm border transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
                       checked
                         ? 'bg-teal-600 border-teal-600 text-white'
                         : 'bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
@@ -260,6 +276,11 @@ export default function StudentProgressReportPage() {
                 );
               })}
             </div>
+            {MODULES.some((m) => !allowedModules.has(m)) && (
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                {t('moduleNotPermitted')}
+              </p>
+            )}
             {selected.size === 0 && (
               <p className="text-xs text-red-600 mt-1">{t('moduleRequired')}</p>
             )}

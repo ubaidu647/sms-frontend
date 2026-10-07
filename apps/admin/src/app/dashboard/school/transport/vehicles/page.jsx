@@ -12,6 +12,7 @@ import VehicleRosterModal from './VehicleRosterModal';
 import ConfirmModal from '../ConfirmModal';
 import { VEHICLE_STATUSES, VEHICLE_STATUS_COLORS, VEHICLE_TYPES } from '@/constants/transport';
 import { useTranslations } from 'next-intl';
+import { invalidateVehicleQueries } from '@/utils/transportQueries';
 
 export default function VehiclesPage() {
   const { accessToken: token } = useTokenStore();
@@ -86,7 +87,7 @@ export default function VehiclesPage() {
     mutationFn: (id) => deleteData({ url: `/transport/vehicle/${id}`, token }),
     onSuccess: () => {
       toast.success('Vehicle retired');
-      queryClient.invalidateQueries({ queryKey: ['vehicles'] });
+      invalidateVehicleQueries(queryClient);
       setDeleteTarget(null);
     },
     onError: (err) => toast.error(err.message || 'Failed to retire vehicle'),

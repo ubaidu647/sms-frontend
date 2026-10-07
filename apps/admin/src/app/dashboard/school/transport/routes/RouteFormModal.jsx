@@ -8,6 +8,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { fetchData, postData, putData } from '@/utils/api';
 import { useTokenStore } from '@/store/tokenStore';
 import { useUserStore } from '@/store/userStore';
+import { invalidateRouteQueries } from '@/utils/transportQueries';
 
 const inputCls =
   'w-full px-3 py-2 border border-gray-200 rounded-lg outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 text-sm text-gray-900 bg-white placeholder:text-gray-400';
@@ -149,7 +150,7 @@ export default function RouteFormModal({ isOpen, onClose, route }) {
         : postData({ url: '/transport/route', payload, token }),
     onSuccess: (res) => {
       toast.success(res?.message || (isEdit ? 'Route updated' : 'Route created'));
-      queryClient.invalidateQueries({ queryKey: ['routes'] });
+      invalidateRouteQueries(queryClient);
       // A vehicle swap moves the route's riders, so rosters/assignments change too.
       queryClient.invalidateQueries({ queryKey: ['transport-assignments'] });
       queryClient.invalidateQueries({ queryKey: ['vehicle-roster'] });

@@ -9,6 +9,7 @@ import { fetchData, postData } from '@/utils/api';
 import { useTokenStore } from '@/store/tokenStore';
 import { useUserStore } from '@/store/userStore';
 import { todayYMD, sumLines, isBalanced, formatMoney } from '@/constants/accounting';
+import { invalidateLedgerQueries } from '@/utils/ledgerQueries';
 
 const inputCls =
   'w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 text-sm text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-900 placeholder:text-gray-400';
@@ -97,7 +98,7 @@ export default function JournalFormModal({
       toast.success(
         res?.message || (isOpening ? 'Opening balance posted' : 'Journal entry posted'),
       );
-      queryClient.invalidateQueries({ queryKey: ['journal-list'] });
+      invalidateLedgerQueries(queryClient);
       setSuccessState(true);
       setTimeout(() => {
         setSuccessState(false);

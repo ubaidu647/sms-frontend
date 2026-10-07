@@ -71,7 +71,8 @@ export const useAuth = () => {
           // shape was { user } at the body root. Support both.
           const me = res.data?.data?.user || res.data?.user;
           if (!me) {
-            console.error('Failed to parse /auth/me — no user in payload', res.data);
+            // Log only the status — the body can carry personal data.
+            console.error('Failed to parse /auth/me — no user in payload (status %s)', res.status);
             return;
           }
           // /auth/me returns `id`, /auth/login returns `_id`. Alias so the rest of
@@ -80,7 +81,13 @@ export const useAuth = () => {
           writeRoleCookie(me.role);
           setUser(me);
         } catch (err) {
-          console.error('Failed to fetch /auth/me:', err);
+          // The axios error object carries the request config (auth headers);
+          // log just the status and message.
+          console.error(
+            'Failed to fetch /auth/me:',
+            err?.response?.status ?? '',
+            err?.message || 'unknown error',
+          );
         } finally {
           setLoading(false);
         }
@@ -116,7 +123,7 @@ export const useAuth = () => {
     // cleanup, and a 401 here must not trigger a refresh.
     await apiClient
       .post('/auth/logout', {}, { skipAuthRefresh: true })
-      .catch((err) => console.warn('logout API call failed', err));
+      .catch((err) => console.warn('logout API call failed', err?.message));
 
     markSessionEnded();
     clearUser();

@@ -2,17 +2,19 @@
 import React, { useState, useMemo } from 'react';
 import { Table } from '@/component/Table';
 import Switch from '@/component/Switch';
-import { Plus, Search, Eye, Edit, Ban, CheckCircle, ArrowRightLeft, X } from 'lucide-react';
+import { Plus, Search, Eye, Edit, Ban, CheckCircle, ArrowRightLeft, X, Users } from 'lucide-react';
 import AddStudentModal from './AddStudentModal';
 import EditStudentModal from './EditStudentModal';
 import StudentDetailModal from './StudentDetailModal';
 import TransferStudentModal from './TransferStudentModal';
+import StudentParentsModal from './StudentParentsModal';
 import { useTokenStore } from '@/store/tokenStore';
 import { useUserStore } from '@/store/userStore';
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { fetchData, patchData } from '@/utils/api';
 import toast from 'react-hot-toast';
 import { resolveScope, hasAnyAction } from '@/utils/permissions';
+import { parentPermissions } from '@/utils/parentAccounts';
 import { useTranslations } from 'next-intl';
 
 const ACADEMIC_STATUSES = [
@@ -34,11 +36,13 @@ export default function StudentsPage() {
   const { user } = useUserStore();
   const queryClient = useQueryClient();
   const t = useTranslations('students');
+  const tParents = useTranslations('studentParents');
 
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [editStudent, setEditStudent] = useState(null);
   const [detailStudentId, setDetailStudentId] = useState(null);
   const [transferStudent, setTransferStudent] = useState(null);
+  const [parentsStudent, setParentsStudent] = useState(null);
 
   // Pagination
   const [page, setPage] = useState(1);
@@ -340,6 +344,9 @@ export default function StudentsPage() {
   const rowActions = (row) => {
     const items = [{ label: 'View Details', value: 'view', icon: Eye }];
     if (canUpdate) items.push({ label: 'Edit', value: 'edit', icon: Edit });
+    if (!isOwnOnly && parentPermissions(user?.role).canView) {
+      items.push({ label: tParents('action'), value: 'parents', icon: Users });
+    }
     if (canTransfer && !isOwnOnly) {
       items.push({ label: 'Transfer', value: 'transfer', icon: ArrowRightLeft });
     }
@@ -625,6 +632,7 @@ export default function StudentsPage() {
             if (action === 'view') setDetailStudentId(row._id);
             if (action === 'edit') setEditStudent(row);
             if (action === 'transfer') setTransferStudent(row);
+            if (action === 'parents') setParentsStudent(row);
             if (action === 'toggle') toggleMutation.mutate(row._id);
           }}
           showImage={false}
@@ -655,6 +663,15 @@ export default function StudentsPage() {
           onClose={() => setDetailStudentId(null)}
           studentId={detailStudentId}
           canManageDocuments={canUpdate}
+        />
+
+        <StudentParentsModal
+          isOpen={!!parentsStudent}
+          onClose={() => setParentsStudent(null)}
+          student={parentsStudent}
+          {...(parentsStudent
+            ? parentPermissions(user?.role, userBranchId, parentsStudent.branch?._id || null)
+            : {})}
         />
 
         <TransferStudentModal

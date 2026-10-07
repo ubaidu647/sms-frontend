@@ -14,6 +14,7 @@ import {
 } from '@/constants/transport';
 import { currentAcademicYear } from '@/constants/fee';
 import { assignmentEditChanges } from '@/utils/changedFields';
+import { localYMD } from '@/utils/localDate';
 
 const inputCls =
   'w-full px-3 py-2 border border-gray-200 rounded-lg outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 text-sm text-gray-900 bg-white placeholder:text-gray-400';
@@ -96,7 +97,7 @@ export default function AssignmentFormModal({ isOpen, onClose, assignment, locke
       setDirection('both');
       setMonthlyFee('');
       setAcademicYear(currentAcademicYear());
-      setStartDate(new Date().toISOString().slice(0, 10));
+      setStartDate(localYMD());
       setEndDate('');
       setStatus('active');
       setNotes('');

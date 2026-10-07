@@ -14,6 +14,7 @@ import {
   gradeFromPercentage,
 } from '@/constants/exam';
 import { resolveScope } from '@/utils/permissions';
+import { errorStatus } from '@/utils/queryError';
 import {
   buildMarkEntries,
   invalidMarkStudents,
@@ -225,8 +226,18 @@ export default function MarksEntryPage() {
         queryKey: ['exam-results', examId, examSubjectId, sectionId],
       });
       queryClient.invalidateQueries({ queryKey: ['exam-detail', examId] });
+      // Totals / grades on the result cards and section summary move with the marks.
+      queryClient.invalidateQueries({ queryKey: ['result-card', examId] });
+      queryClient.invalidateQueries({ queryKey: ['section-summary', examId] });
     },
-    onError: (err) => toast.error(err.message || 'Failed to save marks'),
+    onError: (err) => {
+      toast.error(err.message || 'Failed to save marks');
+      // A 400 is usually "exam was published meanwhile" — refetch the exam so
+      // the screen picks up the lock instead of letting the user retry.
+      if (errorStatus(err) === 400) {
+        queryClient.invalidateQueries({ queryKey: ['exam-detail', examId] });
+      }
+    },
   });
 
   const handleSave = () => {

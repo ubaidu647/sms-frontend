@@ -13,6 +13,7 @@ import {
   OWNERSHIP_TYPES,
   VEHICLE_STATUSES,
 } from '@/constants/transport';
+import { invalidateVehicleQueries } from '@/utils/transportQueries';
 
 const inputCls =
   'w-full px-3 py-2 border border-gray-200 rounded-lg outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 text-sm text-gray-900 bg-white placeholder:text-gray-400';
@@ -122,7 +123,7 @@ export default function VehicleFormModal({ isOpen, onClose, vehicle }) {
         : postData({ url: '/transport/vehicle', payload, token }),
     onSuccess: (res) => {
       toast.success(res?.message || (isEdit ? 'Vehicle updated' : 'Vehicle created'));
-      queryClient.invalidateQueries({ queryKey: ['vehicles'] });
+      invalidateVehicleQueries(queryClient);
       setSuccessState(true);
       setTimeout(() => {
         setSuccessState(false);

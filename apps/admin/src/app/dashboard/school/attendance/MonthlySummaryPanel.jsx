@@ -4,9 +4,10 @@ import { useTokenStore } from '@/store/tokenStore';
 import { useUserStore } from '@/store/userStore';
 import { useQuery } from '@tanstack/react-query';
 import { fetchData } from '@/utils/api';
+import { localYM } from '@/utils/localDate';
 
 function currentMonth() {
-  return new Date().toISOString().slice(0, 7);
+  return localYM();
 }
 
 function currentAcademicYear() {

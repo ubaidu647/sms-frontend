@@ -26,11 +26,10 @@ import { fetchData, deleteData, patchData } from '@/utils/api';
 import { AVAILABLE_MENUS, AVAILABLE_ACTIONS } from '@/constants/rolePermissions';
 import toast from 'react-hot-toast';
 import { useTranslations } from 'next-intl';
+import { localYMD, monthsAgoYMD } from '@/utils/localDate';
 
 function twoMonthsBeforeISO() {
-  const d = new Date();
-  d.setMonth(d.getMonth() - 2);
-  return d.toISOString().slice(0, 10);
+  return monthsAgoYMD(2);
 }
 
 function MultiSelectDropdown({ label, options, selected, onChange }) {
@@ -178,7 +177,7 @@ export default function RolesPage() {
   // Filters — draft state holds what the user is typing/picking; applied state
   // is what the query runs on, so nothing hits the API until Search is pressed.
   const DEFAULT_FROM = twoMonthsBeforeISO();
-  const DEFAULT_TO = new Date().toISOString().slice(0, 10);
+  const DEFAULT_TO = localYMD();
 
   const [draftName, setDraftName] = useState('');
   const [draftSerialNumber, setDraftSerialNumber] = useState('');

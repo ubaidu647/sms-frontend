@@ -1,3 +1,5 @@
+import { formatAmount } from '@/utils/money';
+
 export const COMPONENT_TYPES = ['fixed', 'percent'];
 
 export const PAYSLIP_STATUSES = ['draft', 'finalized', 'partially-paid', 'paid', 'cancelled'];
@@ -57,9 +59,8 @@ export function formatDate(iso) {
 }
 
 export function formatMoney(n, currency = 'PKR') {
-  const num = Number(n) || 0;
   const sym = currency === 'PKR' ? '₨' : currency;
-  return `${sym} ${num.toLocaleString()}`;
+  return `${sym} ${formatAmount(n)}`;
 }
 
 export function toYMD(iso) {

@@ -72,6 +72,7 @@ export default function StructuresPage() {
     onSuccess: () => {
       toast.success('Structure deactivated');
       queryClient.invalidateQueries({ queryKey: ['staff-salary-structures'] });
+      queryClient.invalidateQueries({ queryKey: ['staff-salary-active'] });
       setDeleteTarget(null);
     },
     onError: (err) => toast.error(err.message || 'Failed to deactivate'),
