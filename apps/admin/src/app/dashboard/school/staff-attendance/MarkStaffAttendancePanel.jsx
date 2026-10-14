@@ -9,6 +9,7 @@ import { Save, CheckCircle2, CalendarDays, Search, X } from 'lucide-react';
 import { STATUS_CONFIG, STAFF_LEAVE_TYPES, STAFF_TYPES } from '@/constants/staffAttendance';
 import { localYMD } from '@/utils/localDate';
 import { invalidateStaffAttendanceQueries } from '@/utils/attendanceQueries';
+import { isLeaveRequestRow } from '@/utils/leave';
 
 function todayISO() {
   return localYMD();
@@ -89,6 +90,13 @@ export default function MarkStaffAttendancePanel() {
   const roster = useMemo(() => dailyData?.data?.roster || [], [dailyData]);
   const summary = dailyData?.data?.summary;
 
+  // Rows written by an approved leave request — flagged "On leave" and skipped
+  // by the bulk quick actions so they aren't overwritten by accident.
+  const leaveRowIds = useMemo(
+    () => new Set(roster.filter((s) => isLeaveRequestRow(s.attendance)).map((s) => s.staffId)),
+    [roster],
+  );
+
   useEffect(() => {
     if (!roster.length) {
       setEntries({});
@@ -129,6 +137,7 @@ export default function MarkStaffAttendancePanel() {
     setEntries((prev) => {
       const next = { ...prev };
       Object.keys(next).forEach((id) => {
+        if (leaveRowIds.has(id)) return;
         next[id] = {
           ...next[id],
           status,
@@ -405,6 +414,7 @@ export default function MarkStaffAttendancePanel() {
                   const allowsTimes = ALLOWS_TIMES.includes(e.status);
                   const needsReason = NEEDS_REASON.includes(e.status);
                   const isLeave = e.status === 'leave';
+                  const onLeave = leaveRowIds.has(s.staffId);
                   const initials =
                     (s.name || '')
                       .split(' ')
@@ -434,6 +444,14 @@ export default function MarkStaffAttendancePanel() {
                           <div className="min-w-0">
                             <div className="font-medium text-gray-900 dark:text-gray-100 text-sm truncate">
                               {s.name}
+                              {onLeave && (
+                                <span
+                                  className="ml-2 inline-flex px-1.5 py-0.5 rounded text-[10px] font-semibold bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300 align-middle"
+                                  title="Approved leave request"
+                                >
+                                  On leave
+                                </span>
+                              )}
                             </div>
                             <div className="text-xs text-gray-400 dark:text-gray-500 truncate">
                               {s.serialNumber}
@@ -470,6 +488,11 @@ export default function MarkStaffAttendancePanel() {
                       </td>
                       <td className="px-4 py-3">
                         <div className="space-y-1">
+                          {onLeave && e.status !== 'leave' && (
+                            <p className="text-xs text-amber-700 dark:text-amber-400">
+                              On approved leave — saving overwrites the leave for this day.
+                            </p>
+                          )}
                           {allowsTimes && (
                             <div className="flex gap-2">
                               <input

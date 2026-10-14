@@ -1,16 +1,17 @@
 'use client';
 import React, { useState, useMemo } from 'react';
 import { Table } from '@/component/Table';
-import { Plus, Search, Eye, Edit, Trash2, Ban, CheckCircle, X } from 'lucide-react';
+import { Plus, Search, Eye, Edit, Trash2, Ban, CheckCircle, X, Library } from 'lucide-react';
 import AddStaffModal from './AddStaffModal';
 import EditStaffModal from './EditStaffModal';
 import StaffDetailModal from './StaffDetailModal';
+import BorrowerLibraryModal from '../../school/library/BorrowerLibraryModal';
 import { useTokenStore } from '@/store/tokenStore';
 import { useUserStore } from '@/store/userStore';
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { fetchData, deleteData, patchData } from '@/utils/api';
 import toast from 'react-hot-toast';
-import { resolveScope, hasAnyAction } from '@/utils/permissions';
+import { resolveScope, hasAnyAction, canEditScope } from '@/utils/permissions';
 import { useTranslations } from 'next-intl';
 
 export default function StaffPage() {
@@ -23,6 +24,7 @@ export default function StaffPage() {
   const [editStaff, setEditStaff] = useState(null);
   const [detailStaffId, setDetailStaffId] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [libraryBorrower, setLibraryBorrower] = useState(null);
 
   // Pagination
   const [page, setPage] = useState(1);
@@ -234,6 +236,9 @@ export default function StaffPage() {
   const rowActions = (row) => {
     const items = [{ label: 'View Details', value: 'view', icon: Eye }];
     if (canUpdate) items.push({ label: 'Edit', value: 'edit', icon: Edit });
+    if (!isOwnOnly && canEditScope(user?.role, 'view-library')) {
+      items.push({ label: 'Library', value: 'library', icon: Library });
+    }
     if (canDelete && !isOwnOnly) {
       if (canActOnAllBranches || row.branch?._id === userBranchId) {
         items.push(
@@ -513,6 +518,9 @@ export default function StaffPage() {
             if (action === 'edit') setEditStaff(row);
             if (action === 'toggle') toggleMutation.mutate(row._id);
             if (action === 'delete') setDeleteTarget(row);
+            if (action === 'library') {
+              setLibraryBorrower({ type: 'staff', id: row._id, name: row.user?.name });
+            }
           }}
           showImage={false}
           visibleColumns={visibleColumns}
@@ -543,6 +551,8 @@ export default function StaffPage() {
           onClose={() => setDetailStaffId(null)}
           staffId={detailStaffId}
         />
+
+        <BorrowerLibraryModal borrower={libraryBorrower} onClose={() => setLibraryBorrower(null)} />
 
         {/* Delete confirmation */}
         {deleteTarget && (

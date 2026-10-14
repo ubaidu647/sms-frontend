@@ -1,3 +1,5 @@
+import { currentAcademicYear } from '../utils/academicYear.js';
+
 export const DAYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
 
 export const DAY_LABELS = {
@@ -43,10 +45,8 @@ export const PERIOD_TYPE_COLORS = {
   other: 'bg-gray-50 text-gray-600',
 };
 
-export function currentAcademicYear() {
-  const y = new Date().getFullYear();
-  return `${y}-${y + 1}`;
-}
+// Academic year follows the configured start month (April by default).
+export { currentAcademicYear };
 
 export function addMinutes(hhmm, minutes) {
   if (!hhmm) return '';

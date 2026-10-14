@@ -78,3 +78,33 @@ export function useAnnouncements({ page = 1, limit = 20 } = {}) {
     placeholderData: keepPreviousData,
   });
 }
+
+// 3.7 Library (read-only): own open loans, recent history and fines —
+// { openLoans, history, pendingFines, billedFines }.
+export function useLibrary() {
+  const uid = useUid();
+  return useQuery({
+    queryKey: ['dashboard', uid, 'library'],
+    queryFn: async () => unwrap(await apiClient.get('/dashboard/student/library')),
+  });
+}
+
+// 3.8 Library catalogue of the student's branch (search + paginated).
+// Returns the page items plus `total` for the pager.
+export function useLibraryCatalogue({ search = '', page = 1, limit = 20 } = {}) {
+  const uid = useUid();
+  const q = search.trim();
+  return useQuery({
+    queryKey: ['dashboard', uid, 'library-catalogue', q, page, limit],
+    queryFn: async () => {
+      const res = await apiClient.get('/dashboard/student/library/catalogue', {
+        params: { ...(q ? { search: q } : {}), page, limit },
+      });
+      return {
+        items: Array.isArray(res.data?.data) ? res.data.data : [],
+        total: res.data?.total || 0,
+      };
+    },
+    placeholderData: keepPreviousData,
+  });
+}

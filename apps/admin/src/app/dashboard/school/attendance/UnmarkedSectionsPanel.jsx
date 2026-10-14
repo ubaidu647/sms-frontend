@@ -5,14 +5,10 @@ import { useQuery } from '@tanstack/react-query';
 import { fetchData } from '@/utils/api';
 import { AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { localYMD } from '@/utils/localDate';
+import { currentAcademicYear } from '@/utils/academicYear';
 
 function todayISO() {
   return localYMD();
-}
-
-function currentAcademicYear() {
-  const y = new Date().getFullYear();
-  return `${y}-${y + 1}`;
 }
 
 export default function UnmarkedSectionsPanel() {

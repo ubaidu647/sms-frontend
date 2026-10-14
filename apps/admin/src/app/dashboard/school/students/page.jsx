@@ -2,20 +2,36 @@
 import React, { useState, useMemo } from 'react';
 import { Table } from '@/component/Table';
 import Switch from '@/component/Switch';
-import { Plus, Search, Eye, Edit, Ban, CheckCircle, ArrowRightLeft, X, Users } from 'lucide-react';
+import {
+  Plus,
+  Search,
+  Eye,
+  Edit,
+  Ban,
+  CheckCircle,
+  ArrowRightLeft,
+  X,
+  Users,
+  Award,
+  Library,
+} from 'lucide-react';
 import AddStudentModal from './AddStudentModal';
 import EditStudentModal from './EditStudentModal';
 import StudentDetailModal from './StudentDetailModal';
 import TransferStudentModal from './TransferStudentModal';
 import StudentParentsModal from './StudentParentsModal';
+import IssueCertificateModal from '../certificates/IssueCertificateModal';
+import { studentOptionLabel } from '../certificates/certificateShared';
+import BorrowerLibraryModal from '../library/BorrowerLibraryModal';
 import { useTokenStore } from '@/store/tokenStore';
 import { useUserStore } from '@/store/userStore';
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { fetchData, patchData } from '@/utils/api';
 import toast from 'react-hot-toast';
-import { resolveScope, hasAnyAction } from '@/utils/permissions';
+import { resolveScope, hasAnyAction, canActInBranch, canEditScope } from '@/utils/permissions';
 import { parentPermissions } from '@/utils/parentAccounts';
 import { useTranslations } from 'next-intl';
+import { currentAcademicYear } from '@/utils/academicYear';
 
 const ACADEMIC_STATUSES = [
   'enrolled',
@@ -25,11 +41,6 @@ const ACADEMIC_STATUSES = [
   'dropped',
   'suspended',
 ];
-
-function currentAcademicYear() {
-  const y = new Date().getFullYear();
-  return `${y}-${y + 1}`;
-}
 
 export default function StudentsPage() {
   const { accessToken: token } = useTokenStore();
@@ -43,6 +54,8 @@ export default function StudentsPage() {
   const [detailStudentId, setDetailStudentId] = useState(null);
   const [transferStudent, setTransferStudent] = useState(null);
   const [parentsStudent, setParentsStudent] = useState(null);
+  const [certificateStudent, setCertificateStudent] = useState(null);
+  const [libraryBorrower, setLibraryBorrower] = useState(null);
 
   // Pagination
   const [page, setPage] = useState(1);
@@ -347,6 +360,15 @@ export default function StudentsPage() {
     if (!isOwnOnly && parentPermissions(user?.role).canView) {
       items.push({ label: tParents('action'), value: 'parents', icon: Users });
     }
+    if (
+      !isOwnOnly &&
+      canActInBranch(user?.role, 'issue-certificate', userBranchId, row.branch?._id || row.branchId)
+    ) {
+      items.push({ label: 'Certificates', value: 'certificates', icon: Award });
+    }
+    if (!isOwnOnly && canEditScope(user?.role, 'view-library')) {
+      items.push({ label: 'Library', value: 'library', icon: Library });
+    }
     if (canTransfer && !isOwnOnly) {
       items.push({ label: 'Transfer', value: 'transfer', icon: ArrowRightLeft });
     }
@@ -633,6 +655,12 @@ export default function StudentsPage() {
             if (action === 'edit') setEditStudent(row);
             if (action === 'transfer') setTransferStudent(row);
             if (action === 'parents') setParentsStudent(row);
+            if (action === 'certificates') {
+              setCertificateStudent({ studentId: row._id, label: studentOptionLabel(row) });
+            }
+            if (action === 'library') {
+              setLibraryBorrower({ type: 'student', id: row._id, name: row.user?.name });
+            }
             if (action === 'toggle') toggleMutation.mutate(row._id);
           }}
           showImage={false}
@@ -673,6 +701,14 @@ export default function StudentsPage() {
             ? parentPermissions(user?.role, userBranchId, parentsStudent.branch?._id || null)
             : {})}
         />
+
+        <IssueCertificateModal
+          isOpen={!!certificateStudent}
+          onClose={() => setCertificateStudent(null)}
+          initialStudent={certificateStudent}
+        />
+
+        <BorrowerLibraryModal borrower={libraryBorrower} onClose={() => setLibraryBorrower(null)} />
 
         <TransferStudentModal
           isOpen={!!transferStudent}

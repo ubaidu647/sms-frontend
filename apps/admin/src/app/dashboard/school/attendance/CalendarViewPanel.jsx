@@ -5,6 +5,7 @@ import { useUserStore } from '@/store/userStore';
 import { useQuery, useQueries } from '@tanstack/react-query';
 import { fetchData } from '@/utils/api';
 import { ChevronLeft, ChevronRight, Clock } from 'lucide-react';
+import { currentAcademicYear } from '@/utils/academicYear';
 
 function startOfWeekMonday(d) {
   const dt = new Date(d);
@@ -36,11 +37,6 @@ function formatRange(start, end) {
   if (sy === ey && sm === em) return `${sm} ${start.getDate()} – ${end.getDate()}, ${sy}`;
   if (sy === ey) return `${sm} ${start.getDate()} – ${em} ${end.getDate()}, ${sy}`;
   return `${sm} ${start.getDate()}, ${sy} – ${em} ${end.getDate()}, ${ey}`;
-}
-
-function currentAcademicYear() {
-  const y = new Date().getFullYear();
-  return `${y}-${y + 1}`;
 }
 
 const STATUS_BADGE = {

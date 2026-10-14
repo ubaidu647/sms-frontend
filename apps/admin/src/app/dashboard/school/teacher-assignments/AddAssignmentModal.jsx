@@ -11,13 +11,9 @@ import { fetchData, postData } from '@/utils/api';
 import { useTokenStore } from '@/store/tokenStore';
 import { useUserStore } from '@/store/userStore';
 import { CheckCircle2, AlertTriangle } from 'lucide-react';
+import { currentAcademicYear } from '@/utils/academicYear';
 
 const ACADEMIC_YEAR_REGEX = /^\d{4}-\d{4}$/;
-
-function currentAcademicYear() {
-  const y = new Date().getFullYear();
-  return `${y}-${y + 1}`;
-}
 
 const inputCls =
   'w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 text-sm text-gray-900 bg-white placeholder:text-gray-400';

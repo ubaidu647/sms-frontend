@@ -5,14 +5,10 @@ import { useUserStore } from '@/store/userStore';
 import { useQuery } from '@tanstack/react-query';
 import { fetchData } from '@/utils/api';
 import { localYM } from '@/utils/localDate';
+import { currentAcademicYear } from '@/utils/academicYear';
 
 function currentMonth() {
   return localYM();
-}
-
-function currentAcademicYear() {
-  const y = new Date().getFullYear();
-  return `${y}-${y + 1}`;
 }
 
 function pctColor(pct) {

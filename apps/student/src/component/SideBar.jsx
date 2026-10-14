@@ -9,6 +9,7 @@ import {
   BarChart3,
   BookOpen,
   Wallet,
+  Library,
   CalendarDays,
   Megaphone,
   UserRound,
@@ -29,6 +30,7 @@ const navigationItems = [
   { label: "Homework", iconComponent: BookOpen, path: "/dashboard/homework" },
   { label: "Results", iconComponent: BarChart3, path: "/dashboard/results" },
   { label: "Fees", iconComponent: Wallet, path: "/dashboard/fees" },
+  { label: "Library", iconComponent: Library, path: "/dashboard/library" },
   {
     label: "Timetable",
     iconComponent: CalendarDays,

@@ -12,11 +12,7 @@ import { fetchData, deleteData } from '@/utils/api';
 import toast from 'react-hot-toast';
 import { resolveScope, hasAnyAction } from '@/utils/permissions';
 import { useTranslations } from 'next-intl';
-
-function currentAcademicYear() {
-  const y = new Date().getFullYear();
-  return `${y}-${y + 1}`;
-}
+import { currentAcademicYear } from '@/utils/academicYear';
 
 export default function TeacherAssignmentsPage() {
   const { accessToken: token } = useTokenStore();

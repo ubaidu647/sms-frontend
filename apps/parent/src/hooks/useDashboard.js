@@ -104,3 +104,51 @@ export function useAnnouncements({ page = 1, limit = 20 } = {}) {
     placeholderData: keepSameChildData(studentId),
   });
 }
+
+// Library (read-only): the child's open loans, recent history and fines —
+// { openLoans, history, pendingFines, billedFines }.
+export function useLibrary() {
+  const uid = useUid();
+  const studentId = useSelectedChildId();
+  return useQuery({
+    queryKey: ["dashboard", uid, studentId, "library"],
+    queryFn: async () =>
+      unwrap(await apiClient.get(childPath(studentId, "library"))),
+    enabled: !!studentId,
+  });
+}
+
+// Library catalogue of the child's branch (search + paginated).
+// Returns the page items plus `total` for the pager.
+export function useLibraryCatalogue({
+  search = "",
+  page = 1,
+  limit = 20,
+} = {}) {
+  const uid = useUid();
+  const studentId = useSelectedChildId();
+  const q = search.trim();
+  return useQuery({
+    queryKey: [
+      "dashboard",
+      uid,
+      studentId,
+      "library-catalogue",
+      q,
+      page,
+      limit,
+    ],
+    queryFn: async () => {
+      const res = await apiClient.get(
+        childPath(studentId, "library/catalogue"),
+        { params: { ...(q ? { search: q } : {}), page, limit } },
+      );
+      return {
+        items: Array.isArray(res.data?.data) ? res.data.data : [],
+        total: res.data?.total || 0,
+      };
+    },
+    enabled: !!studentId,
+    placeholderData: keepSameChildData(studentId),
+  });
+}

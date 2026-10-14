@@ -53,6 +53,56 @@ export const ACTIONS = {
   UPDATE_ALL_BRANCH_CLASS: 'update-all-branch-class',
   DELETE_ALL_BRANCH_CLASS: 'delete-all-branch-class',
 
+  // ── Year-end promotion (academic-year rollover) ───
+  MANAGE_PROMOTION: 'manage-promotion',
+  MANAGE_ALL_BRANCH_PROMOTION: 'manage-all-branch-promotion',
+
+  // ── Admissions & enquiry ──────────────────────────
+  VIEW_ENQUIRY: 'view-enquiry',
+  MANAGE_ENQUIRY: 'manage-enquiry',
+  MANAGE_ADMISSION_FORM: 'manage-admission-form',
+
+  // ── Admissions & enquiry (org-level) ──────────────
+  VIEW_ALL_BRANCH_ENQUIRY: 'view-all-branch-enquiry',
+  MANAGE_ALL_BRANCH_ENQUIRY: 'manage-all-branch-enquiry',
+  MANAGE_ALL_BRANCH_ADMISSION_FORM: 'manage-all-branch-admission-form',
+
+  // ── Certificates (SLC, character, bonafide, fee clearance) ─
+  VIEW_CERTIFICATE: 'view-certificate',
+  ISSUE_CERTIFICATE: 'issue-certificate',
+  ISSUE_CERTIFICATE_WITH_DUES: 'issue-certificate-with-dues',
+
+  // ── Certificates (org-level) ──────────────────────
+  VIEW_ALL_BRANCH_CERTIFICATE: 'view-all-branch-certificate',
+  ISSUE_ALL_BRANCH_CERTIFICATE: 'issue-all-branch-certificate',
+
+  // ── Library (catalogue, circulation, fines) ───────
+  VIEW_LIBRARY: 'view-library',
+  MANAGE_LIBRARY: 'manage-library',
+  MANAGE_LIBRARY_SETTINGS: 'manage-library-settings',
+
+  // ── Library (org-level) ───────────────────────────
+  VIEW_ALL_BRANCH_LIBRARY: 'view-all-branch-library',
+  MANAGE_ALL_BRANCH_LIBRARY: 'manage-all-branch-library',
+  MANAGE_ALL_BRANCH_LIBRARY_SETTINGS: 'manage-all-branch-library-settings',
+
+  // ── Library (self — a staff member's own loans) ───
+  VIEW_OWN_LIBRARY: 'view-own-library',
+
+  // ── Inventory (stock, purchases & suppliers, assets, school shop) ─
+  VIEW_INVENTORY: 'view-inventory',
+  MANAGE_INVENTORY: 'manage-inventory',
+  MANAGE_PURCHASE: 'manage-purchase',
+  MANAGE_ASSET: 'manage-asset',
+  MANAGE_SHOP_SALE: 'manage-shop-sale',
+
+  // ── Inventory (org-level) ─────────────────────────
+  VIEW_ALL_BRANCH_INVENTORY: 'view-all-branch-inventory',
+  MANAGE_ALL_BRANCH_INVENTORY: 'manage-all-branch-inventory',
+  MANAGE_ALL_BRANCH_PURCHASE: 'manage-all-branch-purchase',
+  MANAGE_ALL_BRANCH_ASSET: 'manage-all-branch-asset',
+  MANAGE_ALL_BRANCH_SHOP_SALE: 'manage-all-branch-shop-sale',
+
   // ── Subject management ───────────────────────────
   CREATE_SUBJECT: 'create-subject',
   VIEW_SUBJECT: 'view-subject',
@@ -96,6 +146,19 @@ export const ACTIONS = {
   MARK_ALL_BRANCH_STAFF_ATTENDANCE: 'mark-all-branch-staff-attendance',
   VIEW_ALL_BRANCH_STAFF_ATTENDANCE: 'view-all-branch-staff-attendance',
   UPDATE_ALL_BRANCH_STAFF_ATTENDANCE: 'update-all-branch-staff-attendance',
+
+  // ── Leave management (staff + student leave requests) ─
+  VIEW_LEAVE: 'view-leave',
+  APPROVE_LEAVE: 'approve-leave',
+  MANAGE_LEAVE_POLICY: 'manage-leave-policy',
+
+  // ── Leave management (org-level) ──────────────────
+  VIEW_ALL_BRANCH_LEAVE: 'view-all-branch-leave',
+  APPROVE_ALL_BRANCH_LEAVE: 'approve-all-branch-leave',
+  MANAGE_ALL_BRANCH_LEAVE_POLICY: 'manage-all-branch-leave-policy',
+
+  // ── Leave (self — a staff member's own requests + balance) ─
+  APPLY_OWN_LEAVE: 'apply-own-leave',
 
   // ── Teaching assignment ───────────────────────────
   CREATE_TEACHING_ASSIGNMENT: 'create-teaching-assignment',
@@ -335,11 +398,18 @@ export const AVAILABLE_MENUS = [
   { key: 'staff', label: 'User Management — Staff' },
   { key: 'role', label: 'User Management — Roles' },
   { key: 'class', label: 'Classes' },
+  { key: 'promotion', label: 'Year-end Promotion' },
+  { key: 'admissions', label: 'Admissions & Enquiry' },
+  { key: 'certificates', label: 'Certificates' },
+  { key: 'library', label: 'Library' },
+  { key: 'inventory', label: 'Inventory' },
   { key: 'subject', label: 'Subjects' },
   { key: 'homework', label: 'Homework' },
   { key: 'student', label: 'Students' },
   { key: 'attendance', label: 'Attendance' },
   { key: 'staff-attendance', label: 'Staff Attendance' },
+  { key: 'leave', label: 'Leave Management' },
+  { key: 'my-leave', label: 'My Leave' },
   { key: 'teaching-assignment', label: 'Teacher Assignments' },
   { key: 'exam', label: 'Exams' },
   { key: 'timetable', label: 'Timetable' },
@@ -410,6 +480,97 @@ export const AVAILABLE_ACTIONS = [
   { key: ACTIONS.CREATE_ALL_BRANCH_CLASS, label: 'Create All Branch', menu: 'class' },
   { key: ACTIONS.UPDATE_ALL_BRANCH_CLASS, label: 'Update All Branch', menu: 'class' },
   { key: ACTIONS.DELETE_ALL_BRANCH_CLASS, label: 'Delete All Branch', menu: 'class' },
+
+  // Leave management — approve also covers reject, cancel and entering leave
+  // on behalf of a staff member or student; policy = yearly staff quotas.
+  { key: ACTIONS.VIEW_LEAVE, label: 'View', menu: 'leave' },
+  { key: ACTIONS.APPROVE_LEAVE, label: 'Approve/Reject', menu: 'leave' },
+  { key: ACTIONS.MANAGE_LEAVE_POLICY, label: 'Manage Quotas', menu: 'leave' },
+  { key: ACTIONS.VIEW_ALL_BRANCH_LEAVE, label: 'View All Branch', menu: 'leave' },
+  { key: ACTIONS.APPROVE_ALL_BRANCH_LEAVE, label: 'Approve All Branch', menu: 'leave' },
+  {
+    key: ACTIONS.MANAGE_ALL_BRANCH_LEAVE_POLICY,
+    label: 'Manage Quotas All Branch',
+    menu: 'leave',
+  },
+  { key: ACTIONS.APPLY_OWN_LEAVE, label: 'Apply Own', menu: 'my-leave', scope: 'own' },
+
+  // Year-end Promotion (academic-year rollover)
+  { key: ACTIONS.MANAGE_PROMOTION, label: 'Manage', menu: 'promotion' },
+  { key: ACTIONS.MANAGE_ALL_BRANCH_PROMOTION, label: 'Manage All Branch', menu: 'promotion' },
+
+  // Admissions & enquiry — manage covers create/edit/follow-up/test/close/
+  // reopen/admit; admitting also needs create-student.
+  { key: ACTIONS.VIEW_ENQUIRY, label: 'View', menu: 'admissions' },
+  { key: ACTIONS.MANAGE_ENQUIRY, label: 'Manage', menu: 'admissions' },
+  { key: ACTIONS.MANAGE_ADMISSION_FORM, label: 'Online Form', menu: 'admissions' },
+  { key: ACTIONS.VIEW_ALL_BRANCH_ENQUIRY, label: 'View All Branch', menu: 'admissions' },
+  { key: ACTIONS.MANAGE_ALL_BRANCH_ENQUIRY, label: 'Manage All Branch', menu: 'admissions' },
+  {
+    key: ACTIONS.MANAGE_ALL_BRANCH_ADMISSION_FORM,
+    label: 'Online Form All Branch',
+    menu: 'admissions',
+  },
+
+  // Certificates — issue also covers cancelling; "with dues" lets a user
+  // force a School Leaving Certificate while fees are outstanding.
+  { key: ACTIONS.VIEW_CERTIFICATE, label: 'View', menu: 'certificates' },
+  { key: ACTIONS.ISSUE_CERTIFICATE, label: 'Issue/Cancel', menu: 'certificates' },
+  {
+    key: ACTIONS.ISSUE_CERTIFICATE_WITH_DUES,
+    label: 'Issue SLC With Dues',
+    menu: 'certificates',
+  },
+  { key: ACTIONS.VIEW_ALL_BRANCH_CERTIFICATE, label: 'View All Branch', menu: 'certificates' },
+  {
+    key: ACTIONS.ISSUE_ALL_BRANCH_CERTIFICATE,
+    label: 'Issue/Cancel All Branch',
+    menu: 'certificates',
+  },
+
+  // Library — manage covers books, copies, issue/return/renew, lost, waiving
+  // fines and marking staff fines paid; settings = limits, loan days, fines.
+  { key: ACTIONS.VIEW_LIBRARY, label: 'View', menu: 'library' },
+  { key: ACTIONS.MANAGE_LIBRARY, label: 'Manage/Circulate', menu: 'library' },
+  { key: ACTIONS.MANAGE_LIBRARY_SETTINGS, label: 'Settings', menu: 'library' },
+  { key: ACTIONS.VIEW_ALL_BRANCH_LIBRARY, label: 'View All Branch', menu: 'library' },
+  {
+    key: ACTIONS.MANAGE_ALL_BRANCH_LIBRARY,
+    label: 'Manage/Circulate All Branch',
+    menu: 'library',
+  },
+  {
+    key: ACTIONS.MANAGE_ALL_BRANCH_LIBRARY_SETTINGS,
+    label: 'Settings All Branch',
+    menu: 'library',
+  },
+  { key: ACTIONS.VIEW_OWN_LIBRARY, label: 'View Own', menu: 'library', scope: 'own' },
+
+  // Inventory — manage = items, stock issue/adjust/transfer; purchase =
+  // suppliers, purchases, supplier payments and their voids; asset = fixed
+  // asset register; shop sale = school shop sales billed on fee vouchers.
+  { key: ACTIONS.VIEW_INVENTORY, label: 'View', menu: 'inventory' },
+  { key: ACTIONS.MANAGE_INVENTORY, label: 'Manage Stock', menu: 'inventory' },
+  { key: ACTIONS.MANAGE_PURCHASE, label: 'Purchases & Suppliers', menu: 'inventory' },
+  { key: ACTIONS.MANAGE_ASSET, label: 'Manage Assets', menu: 'inventory' },
+  { key: ACTIONS.MANAGE_SHOP_SALE, label: 'School Shop Sales', menu: 'inventory' },
+  { key: ACTIONS.VIEW_ALL_BRANCH_INVENTORY, label: 'View All Branch', menu: 'inventory' },
+  {
+    key: ACTIONS.MANAGE_ALL_BRANCH_INVENTORY,
+    label: 'Manage Stock All Branch',
+    menu: 'inventory',
+  },
+  {
+    key: ACTIONS.MANAGE_ALL_BRANCH_PURCHASE,
+    label: 'Purchases & Suppliers All Branch',
+    menu: 'inventory',
+  },
+  { key: ACTIONS.MANAGE_ALL_BRANCH_ASSET, label: 'Manage Assets All Branch', menu: 'inventory' },
+  {
+    key: ACTIONS.MANAGE_ALL_BRANCH_SHOP_SALE,
+    label: 'School Shop Sales All Branch',
+    menu: 'inventory',
+  },
 
   // Subject
   { key: ACTIONS.VIEW_SUBJECT, label: 'View', menu: 'subject' },

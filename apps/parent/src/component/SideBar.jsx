@@ -9,15 +9,17 @@ import {
   BarChart3,
   BookOpen,
   Wallet,
+  Library,
   CalendarDays,
   Megaphone,
   UserRound,
+  CalendarOff,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 
-// Flat parent menu (read-only views of the selected child). Mirrors the admin sidebar's look; no role/permission gating.
+// Flat parent menu (views of the selected child; Leave also lets the parent apply). Mirrors the admin sidebar's look; no role/permission gating.
 // One entry per backend-backed dashboard section.
 const navigationItems = [
   { label: "Dashboard", iconComponent: LayoutDashboard, path: "/dashboard" },
@@ -26,9 +28,11 @@ const navigationItems = [
     iconComponent: CalendarCheck,
     path: "/dashboard/attendance",
   },
+  { label: "Leave", iconComponent: CalendarOff, path: "/dashboard/leave" },
   { label: "Homework", iconComponent: BookOpen, path: "/dashboard/homework" },
   { label: "Results", iconComponent: BarChart3, path: "/dashboard/results" },
   { label: "Fees", iconComponent: Wallet, path: "/dashboard/fees" },
+  { label: "Library", iconComponent: Library, path: "/dashboard/library" },
   {
     label: "Timetable",
     iconComponent: CalendarDays,

@@ -28,6 +28,13 @@ import {
   Lock,
   Scale,
   Users2,
+  ChevronsUp,
+  CalendarOff,
+  CalendarMinus,
+  UserPlus,
+  Award,
+  Library,
+  Boxes,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -57,6 +64,63 @@ const navigationItems = [
     path: '/dashboard/school/students',
   },
   {
+    // Front-desk enquiries → follow-ups → test → admit (creates the student).
+    section: 'sectionSchool',
+    labelKey: 'admissions',
+    iconComponent: UserPlus,
+    key: 'admissions',
+    hasSubmenu: false,
+    path: '/dashboard/school/admissions',
+    canAccess: (role, menus) =>
+      menus.includes('admissions') ||
+      canSee(role, 'view-enquiry') ||
+      canSee(role, 'manage-enquiry') ||
+      canSee(role, 'manage-admission-form'),
+  },
+  {
+    // SLC / character / bonafide / fee-clearance certificates (issue + print).
+    section: 'sectionSchool',
+    labelKey: 'certificates',
+    iconComponent: Award,
+    key: 'certificates',
+    hasSubmenu: false,
+    path: '/dashboard/school/certificates',
+    canAccess: (role, menus) =>
+      menus.includes('certificates') ||
+      canSee(role, 'view-certificate') ||
+      canSee(role, 'issue-certificate'),
+  },
+  {
+    // Catalogue, circulation desk (issue/return), loans and fines.
+    section: 'sectionSchool',
+    labelKey: 'library',
+    iconComponent: Library,
+    key: 'library',
+    hasSubmenu: false,
+    path: '/dashboard/school/library',
+    canAccess: (role, menus) =>
+      menus.includes('library') ||
+      canEditScope(role, 'view-library') ||
+      canEditScope(role, 'manage-library') ||
+      canEditScope(role, 'manage-library-settings'),
+  },
+  {
+    // Stock items, issues, purchases & suppliers, fixed assets, school shop.
+    section: 'sectionSchool',
+    labelKey: 'inventory',
+    iconComponent: Boxes,
+    key: 'inventory',
+    hasSubmenu: false,
+    path: '/dashboard/school/inventory',
+    canAccess: (role, menus) =>
+      menus.includes('inventory') ||
+      canEditScope(role, 'view-inventory') ||
+      canEditScope(role, 'manage-inventory') ||
+      canEditScope(role, 'manage-purchase') ||
+      canEditScope(role, 'manage-asset') ||
+      canEditScope(role, 'manage-shop-sale'),
+  },
+  {
     // Grouped: both are "who was present today", and the parent shows whenever
     // either register is granted (see isItemVisible).
     section: 'sectionSchool',
@@ -79,6 +143,37 @@ const navigationItems = [
         key: 'staff-attendance',
         base: 'view-staff-attendance',
         path: '/dashboard/school/staff-attendance',
+      },
+    ],
+  },
+  {
+    // Leave: the management page (requests, quotas, balances) for approvers,
+    // and "My Leave" for any staff member allowed to apply for their own.
+    section: 'sectionSchool',
+    labelKey: 'leave',
+    iconComponent: CalendarOff,
+    key: 'leave',
+    hasSubmenu: true,
+    path: '/dashboard/school/leave',
+    submenu: [
+      {
+        labelKey: 'leaveRequests',
+        iconComponent: CalendarOff,
+        key: 'leave',
+        path: '/dashboard/school/leave',
+        canAccess: (role, menus) =>
+          menus.includes('leave') ||
+          canSee(role, 'view-leave') ||
+          canSee(role, 'approve-leave') ||
+          canSee(role, 'manage-leave-policy'),
+      },
+      {
+        labelKey: 'myLeave',
+        iconComponent: CalendarMinus,
+        key: 'my-leave',
+        path: '/dashboard/school/my-leave',
+        canAccess: (role, menus) =>
+          menus.includes('my-leave') || hasAnyAction(role, ['apply-own-leave']),
       },
     ],
   },
@@ -138,6 +233,14 @@ const navigationItems = [
         key: 'teaching-assignment',
         base: 'view-teaching-assignment',
         path: '/dashboard/school/teacher-assignments',
+      },
+      {
+        // Year-end rollover: prepare next year, promote/detain per section.
+        labelKey: 'promotion',
+        iconComponent: ChevronsUp,
+        key: 'promotion',
+        base: 'manage-promotion',
+        path: '/dashboard/school/promotion',
       },
     ],
   },
@@ -386,6 +489,7 @@ export const Sidebar = ({
   const isItemVisible = (item) => {
     if (user?.role?.isPredefined) return true;
     if (item.submenu) return item.submenu.some(subVisible);
+    if (item.canAccess) return item.canAccess(user?.role, menus);
     return menus.includes(item.key) || (item.base && canSee(user?.role, item.base));
   };
 

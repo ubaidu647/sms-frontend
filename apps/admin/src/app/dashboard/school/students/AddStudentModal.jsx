@@ -14,6 +14,7 @@ import { useMyCurrentSubscription } from '@/app/dashboard/billing/hooks/useBilli
 import { useTokenStore } from '@/store/tokenStore';
 import { useUserStore } from '@/store/userStore';
 import { localYMD } from '@/utils/localDate';
+import { currentAcademicYear } from '@/utils/academicYear';
 
 const ALLOWED_PHOTO_TYPES = [
   'image/jpeg',
@@ -25,11 +26,6 @@ const ALLOWED_PHOTO_TYPES = [
 const MAX_PHOTO_SIZE = 5 * 1024 * 1024;
 
 const ACADEMIC_YEAR_REGEX = /^\d{4}-\d{4}$/;
-
-function currentAcademicYear() {
-  const y = new Date().getFullYear();
-  return `${y}-${y + 1}`;
-}
 
 const schema = yup.object().shape({
   // Account

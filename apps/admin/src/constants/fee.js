@@ -1,4 +1,5 @@
 import { localYMD } from '../utils/localDate.js';
+import { currentAcademicYear } from '../utils/academicYear.js';
 
 export const FEE_FREQUENCIES = ['monthly', 'one-time', 'annual', 'quarterly'];
 
@@ -41,10 +42,8 @@ export function paymentAccountLabel(payment) {
   return paymentAccount(payment)?.name || payment?.method || '—';
 }
 
-export function currentAcademicYear() {
-  const y = new Date().getFullYear();
-  return `${y}-${y + 1}`;
-}
+// Academic year follows the configured start month (April by default).
+export { currentAcademicYear };
 
 export function currentMonth() {
   const d = new Date();

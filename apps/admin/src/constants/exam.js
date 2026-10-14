@@ -1,3 +1,5 @@
+import { currentAcademicYear } from '../utils/academicYear.js';
+
 export const EXAM_TYPES = ['mid-term', 'final', 'monthly', 'weekly', 'mock', 'pre-board', 'other'];
 
 export const EXAM_STATUSES = ['planned', 'in-progress', 'completed', 'published'];
@@ -40,10 +42,8 @@ export function gradeFromPercentage(pct) {
   return 'F';
 }
 
-export function currentAcademicYear() {
-  const y = new Date().getFullYear();
-  return `${y}-${y + 1}`;
-}
+// Academic year follows the configured start month (April by default).
+export { currentAcademicYear };
 
 export function formatDate(iso) {
   if (!iso) return '—';

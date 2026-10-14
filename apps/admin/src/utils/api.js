@@ -26,6 +26,8 @@ export const fetchData = async ({
 const toApiError = (error) => {
   const err = new Error(error.response?.data?.message || error.message || 'Failed');
   if (error.response?.status) err.status = error.response.status;
+  // Some refusals carry details (e.g. per-section counts) in the envelope's `data`.
+  if (error.response?.data?.data !== undefined) err.data = error.response.data.data;
   return err;
 };
 

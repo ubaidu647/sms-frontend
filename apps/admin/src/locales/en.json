@@ -25,6 +25,8 @@
     "payslips": "Payslips",
     "policy": "Policy",
     "teacherAssignments": "Teacher Assignments",
+    "admissions": "Admissions",
+    "promotion": "Promotion",
     "exams": "Exams",
     "timetable": "Timetable",
     "fees": "Fees",
@@ -51,7 +53,13 @@
     "sectionFinance": "Finance",
     "sectionOperations": "Operations",
     "sectionInsights": "Insights",
-    "academicSetup": "Academic Setup"
+    "academicSetup": "Academic Setup",
+    "leave": "Leave",
+    "leaveRequests": "Leave Requests",
+    "myLeave": "My Leave",
+    "certificates": "Certificates",
+    "library": "Library",
+    "inventory": "Inventory"
   },
   "reportStudentProgress": {
     "title": "Student Progress Report",
@@ -290,6 +298,47 @@
       "relationRequired": "Choose a relation",
       "passwordMin": "Password must be at least {min} characters",
       "passwordMismatch": "Passwords do not match"
+    }
+  },
+  "promotion": {
+    "title": "Year-end Promotion",
+    "subtitle": "Prepare the next academic year and promote, detain or pass out students section by section"
+  },
+  "admissions": {
+    "title": "Admissions & Enquiry",
+    "subtitle": "Track enquiries from the front desk and the online form, follow up, test and admit students",
+    "tabOverview": "Overview",
+    "tabEnquiries": "Enquiries",
+    "tabForms": "Online Form",
+    "noPermission": "You do not have permission to view admissions."
+  },
+  "leave": {
+    "title": "Leave Management",
+    "subtitle": "Review staff and student leave requests, set yearly staff quotas and check balances"
+  },
+  "myLeave": {
+    "title": "My Leave",
+    "subtitle": "Apply for leave, track your requests and see your remaining balance"
+  },
+  "certificates": {
+    "title": "Certificates",
+    "subtitle": "Issue, print and cancel school leaving, character, bonafide and fee clearance certificates"
+  },
+  "library": {
+    "title": "Library",
+    "subtitle": "Catalogue, circulation desk, loans, overdue fines and library settings"
+  },
+  "inventory": {
+    "title": "Inventory",
+    "subtitle": "Stock items, issues, purchases & suppliers, fixed assets and the school shop",
+    "tabs": {
+      "overview": "Overview",
+      "items": "Items & Stock",
+      "issue": "Issue",
+      "purchases": "Purchases",
+      "suppliers": "Suppliers",
+      "assets": "Assets",
+      "shop": "School Shop"
     }
   }
 }

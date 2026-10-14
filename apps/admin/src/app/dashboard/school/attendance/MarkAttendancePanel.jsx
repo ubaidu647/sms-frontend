@@ -9,6 +9,8 @@ import toast from 'react-hot-toast';
 import { Save, CheckCircle2, CalendarDays, Search, X } from 'lucide-react';
 import { localYMD } from '@/utils/localDate';
 import { invalidateStudentAttendanceQueries } from '@/utils/attendanceQueries';
+import { currentAcademicYear } from '@/utils/academicYear';
+import { isLeaveRequestRow } from '@/utils/leave';
 
 const STATUS_CONFIG = [
   {
@@ -51,11 +53,6 @@ const STATUS_CONFIG = [
 
 function todayISO() {
   return localYMD();
-}
-
-function currentAcademicYear() {
-  const y = new Date().getFullYear();
-  return `${y}-${y + 1}`;
 }
 
 export default function MarkAttendancePanel() {
@@ -212,6 +209,13 @@ export default function MarkAttendancePanel() {
   const roster = useMemo(() => dailyData?.data?.roster || [], [dailyData]);
   const summary = dailyData?.data?.summary;
 
+  // Rows written by an approved leave request — flagged "On leave" and skipped
+  // by the bulk quick actions so they aren't overwritten by accident.
+  const leaveRowIds = useMemo(
+    () => new Set(roster.filter((s) => isLeaveRequestRow(s.attendance)).map((s) => s.studentId)),
+    [roster],
+  );
+
   // Initialize entries when roster loads
   useEffect(() => {
     if (!roster.length) {
@@ -243,6 +247,7 @@ export default function MarkAttendancePanel() {
     setEntries((prev) => {
       const next = { ...prev };
       Object.keys(next).forEach((id) => {
+        if (leaveRowIds.has(id)) return;
         next[id] = { ...next[id], status };
       });
       return next;
@@ -498,6 +503,7 @@ export default function MarkAttendancePanel() {
                   const e = entries[s.studentId] || { status: 'present' };
                   const isLate = e.status === 'late';
                   const isHalfDay = e.status === 'half-day';
+                  const onLeave = leaveRowIds.has(s.studentId);
                   const needsReason = ['absent', 'leave', 'half-day', 'late'].includes(e.status);
                   const initials =
                     (s.name || '')
@@ -531,6 +537,14 @@ export default function MarkAttendancePanel() {
                           <div className="min-w-0">
                             <div className="font-medium text-gray-900 dark:text-gray-100 text-sm truncate">
                               {s.name}
+                              {onLeave && (
+                                <span
+                                  className="ml-2 inline-flex px-1.5 py-0.5 rounded text-[10px] font-semibold bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300 align-middle"
+                                  title="Approved leave request"
+                                >
+                                  On leave
+                                </span>
+                              )}
                             </div>
                             <div className="text-xs text-gray-400 dark:text-gray-500 truncate">
                               {s.admissionNumber}
@@ -561,6 +575,11 @@ export default function MarkAttendancePanel() {
                       </td>
                       <td className="px-4 py-3">
                         <div className="space-y-1">
+                          {onLeave && e.status !== 'leave' && (
+                            <p className="text-xs text-amber-700 dark:text-amber-400">
+                              On approved leave — saving overwrites the leave for this day.
+                            </p>
+                          )}
                           {isLate && (
                             <input
                               type="time"

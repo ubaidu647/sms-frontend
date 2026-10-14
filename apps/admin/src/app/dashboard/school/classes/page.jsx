@@ -12,6 +12,7 @@ import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tansta
 import { fetchData, patchData } from '@/utils/api';
 import toast from 'react-hot-toast';
 import { useTranslations } from 'next-intl';
+import { currentAcademicYear } from '@/utils/academicYear';
 
 const GRADES = [
   'nursery',
@@ -32,11 +33,6 @@ const GRADES = [
 ];
 const CLASS_TYPES = ['pre-primary', 'primary', 'middle', 'secondary', 'higher-secondary'];
 const MEDIUMS = ['english', 'urdu', 'arabic', 'other'];
-
-function currentAcademicYear() {
-  const y = new Date().getFullYear();
-  return `${y}-${y + 1}`;
-}
 
 export default function ClassesPage() {
   const { accessToken: token } = useTokenStore();
