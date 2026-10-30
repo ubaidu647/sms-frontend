@@ -80,7 +80,7 @@ export function useAnnouncements({ page = 1, limit = 20 } = {}) {
 }
 
 // 3.7 Library (read-only): own open loans, recent history and fines —
-// { openLoans, history, pendingFines, billedFines }.
+// { openLoans, history, pendingFines, billedFines, billedUnpaidFines? }.
 export function useLibrary() {
   const uid = useUid();
   return useQuery({

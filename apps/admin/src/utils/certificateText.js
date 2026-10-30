@@ -407,13 +407,78 @@ export function certificateRowActions(row, { canIssue = false } = {}) {
 
 /**
  * Whether the issue button may be pressed for an eligibility result.
- * `force` is the "Issue anyway" checkbox; only an SLC with dues can be forced,
- * and only by a user holding issue-certificate-with-dues.
+ * `force` is the "Issue anyway" checkbox; only an SLC held back by dues or
+ * unreturned library books (`needsForce`) can be forced, and only by a user
+ * holding issue-certificate-with-dues. The server may report `canIssue: true`
+ * to such a user, but the issue call still needs `force`, so the checkbox is
+ * required either way.
  */
 export function canSubmitIssue(eligibility, { force = false, canForce = false } = {}) {
   if (!eligibility) return false;
-  if (eligibility.canIssue) return true;
-  return (
-    eligibility.type === 'slc' && !!eligibility.needsForce && canForce === true && force === true
-  );
+  if (Array.isArray(eligibility.reasons) && eligibility.reasons.length > 0) return false;
+  if (eligibility.needsForce) {
+    return eligibility.type === 'slc' && canForce === true && force === true;
+  }
+  return !!eligibility.canIssue;
+}
+
+/** Library books the student has not returned (eligibility `openLoans`). */
+export function openLoansOf(eligibility) {
+  const e = eligibility && typeof eligibility === 'object' ? eligibility : {};
+  const raw = e.openLoans ?? e.breakdown?.openLoans ?? e.outstandingBreakdown?.openLoans;
+  const n = Number(raw);
+  return Number.isFinite(n) && n > 0 ? Math.floor(n) : 0;
+}
+
+/** "2 library books not returned", or '' for none. */
+export function openLoansLabel(n) {
+  return n > 0 ? `${n} library book${n === 1 ? '' : 's'} not returned` : '';
+}
+
+/**
+ * What holds back an SLC that needs forcing: "Rs 1,200 outstanding and
+ * 2 library books not returned". `money` formats an amount (e.g. "Rs 1,200").
+ */
+export function forceSummary(eligibility, money = (n) => `Rs ${n}`) {
+  const parts = [];
+  const { total } = outstandingSummary(eligibility);
+  if (total > 0) parts.push(`${money(total)} outstanding`);
+  const loans = openLoansLabel(openLoansOf(eligibility));
+  if (loans) parts.push(loans);
+  return parts.join(' and ');
+}
+
+const OUTSTANDING_PARTS = [
+  ['vouchers', 'Fee vouchers'],
+  ['libraryFines', 'Library fines'],
+  ['shopSales', 'School shop'],
+];
+
+/**
+ * Outstanding amount from an eligibility response, plus its per-source split
+ * when the server sends one (`breakdown` / `outstandingBreakdown`, or
+ * `outstanding` itself as an object). `parts` is empty when there is no
+ * breakdown, so callers fall back to the single total.
+ */
+export function outstandingSummary(eligibility) {
+  const e = eligibility && typeof eligibility === 'object' ? eligibility : {};
+  const raw = e.outstanding;
+  const obj = (v) => (v && typeof v === 'object' && !Array.isArray(v) ? v : null);
+  const breakdown = obj(e.outstandingBreakdown) || obj(e.breakdown) || obj(raw);
+  const num = (v) => {
+    const n = Number(v);
+    return Number.isFinite(n) ? n : 0;
+  };
+  const parts = breakdown
+    ? OUTSTANDING_PARTS.filter(([key]) => breakdown[key] != null).map(([key, label]) => ({
+        key,
+        label,
+        amount: num(breakdown[key]),
+      }))
+    : [];
+  let total;
+  if (raw != null && !obj(raw)) total = num(raw);
+  else if (breakdown && breakdown.total != null) total = num(breakdown.total);
+  else total = parts.reduce((s, p) => s + p.amount, 0);
+  return { total, parts };
 }

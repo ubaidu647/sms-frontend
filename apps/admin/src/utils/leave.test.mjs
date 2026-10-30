@@ -18,6 +18,9 @@ import {
   buildQuotas,
   policyFor,
   isLeaveRequestRow,
+  keptAsLeaveCount,
+  keptAsLeaveMessage,
+  responseWarnings,
   applicantDetail,
   requestedByLabel,
 } from './leave.js';
@@ -164,4 +167,46 @@ test('applicant labels', () => {
   assert.equal(requestedByLabel({ requestedBy: { role: 'parent' } }), 'Parent');
   assert.equal(requestedByLabel({ requestedBy: { role: 'self' } }), 'Self');
   assert.equal(requestedByLabel({}), '—');
+});
+
+test('keptAsLeaveCount counts only rows changed to absent on a leave day', () => {
+  const leave = { status: 'leave', leaveRequestId: 'r1' };
+  const roster = [
+    { studentId: 'a', attendance: leave },
+    { studentId: 'b', attendance: leave },
+    { studentId: 'c', attendance: { status: 'present' } },
+    { studentId: 'd', attendance: { status: 'leave' } }, // manual leave, no request
+  ];
+  // Unchanged leave rows: nothing to report.
+  const same = roster.map((r) => ({ studentId: r.studentId, status: r.attendance.status }));
+  assert.equal(keptAsLeaveCount(roster, same, 'studentId'), 0);
+  const changed = [
+    { studentId: 'a', status: 'absent' },
+    { studentId: 'b', status: 'present' }, // released, not kept
+    { studentId: 'c', status: 'absent' }, // not a leave day
+    { studentId: 'd', status: 'absent' },
+  ];
+  assert.equal(keptAsLeaveCount(roster, changed, 'studentId'), 1);
+  assert.equal(
+    keptAsLeaveCount(
+      [{ staffId: 's', attendance: leave }],
+      [{ staffId: 's', status: 'absent' }],
+      'staffId',
+    ),
+    1,
+  );
+  assert.equal(keptAsLeaveCount(undefined, undefined, 'studentId'), 0);
+});
+
+test('keptAsLeaveMessage', () => {
+  assert.equal(keptAsLeaveMessage(0), '');
+  assert.equal(keptAsLeaveMessage(1), '1 on approved leave was kept as leave');
+  assert.equal(keptAsLeaveMessage(4), '4 on approved leave were kept as leave');
+});
+
+test('responseWarnings reads data or envelope', () => {
+  assert.deepEqual(responseWarnings({ data: { warnings: ['x', '', 3] } }), ['x']);
+  assert.deepEqual(responseWarnings({ warnings: ['y'] }), ['y']);
+  assert.deepEqual(responseWarnings({ data: {} }), []);
+  assert.deepEqual(responseWarnings(undefined), []);
 });

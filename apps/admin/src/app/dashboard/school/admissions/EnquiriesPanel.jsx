@@ -105,8 +105,13 @@ export default function EnquiriesPanel({ role, orgTier, userBranchId }) {
     {
       header: 'Enquiry #',
       accessor: 'enquiryNumber',
-      render: (v) => (
-        <span className="text-sm font-mono text-gray-900 dark:text-gray-100">{v || '—'}</span>
+      render: (v, r) => (
+        <div className="min-w-0">
+          <span className="text-sm font-mono text-gray-900 dark:text-gray-100">{v || '—'}</span>
+          {r.publicRef && (
+            <div className="text-xs font-mono text-gray-500 dark:text-gray-400">{r.publicRef}</div>
+          )}
+        </div>
       ),
     },
     {

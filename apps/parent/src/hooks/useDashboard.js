@@ -106,7 +106,7 @@ export function useAnnouncements({ page = 1, limit = 20 } = {}) {
 }
 
 // Library (read-only): the child's open loans, recent history and fines —
-// { openLoans, history, pendingFines, billedFines }.
+// { openLoans, history, pendingFines, billedFines, billedUnpaidFines? }.
 export function useLibrary() {
   const uid = useUid();
   const studentId = useSelectedChildId();

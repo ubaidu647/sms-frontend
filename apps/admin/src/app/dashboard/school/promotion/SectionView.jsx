@@ -44,6 +44,7 @@ export default function SectionView({ runId, sectionId, runStatus }) {
   const [selected, setSelected] = useState(() => new Set());
   const [bulkDecision, setBulkDecision] = useState('');
   const [applyError, setApplyError] = useState('');
+  const [warnings, setWarnings] = useState([]);
   const [confirm, setConfirm] = useState(null); // { kind: 'apply' | 'undo-section' | 'undo-one', ... }
 
   const { data, isLoading, isError, error } = useQuery({
@@ -85,9 +86,27 @@ export default function SectionView({ runId, sectionId, runStatus }) {
   const onMutationError = (fallback) => (err) => {
     const msg = err.message || fallback;
     setApplyError(msg);
+    setWarnings([]);
     toast.error(msg);
     setConfirm(null);
     if (err.status === 409) invalidatePromotionData(queryClient);
+  };
+
+  // Apply/undo can succeed with follow-up work the server could not do itself
+  // (e.g. transport not carried over — assign by hand). Keep them on screen.
+  const showWarnings = (res) => {
+    const w = res?.data?.warnings ?? res?.warnings;
+    const list = Array.isArray(w) ? w.filter(Boolean) : [];
+    setWarnings(list);
+    if (list.length) {
+      toast(
+        `${list.length} warning${list.length === 1 ? '' : 's'} — see the list above the roster`,
+        {
+          icon: '⚠️',
+          duration: 8000,
+        },
+      );
+    }
   };
 
   const applyMutation = useMutation({
@@ -100,6 +119,7 @@ export default function SectionView({ runId, sectionId, runStatus }) {
     onSuccess: (res) => {
       const n = res?.data?.processed;
       toast.success(res?.message || `${n ?? ''} student${n === 1 ? '' : 's'} processed`);
+      showWarnings(res);
       setApplyError('');
       setSelected(new Set());
       setConfirm(null);
@@ -118,6 +138,7 @@ export default function SectionView({ runId, sectionId, runStatus }) {
     onSuccess: (res) => {
       const n = res?.data?.undone;
       toast.success(res?.message || `${n ?? ''} student${n === 1 ? '' : 's'} restored`);
+      showWarnings(res);
       setApplyError('');
       setConfirm(null);
       invalidatePromotionData(queryClient);
@@ -249,6 +270,23 @@ export default function SectionView({ runId, sectionId, runStatus }) {
           <AlertTriangle className="w-4 h-4 mt-0.5 flex-shrink-0" />
           <span className="flex-1">{applyError}</span>
           <button type="button" onClick={() => setApplyError('')} aria-label="Dismiss">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
+      {warnings.length > 0 && (
+        <div className="flex items-start gap-2 p-3 rounded-xl border border-amber-200 dark:border-amber-900 bg-amber-50 dark:bg-amber-950/40 text-sm text-amber-800 dark:text-amber-300">
+          <AlertTriangle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+          <div className="flex-1">
+            <div className="font-medium mb-1">Needs your attention</div>
+            <ul className="list-disc pl-4 space-y-0.5">
+              {warnings.map((w, i) => (
+                <li key={i}>{w}</li>
+              ))}
+            </ul>
+          </div>
+          <button type="button" onClick={() => setWarnings([])} aria-label="Dismiss warnings">
             <X className="w-4 h-4" />
           </button>
         </div>

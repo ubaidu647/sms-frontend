@@ -27,7 +27,11 @@ import {
   canSubmitIssue,
   certificateTypeLabel,
   conductLabel,
+  forceSummary,
   formatCertDate,
+  openLoansLabel,
+  openLoansOf,
+  outstandingSummary,
   reasonLabel,
   slcResultingStatus,
   toYMD,
@@ -209,9 +213,10 @@ export default function IssueCertificateModal({ isOpen, onClose, initialStudent 
 
 function EligibilityPanel({ eligibility }) {
   const s = eligibility.student || {};
-  const outstanding = Number(eligibility.outstanding) || 0;
+  const { total: outstanding, parts: outstandingParts } = outstandingSummary(eligibility);
   const reasons = eligibility.reasons || [];
   const warnings = eligibility.warnings || [];
+  const openLoans = openLoansOf(eligibility);
   const cls = [s.className, s.sectionName].filter(Boolean).join(' - ');
   return (
     <div className="space-y-3">
@@ -236,9 +241,37 @@ function EligibilityPanel({ eligibility }) {
             </span>
           }
         />
+        {openLoans > 0 && (
+          <Info
+            label="Library books"
+            value={
+              <span className="text-red-600 dark:text-red-400 font-semibold">
+                {openLoansLabel(openLoans)}
+              </span>
+            }
+          />
+        )}
+        {outstandingParts.length > 0 && (
+          <div className="col-span-2 md:col-span-4 flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-600 dark:text-gray-400">
+            {outstandingParts.map((p) => (
+              <span key={p.key}>
+                {p.label}:{' '}
+                <span
+                  className={
+                    p.amount > 0
+                      ? 'font-semibold text-red-600 dark:text-red-400'
+                      : 'text-gray-700 dark:text-gray-300'
+                  }
+                >
+                  Rs {formatAmount(p.amount)}
+                </span>
+              </span>
+            ))}
+          </div>
+        )}
       </div>
 
-      {eligibility.canIssue && reasons.length === 0 && (
+      {eligibility.canIssue && !eligibility.needsForce && reasons.length === 0 && (
         <div className="flex items-center gap-2 text-sm text-green-700 dark:text-green-400">
           <CheckCircle2 className="w-4 h-4" /> Eligible — this certificate can be issued.
         </div>
@@ -298,8 +331,14 @@ function IssueForm({ type, studentId, studentName, eligibility, onCancel, onIssu
     formState: { errors },
   } = useForm({ resolver: yupResolver(SCHEMAS[type]), defaultValues: defaults });
 
-  const outstanding = Number(eligibility?.outstanding) || 0;
-  const forceable = type === 'slc' && !eligibility?.canIssue && !!eligibility?.needsForce;
+  const outstanding = outstandingSummary(eligibility).total;
+  const openLoans = openLoansOf(eligibility);
+  // Dues and/or unreturned library books hold back an SLC; only a user with
+  // issue-certificate-with-dues may force it. The server may already report
+  // `canIssue` to such a user, so key off `needsForce` alone.
+  const forceable =
+    type === 'slc' && !!eligibility?.needsForce && !(eligibility?.reasons || []).length;
+  const holdBack = forceSummary(eligibility, (n) => `Rs ${formatAmount(n)}`);
   const canSubmit = canSubmitIssue(eligibility, { force, canForce });
 
   const mutation = useMutation({
@@ -443,15 +482,16 @@ function IssueForm({ type, studentId, studentName, eligibility, onCancel, onIssu
               className="mt-0.5 rounded"
             />
             <span>
-              <strong>Issue anyway</strong> — Rs {formatAmount(outstanding)} is still outstanding.
-              The dues stay on the student&apos;s account, and the certificate will not state that
-              all dues are cleared.
+              <strong>Issue anyway</strong> — {holdBack}.
+              {outstanding > 0 &&
+                " The dues stay on the student's account, and the certificate will not state that all dues are cleared."}
+              {openLoans > 0 && " The books stay on the student's library record."}
             </span>
           </label>
         ) : (
           <p className="text-sm text-red-700 dark:text-red-300">
-            Rs {formatAmount(outstanding)} must be cleared before this SLC can be issued. Only a
-            user with the &quot;Issue SLC With Dues&quot; permission can issue it anyway.
+            {holdBack} — this must be cleared before this SLC can be issued. Only a user with the
+            &quot;Issue SLC With Dues&quot; permission can issue it anyway.
           </p>
         ))}
 
@@ -488,9 +528,7 @@ function IssueForm({ type, studentId, studentName, eligibility, onCancel, onIssu
             <li>Active transport assignments end on the leaving date.</li>
           </ul>
           {forceable && force && (
-            <p className="text-red-700 dark:text-red-300">
-              Rs {formatAmount(outstanding)} is still outstanding — issuing anyway.
-            </p>
+            <p className="text-red-700 dark:text-red-300">{holdBack} — issuing anyway.</p>
           )}
           <p className="text-xs text-gray-500 dark:text-gray-400">
             Cancelling the certificate later restores the student.

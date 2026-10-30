@@ -218,6 +218,37 @@ export function isLeaveRequestRow(attendance) {
   return !!attendance && attendance.status === 'leave' && !!attendance.leaveRequestId;
 }
 
+/**
+ * Rows this save changes to `absent` on a day an approved leave holds — the
+ * server keeps those as leave instead of marking them absent. Computed from the
+ * loaded roster vs the submitted entries, so rows that simply stay on leave
+ * (the usual case) are not counted. `idKey` is 'studentId' or 'staffId'.
+ */
+export function keptAsLeaveCount(roster, entries, idKey) {
+  const onLeave = new Set();
+  for (const row of Array.isArray(roster) ? roster : []) {
+    if (row && isLeaveRequestRow(row.attendance) && row[idKey] != null) {
+      onLeave.add(String(row[idKey]));
+    }
+  }
+  let n = 0;
+  for (const e of Array.isArray(entries) ? entries : []) {
+    if (e?.status === 'absent' && onLeave.has(String(e[idKey]))) n++;
+  }
+  return n;
+}
+
+/** Toast text for {@link keptAsLeaveCount}, or '' when none. */
+export function keptAsLeaveMessage(n) {
+  return n > 0 ? `${n} on approved leave ${n === 1 ? 'was' : 'were'} kept as leave` : '';
+}
+
+/** `warnings: string[]` from a response envelope (on `data` or the envelope). */
+export function responseWarnings(res) {
+  const w = res?.data?.warnings ?? res?.warnings;
+  return Array.isArray(w) ? w.filter((x) => typeof x === 'string' && x) : [];
+}
+
 /** Applicant display name for a request row. */
 export function applicantName(request) {
   return request?.applicant?.name || '—';

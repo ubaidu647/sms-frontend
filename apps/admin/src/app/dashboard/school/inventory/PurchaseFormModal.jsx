@@ -10,7 +10,12 @@ import { Modal } from '@/component/Modal';
 import CashBankAccountSelect from '@/component/CashBankAccountSelect';
 import { postData } from '@/utils/api';
 import { localYMD } from '@/utils/localDate';
-import { idempotencyHeader, newIdempotencyKey } from '@/utils/idempotency';
+import {
+  idempotencyHeader,
+  newIdempotencyKey,
+  spentKeyMessage,
+  successMessage,
+} from '@/utils/idempotency';
 import { useTokenStore } from '@/store/tokenStore';
 import {
   ASSET_CONDITIONS,
@@ -89,12 +94,26 @@ export default function PurchaseFormModal({
         headers: idempotencyHeader(keyRef.current),
       }),
     onSuccess: (res) => {
-      toast.success(res?.message || 'Purchase posted');
+      keyRef.current = newIdempotencyKey();
+      toast.success(successMessage(res, 'Purchase posted'));
       invalidateInventoryPurchases(queryClient);
       onClose();
       onCreated?.(res?.data);
     },
-    onError: (err) => toast.error(err.message || 'Could not post the purchase'),
+    onError: (err) => {
+      // The key is spent — it went through earlier with a different payload, or
+      // matches a document voided since — so it can never succeed again: start
+      // a fresh one and refresh the lists.
+      const spent = spentKeyMessage(err);
+      if (spent) {
+        keyRef.current = newIdempotencyKey();
+        invalidateInventoryPurchases(queryClient);
+        toast.error(spent);
+        return;
+      }
+      // Network/timeout etc.: keep the key so an unchanged retry is recognised.
+      toast.error(err.message || 'Could not post the purchase');
+    },
   });
 
   const submit = () => {

@@ -89,3 +89,24 @@ export function totalPages(total, limit) {
   const l = Number(limit) || 1;
   return Math.max(1, Math.ceil(t / l));
 }
+
+/**
+ * The 'billed' fine card. Prefers `billedUnpaidFines` (billed onto a voucher
+ * that is still unpaid) when the API sends it; older responses only carry
+ * `billedFines` (every fine ever billed).
+ */
+export function billedFineCard(data) {
+  const raw = data?.billedUnpaidFines;
+  if (raw !== undefined && raw !== null) {
+    return {
+      label: 'Billed (unpaid)',
+      amount: Number(raw) || 0,
+      hint: 'On fee vouchers that are not paid yet (see Fees)',
+    };
+  }
+  return {
+    label: 'Billed library fines',
+    amount: Number(data?.billedFines) || 0,
+    hint: 'Already added to fee vouchers (see Fees)',
+  };
+}

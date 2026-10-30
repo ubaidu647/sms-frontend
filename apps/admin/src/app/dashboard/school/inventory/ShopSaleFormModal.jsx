@@ -2,12 +2,18 @@
 // New school shop sale to a student. Stock leaves now; the amount is added to
 // the student's NEXT fee voucher as a "School shop" line.
 // POST /inventory/sales { studentId, date?, lines:[{ itemId, quantity, unitPrice? }] }.
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Plus, Info } from 'lucide-react';
 import { Modal } from '@/component/Modal';
 import { postData } from '@/utils/api';
+import {
+  idempotencyHeader,
+  newIdempotencyKey,
+  spentKeyMessage,
+  successMessage,
+} from '@/utils/idempotency';
 import { localYMD } from '@/utils/localDate';
 import { useTokenStore } from '@/store/tokenStore';
 import {
@@ -44,6 +50,8 @@ export default function ShopSaleFormModal({ isOpen, onClose, branchId: headerBra
   const [date, setDate] = useState(localYMD());
   const [lines, setLines] = useState([blank()]);
   const [errors, setErrors] = useState({});
+  // One key per sale attempt: reused on retries, renewed after success.
+  const keyRef = useRef(null);
 
   useEffect(() => {
     if (isOpen) {
@@ -51,6 +59,7 @@ export default function ShopSaleFormModal({ isOpen, onClose, branchId: headerBra
       setDate(localYMD());
       setLines([blank()]);
       setErrors({});
+      keyRef.current = newIdempotencyKey();
     }
   }, [isOpen]);
 
@@ -69,13 +78,35 @@ export default function ShopSaleFormModal({ isOpen, onClose, branchId: headerBra
     setLines((ls) => ls.map((l, j) => (j === i ? { ...l, ...patch } : l)));
 
   const mutation = useMutation({
-    mutationFn: (payload) => postData({ url: '/inventory/sales', payload, token }),
+    mutationFn: (payload) =>
+      postData({
+        url: '/inventory/sales',
+        payload,
+        token,
+        headers: idempotencyHeader(keyRef.current),
+      }),
     onSuccess: (res) => {
-      toast.success(res?.message || 'Sale recorded — it will be added to the next fee voucher');
+      keyRef.current = newIdempotencyKey();
+      toast.success(
+        successMessage(res, 'Sale recorded — it will be added to the next fee voucher'),
+      );
       invalidateInventoryShop(queryClient);
       onClose();
     },
-    onError: (err) => toast.error(err.message || 'Could not record the sale'),
+    onError: (err) => {
+      // The key is spent — it went through earlier with a different payload, or
+      // matches a document voided since — so it can never succeed again: start
+      // a fresh one and refresh the lists.
+      const spent = spentKeyMessage(err);
+      if (spent) {
+        keyRef.current = newIdempotencyKey();
+        invalidateInventoryShop(queryClient);
+        toast.error(spent);
+        return;
+      }
+      // Network/timeout etc.: keep the key so an unchanged retry is recognised.
+      toast.error(err.message || 'Could not record the sale');
+    },
   });
 
   const submit = () => {

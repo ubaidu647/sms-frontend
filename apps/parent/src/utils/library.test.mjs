@@ -12,6 +12,7 @@ import {
   formatLibraryDate,
   formatAuthors,
   totalPages,
+  billedFineCard,
 } from "./library.js";
 
 test("localYMD uses local date parts, zero-padded", () => {
@@ -91,4 +92,18 @@ test("totalPages is at least 1", () => {
   assert.equal(totalPages(0, 20), 1);
   assert.equal(totalPages(41, 20), 3);
   assert.equal(totalPages(undefined, undefined), 1);
+});
+
+test("billedFineCard prefers billedUnpaidFines, falls back to billedFines", () => {
+  const unpaid = billedFineCard({ billedFines: 900, billedUnpaidFines: 150 });
+  assert.equal(unpaid.label, "Billed (unpaid)");
+  assert.equal(unpaid.amount, 150);
+  assert.equal(
+    billedFineCard({ billedFines: 900, billedUnpaidFines: 0 }).amount,
+    0,
+  );
+  const legacy = billedFineCard({ billedFines: 900 });
+  assert.equal(legacy.label, "Billed library fines");
+  assert.equal(legacy.amount, 900);
+  assert.equal(billedFineCard(undefined).amount, 0);
 });

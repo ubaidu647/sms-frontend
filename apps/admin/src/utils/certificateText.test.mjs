@@ -20,6 +20,10 @@ import {
   canSubmitIssue,
   enClass,
   urClass,
+  outstandingSummary,
+  openLoansOf,
+  openLoansLabel,
+  forceSummary,
 } from './certificateText.js';
 
 const strip = (s) => s.replace(/[⁨⁩]/g, '');
@@ -340,4 +344,72 @@ test('canSubmitIssue', () => {
     ),
     false,
   );
+  // The server says canIssue to a user who may force — the checkbox is still needed.
+  const forceUser = { type: 'slc', canIssue: true, needsForce: true };
+  assert.equal(canSubmitIssue(forceUser, { canForce: true }), false);
+  assert.equal(canSubmitIssue(forceUser, { force: true, canForce: true }), true);
+  // A blocking reason wins over force.
+  assert.equal(
+    canSubmitIssue(
+      { ...forceUser, canIssue: false, reasons: ['Already has an SLC'] },
+      { force: true, canForce: true },
+    ),
+    false,
+  );
+});
+
+test('openLoansOf / openLoansLabel', () => {
+  assert.equal(openLoansOf({ openLoans: 2 }), 2);
+  assert.equal(openLoansOf({ breakdown: { openLoans: 1 } }), 1);
+  assert.equal(openLoansOf({ openLoans: 'x' }), 0);
+  assert.equal(openLoansOf(null), 0);
+  assert.equal(openLoansLabel(0), '');
+  assert.equal(openLoansLabel(1), '1 library book not returned');
+  assert.equal(openLoansLabel(2), '2 library books not returned');
+});
+
+test('forceSummary joins dues and unreturned books', () => {
+  const money = (n) => `Rs ${n}`;
+  assert.equal(forceSummary({ outstanding: 500 }, money), 'Rs 500 outstanding');
+  assert.equal(
+    forceSummary({ outstanding: 0, openLoans: 2 }, money),
+    '2 library books not returned',
+  );
+  assert.equal(
+    forceSummary({ outstanding: 500, openLoans: 1 }, money),
+    'Rs 500 outstanding and 1 library book not returned',
+  );
+  assert.equal(forceSummary({}, money), '');
+});
+
+test('outstandingSummary falls back to the single number', () => {
+  assert.deepEqual(outstandingSummary({ outstanding: 1500 }), { total: 1500, parts: [] });
+  assert.deepEqual(outstandingSummary({}), { total: 0, parts: [] });
+  assert.deepEqual(outstandingSummary(null), { total: 0, parts: [] });
+});
+
+test('outstandingSummary splits vouchers / library fines / shop sales', () => {
+  const r = outstandingSummary({
+    outstanding: 1700,
+    outstandingBreakdown: { vouchers: 1000, libraryFines: 200, shopSales: 500 },
+  });
+  assert.equal(r.total, 1700);
+  assert.deepEqual(
+    r.parts.map((p) => [p.key, p.amount]),
+    [
+      ['vouchers', 1000],
+      ['libraryFines', 200],
+      ['shopSales', 500],
+    ],
+  );
+  const nested = outstandingSummary({ outstanding: { vouchers: 300, shopSales: 50 } });
+  assert.equal(nested.total, 350);
+  assert.deepEqual(
+    nested.parts.map((p) => p.key),
+    ['vouchers', 'shopSales'],
+  );
+  const viaBreakdown = outstandingSummary({ outstanding: 10, breakdown: { libraryFines: 10 } });
+  assert.deepEqual(viaBreakdown.parts, [
+    { key: 'libraryFines', label: 'Library fines', amount: 10 },
+  ]);
 });

@@ -20,6 +20,7 @@ import {
   formatLibraryDate,
   formatAuthors,
   totalPages as pageCount,
+  billedFineCard,
 } from "@/utils/library";
 
 const LIMIT = 20;
@@ -77,7 +78,7 @@ function MyBooks() {
   const openLoans = Array.isArray(data?.openLoans) ? data.openLoans : [];
   const history = Array.isArray(data?.history) ? data.history : [];
   const pendingFines = Number(data?.pendingFines) || 0;
-  const billedFines = Number(data?.billedFines) || 0;
+  const billed = billedFineCard(data);
   const today = localYMD();
   const name = child?.name ? child.name.split(" ")[0] : "your child";
 
@@ -98,13 +99,13 @@ function MyBooks() {
         </div>
         <div className="rounded-2xl bg-white dark:bg-[#1f1f1f] border border-gray-200 dark:border-gray-800 p-6">
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            Billed library fines
+            {billed.label}
           </p>
           <p className="mt-1 text-3xl font-bold text-gray-900 dark:text-gray-100">
-            {formatMoney(billedFines)}
+            {formatMoney(billed.amount)}
           </p>
           <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">
-            Already added to fee vouchers (see Fees)
+            {billed.hint}
           </p>
         </div>
       </div>

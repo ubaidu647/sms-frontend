@@ -10,6 +10,7 @@ import {
   XCircle,
   RotateCcw,
   UserPlus,
+  Copy,
 } from 'lucide-react';
 import { Modal } from '@/component/Modal';
 import QueryErrorState from '@/component/QueryErrorState';
@@ -99,6 +100,15 @@ export default function EnquiryDetailModal({ enquiryId, role, userBranchId, onCl
   const timeline = enquiryTimeline(e);
   const due = followUpState(e, localYMD());
 
+  const copyRef = async () => {
+    try {
+      await navigator.clipboard.writeText(e.publicRef);
+      toast.success('Reference copied');
+    } catch {
+      toast.error('Could not copy — select the reference and copy it manually');
+    }
+  };
+
   const handleClose = () => {
     setAction(null);
     onClose();
@@ -118,6 +128,23 @@ export default function EnquiryDetailModal({ enquiryId, role, userBranchId, onCl
           <div className="space-y-6">
             <div className="flex flex-wrap items-center gap-2">
               <StatusBadge status={e.status} />
+              {e.publicRef && (
+                <span className="inline-flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
+                  Ref
+                  <span className="font-mono text-gray-800 dark:text-gray-200 select-all">
+                    {e.publicRef}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={copyRef}
+                    title="Copy reference"
+                    aria-label="Copy reference"
+                    className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800"
+                  >
+                    <Copy className="w-3.5 h-3.5" />
+                  </button>
+                </span>
+              )}
               {due === 'overdue' && (
                 <span className="text-xs font-semibold text-red-600">Follow-up overdue</span>
               )}

@@ -9,7 +9,12 @@ import { Save, CheckCircle2, CalendarDays, Search, X } from 'lucide-react';
 import { STATUS_CONFIG, STAFF_LEAVE_TYPES, STAFF_TYPES } from '@/constants/staffAttendance';
 import { localYMD } from '@/utils/localDate';
 import { invalidateStaffAttendanceQueries } from '@/utils/attendanceQueries';
-import { isLeaveRequestRow } from '@/utils/leave';
+import {
+  isLeaveRequestRow,
+  keptAsLeaveCount,
+  keptAsLeaveMessage,
+  responseWarnings,
+} from '@/utils/leave';
 
 function todayISO() {
   return localYMD();
@@ -176,9 +181,15 @@ export default function MarkStaffAttendancePanel() {
 
   const markMutation = useMutation({
     mutationFn: (payload) => postData({ url: '/staff-attendance/mark', payload, token }),
-    onSuccess: (res) => {
+    onSuccess: (res, vars) => {
       const { created = 0, updated = 0 } = res?.data || {};
       toast.success(`Saved — ${created} created, ${updated} updated`);
+      // Only rows this save turned absent on an approved-leave day — not every
+      // leave row that was simply left as it was.
+      const leaveNote = keptAsLeaveMessage(keptAsLeaveCount(roster, vars?.entries, 'staffId'));
+      if (leaveNote) toast(leaveNote);
+      // e.g. a released leave day touched an already-generated payslip.
+      responseWarnings(res).forEach((w) => toast(w, { icon: '⚠️', duration: 8000 }));
       queryClient.invalidateQueries({ queryKey: dailyKey });
       invalidateStaffAttendanceQueries(queryClient);
     },

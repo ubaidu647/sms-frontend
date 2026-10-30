@@ -25,6 +25,8 @@ import {
   validateApplyForm,
   buildApplyPayload,
   applyErrorMessage,
+  elapsedMs,
+  applyResult,
 } from "@/utils/applyForm";
 
 const publicApi = axios.create({
@@ -33,6 +35,12 @@ const publicApi = axios.create({
   timeout: 20000,
   headers: { "Content-Type": "application/json" },
 });
+
+// Monotonic where available so a clock change mid-form can't skew fillMs.
+const monoNow = () =>
+  typeof performance !== "undefined" && typeof performance.now === "function"
+    ? performance.now()
+    : Date.now();
 
 const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 
@@ -110,11 +118,13 @@ export default function ApplyPage() {
   const [sending, setSending] = useState(false);
   const [result, setResult] = useState(null);
   const startedAt = useRef(0);
+  const startedMono = useRef(0);
   const inFlight = useRef(false);
   const [reloadTick, setReloadTick] = useState(0);
 
   useEffect(() => {
     startedAt.current = Date.now();
+    startedMono.current = monoNow();
   }, []);
 
   useEffect(() => {
@@ -170,16 +180,13 @@ export default function ApplyPage() {
       const body = buildApplyPayload(form, {
         website,
         startedAt: startedAt.current,
+        fillMs: elapsedMs(startedMono.current, monoNow()),
       });
       const res = await publicApi.post(
         `/public/admission/${encodeURIComponent(key)}`,
         body,
       );
-      const data = res.data?.data ?? {};
-      setResult({
-        enquiryNumber: data.enquiryNumber,
-        message: data.message || res.data?.message,
-      });
+      setResult(applyResult(res.data?.data, res.data?.message));
       if (typeof window !== "undefined") window.scrollTo({ top: 0 });
     } catch (err) {
       if (err?.response?.status === 404) setLoadState("missing");
@@ -283,11 +290,11 @@ export default function ApplyPage() {
             <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
               Enquiry submitted
             </h2>
-            {result.enquiryNumber && (
+            {result.reference && (
               <p className="text-gray-700 dark:text-gray-300">
-                Your enquiry number is{" "}
-                <span className="font-mono font-semibold text-lg">
-                  {result.enquiryNumber}
+                Your reference is{" "}
+                <span className="font-mono font-semibold text-lg select-all">
+                  {result.reference}
                 </span>
               </p>
             )}
@@ -298,7 +305,7 @@ export default function ApplyPage() {
             )}
             <p className="text-sm text-gray-600 dark:text-gray-400 max-w-md">
               The school will contact you on the phone number you provided.
-              Please keep your enquiry number for reference.
+              {result.reference ? " Please keep this reference." : null}
             </p>
           </div>
         </Card>

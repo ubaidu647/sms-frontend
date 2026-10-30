@@ -8,7 +8,12 @@ import { Modal } from '@/component/Modal';
 import CashBankAccountSelect from '@/component/CashBankAccountSelect';
 import { postData } from '@/utils/api';
 import { localYMD } from '@/utils/localDate';
-import { idempotencyHeader, newIdempotencyKey } from '@/utils/idempotency';
+import {
+  idempotencyHeader,
+  newIdempotencyKey,
+  spentKeyMessage,
+  successMessage,
+} from '@/utils/idempotency';
 import { useTokenStore } from '@/store/tokenStore';
 import { fromPaisa, toPaisa, validateSupplierPayment } from '@/utils/inventory';
 import { BranchSelect } from '../leave/LeavePickers';
@@ -58,11 +63,25 @@ export default function SupplierPaymentModal({ supplier, onClose, orgTier, defau
         headers: idempotencyHeader(keyRef.current),
       }),
     onSuccess: (res) => {
-      toast.success(res?.message || 'Payment recorded');
+      keyRef.current = newIdempotencyKey();
+      toast.success(successMessage(res, 'Payment recorded'));
       invalidateInventoryPurchases(queryClient);
       onClose();
     },
-    onError: (err) => toast.error(err.message || 'Could not record the payment'),
+    onError: (err) => {
+      // The key is spent — it went through earlier with a different payload, or
+      // matches a document voided since — so it can never succeed again: start
+      // a fresh one and refresh the lists.
+      const spent = spentKeyMessage(err);
+      if (spent) {
+        keyRef.current = newIdempotencyKey();
+        invalidateInventoryPurchases(queryClient);
+        toast.error(spent);
+        return;
+      }
+      // Network/timeout etc.: keep the key so an unchanged retry is recognised.
+      toast.error(err.message || 'Could not record the payment');
+    },
   });
 
   const submit = () => {

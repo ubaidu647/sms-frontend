@@ -10,6 +10,10 @@ import {
   cleanMultiline,
   validateApplyForm,
   buildApplyPayload,
+  toFillMs,
+  MAX_FILL_MS,
+  elapsedMs,
+  applyResult,
   applyErrorMessage,
   EMPTY_FORM,
   NOTES_MAX,
@@ -134,7 +138,7 @@ test("validateApplyForm length caps and field rules", () => {
 test("buildApplyPayload trims, normalises and omits blanks", () => {
   const body = buildApplyPayload(
     { ...valid, email: " A@B.COM ", notes: "  hi  " },
-    { website: "", startedAt: 1700000000000 },
+    { website: "", startedAt: 1700000000000, fillMs: 12345.6 },
   );
   assert.deepEqual(body, {
     child: { name: "Ali Khan" },
@@ -148,6 +152,7 @@ test("buildApplyPayload trims, normalises and omits blanks", () => {
     notes: "hi",
     website: "",
     startedAt: 1700000000000,
+    fillMs: 12346,
   });
 });
 
@@ -155,6 +160,40 @@ test("buildApplyPayload passes honeypot through unchanged", () => {
   const body = buildApplyPayload(valid, { website: "spam", startedAt: 1 });
   assert.equal(body.website, "spam");
   assert.equal(body.startedAt, 1);
+  assert.equal(body.fillMs, 0);
+});
+
+test("toFillMs / elapsedMs never go negative or NaN", () => {
+  assert.equal(toFillMs(-5), 0);
+  assert.equal(toFillMs("abc"), 0);
+  assert.equal(toFillMs(1500.4), 1500);
+  assert.equal(elapsedMs(100, 4100.2), 4000);
+  assert.equal(elapsedMs(5000, 4000), 0);
+  assert.equal(elapsedMs(0, 4000), 0);
+  assert.equal(elapsedMs(undefined, 4000), 0);
+});
+
+test("toFillMs clamps an overnight-open form to 24h", () => {
+  assert.equal(MAX_FILL_MS, 86_400_000);
+  assert.equal(toFillMs(86_400_000), 86_400_000);
+  assert.equal(toFillMs(3 * 86_400_000), 86_400_000);
+  assert.equal(toFillMs(Infinity), 0);
+  assert.equal(elapsedMs(1, 1 + 2 * 86_400_000), 86_400_000);
+});
+
+test("applyResult prefers reference, falls back to enquiryNumber", () => {
+  assert.deepEqual(
+    applyResult({ reference: "ENQ-7KX3P9", message: "Thanks" }),
+    {
+      reference: "ENQ-7KX3P9",
+      message: "Thanks",
+    },
+  );
+  assert.deepEqual(applyResult({ enquiryNumber: "ENQ-0001" }, "Saved"), {
+    reference: "ENQ-0001",
+    message: "Saved",
+  });
+  assert.deepEqual(applyResult(null), { reference: "", message: "" });
 });
 
 test("applyErrorMessage maps statuses", () => {
@@ -174,4 +213,27 @@ test("applyErrorMessage maps statuses", () => {
   );
   assert.match(applyErrorMessage({}), /reach the server/);
   assert.match(applyErrorMessage({ response: { status: 500 } }), /went wrong/);
+});
+
+test("applyErrorMessage uses the server message for 429 and 503", () => {
+  assert.equal(
+    applyErrorMessage({
+      response: { status: 429, data: { message: "Try again in 10 minutes" } },
+    }),
+    "Try again in 10 minutes",
+  );
+  assert.equal(
+    applyErrorMessage({
+      response: { status: 503, data: { message: "Admissions are paused" } },
+    }),
+    "Admissions are paused",
+  );
+  assert.match(
+    applyErrorMessage({ response: { status: 503, data: { message: "  " } } }),
+    /went wrong/,
+  );
+  assert.match(
+    applyErrorMessage({ response: { status: 429, data: {} } }),
+    /Too many submissions/,
+  );
 });

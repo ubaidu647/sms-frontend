@@ -168,7 +168,10 @@ export function validateApplyForm(form, { grades = [], today } = {}) {
  * Request body for POST /public/admission/:key. Optional fields are omitted
  * when blank so the backend's strict validation never sees empty strings.
  */
-export function buildApplyPayload(form, { website = "", startedAt } = {}) {
+export function buildApplyPayload(
+  form,
+  { website = "", startedAt, fillMs } = {},
+) {
   const f = { ...EMPTY_FORM, ...(form || {}) };
   const opt = (obj, key, value) => {
     if (value) obj[key] = value;
@@ -198,20 +201,61 @@ export function buildApplyPayload(form, { website = "", startedAt } = {}) {
   opt(body, "notes", cleanMultiline(f.notes));
   body.website = String(website ?? "");
   body.startedAt = Number(startedAt) || 0;
+  body.fillMs = toFillMs(fillMs);
   return body;
+}
+
+/** Longest fill time sent: a form left open overnight is slow, not invalid. */
+export const MAX_FILL_MS = 86_400_000; // 24h
+
+/**
+ * Non-negative whole milliseconds, at most MAX_FILL_MS; anything unusable
+ * becomes 0.
+ */
+export function toFillMs(value) {
+  const n = Number(value);
+  return Number.isFinite(n) && n > 0 ? Math.min(Math.round(n), MAX_FILL_MS) : 0;
+}
+
+/**
+ * Milliseconds between two readings of the same clock (performance.now()
+ * when available, else Date.now()). A missing start or a clock that went
+ * backwards yields 0 rather than a negative/NaN duration.
+ */
+export function elapsedMs(start, now) {
+  const a = Number(start);
+  const b = Number(now);
+  if (!Number.isFinite(a) || !Number.isFinite(b) || a <= 0) return 0;
+  return toFillMs(b - a);
+}
+
+/**
+ * Success-screen data from the public POST response body's `data`:
+ * prefers the random public `reference` (e.g. "ENQ-7KX3P9"), falling back
+ * to a legacy `enquiryNumber`.
+ */
+export function applyResult(data, fallbackMessage) {
+  const d = data && typeof data === "object" ? data : {};
+  const pick = (v) => (typeof v === "string" && v.trim() ? v.trim() : "");
+  return {
+    reference: pick(d.reference) || pick(d.enquiryNumber),
+    message: pick(d.message) || pick(fallbackMessage),
+  };
 }
 
 /** User-facing message for a failed public request (axios-like error). */
 export function applyErrorMessage(error) {
   const status = error?.response?.status;
-  if (status === 429) return "Too many submissions, please try later.";
+  const raw = error?.response?.data?.message;
+  const serverMsg = typeof raw === "string" && raw.trim() ? raw : "";
+  // 429/503 carry a specific reason (e.g. how long to wait, form paused).
+  if (status === 429)
+    return serverMsg || "Too many submissions, please try later.";
+  if (status === 503)
+    return serverMsg || "Something went wrong. Please try again.";
   if (status === 404) return "This admission form is not available.";
-  if (status === 400) {
-    const msg = error?.response?.data?.message;
-    return typeof msg === "string" && msg.trim()
-      ? msg
-      : "Please check the form and try again.";
-  }
+  if (status === 400)
+    return serverMsg || "Please check the form and try again.";
   if (!error?.response)
     return "Can't reach the server right now. Check your connection and try again.";
   return "Something went wrong. Please try again.";
