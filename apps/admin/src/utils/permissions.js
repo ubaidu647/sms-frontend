@@ -18,9 +18,14 @@ const splitVerb = (action) => {
 const variants = (base) => {
   const parts = splitVerb(base);
   if (!parts) return { base, allBranch: null, own: null };
+  // Resources already named `branch-…` (e.g. branch-profile) take the org
+  // grant `<verb>-all-branch-…`, not `<verb>-all-branch-branch-…`.
+  const allBranch = parts.resource.startsWith('branch-')
+    ? `${parts.verb}-all-${parts.resource}`
+    : `${parts.verb}-all-branch-${parts.resource}`;
   return {
     base,
-    allBranch: `${parts.verb}-all-branch-${parts.resource}`,
+    allBranch,
     own: `${parts.verb}-own-${parts.resource}`,
   };
 };

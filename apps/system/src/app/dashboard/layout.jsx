@@ -1,13 +1,27 @@
 'use client';
 import { useEffect, useState } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { SystemSidebar } from '@/component/SystemSidebar';
 import { Topbar } from '@/component/TopBar';
+import ForcedPasswordChange from '@/component/ForcedPasswordChange';
+
+const PASSWORD_PATH = '/dashboard/change-password';
 
 export default function SystemLayout({ children }) {
   const { user, logout, hasHydrated, accessToken, loading, offline } = useAuth();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const signedOut = hasHydrated && !loading && !accessToken && !offline;
+  const router = useRouter();
+  const pathname = usePathname();
+  // The API refuses everything but change-password until it is done, so the
+  // console (and its data loading) waits behind that page.
+  const mustChangePassword =
+    hasHydrated && !loading && !!accessToken && user?.mustChangePassword === true;
+
+  useEffect(() => {
+    if (mustChangePassword && pathname !== PASSWORD_PATH) router.replace(PASSWORD_PATH);
+  }, [mustChangePassword, pathname, router]);
 
   // No session marker and none could be restored from the cookies: end the
   // session through the API, which alone can clear the httpOnly cookies.
@@ -42,6 +56,8 @@ export default function SystemLayout({ children }) {
       </div>
     );
   }
+
+  if (mustChangePassword) return <ForcedPasswordChange onLogout={logout} />;
 
   return (
     <div className="w-full md:w-[99%] flex h-screen overflow-hidden">

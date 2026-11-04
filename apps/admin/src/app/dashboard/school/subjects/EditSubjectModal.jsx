@@ -9,9 +9,36 @@ import toast from 'react-hot-toast';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { fetchData, putData } from '@/utils/api';
 import { useTokenStore } from '@/store/tokenStore';
+import { editPayload, reportEmptiedRequired } from '@/utils/editPayload';
 import { SUBJECT_TYPES, SUBJECT_CATEGORIES, SUBJECT_CODE_REGEX } from '@/constants/subject';
 
 const numFromInput = (v, o) => (o === '' || o === null || o === undefined ? null : v);
+
+// The form's values for a subject — also the baseline an edit is diffed against.
+const formValuesOf = (subject) => ({
+  name: subject.name || '',
+  code: subject.code || '',
+  subjectType: subject.subjectType || '',
+  category: subject.category || '',
+  totalMarks: subject.totalMarks ?? '',
+  passingMarks: subject.passingMarks ?? '',
+  theoryMarks: subject.theoryMarks ?? '',
+  practicalMarks: subject.practicalMarks ?? '',
+  creditHours: subject.creditHours ?? '',
+  defaultTeacher: subject.teacherInfo?._id || subject.defaultTeacher || '',
+  status: subject.status || 'active',
+});
+
+// Can't be cleared, with the error an emptied one blocks the save with.
+const REQUIRED_FIELDS = {
+  name: 'Subject name is required',
+  code: 'Code is required',
+  subjectType: 'Subject type is required',
+  category: 'Category is required',
+  totalMarks: 'Total marks is required',
+  passingMarks: 'Passing marks is required',
+  status: 'Status is required',
+};
 
 const schema = yup.object().shape({
   name: yup.string().optional(),
@@ -60,6 +87,7 @@ export default function EditSubjectModal({ isOpen, onClose, onSuccess, subject }
     handleSubmit,
     reset,
     watch,
+    setError,
     formState: { errors },
   } = useForm({
     resolver: yupResolver(schema),
@@ -67,19 +95,7 @@ export default function EditSubjectModal({ isOpen, onClose, onSuccess, subject }
 
   useEffect(() => {
     if (subject && isOpen) {
-      reset({
-        name: subject.name || '',
-        code: subject.code || '',
-        subjectType: subject.subjectType || '',
-        category: subject.category || '',
-        totalMarks: subject.totalMarks ?? '',
-        passingMarks: subject.passingMarks ?? '',
-        theoryMarks: subject.theoryMarks ?? '',
-        practicalMarks: subject.practicalMarks ?? '',
-        creditHours: subject.creditHours ?? '',
-        defaultTeacher: subject.teacherInfo?._id || subject.defaultTeacher || '',
-        status: subject.status || 'active',
-      });
+      reset(formValuesOf(subject));
     }
   }, [subject, isOpen, reset]);
 
@@ -143,12 +159,16 @@ export default function EditSubjectModal({ isOpen, onClose, onSuccess, subject }
       }
     }
 
-    const payload = {};
-    Object.entries(data).forEach(([k, v]) => {
-      if (v !== '' && v !== null && v !== undefined) payload[k] = v;
-    });
-    if ('defaultTeacher' in data && data.defaultTeacher === '') payload.defaultTeacher = null;
+    // Only what changed; an emptied optional field (teacher, theory/practical
+    // marks, credit hours) goes as null, which clears it.
+    const saved = formValuesOf(subject);
+    if (reportEmptiedRequired(saved, data, REQUIRED_FIELDS, setError)) return;
+    const payload = editPayload(saved, data, { required: Object.keys(REQUIRED_FIELDS) });
     if (payload.code) payload.code = String(payload.code).toUpperCase();
+    if (Object.keys(payload).length === 0) {
+      setSubmitError('Nothing to save — no field was changed.');
+      return;
+    }
     mutation.mutate(payload);
   };
 

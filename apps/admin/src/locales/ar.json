@@ -1,6 +1,7 @@
 {
   "topbar": {
     "greeting": "مرحباً،",
+    "changePassword": "تغيير كلمة المرور",
     "settings": "الإعدادات العامة",
     "userManagement": "إدارة المستخدمين",
     "businessSettings": "إعدادات النشاط",
@@ -11,6 +12,7 @@
     "switchToDark": "التبديل إلى الوضع الداكن"
   },
   "sidebar": {
+    "home": "الرئيسية",
     "schoolPortal": "بوابة المدرسة",
     "classes": "الفصول",
     "subjects": "المواد",

@@ -8,6 +8,7 @@ import { useUserStore } from '@/store/userStore';
 import Button from '@/component/Button';
 import ImageUploadCard from './ImageUploadCard';
 import { SOCIAL_NETWORKS, buildUpsertFormData, validateProfile } from '@/constants/branchProfile';
+import { canEditBranchProfile } from '@/utils/branchProfileAccess';
 
 const inputCls =
   'w-full px-3 py-2 border border-gray-200 rounded-lg outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 text-sm text-gray-900 bg-white placeholder:text-gray-400';
@@ -39,14 +40,12 @@ export default function BranchProfileForm({ initialProfile, branchLabel, branchI
   const [submitError, setSubmitError] = useState('');
   const [successState, setSuccessState] = useState(false);
 
-  const isAdmin = !!user?.role?.isPredefined;
-  const acts = user?.role?.actions || [];
-  const canEdit =
-    isAdmin ||
-    acts.includes('update-branch-profile') ||
-    acts.includes('create-branch-profile') ||
-    acts.includes('update-all-branch-profile') ||
-    acts.includes('create-all-branch-profile');
+  // Updating an existing profile needs update; a branch's first profile needs
+  // create. Branch-level grants reach only the user's own branch.
+  const canEdit = canEditBranchProfile(user, {
+    profileExists: !!initialProfile?._id,
+    targetBranchId: branchId,
+  });
 
   useEffect(() => {
     if (initialProfile) {

@@ -1,6 +1,7 @@
 {
   "topbar": {
     "greeting": "Hello,",
+    "changePassword": "Change password",
     "settings": "General Settings",
     "userManagement": "User Management",
     "businessSettings": "Business Settings",
@@ -11,6 +12,7 @@
     "switchToDark": "Switch to dark mode"
   },
   "sidebar": {
+    "home": "Home",
     "schoolPortal": "School Portal",
     "classes": "Classes",
     "subjects": "Subjects",

@@ -5,7 +5,8 @@ import { ArrowRight, ChevronRight, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { fetchData, postData } from '@/utils/api';
 import { useTokenStore } from '@/store/tokenStore';
-import { summarizeSections, progressPercent, unprocessedRows } from '@/utils/promotion';
+import { summarizeSections, progressPercent, unprocessedRows, warningsOf } from '@/utils/promotion';
+import WarningsNotice from './WarningsNotice';
 import ConfirmModal from './ConfirmModal';
 import {
   DECISION_COLORS,
@@ -56,6 +57,7 @@ export default function RunView({ runId, onOpenSection, onClosed }) {
   const summary = summarizeSections(sections);
   const counts = runCounts(run);
   const status = run?.status;
+  const runWarnings = warningsOf(data);
 
   const onDone = (msg) => (res) => {
     toast.success(res?.message || msg);
@@ -125,6 +127,8 @@ export default function RunView({ runId, onOpenSection, onClosed }) {
 
   return (
     <div className="space-y-4">
+      <WarningsNotice warnings={runWarnings} />
+
       {/* Run header */}
       <div className="p-4 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 space-y-3">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">

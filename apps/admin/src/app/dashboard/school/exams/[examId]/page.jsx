@@ -66,15 +66,16 @@ export default function ExamDetailPage() {
 
   const forbiddenMsg = useMemo(() => {
     if (!isError) return null;
-    if (error?.response?.status === 403) {
-      return error?.response?.data?.message || 'You are not assigned to this exam class';
+    // fetchData rethrows through toApiError: the status is on `err.status`.
+    if ((error?.status ?? error?.response?.status) === 403) {
+      return error?.message || 'You are not assigned to this exam class';
     }
     return null;
   }, [isError, error]);
 
   useEffect(() => {
     if (!isError) return;
-    const msg = error?.response?.data?.message || error?.message || 'Failed to load exam';
+    const msg = error?.message || 'Failed to load exam';
     toast.error(msg);
   }, [isError, error]);
 
@@ -83,6 +84,7 @@ export default function ExamDetailPage() {
     onSuccess: () => {
       toast.success('Subject removed from exam');
       queryClient.invalidateQueries({ queryKey: ['exam-detail', examId] });
+      queryClient.invalidateQueries({ queryKey: ['exams'] });
       setDeleteSubjectTarget(null);
     },
     onError: (err) => toast.error(err.message || 'Failed to remove subject'),

@@ -20,6 +20,11 @@ import {
   TypeBadge,
 } from "@/component/dashboard/homework/badges";
 import { formatDate } from "@/utils/format";
+import {
+  resultsPendingMessage,
+  displayStatus,
+  resultsHidden,
+} from "@/utils/portalResults";
 
 const fileName = (att) =>
   att.originalName || att.fileName || att.filename || att.name || "Attachment";
@@ -52,17 +57,25 @@ function ReferenceFiles({ attachments }) {
 }
 
 // What the child submitted (read-only). MCQ shows per-question
-// correctness + the auto-graded score.
+// correctness + the auto-graded score — once the homework is over; until then
+// only the answers picked.
 function SubmittedView({ homework }) {
   const sub = homework.mySubmission;
   if (!sub) return null;
 
   const graded =
     homework.submissionStatus === "graded" || sub.status === "graded";
+  const hidden = resultsHidden(homework);
 
   return (
     <Panel title="Your child’s submission">
-      {graded && sub.marksObtained != null && (
+      {hidden && (
+        <p className="mb-4 flex items-start gap-2 rounded-xl bg-gray-50 dark:bg-gray-800/50 px-4 py-3 text-sm text-gray-600 dark:text-gray-300">
+          <Info className="w-4 h-4 flex-shrink-0 mt-0.5" />
+          {resultsPendingMessage(homework)}
+        </p>
+      )}
+      {!hidden && graded && sub.marksObtained != null && (
         <div className="mb-4 flex items-center gap-3 rounded-xl bg-green-50 dark:bg-green-950/30 px-4 py-3">
           <Award className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0" />
           <div>
@@ -111,7 +124,9 @@ function SubmittedView({ homework }) {
             const chosen = q.options?.[ans.selectedOptionIndex]?.text;
             return (
               <li key={i} className="flex items-start gap-2">
-                {ans.isCorrect ? (
+                {hidden || typeof ans.isCorrect !== "boolean" ? (
+                  <CheckCircle2 className="w-4 h-4 text-gray-300 dark:text-gray-600 flex-shrink-0 mt-0.5" />
+                ) : ans.isCorrect ? (
                   <CheckCircle2 className="w-4 h-4 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
                 ) : (
                   <XCircle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
@@ -183,7 +198,7 @@ export default function HomeworkDetailPage({ params }) {
         subtitle={homework.subject?.name || homework.subjectId?.name}
         action={
           <div className="flex items-center gap-2">
-            <SubmissionBadge status={homework.submissionStatus} />
+            <SubmissionBadge status={displayStatus(homework)} />
             <TypeBadge type={homework.submissionType} />
           </div>
         }

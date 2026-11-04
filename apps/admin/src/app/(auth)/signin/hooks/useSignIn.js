@@ -3,6 +3,7 @@ import toast from 'react-hot-toast';
 import apiClient from '@/services/apiClient';
 import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
+import { mustChangePasswordOf } from '@/utils/authErrors';
 import { writeRoleCookie } from '@/utils/session';
 
 export function useSignIn() {
@@ -24,7 +25,9 @@ export function useSignIn() {
       // Always push to /dashboard — middleware reads the auth-role cookie
       // (set above) and forwards every school role to /dashboard/school.
       // Tenant/billing administration is a separate app (@sms/system).
-      router.push('/dashboard');
+      // A forced password change comes first; the dashboard layout keeps the
+      // user there until it is done.
+      router.push(mustChangePasswordOf(payload) ? '/dashboard/settings/password' : '/dashboard');
     },
     onError: (err) => {
       // 429s are toasted once, globally, by the apiClient interceptor — skip here

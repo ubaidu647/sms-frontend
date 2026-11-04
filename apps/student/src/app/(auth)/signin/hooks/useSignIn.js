@@ -1,6 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
+import { mustChangePasswordOf } from "@/utils/authErrors";
 import apiClient from "@/services/apiClient";
 import { useAuth } from "@/hooks/useAuth";
 import { ROLE_COOKIE } from "@/utils/session";
@@ -24,7 +25,13 @@ export function useSignIn() {
       )}; path=/; max-age=604800; SameSite=Lax;`;
 
       toast.success("Welcome back!");
-      router.push("/dashboard");
+      // A forced password change comes first; the dashboard layout keeps the
+      // user there until it is done.
+      router.push(
+        mustChangePasswordOf(payload)
+          ? "/dashboard/change-password"
+          : "/dashboard",
+      );
     },
     onError: (err) => {
       const message =

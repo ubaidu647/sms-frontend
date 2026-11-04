@@ -3,10 +3,12 @@
 // cache invalidation, printing).
 import React, { useEffect, useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import toast from 'react-hot-toast';
 import { useTokenStore } from '@/store/tokenStore';
 import { fetchData } from '@/utils/api';
 import { formatAmount } from '@/utils/money';
 import { invalidateFeeQueries } from '@/utils/feeQueries';
+import { invalidateLedgerQueries } from '@/utils/ledgerQueries';
 import { ymdOf } from '@/utils/library';
 import { ASSET_STATUS_COLORS, DOC_STATUS_COLORS, buildPrintHtml, refName } from '@/utils/inventory';
 import Button from '@/component/Button';
@@ -99,11 +101,15 @@ export function invalidateInventoryPurchases(queryClient) {
     'inventory-assets',
     'inventory-asset',
   ]);
+  // Purchases and supplier payments post journals.
+  invalidateLedgerQueries(queryClient);
 }
 
 /** After an asset mutation. */
 export function invalidateInventoryAssets(queryClient) {
   invalidate(queryClient, ['inventory-summary', 'inventory-assets', 'inventory-asset']);
+  // Disposing of an asset posts a journal.
+  invalidateLedgerQueries(queryClient);
 }
 
 /** After a shop sale / void — pending sales feed the student's next fee voucher. */
@@ -114,6 +120,27 @@ export function invalidateInventoryShop(queryClient) {
 }
 
 /* -------------------------------- Queries -------------------------------- */
+
+/** Most rows a picker loads in one request (the API's list cap). */
+export const OPTIONS_LIMIT = 1000;
+
+/**
+ * Whether a picker list came back cut short (the server holds more rows than
+ * it returned) — and if so, a one-off warning so a missing entry isn't a mystery.
+ */
+function useTruncationWarning(data, what) {
+  const returned = data?.data?.length ?? 0;
+  const total = Number(data?.total) || 0;
+  const truncated = total > returned;
+  useEffect(() => {
+    if (!truncated) return;
+    toast(`Showing the first ${returned} of ${total} ${what} — some are not listed.`, {
+      id: `options-truncated-${what}`,
+      icon: '⚠️',
+    });
+  }, [truncated, returned, total, what]);
+  return { truncated, total };
+}
 
 /**
  * Active items with the branch's stock figures, for line pickers.
@@ -127,7 +154,7 @@ export function useItemOptions({ branchId = '', saleable = false, enabled = true
       fetchData({
         url: '/inventory/items',
         page: 1,
-        limit: 1000,
+        limit: OPTIONS_LIMIT,
         token,
         ...(branchId ? { branchId } : {}),
         ...(saleable ? { saleable: true } : {}),
@@ -139,14 +166,15 @@ export function useItemOptions({ branchId = '', saleable = false, enabled = true
     () => (query.data?.data || []).filter((i) => i.isActive !== false),
     [query.data],
   );
-  return { ...query, items };
+  const { truncated, total } = useTruncationWarning(query.data, 'items');
+  return { ...query, items, truncated, total };
 }
 
 export function useSupplierOptions() {
   const { accessToken: token } = useTokenStore();
   const query = useQuery({
     queryKey: ['inventory-supplier-options'],
-    queryFn: () => fetchData({ url: '/inventory/suppliers', page: 1, limit: 1000, token }),
+    queryFn: () => fetchData({ url: '/inventory/suppliers', page: 1, limit: OPTIONS_LIMIT, token }),
     enabled: !!token,
     staleTime: 30000,
   });
@@ -154,7 +182,8 @@ export function useSupplierOptions() {
     () => (query.data?.data || []).filter((s) => s.isActive !== false),
     [query.data],
   );
-  return { ...query, suppliers };
+  const { truncated, total } = useTruncationWarning(query.data, 'suppliers');
+  return { ...query, suppliers, truncated, total };
 }
 
 /* ------------------------------- Pickers -------------------------------- */

@@ -10,20 +10,91 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { putData } from '@/utils/api';
 import { useTokenStore } from '@/store/tokenStore';
 import { useUserStore } from '@/store/userStore';
+import Link from 'next/link';
+import { PASSWORD_MIN, PASSWORD_MAX } from '@/utils/changePassword';
+import { editPayload, reportEmptiedRequired } from '@/utils/editPayload';
+import { photoFailureMessage, saveFieldsThenPhoto } from '@/utils/saveWithPhoto';
+import { useEditRecord } from '@/hooks/useEditRecord';
+import EditRecordStatus from '@/component/EditRecordStatus';
 
-// Fields the backend allows on a self-update. Everything else (designation,
-// staffType, employmentType, salary, joiningDate, leavingDate, isActive, …)
-// is rejected with a 403 — so we hide those sections and strip them from the
-// payload when isSelf is true.
+// Fields the backend allows on a self-update (staff.controller update, scope
+// 'own'). Everything else (designation, staffType, employmentType, salary,
+// joiningDate, leavingDate, leavingReason, isActive) is rejected with a 403 —
+// so we hide those sections and strip them from the payload when isSelf is true.
 const SELF_ALLOWED_SCALARS = [
   'name',
   'phone',
+  'gender',
   'dob',
   'cnic',
   'bloodGroup',
   'qualification',
   'maritalStatus',
 ];
+
+const ALL_SCALARS = [
+  'name',
+  'designation',
+  'staffType',
+  'employmentType',
+  'gender',
+  'maritalStatus',
+  'bloodGroup',
+  'cnic',
+  'dob',
+  'phone',
+  'qualification',
+  'experienceYears',
+  'salary',
+  'joiningDate',
+  'leavingDate',
+  'leavingReason',
+  'isActive',
+];
+
+// Fields that can't be cleared, with the error an emptied one blocks the save with.
+const REQUIRED_FIELDS = {
+  name: 'Name is required',
+  gender: 'Gender is required',
+  isActive: 'Status is required',
+  designation: 'Designation is required',
+  staffType: 'Staff type is required',
+  employmentType: 'Employment type is required',
+  joiningDate: 'Joining date is required',
+};
+// The server merges these into the stored objects, so only changed sub-fields go.
+const MERGED_OBJECTS = ['address', 'emergencyContact'];
+
+// The form's values for a staff record — also the baseline an edit is diffed against.
+const formValuesOf = (staff) => ({
+  name: staff.user?.name || '',
+  designation: staff.designation || '',
+  staffType: staff.staffType || '',
+  employmentType: staff.employmentType || '',
+  gender: staff.gender || '',
+  maritalStatus: staff.maritalStatus || '',
+  bloodGroup: staff.bloodGroup || '',
+  cnic: staff.cnic || '',
+  dob: staff.dob ? staff.dob.slice(0, 10) : '',
+  phone: staff.phone || '',
+  qualification: staff.qualification || '',
+  experienceYears: staff.experienceYears ?? '',
+  salary: staff.salary ?? '',
+  joiningDate: staff.joiningDate ? staff.joiningDate.slice(0, 10) : '',
+  leavingDate: staff.leavingDate ? staff.leavingDate.slice(0, 10) : '',
+  leavingReason: staff.leavingReason || '',
+  isActive: staff.isActive === false ? 'false' : 'true',
+  address: {
+    street: staff.address?.street || '',
+    city: staff.address?.city || '',
+    state: staff.address?.state || '',
+  },
+  emergencyContact: {
+    name: staff.emergencyContact?.name || '',
+    phone: staff.emergencyContact?.phone || '',
+    relation: staff.emergencyContact?.relation || '',
+  },
+});
 
 const ALLOWED_PHOTO_TYPES = [
   'image/jpeg',
@@ -60,16 +131,16 @@ const schema = yup.object().shape({
   leavingDate: yup.string().optional(),
   leavingReason: yup.string().optional(),
   isActive: yup.string().optional(),
-  // Optional password change. Blank → omitted from the payload (keeps current
-  // password). When set, the backend requires ≥ 6 chars; confirm must match.
+  // Optional reset of a COLLEAGUE's password. Blank → omitted from the payload
+  // (keeps current password). Same rule as the API (8–128); confirm must match.
+  // Never shown for your own record — the API refuses it there: your own
+  // password goes through Settings → Password (current password required).
   password: yup
     .string()
     .transform((v) => (v === '' ? undefined : v))
-    .min(6, 'Password must be at least 6 characters')
+    .min(PASSWORD_MIN, `Password must be at least ${PASSWORD_MIN} characters`)
+    .max(PASSWORD_MAX, `Password must be at most ${PASSWORD_MAX} characters`)
     .optional(),
-  // Required (checked in onSubmit) when changing the password of your own
-  // account: the API re-verifies it so a hijacked session can't lock you out.
-  currentPassword: yup.string().optional(),
   confirmPassword: yup.string().when('password', {
     is: (val) => !!val,
     then: (s) =>
@@ -100,7 +171,8 @@ export default function EditStaffModal({ isOpen, onClose, onSuccess, staff, isSe
   const { user } = useUserStore();
   const queryClient = useQueryClient();
   // Editing your own account — whether via the self-only view or an admin
-  // opening their own row — needs the current password to change it.
+  // opening their own row: the password fields are hidden (the API refuses a
+  // password there) and a link to Change password is shown instead.
   const staffUserId = String(staff?.user?._id || staff?.userId?._id || staff?.userId || '');
   const ownUserId = String(user?._id || user?.id || '');
   const isOwnAccount =
@@ -112,6 +184,18 @@ export default function EditStaffModal({ isOpen, onClose, onSuccess, staff, isSe
   const [photoFile, setPhotoFile] = useState(null);
   const [photoPreview, setPhotoPreview] = useState('');
   const [photoError, setPhotoError] = useState('');
+  // The saved form values edits are diffed against: the full record (a list row
+  // lacks many fields), then whatever a partly failed save committed.
+  const [baseline, setBaseline] = useState(null);
+
+  const recordQuery = useEditRecord({
+    kind: 'staff-edit',
+    id: staff?._id,
+    url: `/staff/${staff?._id}`,
+    isOpen,
+    token,
+  });
+  const record = recordQuery.data?.data;
 
   const {
     register,
@@ -123,46 +207,22 @@ export default function EditStaffModal({ isOpen, onClose, onSuccess, staff, isSe
     resolver: yupResolver(schema),
   });
 
-  // Pre-fill form whenever the staff prop changes
+  // Pre-fill the form once the full record has loaded
   useEffect(() => {
-    if (staff && isOpen) {
-      reset({
-        name: staff.user?.name || '',
-        designation: staff.designation || '',
-        staffType: staff.staffType || '',
-        employmentType: staff.employmentType || '',
-        gender: staff.gender || '',
-        maritalStatus: staff.maritalStatus || '',
-        bloodGroup: staff.bloodGroup || '',
-        cnic: staff.cnic || '',
-        dob: staff.dob ? staff.dob.slice(0, 10) : '',
-        phone: staff.phone || '',
-        qualification: staff.qualification || '',
-        experienceYears: staff.experienceYears ?? '',
-        salary: staff.salary ?? '',
-        joiningDate: staff.joiningDate ? staff.joiningDate.slice(0, 10) : '',
-        leavingDate: staff.leavingDate ? staff.leavingDate.slice(0, 10) : '',
-        leavingReason: staff.leavingReason || '',
-        isActive: staff.isActive === false ? 'false' : 'true',
-        password: '',
-        currentPassword: '',
-        confirmPassword: '',
-        'address.street': staff.address?.street || '',
-        'address.city': staff.address?.city || '',
-        'address.state': staff.address?.state || '',
-        'emergencyContact.name': staff.emergencyContact?.name || '',
-        'emergencyContact.phone': staff.emergencyContact?.phone || '',
-        'emergencyContact.relation': staff.emergencyContact?.relation || '',
-      });
+    if (record && isOpen) {
+      const values = formValuesOf(record);
+      setBaseline(values);
+      reset({ ...values, password: '', confirmPassword: '' });
       setPhotoFile(null);
       setPhotoPreview('');
       setPhotoError('');
     }
-  }, [staff, isOpen, reset]);
+  }, [record, isOpen, reset]);
 
   useEffect(() => {
     if (!isOpen) {
       reset();
+      setBaseline(null);
       setSubmitError('');
       setSuccessState(false);
       setPhotoFile(null);
@@ -205,11 +265,20 @@ export default function EditStaffModal({ isOpen, onClose, onSuccess, staff, isSe
     setPhotoFile(file);
   };
 
+  const invalidateStaff = () => {
+    queryClient.invalidateQueries({ queryKey: ['staff'] });
+    queryClient.invalidateQueries({ queryKey: ['staff-detail', staff._id] });
+  };
+
   const mutation = useMutation({
-    mutationFn: (payload) => putData({ url: `/staff/${staff._id}`, payload, token }),
+    mutationFn: ({ fields, photo }) =>
+      saveFieldsThenPhoto({
+        fields,
+        photo,
+        put: (payload) => putData({ url: `/staff/${staff._id}`, payload, token }),
+      }),
     onSuccess: (res) => {
-      queryClient.invalidateQueries({ queryKey: ['staff'] });
-      queryClient.invalidateQueries({ queryKey: ['staff-detail', staff._id] });
+      invalidateStaff();
       toast.success(res?.message || 'Staff updated successfully');
       onSuccess?.(res?.data);
       setSuccessState(true);
@@ -218,7 +287,18 @@ export default function EditStaffModal({ isOpen, onClose, onSuccess, staff, isSe
         onClose();
       }, 1000);
     },
-    onError: (err) => {
+    onError: (err, { values }) => {
+      if (err.fieldsSaved) {
+        // The fields are committed: they become the baseline, so saving again
+        // retries only the photo (still selected).
+        invalidateStaff();
+        setBaseline(values);
+        reset({ ...values, password: '', confirmPassword: '' });
+        const msg = photoFailureMessage(err);
+        setSubmitError(msg);
+        toast.error(msg);
+        return;
+      }
       const msg = err.message || 'Failed to update staff';
       setSubmitError(msg);
       toast.error(msg);
@@ -226,95 +306,56 @@ export default function EditStaffModal({ isOpen, onClose, onSuccess, staff, isSe
   });
 
   const onSubmit = (data) => {
+    if (!baseline) return;
     setSubmitError('');
 
-    const fd = new FormData();
-    const scalarFields = isSelf
-      ? SELF_ALLOWED_SCALARS
-      : [
-          'name',
-          'designation',
-          'staffType',
-          'employmentType',
-          'gender',
-          'maritalStatus',
-          'bloodGroup',
-          'cnic',
-          'dob',
-          'phone',
-          'qualification',
-          'experienceYears',
-          'salary',
-          'joiningDate',
-          'leavingDate',
-          'leavingReason',
-          'isActive',
-        ];
-    scalarFields.forEach((k) => {
-      const v = data[k];
-      if (v !== '' && v !== null && v !== undefined) fd.append(k, String(v));
+    const keys = [...(isSelf ? SELF_ALLOWED_SCALARS : ALL_SCALARS), ...MERGED_OBJECTS];
+    const pick = (obj) => Object.fromEntries(keys.map((k) => [k, obj[k]]));
+    if (reportEmptiedRequired(pick(baseline), pick(data), REQUIRED_FIELDS, setError)) return;
+
+    const fields = editPayload(pick(baseline), pick(data), {
+      required: Object.keys(REQUIRED_FIELDS),
+      merge: MERGED_OBJECTS,
     });
 
-    const street = data['address.street'];
-    const city = data['address.city'];
-    const state = data['address.state'];
-    if (street || city || state) {
-      fd.append('address', JSON.stringify({ street, city, state }));
-    }
-
-    const ecName = data['emergencyContact.name'];
-    const ecPhone = data['emergencyContact.phone'];
-    const ecRelation = data['emergencyContact.relation'];
-    if (ecName || ecPhone || ecRelation) {
-      fd.append(
-        'emergencyContact',
-        JSON.stringify({
-          name: ecName,
-          phone: ecPhone,
-          relation: ecRelation,
-        }),
-      );
-    }
-
     // Only send password when the user actually typed one — blank keeps the
-    // current password. Allowed on own profile too.
-    if (data.password) {
-      if (isOwnAccount && !data.currentPassword) {
-        setError('currentPassword', {
-          type: 'required',
-          message: 'Enter your current password to change it',
-        });
-        return;
-      }
-      fd.append('password', data.password);
-      if (isOwnAccount) fd.append('currentPassword', data.currentPassword);
+    // current password. Never for your own account (the field is hidden).
+    if (data.password && !isOwnAccount) fields.password = data.password;
+
+    if (Object.keys(fields).length === 0 && !photoFile) {
+      setSubmitError('Nothing to save — no field was changed.');
+      return;
     }
 
-    if (photoFile) fd.append('photo', photoFile);
-
-    mutation.mutate(fd);
+    const { password: _password, confirmPassword: _confirmPassword, ...values } = data;
+    mutation.mutate({ fields, photo: photoFile, values });
   };
 
   if (!staff) return null;
 
-  const currentPhoto = staff.photo || '';
+  const currentPhoto = record?.photo || '';
+
+  // Closing mid-save would let this save's callbacks paint into the next record.
+  const closeIfIdle = () => {
+    if (!mutation.isPending) onClose();
+  };
 
   return (
     <Modal
       isOpen={isOpen}
-      onClose={onClose}
+      onClose={closeIfIdle}
       title={isSelf ? 'Edit My Profile' : 'Edit Staff Member'}
       subtitle={
         isSelf
           ? 'You can update personal info — HR fields like designation, salary, and dates are read-only.'
-          : `Updating ${staff.user?.name || 'staff'} — only filled fields will be changed`
+          : `Updating ${staff.user?.name || 'staff'} — only the fields you change are saved`
       }
       size="lg"
       footer={
         <div className="flex gap-3 w-full">
           <Button
             label="Cancel"
-            handleClick={onClose}
+            handleClick={closeIfIdle}
             type="button"
             styleObject={{
               baseColor: 'bg-white border border-gray-300',
@@ -324,23 +365,28 @@ export default function EditStaffModal({ isOpen, onClose, onSuccess, staff, isSe
               textColor: 'text-gray-700',
             }}
           />
-          <Button
-            label="Save Changes"
-            styleObject={{
-              baseColor: 'bg-teal-600',
-              hoverColor: 'hover:bg-teal-700',
-              rounded: 'rounded-full',
-              size: 'px-10 py-3 text-md min-h-[3rem]',
-              textColor: 'text-white',
-            }}
-            loading={mutation.isPending}
-            success={successState}
-            handleClick={handleSubmit(onSubmit)}
-          />
+          {baseline && (
+            <Button
+              label="Save Changes"
+              styleObject={{
+                baseColor: 'bg-teal-600',
+                hoverColor: 'hover:bg-teal-700',
+                rounded: 'rounded-full',
+                size: 'px-10 py-3 text-md min-h-[3rem]',
+                textColor: 'text-white',
+              }}
+              loading={mutation.isPending}
+              success={successState}
+              handleClick={handleSubmit(onSubmit)}
+            />
+          )}
         </div>
       }
     >
-      <form className="space-y-6">
+      {!baseline && (
+        <EditRecordStatus query={recordQuery} fallback="Could not load this staff member" />
+      )}
+      <form className="space-y-6" hidden={!baseline}>
         {submitError && (
           <div className="p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 rounded-lg text-red-700 dark:text-red-400 text-sm">
             {submitError}
@@ -416,46 +462,51 @@ export default function EditStaffModal({ isOpen, onClose, onSuccess, staff, isSe
           </div>
         </div>
 
-        {/* Security — optional password change */}
+        {/* Security — reset a colleague's password; your own goes through Change password */}
         <div>
           <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">
             Security
           </h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {isOwnAccount && (
-              <Field label="Current Password" error={errors.currentPassword?.message}>
-                <input
-                  {...register('currentPassword')}
-                  type="password"
-                  autoComplete="current-password"
-                  placeholder="Required to change your password"
-                  className={inputCls}
-                />
-              </Field>
-            )}
-            <Field label="New Password" error={errors.password?.message}>
-              <input
-                {...register('password')}
-                type="password"
-                autoComplete="new-password"
-                placeholder="Leave blank to keep current"
-                className={inputCls}
-              />
-            </Field>
-            <Field label="Confirm New Password" error={errors.confirmPassword?.message}>
-              <input
-                {...register('confirmPassword')}
-                type="password"
-                autoComplete="new-password"
-                placeholder="Re-enter new password"
-                className={inputCls}
-              />
-            </Field>
-          </div>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-            Leave blank to keep the current password. New password must be at least 6 characters and
-            takes effect immediately.
-          </p>
+          {isOwnAccount ? (
+            <p className="text-sm text-gray-600 dark:text-gray-300">
+              To change your own password, use{' '}
+              <Link
+                href="/dashboard/settings/password"
+                className="text-teal-600 font-semibold hover:underline"
+              >
+                Change password
+              </Link>{' '}
+              — it asks for your current password.
+            </p>
+          ) : (
+            <>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Field label="New Password" error={errors.password?.message}>
+                  <input
+                    {...register('password')}
+                    type="password"
+                    autoComplete="new-password"
+                    placeholder="Leave blank to keep current"
+                    className={inputCls}
+                  />
+                </Field>
+                <Field label="Confirm New Password" error={errors.confirmPassword?.message}>
+                  <input
+                    {...register('confirmPassword')}
+                    type="password"
+                    autoComplete="new-password"
+                    placeholder="Re-enter new password"
+                    className={inputCls}
+                  />
+                </Field>
+              </div>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                Leave blank to keep the current password. A new password must be at least{' '}
+                {PASSWORD_MIN} characters and takes effect immediately (the staff member is signed
+                out everywhere).
+              </p>
+            </>
+          )}
         </div>
 
         {/* Employment — HR-only, hidden on self-update */}

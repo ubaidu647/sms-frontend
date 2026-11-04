@@ -9,12 +9,40 @@ import toast from 'react-hot-toast';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { putData } from '@/utils/api';
 import { useTokenStore } from '@/store/tokenStore';
+import { editPayload, reportEmptiedRequired } from '@/utils/editPayload';
+
+// The form's values for an assignment — also the baseline an edit is diffed against.
+const formValuesOf = (assignment) => ({
+  role: assignment.role || 'teacher',
+  isPrimary: assignment.isPrimary ? 'true' : 'false',
+  startDate: assignment.startDate ? assignment.startDate.slice(0, 10) : '',
+  endDate: assignment.endDate ? assignment.endDate.slice(0, 10) : '',
+  notes: assignment.notes || '',
+  status: assignment.status || 'active',
+  isActive: assignment.isActive === false ? 'false' : 'true',
+});
+
+// Can't be cleared, with the error an emptied one blocks the save with.
+const REQUIRED_FIELDS = {
+  role: 'Role is required',
+  isPrimary: 'Primary teacher is required',
+  startDate: 'Start date is required',
+  status: 'Status is required',
+  isActive: 'Active is required',
+};
 
 const schema = yup.object().shape({
   role: yup.string().oneOf(['teacher', 'co-teacher', 'substitute']).optional(),
   isPrimary: yup.string().optional(),
   startDate: yup.string().optional(),
-  endDate: yup.string().optional(),
+  endDate: yup
+    .string()
+    .optional()
+    .test('not-before-start', 'End date cannot be before the start date', function (end) {
+      // Both are yyyy-mm-dd, so they compare as strings.
+      const { startDate } = this.parent;
+      return !end || !startDate || end >= startDate;
+    }),
   notes: yup.string().optional(),
   status: yup.string().oneOf(['active', 'inactive', '']).optional(),
   isActive: yup.string().optional(),
@@ -45,6 +73,7 @@ export default function EditAssignmentModal({ isOpen, onClose, onSuccess, assign
     register,
     handleSubmit,
     reset,
+    setError,
     formState: { errors },
   } = useForm({
     resolver: yupResolver(schema),
@@ -52,15 +81,7 @@ export default function EditAssignmentModal({ isOpen, onClose, onSuccess, assign
 
   useEffect(() => {
     if (assignment && isOpen) {
-      reset({
-        role: assignment.role || 'teacher',
-        isPrimary: assignment.isPrimary ? 'true' : 'false',
-        startDate: assignment.startDate ? assignment.startDate.slice(0, 10) : '',
-        endDate: assignment.endDate ? assignment.endDate.slice(0, 10) : '',
-        notes: assignment.notes || '',
-        status: assignment.status || 'active',
-        isActive: assignment.isActive === false ? 'false' : 'true',
-      });
+      reset(formValuesOf(assignment));
     }
   }, [assignment, isOpen, reset]);
 
@@ -95,16 +116,16 @@ export default function EditAssignmentModal({ isOpen, onClose, onSuccess, assign
 
   const onSubmit = (data) => {
     setSubmitError('');
-    const payload = {};
-    if (data.role) payload.role = data.role;
-    if (data.isPrimary !== undefined && data.isPrimary !== '')
-      payload.isPrimary = data.isPrimary === 'true';
-    if (data.startDate) payload.startDate = data.startDate;
-    if (data.endDate) payload.endDate = data.endDate;
-    if (data.notes != null) payload.notes = data.notes;
-    if (data.status) payload.status = data.status;
-    if (data.isActive !== undefined && data.isActive !== '')
-      payload.isActive = data.isActive === 'true';
+    // Only what changed; an emptied end date or note goes as null (clears it).
+    const saved = formValuesOf(assignment);
+    if (reportEmptiedRequired(saved, data, REQUIRED_FIELDS, setError)) return;
+    const payload = editPayload(saved, data, { required: Object.keys(REQUIRED_FIELDS) });
+    if ('isPrimary' in payload) payload.isPrimary = payload.isPrimary === 'true';
+    if ('isActive' in payload) payload.isActive = payload.isActive === 'true';
+    if (Object.keys(payload).length === 0) {
+      setSubmitError('Nothing to save — no field was changed.');
+      return;
+    }
     mutation.mutate(payload);
   };
 

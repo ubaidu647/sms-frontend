@@ -7,6 +7,7 @@ import {
   changePackage,
   renewSubscription,
   cancelSubscription,
+  syncSubscriptionPlan,
   listInvoices,
   getInvoiceSummary,
   getInvoiceBySubscription,
@@ -61,6 +62,25 @@ export const useRenewSubscription = () =>
 
 export const useCancelSubscription = () =>
   useSubscriptionMutation((schoolId) => cancelSubscription(schoolId), 'Subscription cancelled');
+
+// Re-apply the package's current features to the school's live subscription.
+// Same subscription row, no new invoice — so only the subscription reads (and
+// the schools list, which shows plan access) need refreshing.
+export const useSyncSubscriptionPlan = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ subscriptionId }) => syncSubscriptionPlan(subscriptionId),
+    onSuccess: (res, { schoolId }) => {
+      toast.success(res?.message || 'Plan re-applied');
+      if (schoolId) {
+        queryClient.invalidateQueries({ queryKey: ['subscription', 'current', schoolId] });
+        queryClient.invalidateQueries({ queryKey: ['subscription', 'history', schoolId] });
+      }
+      queryClient.invalidateQueries({ queryKey: ['organizations'] });
+    },
+    onError: (err) => toast.error(err.message || 'Failed to re-apply plan'),
+  });
+};
 
 /* ------------------------------- Invoices ------------------------------- */
 

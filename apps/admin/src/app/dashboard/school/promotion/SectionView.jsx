@@ -17,8 +17,10 @@ import {
   setDecisions,
   targetKind,
   toApplyPayload,
+  warningsOf,
 } from '@/utils/promotion';
 import ConfirmModal from './ConfirmModal';
+import WarningsNotice from './WarningsNotice';
 import {
   DECISION_COLORS,
   DECISION_LABELS,
@@ -53,6 +55,8 @@ export default function SectionView({ runId, sectionId, runStatus }) {
     enabled: !!token && !!runId && !!sectionId,
   });
   const detail = data?.data;
+  // Warnings that come with the roster itself (apply/undo ones are below).
+  const rosterWarnings = warningsOf(data);
   const students = useMemo(() => detail?.students || [], [detail]);
   const targets = useMemo(() => detail?.targets || { promote: [], detain: [] }, [detail]);
   const isLastGrade = !!detail?.isLastGrade;
@@ -274,6 +278,8 @@ export default function SectionView({ runId, sectionId, runStatus }) {
           </button>
         </div>
       )}
+
+      <WarningsNotice warnings={rosterWarnings} />
 
       {warnings.length > 0 && (
         <div className="flex items-start gap-2 p-3 rounded-xl border border-amber-200 dark:border-amber-900 bg-amber-50 dark:bg-amber-950/40 text-sm text-amber-800 dark:text-amber-300">

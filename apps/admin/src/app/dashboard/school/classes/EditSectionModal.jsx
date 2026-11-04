@@ -9,6 +9,22 @@ import toast from 'react-hot-toast';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { fetchData, putData } from '@/utils/api';
 import { useTokenStore } from '@/store/tokenStore';
+import { editPayload, reportEmptiedRequired } from '@/utils/editPayload';
+
+// The form's values for a section — also the baseline an edit is diffed against.
+const formValuesOf = (section) => ({
+  name: section.name || '',
+  capacity: section.capacity ?? '',
+  classTeacher: section.classTeacherInfo?._id || '',
+  status: section.status || 'active',
+});
+
+// Can't be cleared, with the error an emptied one blocks the save with.
+const REQUIRED_FIELDS = {
+  name: 'Section name is required',
+  capacity: 'Capacity is required',
+  status: 'Status is required',
+};
 
 const schema = yup.object().shape({
   name: yup.string().optional(),
@@ -47,6 +63,7 @@ export default function EditSectionModal({ isOpen, onClose, onSuccess, classId, 
     register,
     handleSubmit,
     reset,
+    setError,
     formState: { errors },
   } = useForm({
     resolver: yupResolver(schema),
@@ -54,12 +71,7 @@ export default function EditSectionModal({ isOpen, onClose, onSuccess, classId, 
 
   useEffect(() => {
     if (section && isOpen) {
-      reset({
-        name: section.name || '',
-        capacity: section.capacity ?? '',
-        classTeacher: section.classTeacherInfo?._id || '',
-        status: section.status || 'active',
-      });
+      reset(formValuesOf(section));
     }
   }, [section, isOpen, reset]);
 
@@ -86,6 +98,8 @@ export default function EditSectionModal({ isOpen, onClose, onSuccess, classId, 
     onSuccess: (res) => {
       queryClient.invalidateQueries({ queryKey: ['class-detail', classId] });
       queryClient.invalidateQueries({ queryKey: ['sections', classId] });
+      // The class list shows section counts / capacity.
+      queryClient.invalidateQueries({ queryKey: ['classes'] });
       toast.success(res?.message || 'Section updated successfully');
       onSuccess?.(res?.data);
       setSuccessState(true);
@@ -103,11 +117,14 @@ export default function EditSectionModal({ isOpen, onClose, onSuccess, classId, 
 
   const onSubmit = (data) => {
     setSubmitError('');
-    const payload = {};
-    Object.entries(data).forEach(([k, v]) => {
-      if (v !== '' && v !== null && v !== undefined) payload[k] = v;
-    });
-    if ('classTeacher' in data && data.classTeacher === '') payload.classTeacher = null;
+    // Only what changed; an emptied class teacher goes as null (clears it).
+    const saved = formValuesOf(section);
+    if (reportEmptiedRequired(saved, data, REQUIRED_FIELDS, setError)) return;
+    const payload = editPayload(saved, data, { required: Object.keys(REQUIRED_FIELDS) });
+    if (Object.keys(payload).length === 0) {
+      setSubmitError('Nothing to save — no field was changed.');
+      return;
+    }
     mutation.mutate(payload);
   };
 

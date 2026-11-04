@@ -111,6 +111,7 @@ export default function FeeStructureFormModal({ isOpen, onClose, structure }) {
     onSuccess: (res) => {
       toast.success(res?.message || (isEdit ? 'Fee structure updated' : 'Fee structure created'));
       queryClient.invalidateQueries({ queryKey: ['fee-structures'] });
+      if (isEdit) queryClient.invalidateQueries({ queryKey: ['fee-structure', structure._id] });
       setSuccessState(true);
       setTimeout(() => {
         setSuccessState(false);

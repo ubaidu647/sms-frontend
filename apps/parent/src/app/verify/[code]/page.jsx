@@ -16,7 +16,7 @@ import {
 import { Shell, Card, CodeForm } from "../VerifyParts";
 
 const publicApi = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4001/api",
+  baseURL: process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000/api",
   withCredentials: false,
   timeout: 20000,
   headers: { "Content-Type": "application/json" },

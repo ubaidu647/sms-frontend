@@ -55,6 +55,7 @@ export function invalidatePromotionData(queryClient) {
     ['promotion-section'],
     ['students'],
     ['students-by-section'],
+    ['exam-roster'],
     ['classes'],
     ['classes-dropdown'],
     ['class-detail'],

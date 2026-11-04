@@ -282,8 +282,8 @@ function EmptyState({ staffTypeLabel, canEdit, onCreate }) {
         No {staffTypeLabel.toLowerCase()} policy yet
       </div>
       <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 max-w-md mx-auto">
-        Until a policy is set, payslip generation falls back to a simple pro-rate (basic / working
-        days × unpaid days).
+        Until a policy is set, payslip generation falls back to a simple pro-rate (basic / 26 ×
+        unpaid days; absences and unpaid leave count 1, half-days ½).
       </p>
       {canEdit && (
         <button

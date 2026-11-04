@@ -16,10 +16,16 @@ import {
   TypeBadge,
 } from "@/component/dashboard/homework/badges";
 import { formatDate } from "@/utils/format";
+import {
+  displayStatus,
+  resultsHidden,
+  resultsPendingBadge,
+} from "@/utils/portalResults";
+import { useSelectedChildId } from "@/hooks/useChildren";
 
 const LIMIT = 20;
 
-export default function HomeworkPage() {
+function ChildHomework() {
   const [page, setPage] = useState(1);
   const { data, isLoading, isError, error, refetch, isFetching } =
     useHomeworkList({
@@ -76,7 +82,7 @@ export default function HomeworkPage() {
                           <h3 className="font-semibold text-gray-900 dark:text-gray-100 truncate">
                             {hw.title}
                           </h3>
-                          <SubmissionBadge status={hw.submissionStatus} />
+                          <SubmissionBadge status={displayStatus(hw)} />
                           <TypeBadge type={hw.submissionType} />
                         </div>
                         {hw.subject?.name && (
@@ -104,12 +110,18 @@ export default function HomeworkPage() {
                             )}
                             Due {formatDate(hw.dueDate)}
                           </span>
-                          {hw.submissionStatus === "graded" &&
-                            hw.mySubmission && (
+                          {resultsHidden(hw) && hw.mySubmission ? (
+                            <span className="text-gray-400">
+                              {resultsPendingBadge(hw)}
+                            </span>
+                          ) : (
+                            hw.submissionStatus === "graded" &&
+                            hw.mySubmission?.marksObtained != null && (
                               <span className="text-green-600 dark:text-green-400 font-medium">
                                 {hw.mySubmission.marksObtained}/{hw.maxMarks}
                               </span>
-                            )}
+                            )
+                          )}
                         </div>
                       </div>
                     </div>
@@ -144,4 +156,11 @@ export default function HomeworkPage() {
       )}
     </div>
   );
+}
+
+// Keyed on the child so switching child starts again at page 1 — page 3 of one
+// child's list is usually empty for another.
+export default function HomeworkPage() {
+  const studentId = useSelectedChildId();
+  return <ChildHomework key={studentId || "none"} />;
 }

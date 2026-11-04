@@ -1,11 +1,15 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { useTokenStore } from "@/store/tokenStore";
 import { useUserStore } from "@/store/userStore";
 import { Sidebar } from "@/component/SideBar";
 import { Topbar } from "@/component/TopBar";
+import ForcedPasswordChange from "@/component/ForcedPasswordChange";
+import { useAuth } from "@/hooks/useAuth";
+
+const PASSWORD_PATH = "/dashboard/change-password";
 
 export default function DashboardLayout({ children }) {
   const router = useRouter();
@@ -13,6 +17,12 @@ export default function DashboardLayout({ children }) {
   const accessToken = useTokenStore((s) => s.accessToken);
   const user = useUserStore((s) => s.user);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const pathname = usePathname();
+  const { logout } = useAuth();
+  // The API refuses everything but change-password until it is done, so the
+  // dashboard (and its data loading) waits behind that page.
+  const mustChangePassword =
+    hasHydrated && !!accessToken && user?.mustChangePassword === true;
 
   // Guard: once the persisted store has hydrated, bounce guests to the login.
   useEffect(() => {
@@ -21,6 +31,12 @@ export default function DashboardLayout({ children }) {
     }
   }, [hasHydrated, accessToken, router]);
 
+  useEffect(() => {
+    if (mustChangePassword && pathname !== PASSWORD_PATH) {
+      router.replace(PASSWORD_PATH);
+    }
+  }, [mustChangePassword, pathname, router]);
+
   if (!hasHydrated || !accessToken) {
     return (
       <div className="h-screen flex justify-center items-center">
@@ -28,6 +44,8 @@ export default function DashboardLayout({ children }) {
       </div>
     );
   }
+
+  if (mustChangePassword) return <ForcedPasswordChange onLogout={logout} />;
 
   return (
     <div className="w-full md:w-[99%] flex h-screen overflow-hidden">

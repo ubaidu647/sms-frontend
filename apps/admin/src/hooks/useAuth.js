@@ -2,8 +2,10 @@ import { useEffect, useRef, useState } from 'react';
 import apiClient, { markSessionEnded } from '@/services/apiClient';
 import { useTokenStore } from '@/store/tokenStore';
 import { useUserStore } from '@/store/userStore';
+import { clearAcademicYearStartMonth } from '@/utils/academicYear';
 import { clearAuthCookies } from '@/utils/clearAuthCookies';
 import { readCsrfToken, writeRoleCookie } from '@/utils/session';
+import { withPasswordFlag } from '@/utils/authErrors';
 
 /**
  * The session marker lives in localStorage, the session itself in cookies; the
@@ -21,7 +23,8 @@ function restoreSession() {
     restorePromise = apiClient
       .get('/auth/me', { skipLogoutRedirect: true })
       .then((res) => {
-        const user = res.data?.data?.user || res.data?.user || null;
+        const body = res.data?.data || res.data;
+        const user = withPasswordFlag(body?.user || null, body);
         return user ? { status: 'ok', user } : { status: 'none' };
       })
       .catch((err) => {
@@ -32,6 +35,31 @@ function restoreSession() {
       });
   }
   return restorePromise;
+}
+
+/**
+ * Re-reads the signed-in user from /auth/me into the user store (and the role
+ * cookie the middleware routes on) — e.g. after an edit to the user's own role,
+ * so menus and permission checks follow it without a re-login.
+ */
+export async function refreshCurrentUser() {
+  try {
+    const res = await apiClient.get('/auth/me');
+    const me = res?.data?.data?.user || res?.data?.user;
+    if (!me) return null;
+    if (me.id && !me._id) me._id = me.id;
+    writeRoleCookie(me.role);
+    const user = withPasswordFlag(me, res.data?.data || res.data);
+    useUserStore.getState().setUser(user);
+    return user;
+  } catch (err) {
+    console.error(
+      'Failed to refresh /auth/me:',
+      err?.response?.status ?? '',
+      err?.message || 'unknown error',
+    );
+    return null;
+  }
 }
 
 // One logout per page load, shared by every useAuth() instance. The page hard
@@ -49,7 +77,9 @@ export const useAuth = () => {
     logoutInFlight = false;
     const u = data.userCreated || data.user;
     if (u && u.id && !u._id) u._id = u.id;
-    setUser(u);
+    // `mustChangePassword` (body or user) sends the dashboard layout to the
+    // change-password page first.
+    setUser(withPasswordFlag(u, data));
     // The tokens arrived as httpOnly cookies; only record that we are signed in.
     markSignedIn();
     hasFetchedUser.current = false;
@@ -79,7 +109,7 @@ export const useAuth = () => {
           // the app can always read user._id.
           if (me.id && !me._id) me._id = me.id;
           writeRoleCookie(me.role);
-          setUser(me);
+          setUser(withPasswordFlag(me, res.data?.data || res.data));
         } catch (err) {
           // The axios error object carries the request config (auth headers);
           // log just the status and message.
@@ -130,6 +160,9 @@ export const useAuth = () => {
     clearTokens();
     hasFetchedUser.current = false;
     clearAuthCookies();
+    // The school's remembered academic year month must not carry over to the
+    // next user on this browser.
+    clearAcademicYearStartMonth();
 
     // Hard reload to dump in-memory React Query caches and component state
     // that may hold sensitive data. Matches apiClient's 401 redirect path.

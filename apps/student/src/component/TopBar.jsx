@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
+import { useRouter } from "next/navigation";
 import {
   Bell,
   Settings,
@@ -9,6 +10,7 @@ import {
   Sun,
   Moon,
   Menu,
+  KeyRound,
 } from "lucide-react";
 import { useThemeStore } from "@/store/themeStore";
 import { useAuth } from "@/hooks/useAuth";
@@ -22,6 +24,7 @@ export const Topbar = ({ user = {}, onMenuClick }) => {
   const toggleTheme = useThemeStore((s) => s.toggleTheme);
   const isDark = theme === "dark";
   const { logout } = useAuth();
+  const router = useRouter();
 
   useEffect(() => {
     if (!isProfileOpen) return;
@@ -124,7 +127,7 @@ export const Topbar = ({ user = {}, onMenuClick }) => {
             ref={menuRef}
             style={{
               position: "fixed",
-              top: Math.min(anchorRect.top + 8, window.innerHeight - 8 - 160),
+              top: Math.min(anchorRect.top + 8, window.innerHeight - 8 - 200),
               right: Math.max(anchorRect.right, 8),
               width: "14rem",
             }}
@@ -139,7 +142,20 @@ export const Topbar = ({ user = {}, onMenuClick }) => {
               </p>
             </div>
 
-            <div className="mt-1">
+            <button
+              onClick={() => {
+                setIsProfileOpen(false);
+                router.push("/dashboard/change-password");
+              }}
+              className="w-full flex items-center gap-3 px-4 py-2 mt-1 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-left"
+            >
+              <KeyRound className="w-4 h-4 text-gray-600 dark:text-gray-300" />
+              <span className="text-sm text-gray-700 dark:text-gray-200">
+                Change password
+              </span>
+            </button>
+
+            <div className="border-t border-gray-200 dark:border-gray-700 mt-1 pt-1">
               <button
                 onClick={handleLogout}
                 className="w-full flex items-center gap-3 px-4 py-2 hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors text-left"

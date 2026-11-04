@@ -63,7 +63,13 @@ export default function AssetActionModal({ asset, mode, onClose, orgTier }) {
       invalidateInventoryAssets(queryClient);
       onClose();
     },
-    onError: (err) => toast.error(err.message || 'Could not update the asset'),
+    // Keep the server's reason (closed period, missing account mapping, a cash
+    // head to pick…) on screen, not only in a toast that fades.
+    onError: (err) => {
+      const msg = err.message || 'Could not update the asset';
+      setErrors((x) => ({ ...x, server: msg }));
+      toast.error(msg);
+    },
   });
 
   const submit = () => {
@@ -126,6 +132,11 @@ export default function AssetActionModal({ asset, mode, onClose, orgTier }) {
       }
     >
       <div className="space-y-3">
+        {errors.server && (
+          <div className="p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 rounded-lg text-red-700 dark:text-red-400 text-sm">
+            {errors.server}
+          </div>
+        )}
         {mode === 'status' && (
           <>
             <div>
@@ -236,7 +247,11 @@ export default function AssetActionModal({ asset, mode, onClose, orgTier }) {
             {dvPaisa > 0 && (
               <CashBankAccountSelect
                 method="cash"
-                branchId={assetBranch || undefined}
+                // The write-off posts under the branch whose books carry the
+                // asset (where it was bought), even after a transfer. Asking by
+                // asset lets a branch-tier manager reach that branch's heads.
+                assetId={asset._id}
+                branchId={idOf(asset.booksBranchId) || assetBranch || undefined}
                 value={f.ledgerAccountId || ''}
                 onChange={(v) => set({ ledgerAccountId: v })}
                 labelCls={labelCls}

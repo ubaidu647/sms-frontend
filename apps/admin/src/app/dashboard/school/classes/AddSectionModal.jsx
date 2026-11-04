@@ -95,6 +95,8 @@ export default function AddSectionModal({ isOpen, onClose, onSuccess, classId, a
     onSuccess: (res) => {
       queryClient.invalidateQueries({ queryKey: ['class-detail', classId] });
       queryClient.invalidateQueries({ queryKey: ['sections', classId] });
+      // The class list shows section counts / capacity.
+      queryClient.invalidateQueries({ queryKey: ['classes'] });
       toast.success(res?.message || 'Section created successfully');
       onSuccess?.(res?.data);
       setSuccessState(true);

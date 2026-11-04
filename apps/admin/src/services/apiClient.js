@@ -2,8 +2,15 @@ import axios from 'axios';
 import toast from 'react-hot-toast';
 import { useTokenStore } from '@/store/tokenStore';
 import { useUserStore } from '@/store/userStore';
+import { clearAcademicYearStartMonth } from '@/utils/academicYear';
 import { clearAuthCookies } from '@/utils/clearAuthCookies';
 import { withSessionHeaders, AUTH_MODE_HEADERS, readCsrfToken } from '@/utils/session';
+import {
+  PLAN_REASON,
+  isPasswordChangeRequired,
+  planRefusalMessage,
+  rememberSigninNotice,
+} from '@/utils/authErrors';
 
 // Default retry window when the Retry-After header can't be read. Browsers won't
 // expose Retry-After / RateLimit-* cross-origin unless the backend adds them to
@@ -30,7 +37,9 @@ function handleRateLimited(response, url) {
 }
 
 const apiClient = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4001/api',
+  // Dev-only fallback (backend default PORT=4000); a production `next build`
+  // fails without NEXT_PUBLIC_BACKEND_URL — see next.config.mjs.
+  baseURL: process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000/api',
   // The session is an httpOnly cookie, so every request must carry cookies.
   withCredentials: true,
   headers: { 'Content-Type': 'application/json' },
@@ -45,7 +54,7 @@ export function markSessionEnded() {
   loggedOut = true;
 }
 
-function handleLogoutAndRedirect() {
+function handleLogoutAndRedirect(reason) {
   loggedOut = true;
   useTokenStore.getState().clearTokens();
   // The profile is persisted (localStorage): drop it too, or the next visitor on
@@ -54,8 +63,38 @@ function handleLogoutAndRedirect() {
   useUserStore.getState().clearUser();
   useUserStore.persist?.clearStorage?.();
   clearAuthCookies();
-  if (typeof window !== 'undefined') window.location.replace('/signin');
+  // …and the school's remembered academic year month.
+  clearAcademicYearStartMonth();
+  if (typeof window !== 'undefined') {
+    window.location.replace(reason ? `/signin?reason=${encodeURIComponent(reason)}` : '/signin');
+  }
 }
+
+// The school's plan no longer covers this dashboard/platform. Retrying or
+// refreshing cannot help, so end the session like a dead one — but through the
+// API first: only it can clear the httpOnly cookies, and while they exist
+// middleware.js would bounce /signin straight back to /dashboard. Logout does
+// not pass the plan gate. Once per page load.
+let planEnding = false;
+function endSessionForPlan(message) {
+  if (planEnding) return;
+  planEnding = true;
+  loggedOut = true;
+  rememberSigninNotice(message);
+  apiClient
+    .post('/auth/logout', {}, { skipAuthRefresh: true, timeout: 8000 })
+    .catch(() => {})
+    .finally(() => handleLogoutAndRedirect(PLAN_REASON));
+}
+
+// The API refuses everything but change-password until the password is
+// changed: record it on the user so the dashboard layout shows that page.
+function flagPasswordChange() {
+  const { user, setUser } = useUserStore.getState();
+  if (user && !user.mustChangePassword) setUser({ ...user, mustChangePassword: true });
+}
+
+const isLoginUrl = (url) => url.includes('/auth/login');
 
 // One refresh in flight at a time; concurrent 401s wait on the same promise.
 let refreshPromise = null;
@@ -99,9 +138,21 @@ apiClient.interceptors.response.use(
       return Promise.reject(error);
     }
 
+    // 403 session-level refusals. Login shows its own error; logout must
+    // never loop back here.
+    if (status === 403 && !isLoginUrl(url) && !url.includes('/auth/logout')) {
+      const planMessage = planRefusalMessage(error);
+      if (planMessage) {
+        endSessionForPlan(planMessage);
+        return Promise.reject(error);
+      }
+      if (isPasswordChangeRequired(error)) flagPasswordChange();
+      return Promise.reject(error);
+    }
+
     // 401 = the access cookie expired (or is gone). Refresh once from the
     // refresh cookie and replay; only a failed refresh ends the session.
-    if (status === 401 && !orig._retry && !orig.skipAuthRefresh && !url.includes('/auth/login')) {
+    if (status === 401 && !orig._retry && !orig.skipAuthRefresh && !isLoginUrl(url)) {
       orig._retry = true;
       // No session cookie at all → nothing to refresh. Asking anyway only
       // burns the shared refresh rate-limit budget of everyone on this network.
@@ -120,6 +171,12 @@ apiClient.interceptors.response.use(
         if (refreshStatus === 429) {
           handleRateLimited(e.response, '/auth/refresh');
           return Promise.reject(e);
+        }
+        // The plan dropped this dashboard: say why instead of a bare sign-in.
+        const planMessage = planRefusalMessage(e);
+        if (planMessage) {
+          endSessionForPlan(planMessage);
+          return Promise.reject(error);
         }
         // Only an explicit rejection of the refresh cookie ends the session.
         // 5xx (e.g. 503 on infra errors) and network failures are transient:

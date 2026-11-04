@@ -9,6 +9,8 @@ import { fetchData } from '@/utils/api';
 import { canEditScope, isOrgLevel } from '@/utils/permissions';
 import { currentAcademicYear, nextAcademicYear, previousAcademicYear } from '@/utils/academicYear';
 import PreviewPanel from './PreviewPanel';
+import WarningsNotice from './WarningsNotice';
+import { warningsOf } from '@/utils/promotion';
 import RunView from './RunView';
 import SectionView from './SectionView';
 import {
@@ -65,6 +67,7 @@ export default function PromotionPage() {
     enabled: !!token && !!branchId && canManage,
   });
   const runs = runsData?.data || [];
+  const runsWarnings = warningsOf(runsData);
   const openRunForYear = runs.find((r) => r.fromYear === fromYear && r.status !== 'undone');
   const currentRun = runs.find((r) => r._id === runId);
 
@@ -305,6 +308,8 @@ export default function PromotionPage() {
                     </table>
                   </div>
                 </div>
+
+                <WarningsNotice warnings={runsWarnings} />
 
                 {/* Step 2: preview & prepare (or continue the existing run) */}
                 {openRunForYear ? (

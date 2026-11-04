@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { Bell, Settings, LogOut, ChevronDown, Sun, Moon, Menu } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Bell, Settings, LogOut, ChevronDown, Sun, Moon, Menu, KeyRound } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useThemeStore } from '@/store/themeStore';
 import { useAuth } from '@/hooks/useAuth';
@@ -8,7 +9,7 @@ import { useAuth } from '@/hooks/useAuth';
 // System-console topbar. Unlike the admin app's version there is no menu of
 // school destinations (business settings, user management, billing) — those are
 // per-tenant screens and live in the admin app. Here the dropdown is just the
-// identity card plus sign out.
+// identity card, the super-admin's own password change, and sign out.
 export const Topbar = ({ user, userRole, onMenuClick }) => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [anchorRect, setAnchorRect] = useState(null);
@@ -19,6 +20,7 @@ export const Topbar = ({ user, userRole, onMenuClick }) => {
   const isDark = theme === 'dark';
   const t = useTranslations('topbar');
   const { logout } = useAuth();
+  const router = useRouter();
 
   // Recompute anchor on open + on scroll/resize so the portal-rendered menu
   // stays glued to the trigger button across viewport changes.
@@ -117,7 +119,7 @@ export const Topbar = ({ user, userRole, onMenuClick }) => {
             ref={menuRef}
             style={{
               position: 'fixed',
-              top: Math.min(anchorRect.top + 8, window.innerHeight - 8 - 120),
+              top: Math.min(anchorRect.top + 8, window.innerHeight - 8 - 160),
               right: Math.max(anchorRect.right, 8),
               width: '14rem',
             }}
@@ -130,7 +132,20 @@ export const Topbar = ({ user, userRole, onMenuClick }) => {
               </p>
             </div>
 
-            <div className="mt-2 pt-2">
+            <button
+              onClick={() => {
+                setIsProfileOpen(false);
+                router.push('/dashboard/change-password');
+              }}
+              className="w-full flex items-center gap-3 px-4 py-2 mt-2 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-left"
+            >
+              <KeyRound className="w-4 h-4 text-gray-600 dark:text-gray-300" />
+              <span className="text-sm text-gray-700 dark:text-gray-200">
+                {t('changePassword')}
+              </span>
+            </button>
+
+            <div className="border-t border-gray-200 dark:border-gray-700 mt-2 pt-2">
               <button
                 onClick={() => {
                   setIsProfileOpen(false);

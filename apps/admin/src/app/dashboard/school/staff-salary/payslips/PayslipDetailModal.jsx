@@ -22,6 +22,7 @@ import { Lock, DollarSign, XCircle, Edit3, RotateCcw, AlertTriangle } from 'luci
 import { localYMD } from '@/utils/localDate';
 import { invalidateLedgerQueries } from '@/utils/ledgerQueries';
 import { percentOf } from '@/utils/money';
+import { filterAmountInput, parseAmountInput } from '@/utils/payslipInput';
 
 const inputCls =
   'w-full px-3 py-2 border border-gray-200 rounded-lg outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 text-sm text-gray-900 bg-white placeholder:text-gray-400';
@@ -211,8 +212,8 @@ function PayslipBody({ payslip, showPay, setShowPay, showCancel, setShowCancel, 
   };
 
   const [editing, setEditing] = useState(false);
-  const [bonus, setBonus] = useState(payslip.bonus ?? 0);
-  const [tax, setTax] = useState(payslip.tax ?? 0);
+  const [bonus, setBonus] = useState(String(payslip.bonus ?? 0));
+  const [tax, setTax] = useState(String(payslip.tax ?? 0));
   const [notes, setNotes] = useState(payslip.notes || '');
   const [reversing, setReversing] = useState(null);
 
@@ -232,9 +233,14 @@ function PayslipBody({ payslip, showPay, setShowPay, showCancel, setShowCancel, 
   });
 
   const saveEdits = () => {
+    // Empty means 0; anything else must parse — '5..' used to save as 0.
+    const bonusIn = parseAmountInput(bonus);
+    if (bonusIn.invalid) return toast.error('Bonus must be a valid amount');
+    const taxIn = parseAmountInput(tax);
+    if (taxIn.invalid) return toast.error('Tax must be a valid amount');
     const payload = {
-      bonus: Number(bonus) || 0,
-      tax: Number(tax) || 0,
+      bonus: bonusIn.value ?? 0,
+      tax: taxIn.value ?? 0,
     };
     if (notes !== payslip.notes) payload.notes = notes;
     updateMut.mutate(payload);
@@ -313,10 +319,10 @@ function PayslipBody({ payslip, showPay, setShowPay, showCancel, setShowCancel, 
                   label="Bonus"
                   value={
                     <input
-                      type="number"
-                      min={0}
+                      type="text"
+                      inputMode="decimal"
                       value={bonus}
-                      onChange={(e) => setBonus(e.target.value)}
+                      onChange={(e) => setBonus((prev) => filterAmountInput(e.target.value, prev))}
                       className="w-28 px-2 py-1 text-xs border border-gray-200 dark:border-gray-700 rounded text-gray-900 dark:text-gray-100 outline-none focus:border-teal-500 text-right"
                     />
                   }
@@ -358,10 +364,10 @@ function PayslipBody({ payslip, showPay, setShowPay, showCancel, setShowCancel, 
                   label="Tax"
                   value={
                     <input
-                      type="number"
-                      min={0}
+                      type="text"
+                      inputMode="decimal"
                       value={tax}
-                      onChange={(e) => setTax(e.target.value)}
+                      onChange={(e) => setTax((prev) => filterAmountInput(e.target.value, prev))}
                       className="w-28 px-2 py-1 text-xs border border-gray-200 dark:border-gray-700 rounded text-gray-900 dark:text-gray-100 outline-none focus:border-teal-500 text-right"
                     />
                   }
@@ -517,8 +523,8 @@ function PayslipBody({ payslip, showPay, setShowPay, showCancel, setShowCancel, 
       ) : (
         payslip.attendance && (
           <div className="rounded-xl bg-amber-50 border border-amber-200 p-3 text-xs text-amber-800">
-            No salary policy was active at generation time — pro-rate fallback used (basic ÷ working
-            days × unpaid days).
+            No salary policy was active at generation time — pro-rate fallback used (basic ÷ 26 ×
+            unpaid days; absences and unpaid leave count 1, half-days ½).
           </div>
         )
       )}
@@ -544,8 +550,8 @@ function PayslipBody({ payslip, showPay, setShowPay, showCancel, setShowCancel, 
             <button
               onClick={() => {
                 setEditing(false);
-                setBonus(payslip.bonus ?? 0);
-                setTax(payslip.tax ?? 0);
+                setBonus(String(payslip.bonus ?? 0));
+                setTax(String(payslip.tax ?? 0));
                 setNotes(payslip.notes || '');
               }}
               className="px-4 py-1.5 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800"
@@ -662,7 +668,7 @@ function PayForm({ payslip, onClose, onDone }) {
   // Defaults to what is still owed, so one click settles the payslip; enter a
   // smaller figure to pay an instalment.
   const remaining = payslip.balanceAmount ?? payslip.netSalary ?? 0;
-  const [paidAmount, setPaidAmount] = useState(remaining);
+  const [paidAmount, setPaidAmount] = useState(String(remaining));
   const [notes, setNotes] = useState('');
   const [err, setErr] = useState('');
   // One key per opened pay form, reused if Confirm is retried after an error.
@@ -697,8 +703,13 @@ function PayForm({ payslip, onClose, onDone }) {
     if (ledgerAccountId) payload.ledgerAccountId = ledgerAccountId;
     if (paymentReference?.trim()) payload.paymentReference = paymentReference.trim();
     // A fully deducted payslip (nothing owed) is settled without an amount.
-    if (remaining > 0 && paidAmount !== '' && !Number.isNaN(Number(paidAmount))) {
-      const amount = Number(paidAmount);
+    // Empty pays the full remaining balance; anything typed must be a valid
+    // number — an unparseable one used to be dropped, paying the full balance.
+    const amountIn = parseAmountInput(paidAmount);
+    if (remaining > 0 && amountIn.invalid)
+      return setErr('Enter a valid amount, or leave it empty to pay the full remaining balance');
+    if (remaining > 0 && !amountIn.empty) {
+      const amount = amountIn.value;
       if (amount <= 0) return setErr('Amount must be greater than 0');
       if (amount > remaining) return setErr(`Amount cannot exceed the remaining ${remaining}`);
       payload.paidAmount = amount;
@@ -763,11 +774,11 @@ function PayForm({ payslip, onClose, onDone }) {
         <div>
           <label className={labelCls}>Amount</label>
           <input
-            type="number"
-            min={0}
-            max={remaining}
+            type="text"
+            inputMode="decimal"
             value={paidAmount}
-            onChange={(e) => setPaidAmount(e.target.value)}
+            placeholder={String(remaining)}
+            onChange={(e) => setPaidAmount((prev) => filterAmountInput(e.target.value, prev))}
             className={inputCls}
           />
         </div>

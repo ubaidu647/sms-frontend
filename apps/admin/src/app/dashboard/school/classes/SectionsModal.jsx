@@ -119,6 +119,9 @@ export default function SectionsModal({ isOpen, onClose, cls }) {
         };
       });
       queryClient.invalidateQueries({ queryKey: ['sections', classId] });
+      queryClient.invalidateQueries({ queryKey: ['class-detail', classId] });
+      // The class list shows section counts / capacity.
+      queryClient.invalidateQueries({ queryKey: ['classes'] });
       toast.success(res?.data?.isActive ? 'Section activated' : 'Section deactivated');
     },
     onError: (err) => toast.error(err.message || 'Failed to toggle section'),

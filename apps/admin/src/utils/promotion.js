@@ -196,3 +196,17 @@ export function unprocessedRows(data) {
     })
     .filter((r) => r.count > 0);
 }
+
+/**
+ * `warnings` from a promotion API body — on the payload ({ data: { warnings } })
+ * or beside it ({ data: [...], warnings }) — as a clean list of strings.
+ */
+export function warningsOf(body) {
+  const inner = body?.data;
+  const raw =
+    inner && typeof inner === 'object' && !Array.isArray(inner) && inner.warnings !== undefined
+      ? inner.warnings
+      : body?.warnings;
+  if (!Array.isArray(raw)) return [];
+  return raw.filter((w) => typeof w === 'string' && w.trim()).map((w) => w.trim());
+}

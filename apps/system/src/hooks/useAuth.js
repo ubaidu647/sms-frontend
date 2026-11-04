@@ -4,6 +4,7 @@ import { useTokenStore } from '@/store/tokenStore';
 import { useUserStore } from '@/store/userStore';
 import { clearAuthCookies } from '@/utils/clearAuthCookies';
 import { readCsrfToken, writeRoleCookie } from '@/utils/session';
+import { withPasswordFlag } from '@/utils/authErrors';
 
 /**
  * The session marker lives in localStorage, the session itself in cookies; the
@@ -21,7 +22,8 @@ function restoreSession() {
     restorePromise = apiClient
       .get('/auth/me', { skipLogoutRedirect: true })
       .then((res) => {
-        const user = res.data?.data?.user || res.data?.user || null;
+        const body = res.data?.data || res.data;
+        const user = withPasswordFlag(body?.user || null, body);
         return user ? { status: 'ok', user } : { status: 'none' };
       })
       .catch((err) => {
@@ -49,7 +51,8 @@ export const useAuth = () => {
     logoutInFlight = false;
     const u = data.userCreated || data.user;
     if (u && u.id && !u._id) u._id = u.id;
-    setUser(u);
+    // `mustChangePassword` (body or user) sends the layout to change-password.
+    setUser(withPasswordFlag(u, data));
     // The tokens arrived as httpOnly cookies; only record that we are signed in.
     markSignedIn();
     hasFetchedUser.current = false;
@@ -78,7 +81,7 @@ export const useAuth = () => {
           // the app can always read user._id.
           if (me.id && !me._id) me._id = me.id;
           writeRoleCookie(me.role);
-          setUser(me);
+          setUser(withPasswordFlag(me, res.data?.data || res.data));
         } catch (err) {
           console.error('Failed to fetch /auth/me:', err);
         } finally {

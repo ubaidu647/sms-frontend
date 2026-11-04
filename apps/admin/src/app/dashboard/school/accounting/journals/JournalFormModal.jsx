@@ -8,7 +8,14 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { fetchData, postData } from '@/utils/api';
 import { useTokenStore } from '@/store/tokenStore';
 import { useUserStore } from '@/store/userStore';
-import { todayYMD, sumLines, isBalanced, formatMoney } from '@/constants/accounting';
+import {
+  todayYMD,
+  sumLines,
+  isBalanced,
+  formatMoney,
+  postableLines,
+  journalLinesError,
+} from '@/constants/accounting';
 import { invalidateLedgerQueries } from '@/utils/ledgerQueries';
 
 const inputCls =
@@ -79,8 +86,14 @@ export default function JournalFormModal({
     [accountData],
   );
 
-  const totals = useMemo(() => sumLines(lines), [lines]);
-  const balanced = isBalanced(totals);
+  // Totals and "Balanced" describe exactly what will be posted; a row with an
+  // amount but no account is flagged instead of being counted (or dropped).
+  const posted = useMemo(() => postableLines(lines), [lines]);
+  const totals = useMemo(() => sumLines(posted), [posted]);
+  const missingAccountRow = lines.findIndex(
+    (l) => !l.accountId && (Number(l.debit) || Number(l.credit)),
+  );
+  const balanced = isBalanced(totals) && missingAccountRow === -1;
 
   const updateLine = (i, patch) =>
     setLines((prev) => prev.map((l, idx) => (idx === i ? { ...l, ...patch } : l)));
@@ -116,15 +129,8 @@ export default function JournalFormModal({
     if (isOrgLevel && !effectiveBranch) return 'Select a branch';
     if (!date) return 'Date is required';
     if (!narration?.trim()) return 'Narration is required';
-    const clean = lines.filter((l) => l.accountId && (Number(l.debit) || Number(l.credit)));
-    if (clean.length < 2) return 'Add at least two lines with an account and an amount';
-    for (let i = 0; i < clean.length; i++) {
-      const l = clean[i];
-      const d = Number(l.debit) || 0;
-      const c = Number(l.credit) || 0;
-      if (d && c) return `Line ${i + 1}: a line can't have both a debit and a credit`;
-      if (!d && !c) return `Line ${i + 1}: enter a debit or a credit`;
-    }
+    const linesErr = journalLinesError(lines);
+    if (linesErr) return linesErr;
     if (!balanced) return 'Entry is unbalanced — total debit must equal total credit';
     return null;
   };
@@ -141,14 +147,12 @@ export default function JournalFormModal({
       branchId: effectiveBranch || undefined,
       date,
       narration: narration.trim(),
-      lines: lines
-        .filter((l) => l.accountId && (Number(l.debit) || Number(l.credit)))
-        .map((l) => ({
-          accountId: l.accountId,
-          debit: Number(l.debit) || 0,
-          credit: Number(l.credit) || 0,
-          ...(l.description?.trim() ? { description: l.description.trim() } : {}),
-        })),
+      lines: posted.map((l) => ({
+        accountId: l.accountId,
+        debit: Number(l.debit) || 0,
+        credit: Number(l.credit) || 0,
+        ...(l.description?.trim() ? { description: l.description.trim() } : {}),
+      })),
     };
     mutation.mutate(payload);
   };
@@ -184,7 +188,11 @@ export default function JournalFormModal({
                 balanced ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-800'
               }`}
             >
-              {balanced ? 'Balanced' : 'Unbalanced'}
+              {missingAccountRow !== -1
+                ? `Line ${missingAccountRow + 1} needs an account`
+                : balanced
+                  ? 'Balanced'
+                  : 'Unbalanced'}
             </span>
           </div>
           <div className="flex gap-3">

@@ -64,6 +64,24 @@ npm run graph            # nx project dependency graph
 
 You can also call Nx directly: `npx nx build @sms/admin`, `npx nx dev @sms/student`, etc.
 
+### Build cache and env vars
+
+Nx caches `build`. Besides the source files, the cache key includes
+`config/**` (the `next-env-guard.mjs` build check) and the env vars that are
+inlined into the bundle or change the build: every `NEXT_PUBLIC_*` the apps
+read, `NODE_ENV` and `ALLOW_LOCALHOST_BUILD` (see `publicEnv` in `nx.json`). Nx
+loads each app's `.env.local` into the task env before hashing, so its values
+count too. If you add a new `NEXT_PUBLIC_*` variable, add it to `publicEnv` —
+otherwise a cached build made with other values can be replayed.
+
+For release builds, bypass the cache entirely so the bundle is always built
+from the current environment:
+
+```bash
+npx nx run-many -t build --skip-nx-cache
+npx nx build @sms/admin --skip-nx-cache
+```
+
 ## Tooling
 
 npm workspaces (package linking) + [Nx](https://nx.dev) (task running, caching, graph),

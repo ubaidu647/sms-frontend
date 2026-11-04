@@ -1,6 +1,12 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
-import { listPackages, createPackage, updatePackage, deletePackage } from '@/services/billing';
+import {
+  listPackages,
+  createPackage,
+  updatePackage,
+  deletePackage,
+  syncPackageSubscriptions,
+} from '@/services/billing';
 
 // List query. `filters` holds APPLIED filter state only (changed on Search click,
 // never bound to keystrokes) so we don't refetch on every character. `isActive`
@@ -68,5 +74,21 @@ export const useDeletePackage = () => {
       queryClient.invalidateQueries({ queryKey: ['packages'] });
     },
     onError: (err) => toast.error(err.message || 'Failed to deactivate package'),
+  });
+};
+
+// Push the package's current features to every school on it. Touches
+// subscriptions only (not the package), so refresh every subscription read and
+// the schools list.
+export const useSyncPackageSubscriptions = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id) => syncPackageSubscriptions(id),
+    onSuccess: (res) => {
+      toast.success(res?.message || `Applied to ${res?.data?.count ?? 0} school(s)`);
+      queryClient.invalidateQueries({ queryKey: ['subscription'] });
+      queryClient.invalidateQueries({ queryKey: ['organizations'] });
+    },
+    onError: (err) => toast.error(err.message || 'Failed to apply plan to schools'),
   });
 };

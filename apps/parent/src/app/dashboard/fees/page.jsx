@@ -1,10 +1,16 @@
 "use client";
 import { useState } from "react";
+import { useSelectedChildId } from "@/hooks/useChildren";
 import { Wallet, ChevronDown, Receipt } from "lucide-react";
 import { useFees } from "@/hooks/useDashboard";
 import { PageHeader, Panel } from "@/component/dashboard/Panel";
 import { Loading, ErrorState, EmptyState } from "@/component/dashboard/States";
 import { formatDate, formatMoney } from "@/utils/format";
+import {
+  VOID_VOUCHER_LABEL,
+  isVoidVoucher,
+  pageCount,
+} from "@/utils/portalResults";
 
 const STATUS_STYLES = {
   paid: "bg-[#00918e]/10 text-[#00918e]",
@@ -13,8 +19,12 @@ const STATUS_STYLES = {
   overdue: "bg-red-100 text-red-600 dark:bg-red-950/40 dark:text-red-400",
 };
 
-export default function FeesPage() {
-  const { data, isLoading, isError, error, refetch } = useFees();
+function ChildFees() {
+  const [page, setPage] = useState(1);
+  const { data, isLoading, isError, error, refetch, isFetching } = useFees({
+    page,
+  });
+  const pages = pageCount(data?.total, data?.limit);
   const outstanding = data?.summary?.outstandingBalance ?? 0;
   const vouchers = data?.vouchers ?? [];
   // The student endpoint's shape has no separate payments list; if the server
@@ -58,6 +68,30 @@ export default function FeesPage() {
               {vouchers.map((v, i) => (
                 <VoucherCard key={v._id || v.voucherNumber || i} voucher={v} />
               ))}
+            </div>
+          )}
+
+          {pages > 1 && (
+            <div className="mt-4 flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
+              <button
+                type="button"
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={page <= 1 || isFetching}
+                className="rounded-lg border border-gray-200 dark:border-gray-800 px-3 py-1.5 disabled:opacity-40"
+              >
+                Newer
+              </button>
+              <span>
+                Page {page} of {pages}
+              </span>
+              <button
+                type="button"
+                onClick={() => setPage((p) => Math.min(pages, p + 1))}
+                disabled={page >= pages || isFetching}
+                className="rounded-lg border border-gray-200 dark:border-gray-800 px-3 py-1.5 disabled:opacity-40"
+              >
+                Older
+              </button>
             </div>
           )}
 
@@ -110,6 +144,7 @@ function VoucherCard({ voucher: v }) {
   const [open, setOpen] = useState(false);
   const lineItems = v.lineItems || [];
   const status = v.status || "unpaid";
+  const isVoid = isVoidVoucher(v);
 
   return (
     <Panel padded={false}>
@@ -127,7 +162,7 @@ function VoucherCard({ voucher: v }) {
                 STATUS_STYLES[status] || STATUS_STYLES.unpaid
               }`}
             >
-              {status}
+              {isVoid ? VOID_VOUCHER_LABEL : status}
             </span>
           </div>
           <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
@@ -135,14 +170,20 @@ function VoucherCard({ voucher: v }) {
             {v.dueDate ? ` · Due ${formatDate(v.dueDate)}` : ""}
           </p>
         </div>
-        <div className="text-right flex-shrink-0">
-          <div className="font-bold text-gray-900 dark:text-gray-100">
-            {formatMoney(v.balanceAmount ?? v.totalAmount)}
+        {isVoid ? (
+          <div className="text-right flex-shrink-0 text-xs text-gray-400">
+            Not payable
           </div>
-          <div className="text-xs text-gray-400">
-            of {formatMoney(v.totalAmount)}
+        ) : (
+          <div className="text-right flex-shrink-0">
+            <div className="font-bold text-gray-900 dark:text-gray-100">
+              {formatMoney(v.balanceAmount ?? v.totalAmount)}
+            </div>
+            <div className="text-xs text-gray-400">
+              of {formatMoney(v.totalAmount)}
+            </div>
           </div>
-        </div>
+        )}
         {lineItems.length > 0 && (
           <ChevronDown
             className={`w-4 h-4 text-gray-400 transition-transform ${open ? "rotate-180" : ""}`}
@@ -180,4 +221,11 @@ function VoucherCard({ voucher: v }) {
       )}
     </Panel>
   );
+}
+
+// Keyed on the child so switching child starts again at page 1 — page 2 of one
+// child's vouchers is usually empty for another.
+export default function FeesPage() {
+  const studentId = useSelectedChildId();
+  return <ChildFees key={studentId || "none"} />;
 }

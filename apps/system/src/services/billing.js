@@ -70,6 +70,18 @@ export const deletePackage = async (id) => {
   }
 };
 
+// Re-apply this package's CURRENT features (limits, platforms, dashboards,
+// feature flags) to every live subscription sold from it. Prices, durations,
+// dates and invoices are untouched. → { count, skippedLegacy }
+export const syncPackageSubscriptions = async (id) => {
+  try {
+    const res = await apiClient.post(`/package/${id}/sync-subscriptions`);
+    return unwrap(res);
+  } catch (error) {
+    normalizeError(error);
+  }
+};
+
 /* ----------------------------- Subscriptions ---------------------------- */
 
 // Current active subscription for a school. A 404 means "no active subscription"
@@ -134,6 +146,17 @@ export const renewSubscription = async (payload) => {
 export const cancelSubscription = async (schoolId) => {
   try {
     const res = await apiClient.post('/subscription/cancel', { schoolId });
+    return unwrap(res);
+  } catch (error) {
+    normalizeError(error);
+  }
+};
+
+// Re-apply the catalog package's current features to one live subscription.
+// Price, duration, dates and invoices are untouched.
+export const syncSubscriptionPlan = async (subscriptionId) => {
+  try {
+    const res = await apiClient.post(`/subscription/${subscriptionId}/sync-plan`);
     return unwrap(res);
   } catch (error) {
     normalizeError(error);

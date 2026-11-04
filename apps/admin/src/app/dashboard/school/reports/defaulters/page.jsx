@@ -43,6 +43,8 @@ export default function DefaultersReportPage() {
     hasAnyAction(role, ['student-defaults-list-view', 'student-defaults-list-view-all-branch']);
   const canPickBranches =
     role?.isPredefined || hasAnyAction(role, ['student-defaults-list-view-all-branch']);
+  // The consolidated fee slip is a fee read (GET /fee/voucher/consolidated/:id).
+  const canViewSlip = hasAnyAction(role, ['view-fee', 'view-all-branch-fee']);
 
   // Draft state — user-editable; only applied when "Generate" is pressed.
   const [draftFrom, setDraftFrom] = useState(firstOfMonth());
@@ -843,18 +845,20 @@ export default function DefaultersReportPage() {
                                 {formatDate(r.oldestDueDate)}
                               </td>
                               <td className="px-3 py-2 text-right print:hidden">
-                                <button
-                                  type="button"
-                                  onClick={() =>
-                                    router.push(
-                                      `/dashboard/school/fees/vouchers/consolidated/${r.studentId}`,
-                                    )
-                                  }
-                                  className="inline-flex items-center gap-1 text-xs text-teal-700 hover:underline"
-                                >
-                                  <Eye className="w-3.5 h-3.5" />
-                                  Slip
-                                </button>
+                                {canViewSlip && (
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      router.push(
+                                        `/dashboard/school/fees/vouchers/consolidated/${r.studentId}`,
+                                      )
+                                    }
+                                    className="inline-flex items-center gap-1 text-xs text-teal-700 hover:underline"
+                                  >
+                                    <Eye className="w-3.5 h-3.5" />
+                                    Slip
+                                  </button>
+                                )}
                               </td>
                             </tr>
                             {isOpen && applied?.includeDetails && (

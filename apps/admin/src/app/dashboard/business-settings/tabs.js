@@ -1,9 +1,9 @@
-import { Building2, IdCard, MessageCircle } from 'lucide-react';
+import { Building2, CalendarRange, IdCard, MessageCircle } from 'lucide-react';
 import { canSee } from '@/utils/permissions';
 import { ACTIONS } from '@/constants/rolePermissions';
 
 // Business Settings holds how the organisation itself is set up — its branches,
-// their letterheads, and the WhatsApp channel it sends from. None of that is
+// their letterheads, its academic calendar, and the WhatsApp channel it sends from. None of that is
 // day-to-day school work, so it lives behind the topbar rather than the sidebar.
 export const BUSINESS_SETTINGS_TABS = [
   {
@@ -24,6 +24,14 @@ export const BUSINESS_SETTINGS_TABS = [
     canAccess: (role) => canSee(role, ACTIONS.VIEW_BRANCH_PROFILE),
     // /branches/profile (own) and /branches/profiles (org list) both belong here.
     isActive: (path) => path.startsWith('/dashboard/business-settings/branches/profile'),
+  },
+  {
+    label: 'Academic Year',
+    href: '/dashboard/business-settings/academic-year',
+    icon: CalendarRange,
+    // School-wide setting: only the school's admin (predefined role) changes it,
+    // matching the backend's PATCH /schools/settings rule.
+    canAccess: (role) => !!role?.isPredefined,
   },
   {
     label: 'WhatsApp',

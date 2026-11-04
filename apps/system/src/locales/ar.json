@@ -1,6 +1,7 @@
 {
   "topbar": {
     "greeting": "مرحباً،",
+    "changePassword": "تغيير كلمة المرور",
     "settings": "الإعدادات العامة",
     "userManagement": "إدارة المستخدمين",
     "businessSettings": "إعدادات النشاط",

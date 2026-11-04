@@ -1,11 +1,16 @@
 'use client';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Modal } from '@/component/Modal';
 import Button from '@/component/Button';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { useCreatePackage, useUpdatePackage } from './hooks/usePackages';
+import ConfirmModal from '../organizations/ConfirmModal';
+import {
+  useCreatePackage,
+  useUpdatePackage,
+  useSyncPackageSubscriptions,
+} from './hooks/usePackages';
 
 const numberField = (label) =>
   yup
@@ -46,9 +51,11 @@ const EMPTY = {
   web: true,
   android: true,
   ios: false,
+  // Every dashboard is on by default — a plan that forgets to tick them would
+  // lock every student and parent out of the school it is assigned to.
   staff: true,
-  student: false,
-  parent: false,
+  student: true,
+  parent: true,
   features: '',
   isActive: true,
 };
@@ -70,8 +77,8 @@ const toFormValues = (pkg) =>
         ios: pkg.platforms?.ios ?? false,
         // Older packages predate dashboards — fall back to the model defaults.
         staff: pkg.dashboards?.staff ?? true,
-        student: pkg.dashboards?.student ?? false,
-        parent: pkg.dashboards?.parent ?? false,
+        student: pkg.dashboards?.student ?? true,
+        parent: pkg.dashboards?.parent ?? true,
         features: (pkg.features ?? []).join(', '),
         isActive: pkg.isActive ?? true,
       };
@@ -85,6 +92,8 @@ export default function PackageFormModal({ isOpen, onClose, pkg = null }) {
   const isEdit = !!pkg;
   const createMutation = useCreatePackage();
   const updateMutation = useUpdatePackage();
+  const syncMutation = useSyncPackageSubscriptions();
+  const [syncOpen, setSyncOpen] = useState(false);
   const saving = createMutation.isPending || updateMutation.isPending;
 
   const {
@@ -128,167 +137,197 @@ export default function PackageFormModal({ isOpen, onClose, pkg = null }) {
   };
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title={isEdit ? 'Edit Package' : 'Create Package'}
-      subtitle={
-        isEdit
-          ? 'Changes affect future subscriptions only — existing schools keep their snapshot.'
-          : 'Define a new plan available to schools.'
-      }
-      size="lg"
-      footer={
-        <div className="flex gap-3 w-full justify-end">
-          <Button
-            label="Cancel"
-            handleClick={onClose}
-            type="button"
-            styleObject={{
-              baseColor: 'bg-white border border-gray-300',
-              hoverColor: 'hover:bg-gray-50',
-              rounded: 'rounded-full',
-              size: 'px-8 py-3 text-md min-h-[3rem]',
-              textColor: 'text-gray-700',
-            }}
-          />
-          <Button
-            label={isEdit ? 'Save Changes' : 'Create Package'}
-            handleClick={handleSubmit(onSubmit)}
-            loading={saving}
-            type="button"
-            styleObject={{
-              baseColor: 'bg-teal-600',
-              hoverColor: 'hover:bg-teal-700',
-              rounded: 'rounded-full',
-              size: 'px-8 py-3 text-md min-h-[3rem]',
-              textColor: 'text-white',
-            }}
-          />
-        </div>
-      }
-    >
-      <form className="space-y-5" onSubmit={handleSubmit(onSubmit)}>
-        <div>
-          <label className={labelCls}>
-            Name <span className="text-red-500">*</span>
+    <>
+      <Modal
+        isOpen={isOpen}
+        onClose={onClose}
+        title={isEdit ? 'Edit Package' : 'Create Package'}
+        subtitle={
+          isEdit
+            ? 'Changes affect future subscriptions only — use “Apply to existing schools” to push features to schools already on this plan.'
+            : 'Define a new plan available to schools.'
+        }
+        size="lg"
+        footer={
+          <div className="flex flex-wrap gap-3 w-full justify-end">
+            {isEdit && (
+              <Button
+                label="Apply to existing schools"
+                handleClick={() => setSyncOpen(true)}
+                type="button"
+                styleObject={{
+                  baseColor: 'bg-white border border-teal-600',
+                  hoverColor: 'hover:bg-teal-50',
+                  rounded: 'rounded-full',
+                  size: 'px-6 py-3 text-md min-h-[3rem] mr-auto',
+                  textColor: 'text-teal-700',
+                }}
+              />
+            )}
+            <Button
+              label="Cancel"
+              handleClick={onClose}
+              type="button"
+              styleObject={{
+                baseColor: 'bg-white border border-gray-300',
+                hoverColor: 'hover:bg-gray-50',
+                rounded: 'rounded-full',
+                size: 'px-8 py-3 text-md min-h-[3rem]',
+                textColor: 'text-gray-700',
+              }}
+            />
+            <Button
+              label={isEdit ? 'Save Changes' : 'Create Package'}
+              handleClick={handleSubmit(onSubmit)}
+              loading={saving}
+              type="button"
+              styleObject={{
+                baseColor: 'bg-teal-600',
+                hoverColor: 'hover:bg-teal-700',
+                rounded: 'rounded-full',
+                size: 'px-8 py-3 text-md min-h-[3rem]',
+                textColor: 'text-white',
+              }}
+            />
+          </div>
+        }
+      >
+        <form className="space-y-5" onSubmit={handleSubmit(onSubmit)}>
+          <div>
+            <label className={labelCls}>
+              Name <span className="text-red-500">*</span>
+            </label>
+            <input className={inputCls} placeholder="e.g. Premium" {...register('name')} />
+            {errors.name && <p className={errCls}>{errors.name.message}</p>}
+          </div>
+
+          <div>
+            <label className={labelCls}>Description</label>
+            <textarea
+              rows={2}
+              className={inputCls}
+              placeholder="Short summary of the plan"
+              {...register('description')}
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className={labelCls}>
+                Price <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="number"
+                step="0.01"
+                className={inputCls}
+                placeholder="5000"
+                {...register('price')}
+              />
+              {errors.price && <p className={errCls}>{errors.price.message}</p>}
+            </div>
+            <div>
+              <label className={labelCls}>
+                Duration (days) <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="number"
+                className={inputCls}
+                placeholder="30"
+                {...register('durationInDays')}
+              />
+              {errors.durationInDays && <p className={errCls}>{errors.durationInDays.message}</p>}
+            </div>
+          </div>
+
+          <div>
+            <p className={labelCls}>Limits</p>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {[
+                ['noOfStudents', 'Students'],
+                ['noOfBranches', 'Branches'],
+                ['noOfStaffs', 'Staff'],
+                ['noOfSections', 'Sections'],
+              ].map(([key, lbl]) => (
+                <div key={key}>
+                  <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">
+                    {lbl}
+                  </label>
+                  <input type="number" className={inputCls} {...register(key)} />
+                  {errors[key] && <p className={errCls}>{errors[key].message}</p>}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <p className={labelCls}>Platforms</p>
+            <div className="flex flex-wrap gap-5">
+              {[
+                ['web', 'Web'],
+                ['android', 'Android'],
+                ['ios', 'iOS'],
+              ].map(([key, lbl]) => (
+                <label
+                  key={key}
+                  className="inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300"
+                >
+                  <input type="checkbox" className="h-4 w-4 accent-teal-600" {...register(key)} />
+                  {lbl}
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <p className={labelCls}>Dashboards</p>
+            <div className="flex flex-wrap gap-5">
+              {[
+                ['staff', 'Staff Dashboard'],
+                ['student', 'Student Dashboard'],
+                ['parent', 'Parent Dashboard'],
+              ].map(([key, lbl]) => (
+                <label
+                  key={key}
+                  className="inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300"
+                >
+                  <input type="checkbox" className="h-4 w-4 accent-teal-600" {...register(key)} />
+                  {lbl}
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <label className={labelCls}>Features</label>
+            <textarea
+              rows={2}
+              className={inputCls}
+              placeholder="Comma or newline separated. Leave empty to allow ALL features."
+              {...register('features')}
+            />
+            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+              Empty = allow all features.
+            </p>
+          </div>
+
+          <label className="inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+            <input type="checkbox" className="h-4 w-4 accent-teal-600" {...register('isActive')} />
+            Active (available to assign)
           </label>
-          <input className={inputCls} placeholder="e.g. Premium" {...register('name')} />
-          {errors.name && <p className={errCls}>{errors.name.message}</p>}
-        </div>
-
-        <div>
-          <label className={labelCls}>Description</label>
-          <textarea
-            rows={2}
-            className={inputCls}
-            placeholder="Short summary of the plan"
-            {...register('description')}
-          />
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className={labelCls}>
-              Price <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="number"
-              step="0.01"
-              className={inputCls}
-              placeholder="5000"
-              {...register('price')}
-            />
-            {errors.price && <p className={errCls}>{errors.price.message}</p>}
-          </div>
-          <div>
-            <label className={labelCls}>
-              Duration (days) <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="number"
-              className={inputCls}
-              placeholder="30"
-              {...register('durationInDays')}
-            />
-            {errors.durationInDays && <p className={errCls}>{errors.durationInDays.message}</p>}
-          </div>
-        </div>
-
-        <div>
-          <p className={labelCls}>Limits</p>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            {[
-              ['noOfStudents', 'Students'],
-              ['noOfBranches', 'Branches'],
-              ['noOfStaffs', 'Staff'],
-              ['noOfSections', 'Sections'],
-            ].map(([key, lbl]) => (
-              <div key={key}>
-                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">{lbl}</label>
-                <input type="number" className={inputCls} {...register(key)} />
-                {errors[key] && <p className={errCls}>{errors[key].message}</p>}
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div>
-          <p className={labelCls}>Platforms</p>
-          <div className="flex flex-wrap gap-5">
-            {[
-              ['web', 'Web'],
-              ['android', 'Android'],
-              ['ios', 'iOS'],
-            ].map(([key, lbl]) => (
-              <label
-                key={key}
-                className="inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300"
-              >
-                <input type="checkbox" className="h-4 w-4 accent-teal-600" {...register(key)} />
-                {lbl}
-              </label>
-            ))}
-          </div>
-        </div>
-
-        <div>
-          <p className={labelCls}>Dashboards</p>
-          <div className="flex flex-wrap gap-5">
-            {[
-              ['staff', 'Staff Dashboard'],
-              ['student', 'Student Dashboard'],
-              ['parent', 'Parent Dashboard'],
-            ].map(([key, lbl]) => (
-              <label
-                key={key}
-                className="inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300"
-              >
-                <input type="checkbox" className="h-4 w-4 accent-teal-600" {...register(key)} />
-                {lbl}
-              </label>
-            ))}
-          </div>
-        </div>
-
-        <div>
-          <label className={labelCls}>Features</label>
-          <textarea
-            rows={2}
-            className={inputCls}
-            placeholder="Comma or newline separated. Leave empty to allow ALL features."
-            {...register('features')}
-          />
-          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-            Empty = allow all features.
-          </p>
-        </div>
-
-        <label className="inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
-          <input type="checkbox" className="h-4 w-4 accent-teal-600" {...register('isActive')} />
-          Active (available to assign)
-        </label>
-      </form>
-    </Modal>
+        </form>
+      </Modal>
+      {isEdit && (
+        <ConfirmModal
+          isOpen={syncOpen}
+          onClose={() => setSyncOpen(false)}
+          title="Apply to existing schools"
+          message={`Push the SAVED features of “${pkg.name}” — limits, platforms, dashboards and feature flags — to every school currently on this plan. Prices, cycle lengths, start/end dates and invoices are not changed. Save any edits first: unsaved changes in this form are not applied.`}
+          confirmLabel="Apply to schools"
+          confirmTone="warning"
+          loading={syncMutation.isPending}
+          onConfirm={() => syncMutation.mutate(pkg._id, { onSuccess: () => setSyncOpen(false) })}
+        />
+      )}
+    </>
   );
 }

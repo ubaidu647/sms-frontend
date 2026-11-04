@@ -1,6 +1,6 @@
 'use client';
 import React, { useEffect, useMemo, useState } from 'react';
-import { Save, Zap, ZapOff, Info } from 'lucide-react';
+import { Save, Zap, ZapOff, Info, AlertTriangle } from 'lucide-react';
 import Link from 'next/link';
 import { useTokenStore } from '@/store/tokenStore';
 import { useUserStore } from '@/store/userStore';
@@ -88,6 +88,23 @@ export default function MappingPage() {
     setDirty(false);
   }, [current, effectiveBranchId]);
 
+  // Which branches have no cash (or bank) head. With auto-post on, every cash
+  // payment in a branch without a cash account is refused — kept on screen,
+  // not just in the save toast. A 403 or failure simply hides the panel.
+  const { data: coverageData } = useQuery({
+    queryKey: ['account-mapping', 'cash-bank-status'],
+    queryFn: () => fetchData({ url: '/ledger/mapping/cash-bank-status', token }),
+    enabled: !!token && !!user,
+    retry: false,
+    staleTime: 30000,
+  });
+  const coverage = coverageData?.data;
+  // The org default carries the switch; a branch override's flag means nothing.
+  const editsSwitch = isOrgLevel && !effectiveBranchId;
+  const autoPostOn = !!coverage?.autoPostEnabled || (editsSwitch && autoPostEnabled);
+  const missingCash = coverage?.missingCash || [];
+  const missingBank = coverage?.missingBank || [];
+
   const setRole = (role, accountId) => {
     setRoleMap((prev) => ({ ...prev, [role]: accountId }));
     setDirty(true);
@@ -96,7 +113,18 @@ export default function MappingPage() {
   const mutation = useMutation({
     mutationFn: (payload) => putData({ url: '/ledger/mapping', payload, token }),
     onSuccess: (res) => {
-      toast.success(res?.message || 'Account mapping saved');
+      const warnings = res?.custom?.cashBank?.warnings || [];
+      if (warnings.length) {
+        // Saved — auto-post is on — but some branches cannot take cash yet.
+        toast(
+          `Auto-posting is on, but ${warnings.length} branch${
+            warnings.length === 1 ? ' has' : 'es have'
+          } no cash account — cash payments there will be refused. See the notice on this page.`,
+          { icon: '⚠️', duration: 8000 },
+        );
+      } else {
+        toast.success(res?.message || 'Account mapping saved');
+      }
       queryClient.invalidateQueries({ queryKey: ['account-mapping'] });
       setDirty(false);
     },
@@ -110,7 +138,9 @@ export default function MappingPage() {
     }));
     mutation.mutate({
       branchId: effectiveBranchId || null,
-      autoPostEnabled,
+      // Only the org default carries the switch (branch-tier callers are
+      // refused for sending it at all).
+      ...(editsSwitch ? { autoPostEnabled } : {}),
       mappings,
     });
   };
@@ -176,6 +206,57 @@ export default function MappingPage() {
             />
           </button>
         </div>
+
+        {/* Branches that cannot take cash (or bank) payments while auto-post is on */}
+        {autoPostOn && missingCash.length > 0 && (
+          <div
+            role="alert"
+            className="flex gap-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-300 dark:border-amber-900 rounded-xl p-4 mb-5"
+          >
+            <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+            <div className="text-sm text-amber-900 dark:text-amber-200">
+              <div className="font-semibold">
+                {missingCash.length === 1
+                  ? '1 branch has no cash account'
+                  : `${missingCash.length} branches have no cash account`}
+              </div>
+              <ul className="mt-1 list-disc pl-5 space-y-0.5">
+                {missingCash.map((b) => (
+                  <li key={b.branchId}>
+                    Branch <strong>{b.name || 'Unnamed'}</strong> has no cash account — cash
+                    payments will be refused while auto-post is on.
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-1">
+                Add a level-3 account under Assets with the category <strong>Cash</strong> for each
+                in the{' '}
+                <Link
+                  href="/dashboard/school/accounting/accounts"
+                  className="underline font-medium hover:text-amber-950 dark:hover:text-amber-100"
+                >
+                  Chart of Accounts
+                </Link>
+                .
+              </p>
+            </div>
+          </div>
+        )}
+        {autoPostOn && missingBank.length > 0 && (
+          <div className="flex gap-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-4 mb-5">
+            <Info className="w-5 h-5 text-gray-500 flex-shrink-0 mt-0.5" />
+            <div className="text-sm text-gray-700 dark:text-gray-300">
+              No bank account for:{' '}
+              {missingBank.map((b, i) => (
+                <span key={b.branchId}>
+                  {i > 0 && ', '}
+                  <strong>{b.name || 'Unnamed'}</strong>
+                </span>
+              ))}
+              . Bank, online and cheque payments there will be refused while auto-post is on.
+            </div>
+          </div>
+        )}
 
         {/* Cash and bank are not mapped here — they are per-branch and a branch
             can hold several, so they are picked on the transaction instead. */}

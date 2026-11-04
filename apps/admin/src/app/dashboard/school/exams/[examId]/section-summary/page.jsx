@@ -9,6 +9,7 @@ import { fetchData } from '@/utils/api';
 import SchoolHeader from '../../SchoolHeader';
 import PrintStyles from '../../printStyles';
 import { formatDate } from '@/constants/exam';
+import { sectionResultLabel } from '@/utils/examResult';
 
 export default function SectionSummaryPage() {
   const params = useParams();
@@ -43,6 +44,11 @@ export default function SectionSummaryPage() {
   });
   const summary = summaryRes?.data;
   const studentsRanked = summary?.students || [];
+  // With electives a student is scored out of their own total, which can be
+  // less than the exam's — say so next to the header figure.
+  const hasOwnTotals = studentsRanked.some(
+    (s) => s.totalMarks != null && Number(s.totalMarks) !== Number(summary?.totalMarks),
+  );
   const sectionMeta = useMemo(
     () => sections.find((s) => s._id === sectionId),
     [sections, sectionId],
@@ -115,7 +121,15 @@ export default function SectionSummaryPage() {
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6 text-sm">
               <Stat label="Exam Type" value={exam?.type} />
-              <Stat label="Total Marks" value={summary.totalMarks} />
+              <Stat
+                label="Total marks"
+                value={summary.totalMarks}
+                hint={
+                  hasOwnTotals
+                    ? 'Students who don’t take an elective are marked out of their own total (see each row).'
+                    : null
+                }
+              />
               <Stat
                 label="Schedule"
                 value={`${formatDate(exam?.startDate)} → ${formatDate(exam?.endDate)}`}
@@ -185,7 +199,7 @@ export default function SectionSummaryPage() {
                       </button>
                     </td>
                     <td className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-right">
-                      {s.totalObtained} / {summary.totalMarks}
+                      {s.totalObtained} / {s.totalMarks ?? summary.totalMarks}
                     </td>
                     <td className="border border-gray-300 dark:border-gray-600 px-2 py-2 text-right">
                       {s.percentage}%
@@ -199,7 +213,7 @@ export default function SectionSummaryPage() {
                           s.isPassed ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
                         }`}
                       >
-                        {s.isPassed ? 'PASS' : 'FAIL'}
+                        {sectionResultLabel(s)}
                       </span>
                     </td>
                   </tr>
@@ -220,7 +234,7 @@ export default function SectionSummaryPage() {
   );
 }
 
-function Stat({ label, value }) {
+function Stat({ label, value, hint }) {
   return (
     <div className="border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2">
       <p className="text-[10px] uppercase text-gray-500 dark:text-gray-400 font-semibold tracking-wider">
@@ -229,6 +243,7 @@ function Stat({ label, value }) {
       <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 capitalize">
         {value ?? '—'}
       </p>
+      {hint && <p className="mt-0.5 text-[11px] text-gray-500 dark:text-gray-400">{hint}</p>}
     </div>
   );
 }

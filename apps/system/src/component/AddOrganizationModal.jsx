@@ -12,6 +12,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { postData } from '@/utils/api';
 import { usePackages } from '@/app/dashboard/packages/hooks/usePackages';
 import { fmtMoney } from '@/app/dashboard/packages/format';
+import { PASSWORD_MIN, PASSWORD_MAX } from '@/utils/changePassword';
 // Validation schema
 const organizationSchema = yup.object().shape({
   name: yup.string().required('School name is required'),
@@ -32,7 +33,12 @@ const organizationSchema = yup.object().shape({
       const n = Number(v);
       return Number.isInteger(n) && n >= 0;
     }),
-  password: yup.string().min(6, 'Password must be at least 6 characters'),
+  // The school admin's first password — the API's rule (8–128) applies.
+  password: yup
+    .string()
+    .required('Admin password is required')
+    .min(PASSWORD_MIN, `Password must be at least ${PASSWORD_MIN} characters`)
+    .max(PASSWORD_MAX, `Password must be at most ${PASSWORD_MAX} characters`),
 });
 
 export const AddOrganizationModal = ({ isOpen, onClose, token, onSuccess = null }) => {
@@ -102,7 +108,22 @@ export const AddOrganizationModal = ({ isOpen, onClose, token, onSuccess = null 
 
       onSuccess?.(newSchool.data);
       setSuccessState(true);
-      toast.success('School created successfully!');
+      // Registration opens the school's first subscription itself — say which,
+      // so nobody goes on to "Assign" one (that is refused: use Change/Renew).
+      const sub = newSchool?.data?.subscription;
+      const until = sub?.endDate ? new Date(sub.endDate).toLocaleDateString() : null;
+      toast.success(
+        [
+          'School created successfully!',
+          sub ? `Plan “${sub.packageName}” is active${until ? ` until ${until}` : ''}.` : null,
+          newSchool?.data?.admin?.mustChangePassword
+            ? 'The admin must change this password at first login.'
+            : null,
+        ]
+          .filter(Boolean)
+          .join(' '),
+        { duration: 8000 },
+      );
       reset();
       onClose();
     },
@@ -299,12 +320,16 @@ export const AddOrganizationModal = ({ isOpen, onClose, token, onSuccess = null 
           name="password"
           label="Password"
           type="password"
+          placeholder={`Min ${PASSWORD_MIN} characters`}
           watch={watch}
           errors={errors}
           register={register}
           showPasswordToggle
           icon={Lock}
         />
+        <p className="-mt-2 text-xs text-gray-500 dark:text-gray-400">
+          The school admin signs in with this. At least {PASSWORD_MIN} characters.
+        </p>
       </form>
     </Modal>
   );

@@ -1,6 +1,7 @@
 {
   "topbar": {
     "greeting": "Hello,",
+    "changePassword": "Change password",
     "settings": "General Settings",
     "userManagement": "User Management",
     "businessSettings": "Business Settings",

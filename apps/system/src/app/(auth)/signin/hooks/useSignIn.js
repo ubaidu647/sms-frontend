@@ -3,6 +3,7 @@ import toast from 'react-hot-toast';
 import apiClient from '@/services/apiClient';
 import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
+import { mustChangePasswordOf } from '@/utils/authErrors';
 import { writeRoleCookie } from '@/utils/session';
 
 export function useSignIn() {
@@ -26,7 +27,9 @@ export function useSignIn() {
       // This console only admits super-admin. Middleware reads the auth-role
       // cookie set above and bounces any other role to /unauthorized, so we
       // can always push to /dashboard here.
-      router.push('/dashboard');
+      // A forced password change comes first; the dashboard layout keeps the
+      // user there until it is done.
+      router.push(mustChangePasswordOf(payload) ? '/dashboard/change-password' : '/dashboard');
     },
     onError: (err) => {
       // 429s are toasted once, globally, by the apiClient interceptor — skip here

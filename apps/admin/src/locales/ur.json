@@ -1,6 +1,7 @@
 {
   "topbar": {
     "greeting": "السلام علیکم،",
+    "changePassword": "پاس ورڈ تبدیل کریں",
     "settings": "عمومی ترتیبات",
     "userManagement": "صارف کا انتظام",
     "businessSettings": "کاروباری ترتیبات",
@@ -11,6 +12,7 @@
     "switchToDark": "گہرے موڈ پر جائیں"
   },
   "sidebar": {
+    "home": "ہوم",
     "schoolPortal": "اسکول پورٹل",
     "classes": "کلاسز",
     "subjects": "مضامین",

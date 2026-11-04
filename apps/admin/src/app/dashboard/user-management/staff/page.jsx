@@ -11,7 +11,7 @@ import { useUserStore } from '@/store/userStore';
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { fetchData, deleteData, patchData } from '@/utils/api';
 import toast from 'react-hot-toast';
-import { resolveScope, hasAnyAction, canEditScope } from '@/utils/permissions';
+import { resolveScope, hasAnyAction, canEditScope, canActInBranch } from '@/utils/permissions';
 import { useTranslations } from 'next-intl';
 
 export default function StaffPage() {
@@ -100,12 +100,27 @@ export default function StaffPage() {
   const updateScope = resolveScope(user?.role, 'update-staff');
   const canCreate =
     !isOwnOnly && hasAnyAction(user?.role, ['create-staff', 'create-all-branch-staff']);
-  const canUpdate = updateScope !== 'none';
   const canDelete =
     !isOwnOnly && hasAnyAction(user?.role, ['delete-staff', 'delete-all-branch-staff']);
   const canActOnAllBranches = hasAnyAction(user?.role, ['delete-all-branch-staff']);
 
   const userBranchId = user?.branchId || user?.branch?._id || '';
+
+  // A row is the signed-in user's own staff record.
+  const ownUserId = String(user?._id || user?.id || '');
+  const isOwnRow = (row) =>
+    (!!user?.staffId && String(row._id) === String(user.staffId)) ||
+    (!!ownUserId && String(row.user?._id || row.userId || '') === ownUserId);
+
+  // Mirrors staff.controller update: org scope edits anyone, branch scope only
+  // its own branch, own scope only the user's own record (personal fields).
+  const canEditRow = (row) => {
+    if (updateScope === 'all') return true;
+    if (updateScope === 'branch') {
+      return canActInBranch(user?.role, 'update-staff', userBranchId, row.branch || row.branchId);
+    }
+    return updateScope === 'own' && isOwnRow(row);
+  };
 
   // Branch dropdown for org-level users
   const [branchDropdownTouched, setBranchDropdownTouched] = useState(false);
@@ -235,7 +250,7 @@ export default function StaffPage() {
 
   const rowActions = (row) => {
     const items = [{ label: 'View Details', value: 'view', icon: Eye }];
-    if (canUpdate) items.push({ label: 'Edit', value: 'edit', icon: Edit });
+    if (canEditRow(row)) items.push({ label: 'Edit', value: 'edit', icon: Edit });
     if (!isOwnOnly && canEditScope(user?.role, 'view-library')) {
       items.push({ label: 'Library', value: 'library', icon: Library });
     }
@@ -543,7 +558,7 @@ export default function StaffPage() {
           onClose={() => setEditStaff(null)}
           onSuccess={() => setEditStaff(null)}
           staff={editStaff}
-          isSelf={isOwnOnly}
+          isSelf={updateScope === 'own'}
         />
 
         <StaffDetailModal

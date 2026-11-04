@@ -137,6 +137,8 @@ export default function AccountFormModal({ isOpen, onClose, account, branchId, i
       toast.success(res?.message || (isEdit ? 'Account updated' : 'Account created'));
       queryClient.invalidateQueries({ queryKey: ['account-tree'] });
       queryClient.invalidateQueries({ queryKey: ['account-list'] });
+      // A new (or re-categorised) cash/bank head must show up in the payment pickers.
+      queryClient.invalidateQueries({ queryKey: ['cash-bank-accounts'] });
       setSuccessState(true);
       setTimeout(() => {
         setSuccessState(false);

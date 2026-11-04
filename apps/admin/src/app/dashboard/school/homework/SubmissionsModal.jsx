@@ -7,6 +7,11 @@ import { fetchData, patchData } from '@/utils/api';
 import { useTokenStore } from '@/store/tokenStore';
 import { Paperclip, CheckCircle2, Clock, Loader2, GraduationCap } from 'lucide-react';
 import { SUBMISSION_STATUS_STYLES } from './constants';
+import {
+  NO_MAX_MARKS_MESSAGE,
+  RESUBMITTED_MESSAGE,
+  buildGradePayload,
+} from '@/utils/homeworkGrading';
 
 const studentName = (s) =>
   s?.student?.user?.name || s?.student?.name || s?.studentName || 'Student';
@@ -44,25 +49,33 @@ function SubmissionRow({ homeworkId, homework, sub, canGrade }) {
       toast.success(res?.message || 'Submission graded');
       setOpen(false);
     },
-    onError: (err) => toast.error(err.message || 'Failed to grade'),
-  });
-
-  const submitGrade = () => {
-    const hasMarks = marks !== '' && marks != null;
-    if (!hasMarks && !feedback.trim()) {
-      toast.error('Enter marks and/or feedback.');
-      return;
-    }
-    if (hasMarks) {
-      const n = Number(marks);
-      if (Number.isNaN(n) || n < 0 || (homework.maxMarks != null && n > homework.maxMarks)) {
-        toast.error(`Marks must be between 0 and ${homework.maxMarks ?? '∞'}.`);
+    onError: (err) => {
+      // The student resubmitted after this list was loaded: reload it so the
+      // teacher sees (and grades) the new work, not the old.
+      if (err.status === 409) {
+        queryClient.invalidateQueries({ queryKey: ['homework-submissions', homeworkId] });
+        toast.error(err.message || RESUBMITTED_MESSAGE);
         return;
       }
+      toast.error(err.message || 'Failed to grade');
+    },
+  });
+
+  const noMaxMarks = homework.maxMarks == null;
+
+  const submitGrade = () => {
+    const { payload, error } = buildGradePayload({
+      // The marks field is disabled without max marks; an old row's marks
+      // still sit in it, but only feedback can be sent then.
+      marks: noMaxMarks ? '' : marks,
+      feedback,
+      maxMarks: homework.maxMarks,
+      submittedAt: sub.submittedAt,
+    });
+    if (error) {
+      toast.error(error);
+      return;
     }
-    const payload = {};
-    if (hasMarks) payload.marksObtained = Number(marks);
-    if (feedback.trim()) payload.feedback = feedback.trim();
     gradeMutation.mutate(payload);
   };
 
@@ -132,7 +145,9 @@ function SubmissionRow({ homeworkId, homework, sub, canGrade }) {
             max={homework.maxMarks ?? undefined}
             value={marks}
             onChange={(e) => setMarks(e.target.value)}
-            placeholder={`Marks /${homework.maxMarks ?? '?'}`}
+            disabled={noMaxMarks}
+            title={noMaxMarks ? NO_MAX_MARKS_MESSAGE : undefined}
+            placeholder={noMaxMarks ? 'No max marks' : `Marks /${homework.maxMarks}`}
             className="px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-900 bg-white"
           />
           <input

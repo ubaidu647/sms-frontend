@@ -3,6 +3,7 @@ import apiClient from "@/services/apiClient";
 import { useTokenStore } from "@/store/tokenStore";
 import { useUserStore } from "@/store/userStore";
 import { clearAuthCookies } from "@/utils/clearAuthCookies";
+import { withPasswordFlag } from "@/utils/authErrors";
 
 // One logout per page load, shared by every useAuth() instance (TopBar and
 // SideBar each hold one). The hard reload below resets it.
@@ -23,7 +24,9 @@ export function useAuth() {
     // Never let a previous student's cached data leak into this session.
     queryClient.clear();
     markSignedIn();
-    if (payload.user) setUser(payload.user);
+    // `mustChangePassword` (body or user) sends the dashboard layout to the
+    // change-password page first.
+    if (payload.user) setUser(withPasswordFlag(payload.user, payload));
   };
 
   // Only the API can clear the httpOnly session cookies, so wait for it before

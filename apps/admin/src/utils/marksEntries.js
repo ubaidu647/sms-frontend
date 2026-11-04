@@ -88,3 +88,20 @@ export function releaseSavedEdits(edited, snapshot) {
     if (edited.get(studentId) === stamp) edited.delete(studentId);
   });
 }
+
+/**
+ * The marks-entry roster from GET /exam/:examId/roster — the exam section's
+ * cohort, including students since promoted out of it — in the shape the
+ * screen uses for /student/list rows (`user.name`), with `promoted` kept.
+ */
+export function rosterStudents(students) {
+  return (students || [])
+    .filter((s) => s && s._id)
+    .map((s) => ({
+      _id: String(s._id),
+      user: { name: s.name ?? s.user?.name ?? '' },
+      rollNumber: s.rollNumber ?? '',
+      admissionNumber: s.admissionNumber ?? '',
+      promoted: s.promoted === true,
+    }));
+}

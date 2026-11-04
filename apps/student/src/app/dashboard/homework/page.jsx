@@ -1,21 +1,36 @@
-'use client';
-import { useState } from 'react';
-import Link from 'next/link';
-import { BookOpen, ChevronLeft, ChevronRight, Clock, AlertTriangle } from 'lucide-react';
-import { useHomeworkList } from '@/hooks/useHomework';
-import { PageHeader, Panel } from '@/component/dashboard/Panel';
-import { Loading, ErrorState, EmptyState } from '@/component/dashboard/States';
-import { SubmissionBadge, TypeBadge } from '@/component/dashboard/homework/badges';
-import { formatDate } from '@/utils/format';
+"use client";
+import { useState } from "react";
+import Link from "next/link";
+import {
+  BookOpen,
+  ChevronLeft,
+  ChevronRight,
+  Clock,
+  AlertTriangle,
+} from "lucide-react";
+import { useHomeworkList } from "@/hooks/useHomework";
+import { PageHeader, Panel } from "@/component/dashboard/Panel";
+import { Loading, ErrorState, EmptyState } from "@/component/dashboard/States";
+import {
+  SubmissionBadge,
+  TypeBadge,
+} from "@/component/dashboard/homework/badges";
+import { formatDate } from "@/utils/format";
+import {
+  displayStatus,
+  resultsHidden,
+  resultsPendingBadge,
+} from "@/utils/portalResults";
 
 const LIMIT = 20;
 
 export default function HomeworkPage() {
   const [page, setPage] = useState(1);
-  const { data, isLoading, isError, error, refetch, isFetching } = useHomeworkList({
-    page,
-    limit: LIMIT,
-  });
+  const { data, isLoading, isError, error, refetch, isFetching } =
+    useHomeworkList({
+      page,
+      limit: LIMIT,
+    });
 
   const items = data?.items ?? [];
   const total = data?.total ?? 0;
@@ -26,7 +41,11 @@ export default function HomeworkPage() {
       <PageHeader
         icon={BookOpen}
         title="Homework"
-        subtitle={total ? `${total} assignment${total === 1 ? '' : 's'}` : 'Your assignments'}
+        subtitle={
+          total
+            ? `${total} assignment${total === 1 ? "" : "s"}`
+            : "Your assignments"
+        }
       />
 
       {isLoading ? (
@@ -41,11 +60,17 @@ export default function HomeworkPage() {
         />
       ) : (
         <>
-          <div className={`space-y-3 ${isFetching ? 'opacity-60 transition-opacity' : ''}`}>
+          <div
+            className={`space-y-3 ${isFetching ? "opacity-60 transition-opacity" : ""}`}
+          >
             {items.map((hw) => {
-              const overdue = hw.isPastDue && hw.submissionStatus === 'pending';
+              const overdue = hw.isPastDue && hw.submissionStatus === "pending";
               return (
-                <Link key={hw._id} href={`/dashboard/homework/${hw._id}`} className="block no-underline">
+                <Link
+                  key={hw._id}
+                  href={`/dashboard/homework/${hw._id}`}
+                  className="block no-underline"
+                >
                   <Panel className="hover:border-[#00918e] transition-colors">
                     <div className="flex items-start gap-3">
                       <div className="w-9 h-9 rounded-lg bg-[#00918e]/10 flex items-center justify-center flex-shrink-0">
@@ -56,7 +81,7 @@ export default function HomeworkPage() {
                           <h3 className="font-semibold text-gray-900 dark:text-gray-100 truncate">
                             {hw.title}
                           </h3>
-                          <SubmissionBadge status={hw.submissionStatus} />
+                          <SubmissionBadge status={displayStatus(hw)} />
                           <TypeBadge type={hw.submissionType} />
                         </div>
                         {hw.subject?.name && (
@@ -72,7 +97,9 @@ export default function HomeworkPage() {
                         <div className="mt-2 flex items-center gap-3 text-xs">
                           <span
                             className={`flex items-center gap-1 ${
-                              overdue ? 'text-red-500 font-medium' : 'text-gray-400'
+                              overdue
+                                ? "text-red-500 font-medium"
+                                : "text-gray-400"
                             }`}
                           >
                             {overdue ? (
@@ -82,10 +109,17 @@ export default function HomeworkPage() {
                             )}
                             Due {formatDate(hw.dueDate)}
                           </span>
-                          {hw.submissionStatus === 'graded' && hw.mySubmission && (
-                            <span className="text-green-600 dark:text-green-400 font-medium">
-                              {hw.mySubmission.marksObtained}/{hw.maxMarks}
+                          {resultsHidden(hw) && hw.mySubmission ? (
+                            <span className="text-gray-400">
+                              {resultsPendingBadge(hw)}
                             </span>
+                          ) : (
+                            hw.submissionStatus === "graded" &&
+                            hw.mySubmission?.marksObtained != null && (
+                              <span className="text-green-600 dark:text-green-400 font-medium">
+                                {hw.mySubmission.marksObtained}/{hw.maxMarks}
+                              </span>
+                            )
                           )}
                         </div>
                       </div>

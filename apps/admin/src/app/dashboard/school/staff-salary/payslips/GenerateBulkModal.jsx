@@ -8,6 +8,7 @@ import { fetchData, postData } from '@/utils/api';
 import { useTokenStore } from '@/store/tokenStore';
 import { useUserStore } from '@/store/userStore';
 import { STAFF_TYPES, currentMonth, previousMonth } from '@/constants/staffSalary';
+import { payslipMonthError } from '@/utils/payslipInput';
 import { CheckCircle2 } from 'lucide-react';
 
 const inputCls =
@@ -75,8 +76,9 @@ export default function GenerateBulkModal({ isOpen, onClose }) {
       setSubmitError('Branch is required');
       return;
     }
-    if (!month) {
-      setSubmitError('Month is required');
+    const monthError = payslipMonthError(month, currentMonth());
+    if (monthError) {
+      setSubmitError(monthError);
       return;
     }
     const payload = { branchId, month };

@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useTokenStore } from '@/store/tokenStore';
 import { useUserStore } from '@/store/userStore';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -7,6 +7,7 @@ import { fetchData, postData } from '@/utils/api';
 import toast from 'react-hot-toast';
 import { Save, AlertCircle } from 'lucide-react';
 import { DAY_LABELS, PERIOD_TYPE_COLORS, currentAcademicYear } from '@/constants/timetable';
+import { buildTimetableSlots, incompleteKeys, describeIncomplete } from '@/utils/timetableSlots';
 
 export default function EditorPanel() {
   const { accessToken: token } = useTokenStore();
@@ -29,6 +30,8 @@ export default function EditorPanel() {
   const [classId, setClassId] = useState('');
   const [sectionId, setSectionId] = useState('');
   const [grid, setGrid] = useState({});
+  // Set after a save is blocked, so half-filled cells stay highlighted until fixed.
+  const [showIncomplete, setShowIncomplete] = useState(false);
 
   const effectiveBranchId = isOrgLevel ? branchId : userBranchId;
 
@@ -116,6 +119,7 @@ export default function EditorPanel() {
 
   // Initialise local grid state from remote
   useEffect(() => {
+    setShowIncomplete(false);
     if (!remoteGrid || !periodConfig) {
       setGrid({});
       return;
@@ -140,6 +144,17 @@ export default function EditorPanel() {
     setGrid(next);
   }, [remoteGrid, periodConfig]);
 
+  // Lesson cells with a subject but no teacher (or the reverse). The save
+  // replaces the whole week, so these must block it rather than be dropped.
+  const incomplete = useMemo(
+    () => buildTimetableSlots(grid, periodConfig).incomplete,
+    [grid, periodConfig],
+  );
+  const highlighted = useMemo(
+    () => (showIncomplete ? incompleteKeys(incomplete) : new Set()),
+    [showIncomplete, incomplete],
+  );
+
   const updateCell = (day, periodNumber, patch) => {
     setGrid((prev) => ({
       ...prev,
@@ -155,40 +170,23 @@ export default function EditorPanel() {
     onSuccess: (res) => {
       toast.success(`Saved — ${res?.data?.created ?? 0} slots`);
       queryClient.invalidateQueries({ queryKey: ['section-timetable', sectionId] });
+      // a saved week also changes teachers' weeks, the clash report, who is
+      // free in a period and what is on right now
+      ['teacher-timetable', 'timetable-conflicts', 'free-teachers', 'timetable-now'].forEach(
+        (key) => queryClient.invalidateQueries({ queryKey: [key] }),
+      );
     },
     onError: (err) => toast.error(err.message || 'Failed to save timetable'),
   });
 
   const handleSave = () => {
     if (!sectionId || !periodConfig) return;
-    const slots = [];
-    let invalid = null;
-    periodConfig.workingDays.forEach((d) => {
-      periodConfig.periods.forEach((p) => {
-        const cell = grid?.[d]?.[p.number];
-        if (p.type === 'lesson') {
-          if (!cell || !cell.subjectId || !cell.staffId) return;
-          slots.push({
-            day: d,
-            periodNumber: p.number,
-            slotType: 'lesson',
-            subjectId: cell.subjectId,
-            staffId: cell.staffId,
-            ...(cell.room ? { room: cell.room } : {}),
-            ...(cell.notes ? { notes: cell.notes } : {}),
-          });
-        } else {
-          slots.push({
-            day: d,
-            periodNumber: p.number,
-            slotType: p.type,
-            customLabel: p.name,
-          });
-        }
-      });
-    });
-    if (invalid) {
-      toast.error(invalid);
+    const { slots, incomplete: halfFilled } = buildTimetableSlots(grid, periodConfig);
+    if (halfFilled.length) {
+      setShowIncomplete(true);
+      toast.error(
+        `Fix incomplete lessons before saving: ${describeIncomplete(halfFilled, DAY_LABELS)}`,
+      );
       return;
     }
     if (!slots.length) {
@@ -285,66 +283,87 @@ export default function EditorPanel() {
           </div>
         </div>
       ) : (
-        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50 dark:bg-gray-800">
-              <tr>
-                <th className="px-3 py-3 text-left text-xs uppercase text-gray-500 dark:text-gray-400 font-semibold border-r border-gray-200 dark:border-gray-700 sticky left-0 bg-gray-50 dark:bg-gray-800">
-                  Period
-                </th>
-                {periodConfig.workingDays.map((d) => (
-                  <th
-                    key={d}
-                    className="px-3 py-3 text-left text-xs uppercase text-gray-500 dark:text-gray-400 font-semibold min-w-[200px]"
-                  >
-                    {DAY_LABELS[d]}
+        <>
+          {showIncomplete && incomplete.length > 0 && (
+            <div className="rounded-xl border border-red-200 bg-red-50 dark:bg-red-950/40 p-4 text-sm text-red-700 dark:text-red-400 flex items-start gap-2">
+              <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="font-semibold">
+                  {incomplete.length} lesson{incomplete.length === 1 ? '' : 's'} incomplete — not
+                  saved
+                </p>
+                <p>
+                  {describeIncomplete(incomplete, DAY_LABELS, 10)}. Pick both a subject and a
+                  teacher, or clear both for no lesson.
+                </p>
+              </div>
+            </div>
+          )}
+          <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-gray-50 dark:bg-gray-800">
+                <tr>
+                  <th className="px-3 py-3 text-left text-xs uppercase text-gray-500 dark:text-gray-400 font-semibold border-r border-gray-200 dark:border-gray-700 sticky left-0 bg-gray-50 dark:bg-gray-800">
+                    Period
                   </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {periodConfig.periods.map((p) => (
-                <tr
-                  key={p.number}
-                  className="border-t border-gray-100 dark:border-gray-800 align-top"
-                >
-                  <td className="px-3 py-3 border-r border-gray-200 dark:border-gray-700 sticky left-0 bg-white dark:bg-gray-900">
-                    <div className="font-semibold text-gray-900 dark:text-gray-100 text-sm">
-                      {p.name}
-                    </div>
-                    <div className="text-xs text-gray-500 dark:text-gray-400">
-                      {p.startTime} – {p.endTime}
-                    </div>
-                    <span
-                      className={`inline-flex mt-1 px-2 py-0.5 rounded-full text-[10px] font-medium capitalize ${
-                        PERIOD_TYPE_COLORS[p.type] || 'bg-gray-100 text-gray-700'
-                      }`}
-                    >
-                      {p.type}
-                    </span>
-                  </td>
                   {periodConfig.workingDays.map((d) => (
-                    <td key={d} className="px-2 py-2 border-l border-gray-100 dark:border-gray-800">
-                      {p.type === 'lesson' ? (
-                        <LessonCell
-                          cell={grid?.[d]?.[p.number]}
-                          subjects={subjects}
-                          teachers={teachers}
-                          disabled={!canEdit}
-                          onChange={(patch) => updateCell(d, p.number, patch)}
-                        />
-                      ) : (
-                        <div className="text-xs text-gray-500 dark:text-gray-400 italic px-2 py-3">
-                          {p.name}
-                        </div>
-                      )}
-                    </td>
+                    <th
+                      key={d}
+                      className="px-3 py-3 text-left text-xs uppercase text-gray-500 dark:text-gray-400 font-semibold min-w-[200px]"
+                    >
+                      {DAY_LABELS[d]}
+                    </th>
                   ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {periodConfig.periods.map((p) => (
+                  <tr
+                    key={p.number}
+                    className="border-t border-gray-100 dark:border-gray-800 align-top"
+                  >
+                    <td className="px-3 py-3 border-r border-gray-200 dark:border-gray-700 sticky left-0 bg-white dark:bg-gray-900">
+                      <div className="font-semibold text-gray-900 dark:text-gray-100 text-sm">
+                        {p.name}
+                      </div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">
+                        {p.startTime} – {p.endTime}
+                      </div>
+                      <span
+                        className={`inline-flex mt-1 px-2 py-0.5 rounded-full text-[10px] font-medium capitalize ${
+                          PERIOD_TYPE_COLORS[p.type] || 'bg-gray-100 text-gray-700'
+                        }`}
+                      >
+                        {p.type}
+                      </span>
+                    </td>
+                    {periodConfig.workingDays.map((d) => (
+                      <td
+                        key={d}
+                        className="px-2 py-2 border-l border-gray-100 dark:border-gray-800"
+                      >
+                        {p.type === 'lesson' ? (
+                          <LessonCell
+                            cell={grid?.[d]?.[p.number]}
+                            subjects={subjects}
+                            teachers={teachers}
+                            disabled={!canEdit}
+                            incomplete={highlighted.has(`${d}:${p.number}`)}
+                            onChange={(patch) => updateCell(d, p.number, patch)}
+                          />
+                        ) : (
+                          <div className="text-xs text-gray-500 dark:text-gray-400 italic px-2 py-3">
+                            {p.name}
+                          </div>
+                        )}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
       )}
 
       {!canEdit && sectionId && (
@@ -378,10 +397,13 @@ function Select({ label, value, onChange, options, disabled }) {
   );
 }
 
-function LessonCell({ cell, subjects, teachers, disabled, onChange }) {
+function LessonCell({ cell, subjects, teachers, disabled, incomplete, onChange }) {
   const c = cell || {};
   return (
-    <div className="space-y-1">
+    <div
+      className={`space-y-1 ${incomplete ? 'rounded-md ring-2 ring-red-500 bg-red-50 dark:bg-red-950/40 p-1' : ''}`}
+      title={incomplete ? 'Needs both a subject and a teacher' : undefined}
+    >
       <select
         value={c.subjectId || ''}
         disabled={disabled}

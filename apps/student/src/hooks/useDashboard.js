@@ -1,6 +1,6 @@
-import { useQuery, keepPreviousData } from '@tanstack/react-query';
-import apiClient from '@/services/apiClient';
-import { useUserStore } from '@/store/userStore';
+import { useQuery, keepPreviousData } from "@tanstack/react-query";
+import apiClient from "@/services/apiClient";
+import { useUserStore } from "@/store/userStore";
 
 // All dashboard routes are GET, auto-scoped to the logged-in student by the
 // backend (never send studentId/classId/sectionId). Responses are shaped
@@ -16,8 +16,8 @@ const useUid = () => useUserStore((s) => s.user?._id || s.user?.id || null);
 export function useProfile() {
   const uid = useUid();
   return useQuery({
-    queryKey: ['dashboard', uid, 'me'],
-    queryFn: async () => unwrap(await apiClient.get('/dashboard/student/me')),
+    queryKey: ["dashboard", uid, "me"],
+    queryFn: async () => unwrap(await apiClient.get("/dashboard/student/me")),
   });
 }
 
@@ -25,10 +25,10 @@ export function useProfile() {
 export function useAttendance(month) {
   const uid = useUid();
   return useQuery({
-    queryKey: ['dashboard', uid, 'attendance', month || 'year'],
+    queryKey: ["dashboard", uid, "attendance", month || "year"],
     queryFn: async () =>
       unwrap(
-        await apiClient.get('/dashboard/student/attendance', {
+        await apiClient.get("/dashboard/student/attendance", {
           params: month ? { month } : undefined,
         }),
       ),
@@ -40,17 +40,24 @@ export function useAttendance(month) {
 export function useResults() {
   const uid = useUid();
   return useQuery({
-    queryKey: ['dashboard', uid, 'results'],
-    queryFn: async () => unwrap(await apiClient.get('/dashboard/student/results')),
+    queryKey: ["dashboard", uid, "results"],
+    queryFn: async () =>
+      unwrap(await apiClient.get("/dashboard/student/results")),
   });
 }
 
-// 3.4 Fees
-export function useFees() {
+// 3.4 Fees — { summary, vouchers, page, limit, total }. Void vouchers are left
+// out; the list is paged (newest first, 24 a page by default) while
+// `summary.outstandingBalance` covers every voucher.
+export function useFees({ page = 1 } = {}) {
   const uid = useUid();
   return useQuery({
-    queryKey: ['dashboard', uid, 'fees'],
-    queryFn: async () => unwrap(await apiClient.get('/dashboard/student/fees')),
+    queryKey: ["dashboard", uid, "fees", page],
+    queryFn: async () =>
+      unwrap(
+        await apiClient.get("/dashboard/student/fees", { params: { page } }),
+      ),
+    placeholderData: keepPreviousData,
   });
 }
 
@@ -58,8 +65,9 @@ export function useFees() {
 export function useTimetable() {
   const uid = useUid();
   return useQuery({
-    queryKey: ['dashboard', uid, 'timetable'],
-    queryFn: async () => unwrap(await apiClient.get('/dashboard/student/timetable')),
+    queryKey: ["dashboard", uid, "timetable"],
+    queryFn: async () =>
+      unwrap(await apiClient.get("/dashboard/student/timetable")),
   });
 }
 
@@ -68,9 +76,9 @@ export function useTimetable() {
 export function useAnnouncements({ page = 1, limit = 20 } = {}) {
   const uid = useUid();
   return useQuery({
-    queryKey: ['dashboard', uid, 'announcements', page, limit],
+    queryKey: ["dashboard", uid, "announcements", page, limit],
     queryFn: async () => {
-      const res = await apiClient.get('/dashboard/student/announcements', {
+      const res = await apiClient.get("/dashboard/student/announcements", {
         params: { page, limit },
       });
       return { items: res.data?.data || [], total: res.data?.total || 0 };
@@ -84,20 +92,25 @@ export function useAnnouncements({ page = 1, limit = 20 } = {}) {
 export function useLibrary() {
   const uid = useUid();
   return useQuery({
-    queryKey: ['dashboard', uid, 'library'],
-    queryFn: async () => unwrap(await apiClient.get('/dashboard/student/library')),
+    queryKey: ["dashboard", uid, "library"],
+    queryFn: async () =>
+      unwrap(await apiClient.get("/dashboard/student/library")),
   });
 }
 
 // 3.8 Library catalogue of the student's branch (search + paginated).
 // Returns the page items plus `total` for the pager.
-export function useLibraryCatalogue({ search = '', page = 1, limit = 20 } = {}) {
+export function useLibraryCatalogue({
+  search = "",
+  page = 1,
+  limit = 20,
+} = {}) {
   const uid = useUid();
   const q = search.trim();
   return useQuery({
-    queryKey: ['dashboard', uid, 'library-catalogue', q, page, limit],
+    queryKey: ["dashboard", uid, "library-catalogue", q, page, limit],
     queryFn: async () => {
-      const res = await apiClient.get('/dashboard/student/library/catalogue', {
+      const res = await apiClient.get("/dashboard/student/library/catalogue", {
         params: { ...(q ? { search: q } : {}), page, limit },
       });
       return {

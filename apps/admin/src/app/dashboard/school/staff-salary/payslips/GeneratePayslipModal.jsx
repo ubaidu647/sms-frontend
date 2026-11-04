@@ -8,6 +8,7 @@ import { fetchData, postData } from '@/utils/api';
 import { useTokenStore } from '@/store/tokenStore';
 import { useUserStore } from '@/store/userStore';
 import { currentMonth, formatMoney, previousMonth } from '@/constants/staffSalary';
+import { filterAmountInput, parseAmountInput, payslipMonthError } from '@/utils/payslipInput';
 
 const inputCls =
   'w-full px-3 py-2 border border-gray-200 rounded-lg outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 text-sm text-gray-900 bg-white placeholder:text-gray-400';
@@ -90,13 +91,25 @@ export default function GeneratePayslipModal({ isOpen, onClose }) {
       setSubmitError('Staff is required');
       return;
     }
-    if (!month) {
-      setSubmitError('Month is required');
+    const monthError = payslipMonthError(month, currentMonth());
+    if (monthError) {
+      setSubmitError(monthError);
+      return;
+    }
+    // An unparseable bonus/tax used to be dropped silently.
+    const bonusIn = parseAmountInput(bonus);
+    if (bonusIn.invalid) {
+      setSubmitError('Bonus must be a valid amount');
+      return;
+    }
+    const taxIn = parseAmountInput(tax);
+    if (taxIn.invalid) {
+      setSubmitError('Tax must be a valid amount');
       return;
     }
     const payload = { staffId, month };
-    if (bonus !== '' && !Number.isNaN(Number(bonus))) payload.bonus = Number(bonus);
-    if (tax !== '' && !Number.isNaN(Number(tax))) payload.tax = Number(tax);
+    if (!bonusIn.empty) payload.bonus = bonusIn.value;
+    if (!taxIn.empty) payload.tax = taxIn.value;
     if (notes?.trim()) payload.notes = notes.trim();
     mutation.mutate(payload);
   };
@@ -211,10 +224,10 @@ export default function GeneratePayslipModal({ isOpen, onClose }) {
           <div>
             <label className={labelCls}>Bonus (optional)</label>
             <input
-              type="number"
-              min={0}
+              type="text"
+              inputMode="decimal"
               value={bonus}
-              onChange={(e) => setBonus(e.target.value)}
+              onChange={(e) => setBonus((prev) => filterAmountInput(e.target.value, prev))}
               className={inputCls}
             />
           </div>
@@ -222,10 +235,10 @@ export default function GeneratePayslipModal({ isOpen, onClose }) {
           <div>
             <label className={labelCls}>Tax (optional)</label>
             <input
-              type="number"
-              min={0}
+              type="text"
+              inputMode="decimal"
               value={tax}
-              onChange={(e) => setTax(e.target.value)}
+              onChange={(e) => setTax((prev) => filterAmountInput(e.target.value, prev))}
               className={inputCls}
             />
           </div>

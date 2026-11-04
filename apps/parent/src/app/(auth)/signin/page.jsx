@@ -9,6 +9,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import SignInForm from "./SignInForm";
+import { planNoticeFor, takeSigninNotice } from "@/utils/authErrors";
 
 // Messages a forced sign-out can leave for this page (?reason=…).
 const REASONS = {
@@ -26,8 +27,11 @@ const SignInPage = () => {
     } catch {
       reason = null;
     }
-    if (reason && REASONS[reason]) {
-      toast.error(REASONS[reason], { id: `signin-reason-${reason}` });
+    // The plan refusal carries the server's own message.
+    const message =
+      REASONS[reason] || planNoticeFor(reason, takeSigninNotice());
+    if (reason && message) {
+      toast.error(message, { id: `signin-reason-${reason}`, duration: 10000 });
       window.history.replaceState(null, "", "/signin");
     }
   }, []);

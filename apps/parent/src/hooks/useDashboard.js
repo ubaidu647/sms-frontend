@@ -64,15 +64,23 @@ export function useResults() {
   });
 }
 
-// Fees (read-only)
-export function useFees() {
+// Fees (read-only) — { summary, vouchers, page, limit, total }. Void vouchers
+// are left out; the list is paged (newest first, 24 a page by default) while
+// `summary.outstandingBalance` covers every voucher.
+export function useFees({ page = 1 } = {}) {
   const uid = useUid();
   const studentId = useSelectedChildId();
   return useQuery({
-    queryKey: ["dashboard", uid, studentId, "fees"],
+    queryKey: ["dashboard", uid, studentId, "fees", page],
     queryFn: async () =>
-      unwrap(await apiClient.get(childPath(studentId, "fees"))),
+      unwrap(
+        await apiClient.get(childPath(studentId, "fees"), { params: { page } }),
+      ),
     enabled: !!studentId,
+    // Keep the previous page on screen while the next loads — but never
+    // another child's vouchers.
+    placeholderData: (prev, prevQuery) =>
+      prevQuery?.queryKey?.[2] === studentId ? prev : undefined,
   });
 }
 

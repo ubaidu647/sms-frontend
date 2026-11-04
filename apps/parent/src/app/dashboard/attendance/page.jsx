@@ -146,7 +146,7 @@ export default function AttendancePage() {
                               </span>
                             </td>
                             <td className="px-5 py-3 text-gray-500 dark:text-gray-400">
-                              {r.remarks || "—"}
+                              {r.reason || r.remarks || "—"}
                             </td>
                           </tr>
                         );

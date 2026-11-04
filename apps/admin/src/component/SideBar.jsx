@@ -35,6 +35,7 @@ import {
   Award,
   Library,
   Boxes,
+  House,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -54,6 +55,16 @@ const navigationItems = [
   // than school operations. Branches, Branch Profile and WhatsApp likewise
   // moved to Business Settings (/dashboard/business-settings), and Billing to
   // /dashboard/billing — all reached from the topbar menu.
+  {
+    // The home page (Getting started checklist). No section heading and no
+    // grant: every signed-in user who reaches the school app may open it.
+    labelKey: 'home',
+    iconComponent: House,
+    key: 'home',
+    hasSubmenu: false,
+    path: '/dashboard',
+    canAccess: () => true,
+  },
   {
     section: 'sectionSchool',
     labelKey: 'students',

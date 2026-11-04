@@ -9,9 +9,28 @@ import toast from 'react-hot-toast';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { fetchData, putData } from '@/utils/api';
 import { useTokenStore } from '@/store/tokenStore';
+import { editPayload, reportEmptiedRequired } from '@/utils/editPayload';
 
 const CLASS_TYPES = ['pre-primary', 'primary', 'middle', 'secondary', 'higher-secondary'];
 const MEDIUMS = ['english', 'urdu', 'arabic', 'other'];
+
+// The form's values for a class — also the baseline an edit is diffed against.
+const formValuesOf = (cls) => ({
+  name: cls.name || '',
+  classType: cls.classType || '',
+  medium: cls.medium || 'english',
+  classTeacher: cls.classTeacherInfo?._id || '',
+  totalCapacity: cls.totalCapacity ?? '',
+  status: cls.status || 'active',
+});
+
+// Can't be cleared, with the error an emptied one blocks the save with.
+const REQUIRED_FIELDS = {
+  name: 'Class name is required',
+  classType: 'Class type is required',
+  medium: 'Medium is required',
+  status: 'Status is required',
+};
 
 const schema = yup.object().shape({
   name: yup.string().optional(),
@@ -51,6 +70,7 @@ export default function EditClassModal({ isOpen, onClose, onSuccess, cls }) {
     register,
     handleSubmit,
     reset,
+    setError,
     formState: { errors },
   } = useForm({
     resolver: yupResolver(schema),
@@ -58,14 +78,7 @@ export default function EditClassModal({ isOpen, onClose, onSuccess, cls }) {
 
   useEffect(() => {
     if (cls && isOpen) {
-      reset({
-        name: cls.name || '',
-        classType: cls.classType || '',
-        medium: cls.medium || 'english',
-        classTeacher: cls.classTeacherInfo?._id || '',
-        totalCapacity: cls.totalCapacity ?? '',
-        status: cls.status || 'active',
-      });
+      reset(formValuesOf(cls));
     }
   }, [cls, isOpen, reset]);
 
@@ -108,11 +121,14 @@ export default function EditClassModal({ isOpen, onClose, onSuccess, cls }) {
 
   const onSubmit = (data) => {
     setSubmitError('');
-    const payload = {};
-    Object.entries(data).forEach(([k, v]) => {
-      if (v !== '' && v !== null && v !== undefined) payload[k] = v;
-    });
-    if ('classTeacher' in data && data.classTeacher === '') payload.classTeacher = null;
+    // Only what changed; an emptied optional field (class teacher, capacity) goes as null.
+    const saved = formValuesOf(cls);
+    if (reportEmptiedRequired(saved, data, REQUIRED_FIELDS, setError)) return;
+    const payload = editPayload(saved, data, { required: Object.keys(REQUIRED_FIELDS) });
+    if (Object.keys(payload).length === 0) {
+      setSubmitError('Nothing to save — no field was changed.');
+      return;
+    }
     mutation.mutate(payload);
   };
 

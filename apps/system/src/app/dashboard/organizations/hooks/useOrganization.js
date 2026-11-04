@@ -1,6 +1,7 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
-import { fetchData, patchData } from '@/utils/api';
+import apiClient from '@/services/apiClient';
+import { fetchData, patchData, postData } from '@/utils/api';
 
 // Server-side paginated school list. `tab` picks the active / disabled split
 // (disabled = isActive false OR status suspended); `search` matches the name;
@@ -61,3 +62,34 @@ export const useToggleSchoolStatus = () => {
     onError: (err) => toast.error(err.message || 'Failed to update school status'),
   });
 };
+
+// The school's admin accounts (predefined admin role) — who a password reset can
+// target. `isPrimary` marks the account created at registration.
+export const useSchoolAdmins = (schoolId, { enabled = true } = {}) =>
+  useQuery({
+    queryKey: ['organizations', 'admins', schoolId],
+    queryFn: async () => {
+      const { data } = await apiClient.get(`/schools/${schoolId}/admins`);
+      return Array.isArray(data?.data) ? data.data : [];
+    },
+    enabled: !!schoolId && enabled,
+    // The list feeds a one-off action; never serve a stale copy.
+    staleTime: 0,
+    gcTime: 0,
+  });
+
+// Reset a school admin's password. Without `newPassword` the API generates a
+// temporary one and returns it once (data.temporaryPassword); it is never
+// cached here — the caller holds it in component state only. Errors are shown
+// inline by the caller, so no toast.
+export const useResetSchoolAdminPassword = () =>
+  useMutation({
+    mutationFn: ({ schoolId, userId, newPassword }) =>
+      postData({
+        url: `/schools/${schoolId}/admin/reset-password`,
+        payload: {
+          ...(userId ? { userId } : {}),
+          ...(newPassword ? { newPassword } : {}),
+        },
+      }),
+  });

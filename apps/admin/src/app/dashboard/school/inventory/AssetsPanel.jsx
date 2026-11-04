@@ -33,6 +33,7 @@ import {
   inputCls,
   labelCls,
   money,
+  OPTIONS_LIMIT,
   primaryBtn,
   printSheet,
   secondaryBtn,
@@ -147,11 +148,21 @@ export default function AssetsPanel({ branchId, canAsset, orgAsset }) {
       const res = await fetchData({
         url: '/inventory/assets',
         page: 1,
-        limit: 1000,
+        limit: OPTIONS_LIMIT,
         token,
         ...params,
       });
       const list = res?.data || [];
+      const total = Number(res?.total) || 0;
+      const truncated = total > list.length;
+      if (truncated) {
+        toast(
+          `Showing the first ${list.length} of ${total} assets — narrow the filters to print the rest.`,
+          {
+            icon: '⚠️',
+          },
+        );
+      }
       printSheet({
         title: 'Asset tag list',
         subtitle: [
@@ -179,7 +190,9 @@ export default function AssetsPanel({ branchId, canAsset, orgAsset }) {
           formatAmount(a.cost),
           a.status,
         ]),
-        footer: `${list.length} asset(s)`,
+        footer: truncated
+          ? `Showing first ${list.length} of ${total} asset(s)`
+          : `${list.length} asset(s)`,
       });
     } catch (err) {
       toast.error(err?.message || 'Could not load assets to print');

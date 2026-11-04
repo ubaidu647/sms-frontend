@@ -14,7 +14,7 @@ import Button from '@/component/Button';
 import Switch from '@/component/Switch';
 import { fetchData, postData, postDataWithStatus } from '@/utils/api';
 import { localYM, localYMD } from '@/utils/localDate';
-import { currentAcademicYear } from '@/utils/academicYear';
+import { academicYearStartMonth, currentAcademicYear } from '@/utils/academicYear';
 import { PARENT_PASSWORD_MIN } from '@/utils/parentAccounts';
 import { invalidateFeeQueries } from '@/utils/feeQueries';
 import { useTokenStore } from '@/store/tokenStore';
@@ -22,7 +22,9 @@ import {
   GUARDIAN_RELATIONS,
   admitPrefill,
   buildAdmitPayload,
+  academicYearMonthBounds,
   classForGrade,
+  defaultVoucherMonth,
   gradeLabel,
   isDifferentGrade,
   parentPrefillFromEnquiry,
@@ -216,6 +218,17 @@ export default function AdmitModal({ enquiry, perms, onClose }) {
     staleTime: 30000,
   });
   const classes = classData?.data || [];
+
+  // The voucher month must fall in the admitted year: an admission in March for
+  // the session starting in April bills April (the API refuses March).
+  const voucherBounds = academicYearMonthBounds(academicYear, academicYearStartMonth());
+  useEffect(() => {
+    setValue(
+      'voucher.month',
+      defaultVoucherMonth(academicYear, academicYearStartMonth(), localYM()),
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [academicYear]);
 
   // Auto-pick the class of the desired grade whenever the year's classes load;
   // drop a picked class that is not in the chosen year.
@@ -618,7 +631,13 @@ export default function AdmitModal({ enquiry, perms, onClose }) {
               {voucherEnabled && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
                   <Field label="Month" required error={errors.voucher?.month?.message}>
-                    <input type="month" {...register('voucher.month')} className={inputCls} />
+                    <input
+                      type="month"
+                      min={voucherBounds?.first}
+                      max={voucherBounds?.last}
+                      {...register('voucher.month')}
+                      className={inputCls}
+                    />
                   </Field>
                 </div>
               )}

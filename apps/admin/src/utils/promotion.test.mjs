@@ -3,6 +3,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
+  warningsOf,
   targetKind,
   isProcessed,
   allowedDecisions,
@@ -175,4 +176,12 @@ test('unprocessedRows normalises the refused-complete payload', () => {
     { label: 'Grade 1 – A', count: 2 },
   ]);
   assert.deepEqual(unprocessedRows(null), []);
+});
+
+test('warningsOf reads warnings from the payload or the body, strings only', () => {
+  assert.deepEqual(warningsOf({ data: { warnings: ['a', ' b ', '', 3, null] } }), ['a', 'b']);
+  assert.deepEqual(warningsOf({ data: [{ _id: 1 }], warnings: ['list-level'] }), ['list-level']);
+  assert.deepEqual(warningsOf({ data: { classes: [] }, warnings: ['top'] }), ['top']);
+  assert.deepEqual(warningsOf({ data: { warnings: 'not a list' } }), []);
+  assert.deepEqual(warningsOf(undefined), []);
 });

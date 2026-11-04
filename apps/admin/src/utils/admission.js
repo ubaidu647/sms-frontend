@@ -503,3 +503,34 @@ export const sumCounts = (map) =>
 
 export const enquiryChildName = (e) => e?.child?.name || '—';
 export const staffName = (s) => s?.user?.name || s?.userId?.name || s?.name || 'Staff';
+
+/**
+ * The academic year's months as YYYY-MM bounds, for a year 'YYYY-YYYY' that
+ * starts in `startMonth` (1–12). Null for a malformed year.
+ */
+export function academicYearMonthBounds(academicYear, startMonth) {
+  const m = /^(\d{4})-(\d{4})$/.exec(academicYear || '');
+  const month = Number(startMonth);
+  if (!m || !Number.isInteger(month) || month < 1 || month > 12) return null;
+  const startYear = Number(m[1]);
+  const pad = (n) => String(n).padStart(2, '0');
+  const first = `${startYear}-${pad(month)}`;
+  // Last month: the month before the start month, a year later.
+  const lastMonth = month === 1 ? 12 : month - 1;
+  const lastYear = month === 1 ? startYear : startYear + 1;
+  return { first, last: `${lastYear}-${pad(lastMonth)}` };
+}
+
+/**
+ * The month the admission voucher should default to: this month when it falls
+ * in the admitted year, otherwise the year's nearest end — an admission in
+ * March for the session starting in April bills April, not March (the API
+ * refuses a month outside the student's academic year).
+ */
+export function defaultVoucherMonth(academicYear, startMonth, thisMonth) {
+  const bounds = academicYearMonthBounds(academicYear, startMonth);
+  if (!bounds) return thisMonth;
+  if (thisMonth < bounds.first) return bounds.first;
+  if (thisMonth > bounds.last) return bounds.last;
+  return thisMonth;
+}

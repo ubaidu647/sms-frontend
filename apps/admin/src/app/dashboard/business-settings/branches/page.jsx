@@ -20,7 +20,9 @@ export default function BranchesPage() {
   const actions = user?.role?.actions || [];
   const canViewAllProfiles =
     isAdmin || actions.includes('view-all-branch-profile') || actions.includes('view-branch');
-  const canCreateBranch = isAdmin || actions.includes('create-branch');
+  // Opening a branch is reserved for the school admin (predefined role) by the
+  // API (branch.controller create) — a create-branch grant alone gets a 403.
+  const canCreateBranch = isAdmin;
   const [isModalOpen, setIsModalOpen] = useState(false);
   // No date range here on purpose: a branch is long-lived, so filtering the list
   // by creation date only ever hid branches the user was looking for.

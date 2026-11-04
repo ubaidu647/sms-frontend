@@ -266,6 +266,23 @@ export default function RolesPage() {
 
   const userBranchId = user?.branchId || user?.branch?._id || '';
 
+  // Mirrors role.routes / role.service: create and update need their own
+  // grants; a branch-tier grant reaches only its own branch's roles, and only
+  // the admin may edit the admin (predefined) role.
+  const canCreate =
+    !!user?.role?.isPredefined ||
+    !!user?.role?.actions?.includes('create-role') ||
+    !!user?.role?.actions?.includes('create-all-branch-role');
+  const canEditRow = (row) => {
+    if (user?.role?.isPredefined) return true;
+    if (row.isPredefined) return false;
+    const actions = user?.role?.actions || [];
+    if (actions.includes('update-all-branch-role')) return true;
+    if (!actions.includes('update-role')) return false;
+    const rowBranch = String(row.branch?._id || row.branchId?._id || row.branchId || '');
+    return !!rowBranch && rowBranch === String(userBranchId);
+  };
+
   // Fetch branches lazily — only after user opens the branch dropdown
   const [branchDropdownTouched, setBranchDropdownTouched] = useState(false);
   const { data: branchData } = useQuery({
@@ -356,10 +373,8 @@ export default function RolesPage() {
   const visibleColumns = useMemo(() => columns.map((c) => c.accessor), [columns]);
 
   const rowActions = (row) => {
-    const items = [
-      { label: 'View Details', value: 'view', icon: Eye },
-      { label: 'Edit', value: 'edit', icon: Edit },
-    ];
+    const items = [{ label: 'View Details', value: 'view', icon: Eye }];
+    if (canEditRow(row)) items.push({ label: 'Edit', value: 'edit', icon: Edit });
 
     // Predefined roles: never show delete/toggle regardless of user permission
     if (row.isPredefined) return items;
@@ -507,13 +522,15 @@ export default function RolesPage() {
                 </button>
               ))}
             </div>
-            <button
-              onClick={() => setIsModalOpen(true)}
-              className="flex flex-1 sm:flex-none items-center justify-center gap-2 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors shadow-sm"
-            >
-              <Plus className="w-5 h-5" />
-              Add Role
-            </button>
+            {canCreate && (
+              <button
+                onClick={() => setIsModalOpen(true)}
+                className="flex flex-1 sm:flex-none items-center justify-center gap-2 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors shadow-sm"
+              >
+                <Plus className="w-5 h-5" />
+                Add Role
+              </button>
+            )}
           </div>
         </div>
 

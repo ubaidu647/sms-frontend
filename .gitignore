@@ -49,3 +49,5 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+# …but the documented templates are tracked.
+!.env.example

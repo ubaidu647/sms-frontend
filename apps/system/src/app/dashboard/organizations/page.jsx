@@ -3,13 +3,24 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { FilterBar } from '@/component/FilterBar';
 import { Table } from '@/component/Table';
 import { Tabs } from '@/component/Tabs';
-import { Plus, Eye, Edit, Package, CreditCard, Ban, CheckCircle2, Trash2 } from 'lucide-react';
+import {
+  Plus,
+  Eye,
+  Edit,
+  Package,
+  CreditCard,
+  Ban,
+  CheckCircle2,
+  Trash2,
+  KeyRound,
+} from 'lucide-react';
 import { ColumnSelector } from '@/component/ColumnSelector';
 import { AddOrganizationModal } from '@/component/AddOrganizationModal';
 import { useTokenStore } from '@/store/tokenStore';
 import { useOrganizations, useToggleSchoolStatus } from './hooks/useOrganization';
 import { useTranslations } from 'next-intl';
 import ConfirmModal from './ConfirmModal';
+import ResetAdminPasswordModal from './ResetAdminPasswordModal';
 
 const EMPTY_FILTERS = { organizationName: '', createdAt: '', status: '' };
 const SEARCH_DEBOUNCE_MS = 400;
@@ -42,6 +53,7 @@ export default function Organization() {
   const [selectedColumns, setSelectedColumns] = useState([]);
   const [disableTarget, setDisableTarget] = useState(null);
   const [enableTarget, setEnableTarget] = useState(null);
+  const [resetTarget, setResetTarget] = useState(null);
 
   const toggleStatus = useToggleSchoolStatus();
 
@@ -188,6 +200,9 @@ export default function Organization() {
       case 'enable':
         setEnableTarget(row);
         break;
+      case 'reset-admin-password':
+        setResetTarget(row);
+        break;
       default:
         break;
     }
@@ -201,6 +216,7 @@ export default function Organization() {
         { label: 'Edit', value: 'edit', icon: Edit },
         { label: 'View Package', value: 'package', icon: Package },
         { label: 'View Subscription', value: 'subscription', icon: CreditCard },
+        { label: 'Reset admin password', value: 'reset-admin-password', icon: KeyRound },
       ];
       const toggle = isRowDisabled
         ? { label: 'Enable', value: 'enable', icon: CheckCircle2 }
@@ -278,6 +294,8 @@ export default function Organization() {
           onClose={() => setIsModalOpen(false)}
           token={token}
         />
+
+        <ResetAdminPasswordModal school={resetTarget} onClose={() => setResetTarget(null)} />
 
         <ConfirmModal
           isOpen={!!disableTarget}

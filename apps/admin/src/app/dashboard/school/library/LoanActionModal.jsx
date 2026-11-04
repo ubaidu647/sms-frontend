@@ -3,6 +3,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
+import CashBankAccountSelect from '@/component/CashBankAccountSelect';
 import { patchData } from '@/utils/api';
 import { localYMD } from '@/utils/localDate';
 import { branchIdOf } from '@/utils/permissions';
@@ -52,6 +53,7 @@ export default function LoanActionModal({ mode, loan, onClose, onDone }) {
   const [condition, setCondition] = useState('');
   const [charge, setCharge] = useState('');
   const [reason, setReason] = useState('');
+  const [ledgerAccountId, setLedgerAccountId] = useState('');
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -59,6 +61,7 @@ export default function LoanActionModal({ mode, loan, onClose, onDone }) {
     setCondition('');
     setCharge('');
     setReason('');
+    setLedgerAccountId('');
     setError('');
   }, [mode, loan?._id]);
 
@@ -111,7 +114,7 @@ export default function LoanActionModal({ mode, loan, onClose, onDone }) {
       if (!reason.trim()) return setError('A reason is required to waive a fine');
       return mutation.mutate({ reason: reason.trim() });
     }
-    return mutation.mutate({});
+    return mutation.mutate(ledgerAccountId ? { ledgerAccountId } : {});
   };
 
   if (!loan) return null;
@@ -228,9 +231,19 @@ export default function LoanActionModal({ mode, loan, onClose, onDone }) {
           </div>
         )}
         {mode === 'fine-paid' && (
-          <p className="text-xs text-gray-500 dark:text-gray-400">
-            Records that the staff member paid this fine in cash.
-          </p>
+          <>
+            <CashBankAccountSelect
+              method="cash"
+              branchId={branchIdOf(loan.branchId) || undefined}
+              value={ledgerAccountId}
+              onChange={setLedgerAccountId}
+              labelCls={labelCls}
+              inputCls={inputCls}
+            />
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              Records that the staff member paid this fine in cash.
+            </p>
+          </>
         )}
 
         {error && <p className={errorCls}>{error}</p>}

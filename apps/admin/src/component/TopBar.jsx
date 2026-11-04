@@ -13,6 +13,7 @@ import {
   Moon,
   Menu,
   ServerCog,
+  KeyRound,
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useThemeStore } from '@/store/themeStore';
@@ -29,6 +30,12 @@ const SYSTEM_CONSOLE_URL = process.env.NEXT_PUBLIC_SYSTEM_URL || 'http://localho
 // it, then what it costs. `show` decides visibility from the role's grants.
 const MENU_ITEMS = [
   { key: 'settings', icon: Settings, href: '/dashboard/settings', show: () => true },
+  {
+    key: 'changePassword',
+    icon: KeyRound,
+    href: '/dashboard/settings/password',
+    show: () => true,
+  },
   {
     key: 'businessSettings',
     icon: Building2,
@@ -172,7 +179,7 @@ export const Topbar = ({ user = {}, userRole = {}, onMenuClick }) => {
             ref={menuRef}
             style={{
               position: 'fixed',
-              top: Math.min(anchorRect.top + 8, window.innerHeight - 8 - 220),
+              top: Math.min(anchorRect.top + 8, window.innerHeight - 8 - 260),
               right: Math.max(anchorRect.right, 8),
               width: '14rem',
             }}

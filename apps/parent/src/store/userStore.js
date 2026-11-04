@@ -14,6 +14,8 @@ function pickPersistedUser(user) {
     name: user.name ?? null,
     type: user.type ?? null,
     ...(roleName ? { role: { name: roleName } } : {}),
+    // Survives a reload so the forced password change cannot be skipped.
+    ...(user.mustChangePassword === true ? { mustChangePassword: true } : {}),
   };
 }
 

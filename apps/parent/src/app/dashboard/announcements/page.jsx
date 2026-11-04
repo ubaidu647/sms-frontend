@@ -11,6 +11,7 @@ import { useAnnouncements } from "@/hooks/useDashboard";
 import { PageHeader, Panel } from "@/component/dashboard/Panel";
 import { Loading, ErrorState, EmptyState } from "@/component/dashboard/States";
 import { formatDate } from "@/utils/format";
+import { useSelectedChildId } from "@/hooks/useChildren";
 
 const LIMIT = 20;
 
@@ -20,7 +21,7 @@ const PRIORITY_STYLES = {
   low: "bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400",
 };
 
-export default function AnnouncementsPage() {
+function ChildAnnouncements() {
   const [page, setPage] = useState(1);
   const { data, isLoading, isError, error, refetch, isFetching } =
     useAnnouncements({
@@ -137,4 +138,11 @@ export default function AnnouncementsPage() {
       )}
     </div>
   );
+}
+
+// Keyed on the child so switching child starts again at page 1 — page 3 of one
+// child's list is usually empty for another.
+export default function AnnouncementsPage() {
+  const studentId = useSelectedChildId();
+  return <ChildAnnouncements key={studentId || "none"} />;
 }

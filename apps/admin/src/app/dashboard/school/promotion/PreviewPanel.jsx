@@ -1,12 +1,14 @@
 'use client';
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { AlertTriangle, ArrowRight, CheckCircle2, Loader2, XCircle } from 'lucide-react';
+import { ArrowRight, CheckCircle2, Loader2, XCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { fetchData, postData } from '@/utils/api';
 import { useTokenStore } from '@/store/tokenStore';
 import ConfirmModal from './ConfirmModal';
 import { inputCls, primaryBtn, thCls, tdCls, invalidatePromotionData } from './promotionShared';
+import WarningsNotice from './WarningsNotice';
+import { warningsOf } from '@/utils/promotion';
 
 const parsePercent = (raw) => {
   if (raw === '' || raw === null || raw === undefined) return 0;
@@ -28,7 +30,7 @@ export default function PreviewPanel({ branchId, fromYear, onPrepared }) {
   });
   const preview = data?.data;
   const classes = preview?.classes || [];
-  const warnings = preview?.warnings || [];
+  const warnings = warningsOf(data);
 
   const percent = parsePercent(feeIncrease);
   const percentInvalid = percent === null;
@@ -86,19 +88,7 @@ export default function PreviewPanel({ branchId, fromYear, onPrepared }) {
         </span>
       </div>
 
-      {warnings.length > 0 && (
-        <div className="p-4 rounded-xl border border-amber-200 dark:border-amber-900 bg-amber-50 dark:bg-amber-950/40">
-          <div className="flex items-center gap-2 text-sm font-semibold text-amber-800 dark:text-amber-300 mb-2">
-            <AlertTriangle className="w-4 h-4" />
-            Warnings
-          </div>
-          <ul className="list-disc ps-6 space-y-1 text-sm text-amber-800 dark:text-amber-300">
-            {warnings.map((w, i) => (
-              <li key={i}>{w}</li>
-            ))}
-          </ul>
-        </div>
-      )}
+      <WarningsNotice warnings={warnings} />
 
       <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 overflow-x-auto">
         <table className="w-full min-w-[720px]">

@@ -292,7 +292,7 @@ export default function RegenerateSectionModal({ isOpen, onClose }) {
                 {result.skippedDueToPayments.map((s, i) => (
                   <li key={i} className="px-3 py-2 flex items-center justify-between">
                     <span className="font-mono text-xs text-gray-500 dark:text-gray-400">
-                      voucher: {s.voucherId}
+                      {s.studentName ? `${s.studentName} · ` : ''}voucher: {s.voucherId}
                     </span>
                     <span className="text-gray-700 dark:text-gray-300">
                       paid: {formatMoney(s.paidAmount)}
@@ -312,7 +312,7 @@ export default function RegenerateSectionModal({ isOpen, onClose }) {
                 {result.skippedOther.map((s, i) => (
                   <li key={i} className="px-3 py-2">
                     <span className="font-mono text-xs text-gray-500 dark:text-gray-400">
-                      {s.studentId || s.voucherId}
+                      {s.studentName || s.studentId || s.voucherId}
                     </span>
                     {s.reason && (
                       <span className="text-gray-700 dark:text-gray-300"> — {s.reason}</span>

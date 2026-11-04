@@ -186,6 +186,32 @@ export function sumLines(lines = []) {
   );
 }
 
+// The lines of a manual journal that will actually be posted: those with an
+// account and an amount. Blank rows are ignored.
+export function postableLines(lines = []) {
+  return lines.filter((l) => l?.accountId && (Number(l.debit) || Number(l.credit)));
+}
+
+// The first problem with a manual journal's lines, or null. Messages name the
+// row as the user sees it (1-based, blank rows counted), so "Line 3" is the
+// third row on screen. A row with an amount but no account is an error rather
+// than being silently dropped from the entry.
+export function journalLinesError(lines = []) {
+  let posted = 0;
+  for (let i = 0; i < lines.length; i++) {
+    const l = lines[i] || {};
+    const d = Number(l.debit) || 0;
+    const c = Number(l.credit) || 0;
+    if (!d && !c) continue; // blank row (an account alone posts nothing)
+    if (d < 0 || c < 0) return `Line ${i + 1}: amounts can't be negative`;
+    if (d && c) return `Line ${i + 1}: a line can't have both a debit and a credit`;
+    if (!l.accountId) return `Line ${i + 1}: pick an account`;
+    posted += 1;
+  }
+  if (posted < 2) return 'Add at least two lines with an account and an amount';
+  return null;
+}
+
 // Money in whole paisa, so float noise (0.1 + 0.2) can't decide a comparison.
 export const toPaisa = (x) => Math.round((Number(x) || 0) * 100);
 

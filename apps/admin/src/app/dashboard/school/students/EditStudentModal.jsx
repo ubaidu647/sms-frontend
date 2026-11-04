@@ -9,6 +9,10 @@ import toast from 'react-hot-toast';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { putData } from '@/utils/api';
 import { useTokenStore } from '@/store/tokenStore';
+import { editPayload, reportEmptiedRequired } from '@/utils/editPayload';
+import { photoFailureMessage, saveFieldsThenPhoto } from '@/utils/saveWithPhoto';
+import { useEditRecord } from '@/hooks/useEditRecord';
+import EditRecordStatus from '@/component/EditRecordStatus';
 
 const ALLOWED_PHOTO_TYPES = [
   'image/jpeg',
@@ -27,6 +31,91 @@ const ACADEMIC_STATUSES = [
   'dropped',
   'suspended',
 ];
+
+const SCALAR_FIELDS = [
+  'name',
+  'dob',
+  'gender',
+  'bloodGroup',
+  'nationality',
+  'religion',
+  'bForm',
+  'placeOfBirth',
+  'phone',
+  'academicStatus',
+  'isActive',
+  'feeDiscount',
+  'feeWaiver',
+  'feeNotes',
+];
+// The server merges these into the stored objects, so only changed sub-fields go.
+const MERGED_OBJECTS = ['father', 'mother', 'emergencyContact', 'address'];
+// Can't be cleared, with the error an emptied one blocks the save with.
+const REQUIRED_FIELDS = {
+  name: 'Name is required',
+  dob: 'Date of birth is required',
+  gender: 'Gender is required',
+  academicStatus: 'Academic status is required',
+  isActive: 'Status is required',
+  feeWaiver: 'Full waiver is required',
+  'father.name': "Father's name is required",
+  'mother.name': "Mother's name is required",
+  'emergencyContact.name': 'Emergency contact name is required',
+  'emergencyContact.phone': 'Emergency contact phone is required',
+  'emergencyContact.relation': 'Emergency contact relation is required',
+};
+
+// The form's values for a student — also the baseline an edit is diffed against.
+const formValuesOf = (student) => ({
+  name: student.user?.name || '',
+  dob: student.dob ? student.dob.slice(0, 10) : '',
+  gender: student.gender || '',
+  bloodGroup: student.bloodGroup || '',
+  nationality: student.nationality || '',
+  religion: student.religion || '',
+  bForm: student.bForm || '',
+  placeOfBirth: student.placeOfBirth || '',
+  phone: student.phone || '',
+  whatsappNumber: student.father?.whatsappNumber || '',
+  academicStatus: student.academicStatus || '',
+  isActive: student.isActive === false ? 'false' : 'true',
+  feeDiscount: student.feeDiscount ?? '',
+  feeWaiver: student.feeWaiver ? 'true' : 'false',
+  feeNotes: student.feeNotes || '',
+  father: {
+    name: student.father?.name || '',
+    cnic: student.father?.cnic || '',
+    phone: student.father?.phone || '',
+    email: student.father?.email || '',
+    occupation: student.father?.occupation || '',
+    monthlyIncome: student.father?.monthlyIncome ?? '',
+  },
+  mother: {
+    name: student.mother?.name || '',
+    cnic: student.mother?.cnic || '',
+    phone: student.mother?.phone || '',
+    occupation: student.mother?.occupation || '',
+  },
+  emergencyContact: {
+    name: student.emergencyContact?.name || '',
+    phone: student.emergencyContact?.phone || '',
+    relation: student.emergencyContact?.relation || '',
+  },
+  address: {
+    street: student.address?.street || '',
+    city: student.address?.city || '',
+    state: student.address?.state || '',
+    postalCode: student.address?.postalCode || '',
+    country: student.address?.country || '',
+  },
+});
+
+// What the API takes: the WhatsApp number lives on the father.
+const toApiShape = (values) => {
+  const out = Object.fromEntries([...SCALAR_FIELDS, ...MERGED_OBJECTS].map((k) => [k, values[k]]));
+  out.father = { ...(values.father || {}), whatsappNumber: values.whatsappNumber ?? '' };
+  return out;
+};
 
 const schema = yup.object().shape({
   name: yup.string().optional(),
@@ -88,67 +177,45 @@ export default function EditStudentModal({ isOpen, onClose, onSuccess, student }
   const [photoFile, setPhotoFile] = useState(null);
   const [photoPreview, setPhotoPreview] = useState('');
   const [photoError, setPhotoError] = useState('');
+  // The saved form values edits are diffed against: the full record (a list row
+  // lacks many fields), then whatever a partly failed save committed.
+  const [baseline, setBaseline] = useState(null);
+
+  const recordQuery = useEditRecord({
+    kind: 'student-edit',
+    id: student?._id,
+    url: `/student/${student?._id}`,
+    isOpen,
+    token,
+  });
+  const record = recordQuery.data?.data;
 
   const {
     register,
     handleSubmit,
     reset,
+    setError,
     formState: { errors },
   } = useForm({
     resolver: yupResolver(schema),
   });
 
-  // Pre-fill form when student changes
+  // Pre-fill the form once the full record has loaded
   useEffect(() => {
-    if (student && isOpen) {
-      reset({
-        name: student.user?.name || '',
-        dob: student.dob ? student.dob.slice(0, 10) : '',
-        gender: student.gender || '',
-        bloodGroup: student.bloodGroup || '',
-        nationality: student.nationality || '',
-        religion: student.religion || '',
-        bForm: student.bForm || '',
-        placeOfBirth: student.placeOfBirth || '',
-        phone: student.phone || '',
-        whatsappNumber: student.father?.whatsappNumber || '',
-        academicStatus: student.academicStatus || '',
-        isActive: student.isActive === false ? 'false' : 'true',
-        feeDiscount: student.feeDiscount ?? '',
-        feeWaiver: student.feeWaiver ? 'true' : 'false',
-        feeNotes: student.feeNotes || '',
-
-        'father.name': student.father?.name || '',
-        'father.cnic': student.father?.cnic || '',
-        'father.phone': student.father?.phone || '',
-        'father.email': student.father?.email || '',
-        'father.occupation': student.father?.occupation || '',
-        'father.monthlyIncome': student.father?.monthlyIncome ?? '',
-
-        'mother.name': student.mother?.name || '',
-        'mother.cnic': student.mother?.cnic || '',
-        'mother.phone': student.mother?.phone || '',
-        'mother.occupation': student.mother?.occupation || '',
-
-        'emergencyContact.name': student.emergencyContact?.name || '',
-        'emergencyContact.phone': student.emergencyContact?.phone || '',
-        'emergencyContact.relation': student.emergencyContact?.relation || '',
-
-        'address.street': student.address?.street || '',
-        'address.city': student.address?.city || '',
-        'address.state': student.address?.state || '',
-        'address.postalCode': student.address?.postalCode || '',
-        'address.country': student.address?.country || '',
-      });
+    if (record && isOpen) {
+      const values = formValuesOf(record);
+      setBaseline(values);
+      reset(values);
       setPhotoFile(null);
       setPhotoPreview('');
       setPhotoError('');
     }
-  }, [student, isOpen, reset]);
+  }, [record, isOpen, reset]);
 
   useEffect(() => {
     if (!isOpen) {
       reset();
+      setBaseline(null);
       setSubmitError('');
       setSuccessState(false);
       setPhotoFile(null);
@@ -191,11 +258,20 @@ export default function EditStudentModal({ isOpen, onClose, onSuccess, student }
     setPhotoFile(file);
   };
 
+  const invalidateStudent = () => {
+    queryClient.invalidateQueries({ queryKey: ['students'] });
+    queryClient.invalidateQueries({ queryKey: ['student-detail', student._id] });
+  };
+
   const mutation = useMutation({
-    mutationFn: (payload) => putData({ url: `/student/${student._id}`, payload, token }),
+    mutationFn: ({ fields, photo }) =>
+      saveFieldsThenPhoto({
+        fields,
+        photo,
+        put: (payload) => putData({ url: `/student/${student._id}`, payload, token }),
+      }),
     onSuccess: (res) => {
-      queryClient.invalidateQueries({ queryKey: ['students'] });
-      queryClient.invalidateQueries({ queryKey: ['student-detail', student._id] });
+      invalidateStudent();
       toast.success(res?.message || 'Student updated successfully');
       onSuccess?.(res?.data);
       setSuccessState(true);
@@ -204,7 +280,18 @@ export default function EditStudentModal({ isOpen, onClose, onSuccess, student }
         onClose();
       }, 1000);
     },
-    onError: (err) => {
+    onError: (err, { values }) => {
+      if (err.fieldsSaved) {
+        // The fields are committed: they become the baseline, so saving again
+        // retries only the photo (still selected).
+        invalidateStudent();
+        setBaseline(values);
+        reset(values);
+        const msg = photoFailureMessage(err);
+        setSubmitError(msg);
+        toast.error(msg);
+        return;
+      }
       const msg = err.message || 'Failed to update student';
       setSubmitError(msg);
       toast.error(msg);
@@ -212,82 +299,47 @@ export default function EditStudentModal({ isOpen, onClose, onSuccess, student }
   });
 
   const onSubmit = (data) => {
+    if (!baseline) return;
     setSubmitError('');
 
-    const fd = new FormData();
-    const scalarFields = [
-      'name',
-      'dob',
-      'gender',
-      'bloodGroup',
-      'nationality',
-      'religion',
-      'bForm',
-      'placeOfBirth',
-      'phone',
-      'academicStatus',
-      'isActive',
-      'feeDiscount',
-      'feeWaiver',
-      'feeNotes',
-    ];
-    scalarFields.forEach((k) => {
-      const v = data[k];
-      if (v !== '' && v !== null && v !== undefined) fd.append(k, String(v));
+    const saved = toApiShape(baseline);
+    const edited = toApiShape(data);
+    if (reportEmptiedRequired(saved, edited, REQUIRED_FIELDS, setError)) return;
+
+    const fields = editPayload(saved, edited, {
+      required: Object.keys(REQUIRED_FIELDS),
+      merge: MERGED_OBJECTS,
     });
 
-    // Nested objects — partial-merge supported by backend, only send if any field is filled
-    const buildNested = (prefix, keys) => {
-      const obj = {};
-      let hasAny = false;
-      keys.forEach((k) => {
-        const v = data[`${prefix}.${k}`];
-        if (v !== '' && v !== null && v !== undefined) {
-          obj[k] = v;
-          hasAny = true;
-        }
-      });
-      return hasAny ? obj : null;
-    };
+    if (Object.keys(fields).length === 0 && !photoFile) {
+      setSubmitError('Nothing to save — no field was changed.');
+      return;
+    }
 
-    const father =
-      buildNested('father', ['name', 'cnic', 'phone', 'email', 'occupation', 'monthlyIncome']) ||
-      {};
-    // WhatsApp notification number lives on the father. Always include it so an
-    // empty value clears it (reverts to the guardian/parent fallback chain).
-    father.whatsappNumber = data.whatsappNumber ?? '';
-    fd.append('father', JSON.stringify(father));
-
-    const mother = buildNested('mother', ['name', 'cnic', 'phone', 'occupation']);
-    if (mother) fd.append('mother', JSON.stringify(mother));
-
-    const emergencyContact = buildNested('emergencyContact', ['name', 'phone', 'relation']);
-    if (emergencyContact) fd.append('emergencyContact', JSON.stringify(emergencyContact));
-
-    const address = buildNested('address', ['street', 'city', 'state', 'postalCode', 'country']);
-    if (address) fd.append('address', JSON.stringify(address));
-
-    if (photoFile) fd.append('photo', photoFile);
-
-    mutation.mutate(fd);
+    mutation.mutate({ fields, photo: photoFile, values: data });
   };
 
   if (!student) return null;
 
-  const currentPhoto = student.photo || '';
+  const currentPhoto = record?.photo || '';
+
+  // Closing mid-save would let this save's callbacks paint into the next record.
+  const closeIfIdle = () => {
+    if (!mutation.isPending) onClose();
+  };
 
   return (
     <Modal
       isOpen={isOpen}
-      onClose={onClose}
+      onClose={closeIfIdle}
       title="Edit Student"
-      subtitle={`Updating ${student.user?.name || 'student'} — only filled fields will change`}
+      subtitle={`Updating ${student.user?.name || 'student'} — only the fields you change are saved`}
       size="xl"
       footer={
         <div className="flex gap-3 w-full">
           <Button
             label="Cancel"
-            handleClick={onClose}
+            handleClick={closeIfIdle}
             type="button"
             styleObject={{
               baseColor: 'bg-white border border-gray-300',
@@ -297,23 +349,26 @@ export default function EditStudentModal({ isOpen, onClose, onSuccess, student }
               textColor: 'text-gray-700',
             }}
           />
-          <Button
-            label="Save Changes"
-            styleObject={{
-              baseColor: 'bg-teal-600',
-              hoverColor: 'hover:bg-teal-700',
-              rounded: 'rounded-full',
-              size: 'px-10 py-3 text-md min-h-[3rem]',
-              textColor: 'text-white',
-            }}
-            loading={mutation.isPending}
-            success={successState}
-            handleClick={handleSubmit(onSubmit)}
-          />
+          {baseline && (
+            <Button
+              label="Save Changes"
+              styleObject={{
+                baseColor: 'bg-teal-600',
+                hoverColor: 'hover:bg-teal-700',
+                rounded: 'rounded-full',
+                size: 'px-10 py-3 text-md min-h-[3rem]',
+                textColor: 'text-white',
+              }}
+              loading={mutation.isPending}
+              success={successState}
+              handleClick={handleSubmit(onSubmit)}
+            />
+          )}
         </div>
       }
     >
-      <form className="space-y-6">
+      {!baseline && <EditRecordStatus query={recordQuery} fallback="Could not load this student" />}
+      <form className="space-y-6" hidden={!baseline}>
         {submitError && (
           <div className="p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 rounded-lg text-red-700 dark:text-red-400 text-sm">
             {submitError}
@@ -401,7 +456,7 @@ export default function EditStudentModal({ isOpen, onClose, onSuccess, student }
             Father
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Field label="Name">
+            <Field label="Name" error={errors.father?.name?.message}>
               <input {...register('father.name')} className={inputCls} />
             </Field>
             <Field label="CNIC">
@@ -444,7 +499,7 @@ export default function EditStudentModal({ isOpen, onClose, onSuccess, student }
             Mother
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Field label="Name">
+            <Field label="Name" error={errors.mother?.name?.message}>
               <input {...register('mother.name')} className={inputCls} />
             </Field>
             <Field label="CNIC">
@@ -465,13 +520,13 @@ export default function EditStudentModal({ isOpen, onClose, onSuccess, student }
             Emergency Contact
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <Field label="Name">
+            <Field label="Name" error={errors.emergencyContact?.name?.message}>
               <input {...register('emergencyContact.name')} className={inputCls} />
             </Field>
-            <Field label="Phone">
+            <Field label="Phone" error={errors.emergencyContact?.phone?.message}>
               <input {...register('emergencyContact.phone')} className={inputCls} />
             </Field>
-            <Field label="Relation">
+            <Field label="Relation" error={errors.emergencyContact?.relation?.message}>
               <input {...register('emergencyContact.relation')} className={inputCls} />
             </Field>
           </div>
@@ -518,7 +573,7 @@ export default function EditStudentModal({ isOpen, onClose, onSuccess, student }
                 className={inputCls}
               />
             </Field>
-            <Field label="Full Waiver">
+            <Field label="Full Waiver" error={errors.feeWaiver?.message}>
               <select
                 {...register('feeWaiver')}
                 className={`${inputCls} bg-white dark:bg-gray-900`}

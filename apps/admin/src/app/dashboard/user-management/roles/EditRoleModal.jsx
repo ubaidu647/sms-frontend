@@ -10,6 +10,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { fetchData, putData } from '@/utils/api';
 import { useTokenStore } from '@/store/tokenStore';
 import { useUserStore } from '@/store/userStore';
+import { refreshCurrentUser } from '@/hooks/useAuth';
 import { AVAILABLE_MENUS, AVAILABLE_ACTIONS } from '@/constants/rolePermissions';
 
 const editRoleSchema = yup.object().shape({
@@ -106,6 +107,10 @@ export default function EditRoleModal({ isOpen, onClose, onSuccess, role }) {
       });
       queryClient.setQueryData(['role-detail', role._id], res.data);
       queryClient.invalidateQueries({ queryKey: ['roles'] });
+      // Edited the signed-in user's own role: reload who they are so menus and
+      // permission checks follow the new grants without a re-login.
+      const ownRoleId = String(user?.role?._id || user?.role?.id || user?.roleId || '');
+      if (ownRoleId && ownRoleId === String(role._id)) refreshCurrentUser();
       toast.success(res?.message || 'Role updated');
       setSuccessState(true);
       setTimeout(() => {

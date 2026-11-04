@@ -14,12 +14,14 @@ import {
   gradeFromPercentage,
 } from '@/constants/exam';
 import { resolveScope } from '@/utils/permissions';
-import { errorStatus } from '@/utils/queryError';
+import { errorStatus, retryUnless4xx } from '@/utils/queryError';
+import QueryErrorState from '@/component/QueryErrorState';
 import {
   buildMarkEntries,
   invalidMarkStudents,
   noteEdit,
   releaseSavedEdits,
+  rosterStudents,
   savedStudentIds,
   toMark,
 } from '@/utils/marksEntries';
@@ -72,7 +74,7 @@ export default function MarksEntryPage() {
 
   useEffect(() => {
     if (!examIsError) return;
-    const msg = examError?.response?.data?.message || examError?.message || 'Failed to load exam';
+    const msg = examError?.message || 'Failed to load exam';
     toast.error(msg);
   }, [examIsError, examError]);
 
@@ -124,21 +126,38 @@ export default function MarksEntryPage() {
     if (!sections.some((s) => s._id === sectionId)) setSectionId('');
   }, [sections, sectionId]);
 
-  const { data: studentRes, isFetching: studentsLoading } = useQuery({
-    queryKey: ['students-by-section', sectionId],
-    queryFn: () =>
-      fetchData({
-        url: '/student/list',
-        page: 1,
-        limit: 500,
-        token,
-        sectionId,
-        isActive: true,
-      }),
-    enabled: !!token && !!sectionId,
+  // The exam's roster for the section: its cohort when the exam was sat,
+  // including students since promoted out (marks entry accepts them). An API
+  // without the roster endpoint (404) falls back to the section's current students.
+  const {
+    data: rosterData,
+    isFetching: studentsLoading,
+    isError: rosterIsError,
+    error: rosterError,
+  } = useQuery({
+    queryKey: ['exam-roster', examId, sectionId],
+    queryFn: async () => {
+      try {
+        const res = await fetchData({ url: `/exam/${examId}/roster`, token, sectionId });
+        return rosterStudents(res?.data?.students ?? res?.students);
+      } catch (err) {
+        if (errorStatus(err) !== 404) throw err;
+        const res = await fetchData({
+          url: '/student/list',
+          page: 1,
+          limit: 500,
+          token,
+          sectionId,
+          isActive: true,
+        });
+        return res?.data || [];
+      }
+    },
+    enabled: !!token && !!examId && !!sectionId,
     staleTime: 30000,
+    retry: retryUnless4xx,
   });
-  const students = useMemo(() => studentRes?.data || [], [studentRes]);
+  const students = useMemo(() => rosterData || [], [rosterData]);
 
   const {
     data: resultsRes,
@@ -162,8 +181,7 @@ export default function MarksEntryPage() {
 
   useEffect(() => {
     if (!resultsIsError) return;
-    const msg =
-      resultsError?.response?.data?.message || resultsError?.message || 'Failed to load results';
+    const msg = resultsError?.message || 'Failed to load results';
     toast.error(msg);
   }, [resultsIsError, resultsError]);
 
@@ -305,7 +323,8 @@ export default function MarksEntryPage() {
     );
   }
   if (!exam) {
-    const forbidden = examError?.response?.status === 403;
+    // fetchData rethrows through toApiError: the status is on `err.status`.
+    const forbidden = (examError?.status ?? examError?.response?.status) === 403;
     return (
       <div className="md:flex-1 md:min-h-0 md:overflow-hidden flex flex-col bg-gray-50 dark:bg-gray-800 p-3 sm:p-6 rounded-2xl sm:rounded-[50px]">
         <div className="max-w-7xl mx-auto">
@@ -317,7 +336,7 @@ export default function MarksEntryPage() {
           </button>
           <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 p-12 text-center text-gray-500 dark:text-gray-400">
             {forbidden
-              ? examError?.response?.data?.message || 'You are not assigned to this exam class'
+              ? examError?.message || 'You are not assigned to this exam class'
               : 'Exam not found.'}
           </div>
         </div>
@@ -441,6 +460,8 @@ export default function MarksEntryPage() {
           <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 p-12 text-center text-gray-500 dark:text-gray-400 text-sm">
             Loading roster…
           </div>
+        ) : rosterIsError ? (
+          <QueryErrorState error={rosterError} fallback="Could not load the roster" />
         ) : students.length === 0 ? (
           <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 p-12 text-center text-gray-500 dark:text-gray-400 text-sm">
             No students in this section.
@@ -497,7 +518,17 @@ export default function MarksEntryPage() {
                           {s.rollNumber || '—'}
                         </td>
                         <td className="px-4 py-2 text-gray-900 dark:text-gray-100">
-                          <div className="font-medium">{s.user?.name || '—'}</div>
+                          <div className="font-medium flex items-center gap-2">
+                            {s.user?.name || '—'}
+                            {s.promoted && (
+                              <span
+                                className="inline-flex px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-100 text-indigo-700 dark:bg-indigo-950/50 dark:text-indigo-300"
+                                title="Promoted out of this section since the exam"
+                              >
+                                Promoted
+                              </span>
+                            )}
+                          </div>
                           <div className="text-xs text-gray-400 dark:text-gray-500">
                             {s.admissionNumber}
                           </div>

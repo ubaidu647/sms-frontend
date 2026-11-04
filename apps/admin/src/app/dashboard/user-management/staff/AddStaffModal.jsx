@@ -10,6 +10,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { fetchData, postData } from '@/utils/api';
 import { useTokenStore } from '@/store/tokenStore';
 import { useUserStore } from '@/store/userStore';
+import { PASSWORD_MIN, PASSWORD_MAX } from '@/utils/changePassword';
 
 const ALLOWED_PHOTO_TYPES = [
   'image/jpeg',
@@ -25,7 +26,8 @@ const schema = yup.object().shape({
   email: yup.string().email('Invalid email').required('Email is required'),
   password: yup
     .string()
-    .min(6, 'Password must be at least 6 characters')
+    .min(PASSWORD_MIN, `Password must be at least ${PASSWORD_MIN} characters`)
+    .max(PASSWORD_MAX, `Password must be at most ${PASSWORD_MAX} characters`)
     .required('Password is required'),
   roleId: yup.string().required('Role is required'),
   branchId: yup.string().required('Branch is required'),
@@ -339,7 +341,7 @@ export default function AddStaffModal({ isOpen, onClose, onSuccess }) {
               <input
                 {...register('password')}
                 type="password"
-                placeholder="Min 6 characters"
+                placeholder={`Min ${PASSWORD_MIN} characters`}
                 className={inputCls}
               />
             </Field>

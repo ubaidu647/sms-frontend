@@ -15,6 +15,7 @@ import { useTokenStore } from '@/store/tokenStore';
 import { useUserStore } from '@/store/userStore';
 import { localYMD } from '@/utils/localDate';
 import { currentAcademicYear } from '@/utils/academicYear';
+import { PASSWORD_MIN, PASSWORD_MAX } from '@/utils/changePassword';
 
 const ALLOWED_PHOTO_TYPES = [
   'image/jpeg',
@@ -34,7 +35,8 @@ const schema = yup.object().shape({
   password: yup
     .string()
     .transform((v) => (v === '' ? undefined : v))
-    .min(6, 'Password must be at least 6 characters')
+    .min(PASSWORD_MIN, `Password must be at least ${PASSWORD_MIN} characters`)
+    .max(PASSWORD_MAX, `Password must be at most ${PASSWORD_MAX} characters`)
     .optional(),
 
   // Branch (only used by org-level admins)
@@ -579,7 +581,7 @@ export default function AddStudentModal({ isOpen, onClose, onSuccess }) {
                 <input
                   {...register('password')}
                   type="password"
-                  placeholder="Min 6 chars (defaults to admission number)"
+                  placeholder={`Min ${PASSWORD_MIN} chars (defaults to admission number)`}
                   className={inputCls}
                 />
               </Field>

@@ -9,6 +9,7 @@ import { fetchData } from '@/utils/api';
 import SchoolHeader from '../../../SchoolHeader';
 import PrintStyles from '../../../printStyles';
 import { GRADE_COLORS, formatDate } from '@/constants/exam';
+import { missingPapersReason } from '@/utils/examResult';
 
 export default function ResultCardPage() {
   const params = useParams();
@@ -36,6 +37,7 @@ export default function ResultCardPage() {
   }
 
   const { student, exam, subjects, summary } = card;
+  const missingReason = missingPapersReason(summary);
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
@@ -203,6 +205,10 @@ export default function ResultCardPage() {
             />
             <Info label="Failed Subjects" value={summary.failedSubjectsCount ?? 0} />
           </div>
+
+          {missingReason && (
+            <p className="-mt-4 mb-8 text-sm font-medium text-red-700">{missingReason}</p>
+          )}
 
           <div className="grid grid-cols-3 gap-8 mt-12 pt-6 text-sm">
             <Signature label="Class Teacher" />

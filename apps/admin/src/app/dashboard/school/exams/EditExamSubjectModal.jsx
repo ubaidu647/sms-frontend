@@ -101,6 +101,8 @@ export default function EditExamSubjectModal({ isOpen, onClose, onSuccess, examI
     onSuccess: (res) => {
       toast.success(res?.message || 'Subject updated');
       queryClient.invalidateQueries({ queryKey: ['exam-detail', examId] });
+      // The exam list shows paper counts / dates.
+      queryClient.invalidateQueries({ queryKey: ['exams'] });
       setSuccessState(true);
       setTimeout(() => {
         setSuccessState(false);

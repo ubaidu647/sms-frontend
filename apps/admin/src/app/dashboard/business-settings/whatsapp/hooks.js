@@ -23,7 +23,7 @@ import {
 // Derive it from the same base URL the REST client uses (which includes /api),
 // so the two can never drift apart.
 const API_ORIGIN = (() => {
-  const raw = apiClient.defaults.baseURL || 'http://localhost:4001/api';
+  const raw = apiClient.defaults.baseURL || 'http://localhost:4000/api';
   try {
     return new URL(raw).origin;
   } catch {
@@ -192,6 +192,14 @@ export function useWhatsAppSession({ branchId, filterBranchId, enabled = true } 
     });
     socket.on('connect', () => {
       authRetried = false;
+    });
+    // The server dropped the stream (plan no longer covers this user, or a
+    // password change is due). Stop reconnecting and fall back to polling: the
+    // next API call gets the same refusal and the API client handles it.
+    socket.on('session:refused', () => {
+      socketLive.current = false;
+      socket.io.opts.reconnection = false;
+      socket.disconnect();
     });
     socket.on('whatsapp:qr', ({ branchId: bId, qr: nextQr }) => {
       if (mine(bId)) setQr(nextQr || null);

@@ -1,7 +1,7 @@
-'use client';
-import { use } from 'react';
-import Link from 'next/link';
-import toast from 'react-hot-toast';
+"use client";
+import { use } from "react";
+import Link from "next/link";
+import toast from "react-hot-toast";
 import {
   BookOpen,
   ArrowLeft,
@@ -11,17 +11,26 @@ import {
   XCircle,
   Award,
   Info,
-} from 'lucide-react';
-import { useHomeworkDetail, useSubmitHomework } from '@/hooks/useHomework';
-import { PageHeader, Panel } from '@/component/dashboard/Panel';
-import { Loading, ErrorState } from '@/component/dashboard/States';
-import { SubmissionBadge, TypeBadge, getSubmitState } from '@/component/dashboard/homework/badges';
-import SubmissionForm from '@/component/dashboard/homework/SubmissionForm';
-import { formatDate } from '@/utils/format';
+} from "lucide-react";
+import { useHomeworkDetail, useSubmitHomework } from "@/hooks/useHomework";
+import { PageHeader, Panel } from "@/component/dashboard/Panel";
+import { Loading, ErrorState } from "@/component/dashboard/States";
+import {
+  SubmissionBadge,
+  TypeBadge,
+  getSubmitState,
+} from "@/component/dashboard/homework/badges";
+import SubmissionForm from "@/component/dashboard/homework/SubmissionForm";
+import { formatDate } from "@/utils/format";
+import {
+  resultsPendingMessage,
+  displayStatus,
+  resultsHidden,
+} from "@/utils/portalResults";
 
 const fileName = (att) =>
-  att.originalName || att.fileName || att.filename || att.name || 'Attachment';
-const fileUrl = (att) => att.url || att.path || att.location || '#';
+  att.originalName || att.fileName || att.filename || att.name || "Attachment";
+const fileUrl = (att) => att.url || att.path || att.location || "#";
 
 // Reference files the teacher attached to the homework.
 function ReferenceFiles({ attachments }) {
@@ -50,16 +59,25 @@ function ReferenceFiles({ attachments }) {
 }
 
 // What the student already submitted (read-only). MCQ shows per-question
-// correctness + the auto-graded score.
+// correctness + the auto-graded score — once the homework is over; until then
+// only the answers picked.
 function SubmittedView({ homework }) {
   const sub = homework.mySubmission;
   if (!sub) return null;
 
-  const graded = homework.submissionStatus === 'graded' || sub.status === 'graded';
+  const graded =
+    homework.submissionStatus === "graded" || sub.status === "graded";
+  const hidden = resultsHidden(homework);
 
   return (
     <Panel title="Your submission">
-      {graded && sub.marksObtained != null && (
+      {hidden && (
+        <p className="mb-4 flex items-start gap-2 rounded-xl bg-gray-50 dark:bg-gray-800/50 px-4 py-3 text-sm text-gray-600 dark:text-gray-300">
+          <Info className="w-4 h-4 flex-shrink-0 mt-0.5" />
+          {resultsPendingMessage(homework)}
+        </p>
+      )}
+      {!hidden && graded && sub.marksObtained != null && (
         <div className="mb-4 flex items-center gap-3 rounded-xl bg-green-50 dark:bg-green-950/30 px-4 py-3">
           <Award className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0" />
           <div>
@@ -75,13 +93,13 @@ function SubmittedView({ homework }) {
         </div>
       )}
 
-      {homework.submissionType === 'written' && (
+      {homework.submissionType === "written" && (
         <p className="whitespace-pre-line text-sm text-gray-700 dark:text-gray-200">
           {sub.answerText}
         </p>
       )}
 
-      {homework.submissionType === 'document' && (
+      {homework.submissionType === "document" && (
         <ul className="space-y-2">
           {(sub.attachments || []).map((att, i) => (
             <li key={att._id || i}>
@@ -101,14 +119,16 @@ function SubmittedView({ homework }) {
         </ul>
       )}
 
-      {homework.submissionType === 'mcq' && (
+      {homework.submissionType === "mcq" && (
         <ul className="space-y-3">
           {(sub.answers || []).map((ans, i) => {
             const q = homework.questions?.[ans.questionIndex] ?? {};
             const chosen = q.options?.[ans.selectedOptionIndex]?.text;
             return (
               <li key={i} className="flex items-start gap-2">
-                {ans.isCorrect ? (
+                {hidden || typeof ans.isCorrect !== "boolean" ? (
+                  <CheckCircle2 className="w-4 h-4 text-gray-300 dark:text-gray-600 flex-shrink-0 mt-0.5" />
+                ) : ans.isCorrect ? (
                   <CheckCircle2 className="w-4 h-4 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
                 ) : (
                   <XCircle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
@@ -118,7 +138,7 @@ function SubmittedView({ homework }) {
                     {q.questionText || `Question ${ans.questionIndex + 1}`}
                   </p>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
-                    Your answer: {chosen ?? '—'}
+                    Your answer: {chosen ?? "—"}
                   </p>
                 </div>
               </li>
@@ -132,20 +152,34 @@ function SubmittedView({ homework }) {
 
 export default function HomeworkDetailPage({ params }) {
   const { id } = use(params);
-  const { data: homework, isLoading, isError, error, refetch } = useHomeworkDetail(id);
+  const {
+    data: homework,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useHomeworkDetail(id);
   const submit = useSubmitHomework(id);
 
   const handleSubmit = (body) => {
     submit.mutate(body, {
       onSuccess: (sub) => {
-        if (sub?.status === 'graded' && sub.marksObtained != null) {
-          toast.success(`Submitted! Score: ${sub.marksObtained}/${homework.maxMarks}`);
+        if (sub?.resultsReleased === false) {
+          toast.success(
+            `Answers submitted. ${resultsPendingMessage(homework)}`,
+          );
+        } else if (sub?.status === "graded" && sub.marksObtained != null) {
+          toast.success(
+            `Submitted! Score: ${sub.marksObtained}/${homework.maxMarks}`,
+          );
         } else {
-          toast.success('Homework submitted.');
+          toast.success("Homework submitted.");
         }
       },
       onError: (err) => {
-        toast.error(err.response?.data?.message || err.message || 'Could not submit.');
+        toast.error(
+          err.response?.data?.message || err.message || "Could not submit.",
+        );
       },
     });
   };
@@ -177,9 +211,15 @@ export default function HomeworkDetailPage({ params }) {
     );
   }
 
-  const { canSubmit, reason } = getSubmitState(homework);
+  const { canSubmit, reason: submitReason } = getSubmitState(homework);
+  // An MCQ is locked once answered; until results are out, say so plainly
+  // rather than "graded".
+  const reason =
+    resultsHidden(homework) && homework.mySubmission
+      ? `Your answers are in and can no longer be changed. ${resultsPendingMessage(homework)}`
+      : submitReason;
   const hasSubmission = !!homework.mySubmission;
-  const overdue = homework.isPastDue && homework.submissionStatus === 'pending';
+  const overdue = homework.isPastDue && homework.submissionStatus === "pending";
 
   return (
     <div className="max-w-3xl">
@@ -191,7 +231,7 @@ export default function HomeworkDetailPage({ params }) {
         subtitle={homework.subject?.name || homework.subjectId?.name}
         action={
           <div className="flex items-center gap-2">
-            <SubmissionBadge status={homework.submissionStatus} />
+            <SubmissionBadge status={displayStatus(homework)} />
             <TypeBadge type={homework.submissionType} />
           </div>
         }
@@ -204,20 +244,24 @@ export default function HomeworkDetailPage({ params }) {
           </p>
           <div className="mt-4 flex flex-wrap items-center gap-4 text-xs text-gray-400 border-t border-gray-100 dark:border-gray-800 pt-3">
             <span
-              className={`flex items-center gap-1 ${overdue ? 'text-red-500 font-medium' : ''}`}
+              className={`flex items-center gap-1 ${overdue ? "text-red-500 font-medium" : ""}`}
             >
-              <Clock className="w-3 h-3" /> Due{' '}
+              <Clock className="w-3 h-3" /> Due{" "}
               {formatDate(homework.dueDate, {
-                day: 'numeric',
-                month: 'short',
-                year: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit',
+                day: "numeric",
+                month: "short",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
               })}
             </span>
-            {homework.maxMarks != null && <span>Max marks: {homework.maxMarks}</span>}
+            {homework.maxMarks != null && (
+              <span>Max marks: {homework.maxMarks}</span>
+            )}
             {homework.allowLateSubmission && homework.isPastDue && (
-              <span className="text-[#b07d00] dark:text-[#f5b21c]">Late submission allowed</span>
+              <span className="text-[#b07d00] dark:text-[#f5b21c]">
+                Late submission allowed
+              </span>
             )}
           </div>
         </Panel>
@@ -227,7 +271,7 @@ export default function HomeworkDetailPage({ params }) {
         {hasSubmission && <SubmittedView homework={homework} />}
 
         {canSubmit ? (
-          <Panel title={hasSubmission ? 'Resubmit' : 'Submit'}>
+          <Panel title={hasSubmission ? "Resubmit" : "Submit"}>
             {hasSubmission && (
               <p className="mb-4 flex items-start gap-2 text-sm text-gray-500 dark:text-gray-400">
                 <Info className="w-4 h-4 flex-shrink-0 mt-0.5" />

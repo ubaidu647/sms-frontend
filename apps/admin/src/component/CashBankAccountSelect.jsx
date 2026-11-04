@@ -3,6 +3,7 @@ import React, { useEffect, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { fetchData } from '@/utils/api';
 import { useTokenStore } from '@/store/tokenStore';
+import { errorMessage, retryUnless4xx } from '@/utils/queryError';
 import { methodToCashOrBank, ACCOUNT_CATEGORY_LABELS } from '@/constants/accounting';
 
 /**
@@ -22,10 +23,16 @@ import { methodToCashOrBank, ACCOUNT_CATEGORY_LABELS } from '@/constants/account
  * receives the id. Callers should send it as `ledgerAccountId` only when the
  * picker reported that a choice was required — see `required` on the change
  * callback's second argument.
+ *
+ * `assetId` (optional) is for an asset disposal: the server checks the caller
+ * may manage that asset and returns the heads of the branch whose books carry
+ * it (where it was bought) — which a branch-tier manager of a transferred
+ * asset could not otherwise reach. When given, `branchId` is not sent.
  */
 export default function CashBankAccountSelect({
   method,
   branchId,
+  assetId,
   value,
   onChange,
   disabled = false,
@@ -35,16 +42,17 @@ export default function CashBankAccountSelect({
   const { accessToken: token } = useTokenStore();
   const mode = methodToCashOrBank(method);
 
-  const { data, isFetching } = useQuery({
-    queryKey: ['cash-bank-accounts', mode, branchId || 'own'],
+  const { data, isFetching, isError, error, refetch } = useQuery({
+    queryKey: ['cash-bank-accounts', mode, assetId ? `asset:${assetId}` : branchId || 'own'],
     queryFn: () =>
       fetchData({
         url: '/ledger/cash-bank-accounts',
         token,
         mode,
-        branchId: branchId || undefined,
+        ...(assetId ? { assetId } : { branchId: branchId || undefined }),
       }),
     enabled: !!token && !!mode,
+    retry: retryUnless4xx,
     staleTime: 60000,
   });
 
@@ -67,6 +75,25 @@ export default function CashBankAccountSelect({
       <div>
         <label className={labelCls}>{label} Account</label>
         <div className="text-xs text-gray-400 py-2">Loading {label.toLowerCase()} accounts…</div>
+      </div>
+    );
+  }
+
+  // A failed lookup is not "no account": say what the server said.
+  if (isError && !accounts.length) {
+    return (
+      <div>
+        <label className={labelCls}>{label} Account</label>
+        <p className="text-xs text-red-600 dark:text-red-400 py-2">
+          Couldn’t load {label.toLowerCase()} accounts — {errorMessage(error, 'request failed')}{' '}
+          <button
+            type="button"
+            onClick={() => refetch()}
+            className="font-semibold underline hover:no-underline"
+          >
+            Retry
+          </button>
+        </p>
       </div>
     );
   }

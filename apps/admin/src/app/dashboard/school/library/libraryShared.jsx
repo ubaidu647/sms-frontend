@@ -6,6 +6,7 @@ import { useTokenStore } from '@/store/tokenStore';
 import { fetchData } from '@/utils/api';
 import { retryUnless4xx } from '@/utils/queryError';
 import { formatAmount } from '@/utils/money';
+import { invalidateLedgerQueries } from '@/utils/ledgerQueries';
 import {
   COPY_STATUS_COLORS,
   FINE_STATUS_COLORS,
@@ -115,6 +116,8 @@ export function invalidateLibraryCirculation(queryClient) {
     ['library-books'],
     ['library-book'],
   ].forEach((queryKey) => queryClient.invalidateQueries({ queryKey }));
+  // Fine collections / waivers post journals.
+  invalidateLedgerQueries(queryClient);
 }
 
 /** After a catalogue (book / copy) mutation. */

@@ -1,6 +1,11 @@
-import { useMutation, useQuery, useQueryClient, keepPreviousData } from '@tanstack/react-query';
-import apiClient from '@/services/apiClient';
-import { useUserStore } from '@/store/userStore';
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+  keepPreviousData,
+} from "@tanstack/react-query";
+import apiClient from "@/services/apiClient";
+import { useUserStore } from "@/store/userStore";
 
 // Student homework endpoints (auto-scoped to the logged-in student by the
 // backend). List/detail are GET; submit is a mutation. Responses are the
@@ -17,9 +22,9 @@ const useUid = () => useUserStore((s) => s.user?._id || s.user?.id || null);
 export function useHomeworkList({ page = 1, limit = 20 } = {}) {
   const uid = useUid();
   return useQuery({
-    queryKey: ['homework', uid, 'list', page, limit],
+    queryKey: ["homework", uid, "list", page, limit],
     queryFn: async () => {
-      const res = await apiClient.get('/dashboard/student/homework', {
+      const res = await apiClient.get("/dashboard/student/homework", {
         params: { page, limit },
       });
       return { items: res.data?.data || [], total: res.data?.total || 0 };
@@ -53,10 +58,12 @@ function dueDeadline(dueDate) {
 export function normalizeHomeworkDetail(hw) {
   if (!hw) return hw;
   const subject =
-    hw.subject ?? (hw.subjectId && typeof hw.subjectId === 'object' ? hw.subjectId : null);
-  const submissionStatus = hw.submissionStatus ?? hw.mySubmission?.status ?? 'pending';
+    hw.subject ??
+    (hw.subjectId && typeof hw.subjectId === "object" ? hw.subjectId : null);
+  const submissionStatus =
+    hw.submissionStatus ?? hw.mySubmission?.status ?? "pending";
   let isPastDue = hw.isPastDue;
-  if (typeof isPastDue !== 'boolean') {
+  if (typeof isPastDue !== "boolean") {
     const deadline = hw.dueDate ? dueDeadline(hw.dueDate) : null;
     isPastDue = deadline ? Date.now() > deadline.getTime() : false;
   }
@@ -67,9 +74,11 @@ export function normalizeHomeworkDetail(hw) {
 export function useHomeworkDetail(id) {
   const uid = useUid();
   return useQuery({
-    queryKey: ['homework', uid, 'detail', id],
+    queryKey: ["homework", uid, "detail", id],
     queryFn: async () =>
-      normalizeHomeworkDetail(unwrap(await apiClient.get(`/dashboard/student/homework/${id}`))),
+      normalizeHomeworkDetail(
+        unwrap(await apiClient.get(`/dashboard/student/homework/${id}`)),
+      ),
     enabled: !!id,
   });
 }
@@ -84,26 +93,36 @@ export function useSubmitHomework(id) {
   const uid = useUid();
   return useMutation({
     mutationFn: async (body) => {
-      const isForm = typeof FormData !== 'undefined' && body instanceof FormData;
-      const res = await apiClient.post(`/dashboard/student/homework/${id}/submit`, body, {
-        headers: isForm ? { 'Content-Type': 'multipart/form-data' } : undefined,
-      });
+      const isForm =
+        typeof FormData !== "undefined" && body instanceof FormData;
+      const res = await apiClient.post(
+        `/dashboard/student/homework/${id}/submit`,
+        body,
+        {
+          headers: isForm
+            ? { "Content-Type": "multipart/form-data" }
+            : undefined,
+        },
+      );
       return res.data?.data;
     },
     onSuccess: (submission) => {
       // Reflect the new submission on the cached detail so the page flips out
       // of the submit form without a round-trip; refetch the list so the badge
       // updates. status here is submitted | late | graded.
-      queryClient.setQueryData(['homework', uid, 'detail', id], (prev) =>
+      queryClient.setQueryData(["homework", uid, "detail", id], (prev) =>
         prev
           ? {
               ...prev,
               mySubmission: submission,
               submissionStatus: submission?.status ?? prev.submissionStatus,
+              // MCQ results stay hidden until the homework is over.
+              resultsReleased:
+                submission?.resultsReleased ?? prev.resultsReleased,
             }
           : prev,
       );
-      queryClient.invalidateQueries({ queryKey: ['homework', uid, 'list'] });
+      queryClient.invalidateQueries({ queryKey: ["homework", uid, "list"] });
     },
   });
 }

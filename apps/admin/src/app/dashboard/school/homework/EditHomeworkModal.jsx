@@ -9,6 +9,7 @@ import { putData } from '@/utils/api';
 import { useTokenStore } from '@/store/tokenStore';
 import { SUBMISSION_TYPES } from './constants';
 import QuestionBuilder, { validateQuestions, serializeQuestions } from './QuestionBuilder';
+import { assignedDateForUpdate } from '@/utils/homeworkGrading';
 
 const inputCls =
   'w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 text-sm text-gray-900 bg-white placeholder:text-gray-400';
@@ -133,7 +134,9 @@ export default function EditHomeworkModal({ isOpen, onClose, onSuccess, homework
       allowLateSubmission: data.allowLateSubmission === 'true',
       status: data.status,
     };
-    payload.assignedDate = data.assignedDate ? new Date(data.assignedDate).toISOString() : null;
+    // Left out when cleared: the homework keeps its assigned date.
+    const assignedDate = assignedDateForUpdate(data.assignedDate);
+    if (assignedDate) payload.assignedDate = assignedDate;
     if (isMcq) {
       payload.questions = serializeQuestions(questions); // backend recomputes maxMarks
     } else {

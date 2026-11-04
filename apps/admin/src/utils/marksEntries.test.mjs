@@ -9,6 +9,7 @@ import {
   noteEdit,
   releaseSavedEdits,
   savedStudentIds,
+  rosterStudents,
 } from './marksEntries.js';
 
 const students = [{ _id: 'a' }, { _id: 'b' }, { _id: 'c' }];
@@ -115,4 +116,26 @@ test('a reset during the save is not undone by the old snapshot', () => {
   noteEdit(edited, 'a');
   releaseSavedEdits(edited, snapshot);
   assert.ok(edited.has('a'));
+});
+
+test('rosterStudents maps the roster to list-row shape and keeps promoted', () => {
+  assert.deepEqual(
+    rosterStudents([
+      { _id: 'a', name: 'Ali', rollNumber: '1', admissionNumber: 'A-1', promoted: true },
+      { _id: 'b', name: 'Sara', rollNumber: '2', admissionNumber: 'A-2', promoted: false },
+      null,
+      { name: 'no id' },
+    ]),
+    [
+      { _id: 'a', user: { name: 'Ali' }, rollNumber: '1', admissionNumber: 'A-1', promoted: true },
+      {
+        _id: 'b',
+        user: { name: 'Sara' },
+        rollNumber: '2',
+        admissionNumber: 'A-2',
+        promoted: false,
+      },
+    ],
+  );
+  assert.deepEqual(rosterStudents(undefined), []);
 });

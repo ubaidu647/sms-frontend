@@ -68,8 +68,20 @@ export default function ExamsPage() {
   const [isActive, setIsActive] = useState('true');
   const [branchDropdownTouched, setBranchDropdownTouched] = useState(false);
 
+  // The name search is server-side and debounced: typing applies it on its own
+  // (Search / Enter still apply it at once), back to page 1.
+  useEffect(() => {
+    const next = draftSearch.trim();
+    if (next === search) return undefined;
+    const t = setTimeout(() => {
+      setSearch(next);
+      setPage(1);
+    }, 400);
+    return () => clearTimeout(t);
+  }, [draftSearch, search]);
+
   const applyFilters = () => {
-    setSearch(draftSearch);
+    setSearch(draftSearch.trim());
     setClassId(draftClassId);
     setExamType(draftExamType);
     setStatus(draftStatus);
@@ -289,6 +301,7 @@ export default function ExamsPage() {
       if (status) params.status = status;
       if (academicYear) params.academicYear = academicYear;
       if (isActive !== '') params.isActive = isActive === 'true';
+      if (search) params.search = search;
       return fetchData({ url: '/exam/list', page, limit, token, ...params });
     },
     placeholderData: keepPreviousData,
@@ -297,14 +310,12 @@ export default function ExamsPage() {
 
   useEffect(() => {
     if (!isError) return;
-    const msg = error?.response?.data?.message || error?.message || 'Failed to load exams';
+    const msg = error?.message || 'Failed to load exams';
     toast.error(msg);
   }, [isError, error]);
 
   const exams = data?.data || [];
-  const filtered = search
-    ? exams.filter((e) => e.name?.toLowerCase().includes(search.toLowerCase()))
-    : exams;
+  const filtered = exams;
   const hasActiveFilters = !!(
     search ||
     classId ||

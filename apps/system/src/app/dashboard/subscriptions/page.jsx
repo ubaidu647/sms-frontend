@@ -1,6 +1,15 @@
 'use client';
 import React, { useMemo, useState } from 'react';
-import { RefreshCw, ArrowLeftRight, Ban, Plus, CreditCard, Eye, Receipt } from 'lucide-react';
+import {
+  RefreshCw,
+  ArrowLeftRight,
+  Ban,
+  Plus,
+  CreditCard,
+  Eye,
+  Receipt,
+  Layers,
+} from 'lucide-react';
 import { Table } from '@/component/Table';
 import ConfirmModal from '../organizations/ConfirmModal';
 import AssignSubscriptionModal from './AssignSubscriptionModal';
@@ -14,6 +23,7 @@ import {
   useSubscriptionHistory,
   useRenewSubscription,
   useCancelSubscription,
+  useSyncSubscriptionPlan,
   useInvoiceSummary,
 } from './hooks/useSubscriptions';
 import {
@@ -83,8 +93,16 @@ export default function SubscriptionsPage() {
   const [selectedSchool, setSelectedSchool] = useState(null);
   const schoolId = selectedSchool?._id || '';
 
-  const { data: currentData, isLoading: currentLoading } = useCurrentSubscription(schoolId);
+  const {
+    data: currentData,
+    isLoading: currentLoading,
+    isError: currentFailed,
+    error: currentError,
+  } = useCurrentSubscription(schoolId);
   const current = currentData?.data ?? null;
+  // "Assign" is only for a school with no live plan (registration already
+  // opens one). A failed read is not "no plan": offer nothing until it loads.
+  const canAssign = !current && !currentFailed;
 
   const [historyPage, setHistoryPage] = useState(1);
   const { data: historyData, isLoading: historyLoading } = useSubscriptionHistory(schoolId, {
@@ -98,11 +116,13 @@ export default function SubscriptionsPage() {
 
   const renew = useRenewSubscription();
   const cancel = useCancelSubscription();
+  const syncPlan = useSyncSubscriptionPlan();
 
   const [assignOpen, setAssignOpen] = useState(false);
   const [changeOpen, setChangeOpen] = useState(false);
   const [renewOpen, setRenewOpen] = useState(false);
   const [cancelOpen, setCancelOpen] = useState(false);
+  const [syncOpen, setSyncOpen] = useState(false);
 
   // Renew is a confirm dialog, so its grace input lives here on the page.
   const [renewGrace, setRenewGrace] = useState('');
@@ -243,6 +263,14 @@ export default function SubscriptionsPage() {
                         Renew
                       </button>
                       <button
+                        onClick={() => setSyncOpen(true)}
+                        title="Copy the package's current limits, platforms and dashboards onto this subscription"
+                        className="flex items-center gap-2 px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-sm"
+                      >
+                        <Layers className="w-4 h-4" />
+                        Re-apply plan
+                      </button>
+                      <button
                         onClick={() => setCancelOpen(true)}
                         className="flex items-center gap-2 px-4 py-2 border border-red-300 text-red-600 dark:text-red-400 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors text-sm"
                       >
@@ -284,6 +312,12 @@ export default function SubscriptionsPage() {
                     </p>
                   )}
                 </>
+              ) : !canAssign ? (
+                <div className="text-red-600 dark:text-red-400">
+                  Could not load this school&apos;s subscription
+                  {currentError?.message ? `: ${currentError.message}` : '.'} Reload the page before
+                  assigning, changing or renewing a plan.
+                </div>
               ) : (
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                   <div>
@@ -388,7 +422,7 @@ export default function SubscriptionsPage() {
 
         {/* Action modals */}
         <AssignSubscriptionModal
-          isOpen={assignOpen}
+          isOpen={assignOpen && canAssign}
           onClose={() => setAssignOpen(false)}
           schoolId={schoolId}
           schoolName={selectedSchool?.name}
@@ -449,6 +483,26 @@ export default function SubscriptionsPage() {
           confirmTone="danger"
           loading={cancel.isPending}
           onConfirm={() => cancel.mutate(schoolId, { onSuccess: () => setCancelOpen(false) })}
+        />
+
+        <ConfirmModal
+          isOpen={syncOpen}
+          onClose={() => setSyncOpen(false)}
+          title="Re-apply plan"
+          message={
+            current
+              ? `Copy the current features of “${current.packageSnapshot?.name}” — limits, platforms, dashboards and feature flags — onto ${selectedSchool?.name ?? 'this school'}’s subscription? Price, cycle length, start/end dates and invoices are not changed.`
+              : ''
+          }
+          confirmLabel="Re-apply plan"
+          confirmTone="warning"
+          loading={syncPlan.isPending}
+          onConfirm={() =>
+            syncPlan.mutate(
+              { subscriptionId: current?._id, schoolId },
+              { onSuccess: () => setSyncOpen(false) },
+            )
+          }
         />
 
         {/* History row actions */}

@@ -7,12 +7,35 @@
       "!{projectRoot}/.next/**",
       "!{projectRoot}/dist/**"
     ],
-    "sharedGlobals": []
+    "sharedGlobals": ["{workspaceRoot}/config/**"],
+    "publicEnv": [
+      {
+        "env": "NEXT_PUBLIC_BACKEND_URL"
+      },
+      {
+        "env": "NEXT_PUBLIC_ACADEMIC_YEAR_START_MONTH"
+      },
+      {
+        "env": "NEXT_PUBLIC_PARENT_PORTAL_URL"
+      },
+      {
+        "env": "NEXT_PUBLIC_STUDENT_URL"
+      },
+      {
+        "env": "NEXT_PUBLIC_SYSTEM_URL"
+      },
+      {
+        "env": "NODE_ENV"
+      },
+      {
+        "env": "ALLOW_LOCALHOST_BUILD"
+      }
+    ]
   },
   "targetDefaults": {
     "build": {
       "dependsOn": ["^build"],
-      "inputs": ["production", "^production"],
+      "inputs": ["production", "^production", "publicEnv"],
       "cache": true,
       "outputs": ["{projectRoot}/.next", "{projectRoot}/dist"]
     },

@@ -263,7 +263,7 @@ export default function GenerateSectionModal({ isOpen, onClose }) {
                 {result.skipped.map((s, i) => (
                   <li key={i} className="px-3 py-2 flex items-center justify-between">
                     <span className="font-mono text-xs text-gray-500 dark:text-gray-400">
-                      {s.studentId}
+                      {s.studentName || s.studentId}
                     </span>
                     <span className="text-gray-700 dark:text-gray-300">{s.reason}</span>
                   </li>

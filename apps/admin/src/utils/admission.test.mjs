@@ -3,6 +3,8 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
+  academicYearMonthBounds,
+  defaultVoucherMonth,
   CLASS_GRADES,
   GRADE_OPTIONS,
   gradeLabel,
@@ -272,4 +274,19 @@ test('forms helpers and public url', () => {
   );
   assert.equal(publicApplyUrl('x', {}), '');
   assert.equal(sumCounts({ a: 2, b: '3', c: null }), 5);
+});
+
+test('academicYearMonthBounds spans the session from its start month', () => {
+  assert.deepEqual(academicYearMonthBounds('2026-2027', 4), { first: '2026-04', last: '2027-03' });
+  assert.deepEqual(academicYearMonthBounds('2026-2027', 8), { first: '2026-08', last: '2027-07' });
+  assert.deepEqual(academicYearMonthBounds('2026-2027', 1), { first: '2026-01', last: '2026-12' });
+  assert.equal(academicYearMonthBounds('2026', 4), null);
+  assert.equal(academicYearMonthBounds('2026-2027', 13), null);
+});
+
+test('defaultVoucherMonth bills a next-session admission from its first month', () => {
+  assert.equal(defaultVoucherMonth('2027-2028', 4, '2027-03'), '2027-04');
+  assert.equal(defaultVoucherMonth('2026-2027', 4, '2026-11'), '2026-11');
+  assert.equal(defaultVoucherMonth('2025-2026', 4, '2026-11'), '2026-03');
+  assert.equal(defaultVoucherMonth('bad', 4, '2026-11'), '2026-11');
 });

@@ -61,9 +61,21 @@ export default function TeacherAssignmentsPage() {
     setIsPrimary(draftIsPrimary);
     setBranchId(draftBranchId);
     setIsActive(draftIsActive);
-    setStaffSearch(draftStaffSearch);
+    setStaffSearch(draftStaffSearch.trim());
     setPage(1);
   };
+
+  // The staff-name search is server-side and debounced: typing applies it on
+  // its own (Search / Enter still apply it at once), back to page 1.
+  useEffect(() => {
+    const next = draftStaffSearch.trim();
+    if (next === staffSearch) return undefined;
+    const t = setTimeout(() => {
+      setStaffSearch(next);
+      setPage(1);
+    }, 400);
+    return () => clearTimeout(t);
+  }, [draftStaffSearch, staffSearch]);
 
   const clearFilters = () => {
     const ay = currentAcademicYear();
@@ -358,6 +370,7 @@ export default function TeacherAssignmentsPage() {
       if (role) params.role = role;
       if (isPrimary !== '') params.isPrimary = isPrimary;
       if (isActive !== '') params.isActive = isActive;
+      if (staffSearch) params.search = staffSearch;
       return fetchData({ url: '/teaching-assignment/list', page, limit, token, ...params });
     },
     placeholderData: keepPreviousData,
@@ -366,12 +379,8 @@ export default function TeacherAssignmentsPage() {
 
   const assignments = useMemo(() => data?.data || [], [data]);
 
-  // Filter client-side by staff name search
-  const filteredAssignments = useMemo(() => {
-    if (!staffSearch.trim()) return assignments;
-    const q = staffSearch.toLowerCase();
-    return assignments.filter((a) => a.staff?.user?.name?.toLowerCase().includes(q));
-  }, [assignments, staffSearch]);
+  // The search is applied by the server, so totals and pages reflect it.
+  const filteredAssignments = assignments;
 
   return (
     <div className="md:flex-1 md:min-h-0 md:overflow-hidden flex flex-col bg-gray-50 dark:bg-gray-800 p-3 sm:p-6 rounded-2xl sm:rounded-[50px]">

@@ -8,7 +8,7 @@ import { SESSION_COOKIE, ROLE_COOKIE } from '@/utils/session';
 // NOTE: `auth-role` is written by the client (see useAuth / useSignIn), so this
 // check is a routing convenience, not a security boundary — the backend must
 // authorize every /package, /subscription and /invoice call on its own.
-const PUBLIC_PATHS = ['/signin', '/forgot-password'];
+const PUBLIC_PATHS = ['/signin'];
 
 export function middleware(req) {
   // `sms_at_system` is the API's httpOnly session cookie for this portal (shared
@@ -48,5 +48,5 @@ export function middleware(req) {
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*', '/signin', '/forgot-password'],
+  matcher: ['/dashboard/:path*', '/signin'],
 };
