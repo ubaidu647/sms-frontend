@@ -135,19 +135,13 @@ export const Sidebar = ({ isMobileOpen = false, onMobileClose }) => {
               className="flex items-center gap-3 no-underline"
             >
               <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center flex-shrink-0">
-                <svg
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="#00918e" />
-                  <path
-                    d="M2 17L12 22L22 17V12L12 17L2 12V17Z"
-                    fill="#00918e"
-                  />
-                </svg>
+                <img
+                  src="/logo.png"
+                  alt="Logo"
+                  width={32}
+                  height={32}
+                  className="w-8 h-8 object-contain"
+                />
               </div>
               <h2 className="text-white font-bold text-xl truncate">
                 Parent Portal
@@ -158,16 +152,13 @@ export const Sidebar = ({ isMobileOpen = false, onMobileClose }) => {
               href="/dashboard"
               className="w-10 h-10 bg-white rounded-lg flex items-center justify-center"
             >
-              <svg
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="#00918e" />
-                <path d="M2 17L12 22L22 17V12L12 17L2 12V17Z" fill="#00918e" />
-              </svg>
+              <img
+                src="/logo.png"
+                alt="Logo"
+                width={32}
+                height={32}
+                className="w-8 h-8 object-contain"
+              />
             </Link>
           )}
           <button
