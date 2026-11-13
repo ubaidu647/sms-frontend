@@ -1,12 +1,7 @@
 "use client";
 import { useEffect } from "react";
 import toast from "react-hot-toast";
-import {
-  CalendarCheck,
-  BarChart3,
-  Wallet,
-  Sparkles,
-} from "lucide-react";
+import { CalendarCheck, BarChart3, Wallet, Sparkles } from "lucide-react";
 import SignInForm from "./SignInForm";
 import { planNoticeFor, takeSigninNotice } from "@/utils/authErrors";
 
@@ -44,10 +39,14 @@ const SignInPage = () => {
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(245,178,28,0.08),transparent_60%)]" />
 
         <div className="relative flex items-center gap-2 w-fit">
-          <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center shadow-md p-0.5 shrink-0">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo.png" alt="Mizenzo" className="w-full h-full object-contain" />
-          </div>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/logo-light.png"
+            alt="Mizenzo"
+            width={44}
+            height={44}
+            className="w-11 h-11 object-contain shrink-0"
+          />
           <span className="text-xl font-bold tracking-tight">
             Mizenzo<span className="text-[#f5b21c]"> School Management</span>
           </span>
@@ -83,7 +82,8 @@ const SignInPage = () => {
         </div>
 
         <div className="relative text-xs text-white/60">
-          © {new Date().getFullYear()} Mizenzo School Management. All rights reserved.
+          © {new Date().getFullYear()} Mizenzo School Management. All rights
+          reserved.
         </div>
       </div>
 
@@ -92,10 +92,14 @@ const SignInPage = () => {
         <div className="w-full max-w-md">
           {/* Mobile brand */}
           <div className="lg:hidden flex items-center gap-2 mb-10 w-fit">
-            <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center shadow-md p-0.5 shrink-0">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/logo.png" alt="Mizenzo" className="w-full h-full object-contain" />
-            </div>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/logo.png"
+              alt="Mizenzo"
+              width={44}
+              height={44}
+              className="w-11 h-11 object-contain shrink-0"
+            />
             <span className="text-lg font-bold tracking-tight text-gray-900">
               Mizenzo<span className="text-[#f5b21c]"> School Management</span>
             </span>

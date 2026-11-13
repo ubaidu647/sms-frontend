@@ -14,6 +14,12 @@ test('signin: signed-in users go to the home page, signed-out users stay', () =>
   assert.equal(go('/dashboard/school/students', 'admin', { hasToken: false }), '/signin');
 });
 
+test('landing page: signed-in users go to the dashboard, visitors see the page', () => {
+  assert.equal(go('/', 'admin'), '/dashboard');
+  assert.equal(go('/', 'Teacher'), '/dashboard');
+  assert.equal(go('/', null, { hasToken: false }), null);
+});
+
 test('system roles reach the /dashboard home page (no redirect to the school app)', () => {
   for (const role of ['super-admin', 'admin', 'sub-admin']) {
     assert.equal(go('/dashboard', role), null);

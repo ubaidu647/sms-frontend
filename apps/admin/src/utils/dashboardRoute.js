@@ -11,6 +11,10 @@ export const PUBLIC_PATHS = ['/signin'];
 // like an admin, i.e. school-scoped.
 export const SYSTEM_ROLES = ['super-admin', 'admin', 'sub-admin'];
 
+// The public landing page at the site root. Signed-in users skip it and go
+// straight to their dashboard; everyone else sees it.
+export const LANDING = '/';
+
 // The home page (Getting started checklist). Matched exactly — it is not a
 // prefix for the rest of /dashboard.
 export const HOME = '/dashboard';
@@ -54,6 +58,8 @@ export function parseRoleCookie(raw) {
  * @returns {string | null}
  */
 export function dashboardRedirect({ hasToken, roleName, hasActions, pathname }) {
+  if (pathname === LANDING) return hasToken ? HOME : null;
+
   const isPublic = PUBLIC_PATHS.includes(pathname);
 
   // Logged-in user away from signin; logged-out user to signin.

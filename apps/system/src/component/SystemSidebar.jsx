@@ -93,27 +93,23 @@ export const SystemSidebar = ({ onLogout, isMobileOpen = false, onMobileClose })
         <div className="flex items-center justify-between mb-6">
           {!isCollapsed ? (
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center flex-shrink-0">
-                <img
-                  src="/logo.png"
-                  alt="Logo"
-                  width={32}
-                  height={32}
-                  className="w-8 h-8 object-contain"
-                />
-              </div>
+              <img
+                src="/logo-light.png"
+                alt="Logo"
+                width={40}
+                height={40}
+                className="w-10 h-10 object-contain flex-shrink-0"
+              />
               <h2 className="text-white font-bold text-xl truncate">System</h2>
             </div>
           ) : (
-            <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
-              <img
-                src="/logo.png"
-                alt="Logo"
-                width={32}
-                height={32}
-                className="w-8 h-8 object-contain"
-              />
-            </div>
+            <img
+              src="/logo-light.png"
+              alt="Logo"
+              width={40}
+              height={40}
+              className="w-10 h-10 object-contain flex-shrink-0"
+            />
           )}
           <button
             onClick={() => {

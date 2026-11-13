@@ -36,10 +36,14 @@ const SignInPage = () => {
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(255,255,255,0.08),transparent_60%)]" />
 
         <Link href="/" className="relative flex items-center gap-2 w-fit">
-          <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center shadow-md p-0.5 shrink-0">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo.png" alt="Mizenzo" className="w-full h-full object-contain" />
-          </div>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/logo-light.png"
+            alt="Mizenzo"
+            width={44}
+            height={44}
+            className="w-11 h-11 object-contain shrink-0"
+          />
           <span className="text-xl font-bold tracking-tight">
             Mizenzo<span className="text-yellow-300"> School Management</span>
           </span>
@@ -81,10 +85,14 @@ const SignInPage = () => {
         <div className="w-full max-w-md">
           {/* Mobile brand */}
           <Link href="/" className="lg:hidden flex items-center gap-2 mb-10 w-fit">
-            <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center shadow-md p-0.5 shrink-0">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/logo.png" alt="Mizenzo" className="w-full h-full object-contain" />
-            </div>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/logo.png"
+              alt="Mizenzo"
+              width={44}
+              height={44}
+              className="w-11 h-11 object-contain shrink-0"
+            />
             <span className="text-lg font-bold tracking-tight text-gray-900 dark:text-gray-100">
               Mizenzo<span className="text-teal-600"> School Management</span>
             </span>

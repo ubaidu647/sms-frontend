@@ -1,0 +1,133 @@
+/* Landing page motion. Everything here stops for people who prefer reduced motion. */
+
+@keyframes lp-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes lp-ring {
+  from {
+    stroke-dasharray: 0 100;
+  }
+}
+
+@keyframes lp-swap-a {
+  0%,
+  40% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  46%,
+  94% {
+    opacity: 0;
+    transform: translateY(-40%);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes lp-swap-b {
+  0%,
+  46% {
+    opacity: 0;
+    transform: translateY(40%);
+  }
+  52%,
+  88% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  94%,
+  100% {
+    opacity: 0;
+    transform: translateY(40%);
+  }
+}
+
+@keyframes lp-shine {
+  from {
+    background-position: 200% center;
+  }
+  to {
+    background-position: -200% center;
+  }
+}
+
+@keyframes lp-rise {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.lp-float {
+  animation: lp-float 5s ease-in-out infinite;
+}
+
+.lp-ring {
+  animation: lp-ring 1.4s ease-out both;
+}
+
+.lp-swap-a {
+  animation: lp-swap-a 7s ease-in-out infinite;
+}
+
+.lp-swap-b {
+  animation: lp-swap-b 7s ease-in-out infinite;
+}
+
+/* Gold-to-teal sweep on the hero highlight line. */
+.lp-shine {
+  background-image: linear-gradient(90deg, #00918e, #33b9b5, #f5b301, #33b9b5, #00918e);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: lp-shine 8s linear infinite;
+}
+
+.lp-rise {
+  animation: lp-rise 0.7s ease-out both;
+}
+
+/* Hero artwork cards are sized in container units, so they scale with the photo. */
+.lp-art {
+  container-type: inline-size;
+}
+
+.lp-card {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid rgba(0, 145, 142, 0.12);
+  border-radius: 2.2cqw;
+  box-shadow: 0 1.4cqw 4cqw -1cqw rgba(0, 76, 74, 0.28);
+  padding: 2cqw 2.2cqw;
+  font-size: 1.75cqw;
+  color: #0b2b2a;
+  backdrop-filter: blur(6px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lp-float,
+  .lp-ring,
+  .lp-swap-a,
+  .lp-swap-b,
+  .lp-shine,
+  .lp-rise {
+    animation: none !important;
+  }
+  .lp-swap-b {
+    display: none;
+  }
+}

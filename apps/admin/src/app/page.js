@@ -1,556 +1,546 @@
-'use client';
-
 import Link from 'next/link';
-import { useTokenStore } from '@/store/tokenStore';
+import { ArrowRight, Check, Mail, MessageCircle, Phone, Sparkles } from 'lucide-react';
+
+import '@/component/landing/landing.css';
+import AuthRedirect from '@/component/landing/AuthRedirect';
+import HeroArt from '@/component/landing/HeroArt';
+import LandingIcon from '@/component/landing/LandingIcon';
+import LandingNav from '@/component/landing/LandingNav';
+import Pricing from '@/component/landing/Pricing';
 import {
-  Users,
-  ClipboardCheck,
-  Wallet,
-  BookOpen,
-  BarChart3,
-  ArrowRight,
-  CheckCircle2,
-  Sparkles,
-  Shield,
-  Star,
-  Menu,
-} from 'lucide-react';
-import { useState } from 'react';
+  CONTACT,
+  FAQS,
+  FEATURES,
+  HERO_ICONS,
+  LAUNCH_OFFER,
+  MODULES,
+  PLANS,
+  PORTALS,
+  SPLITS,
+  STATS,
+  WA_DEMO,
+  WHATS_NEW,
+} from '@/component/landing/landingData';
 
-export default function Home() {
-  const accessToken = useTokenStore((s) => s.accessToken);
-  const hasHydrated = useTokenStore((s) => s.hasHydrated);
-  const isAuthed = hasHydrated && !!accessToken;
+export const metadata = {
+  title: 'Mizenzo School — School Management System in Pakistan',
+  description:
+    'Admissions, attendance, timetable, exams, fees, payroll, transport, library, certificates and WhatsApp alerts — with school, student and parent portals and an Android app. Plans from Rs 1,500 a month.',
+};
 
-  const [mobileOpen, setMobileOpen] = useState(false);
+const lowestOffer = Math.min(...PLANS.map((p) => p.offerPrice));
 
+const TONE = {
+  ok: 'bg-emerald-50 text-emerald-700',
+  warn: 'bg-amber-50 text-amber-700',
+  info: 'bg-teal-50 text-teal-700',
+};
+
+function SectionHead({ eyebrow, title, sub, light = false }) {
   return (
-    <div className="min-h-screen pt-16 bg-white dark:bg-[#0a0a0a] text-gray-900 dark:text-gray-100 overflow-x-hidden">
-      {/* ───────────────────────── Top Nav ───────────────────────── */}
-      <header className="fixed top-0 left-0 right-0 z-40 backdrop-blur bg-white/80 dark:bg-[#0a0a0a]/80 border-b border-gray-200/60 dark:border-white/10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2 group">
-            <div className="w-9 h-9 rounded-xl bg-white flex items-center justify-center shadow-md p-0.5 shrink-0">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/logo.png" alt="Mizenzo" className="w-full h-full object-contain" />
-            </div>
-            <span className="text-lg font-bold tracking-tight">
-              Mizenzo<span className="text-teal-600"> School Management</span>
-            </span>
-          </Link>
+    <div className="max-w-3xl mx-auto text-center">
+      <p
+        className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] ${
+          light ? 'bg-white/10 text-amber-300' : 'bg-teal-50 text-teal-700'
+        }`}
+      >
+        {eyebrow}
+      </p>
+      <h2
+        className={`mt-4 text-3xl sm:text-4xl font-extrabold tracking-tight ${light ? 'text-white' : 'text-slate-900'}`}
+      >
+        {title}
+      </h2>
+      {sub && (
+        <p className={`mt-4 text-lg ${light ? 'text-teal-50/80' : 'text-slate-600'}`}>{sub}</p>
+      )}
+    </div>
+  );
+}
 
-          <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-gray-600 dark:text-gray-300">
-            <a href="#features" className="hover:text-teal-600 transition-colors">
-              Features
-            </a>
-            <a href="#how" className="hover:text-teal-600 transition-colors">
-              How it works
-            </a>
-            <a href="#testimonials" className="hover:text-teal-600 transition-colors">
-              Testimonials
-            </a>
-            <a href="#contact" className="hover:text-teal-600 transition-colors">
-              Contact
-            </a>
-          </nav>
+export default function LandingPage() {
+  return (
+    <div className="min-h-screen bg-white text-slate-900 overflow-x-hidden">
+      <AuthRedirect />
+      <LandingNav />
 
-          <div className="flex items-center gap-3">
-            {isAuthed ? (
-              <Link
-                href="/dashboard"
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-teal-600 hover:bg-teal-700 text-white text-sm font-semibold shadow-md shadow-teal-600/20 transition-all"
+      <main>
+        {/* ───────────────────────── Hero ───────────────────────── */}
+        <section className="relative pt-28 lg:pt-32 pb-16 lg:pb-24">
+          <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
+            <div className="absolute -top-40 -left-32 w-[520px] h-[520px] rounded-full bg-teal-100/70 blur-3xl" />
+            <div className="absolute top-20 -right-40 w-[480px] h-[480px] rounded-full bg-amber-100/60 blur-3xl" />
+            <div className="absolute inset-0 bg-[radial-gradient(#00918e14_1px,transparent_1px)] [background-size:22px_22px] [mask-image:linear-gradient(to_bottom,black,transparent_80%)]" />
+          </div>
+
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-[1.02fr_1fr] gap-12 lg:gap-10 items-center">
+            <div className="lp-rise min-w-0">
+              <a
+                href="#pricing"
+                className="inline-flex items-center gap-2 rounded-full bg-white pl-1.5 pr-4 py-1.5 text-sm font-medium text-slate-700 shadow-sm ring-1 ring-teal-900/10 hover:ring-teal-600/40 transition"
               >
-                Dashboard
-                <ArrowRight className="w-4 h-4" />
-              </Link>
-            ) : (
-              <>
-                <Link
-                  href="/signin"
-                  className="hidden sm:inline-flex px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:text-teal-600 transition-colors"
-                >
-                  Login
-                </Link>
-                <Link
-                  href="/signin"
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-teal-600 hover:bg-teal-700 text-white text-sm font-semibold shadow-md shadow-teal-600/20 transition-all"
-                >
-                  Get started
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
-              </>
-            )}
-            <button
-              onClick={() => setMobileOpen((v) => !v)}
-              aria-label="Open menu"
-              className="md:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-white/5"
-            >
-              <Menu className="w-5 h-5" />
-            </button>
-          </div>
-        </div>
-
-        {mobileOpen && (
-          <div className="md:hidden border-t border-gray-200/60 dark:border-white/10 px-4 py-3 flex flex-col gap-2 text-sm font-medium">
-            <a href="#features" onClick={() => setMobileOpen(false)}>
-              Features
-            </a>
-            <a href="#how" onClick={() => setMobileOpen(false)}>
-              How it works
-            </a>
-            <a href="#testimonials" onClick={() => setMobileOpen(false)}>
-              Testimonials
-            </a>
-            <a href="#contact" onClick={() => setMobileOpen(false)}>
-              Contact
-            </a>
-          </div>
-        )}
-      </header>
-
-      {/* ───────────────────────── Hero ───────────────────────── */}
-      <section className="relative isolate overflow-hidden">
-        <div className="absolute inset-0 -z-10">
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[80rem] h-[40rem] bg-gradient-to-br from-teal-100 via-white to-yellow-50 dark:from-teal-900/30 dark:via-transparent dark:to-yellow-900/10 blur-3xl opacity-70" />
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(0,145,142,0.12),transparent_50%)]" />
-        </div>
-
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-20 lg:pt-24 lg:pb-28">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-50 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300 text-xs font-semibold border border-teal-200/60 dark:border-teal-700/40">
-                <Sparkles className="w-3.5 h-3.5" />
-                Built for modern schools
-              </div>
-              <h1 className="mt-5 text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-[1.05] tracking-tight">
-                Run your entire school from{' '}
-                <span className="bg-gradient-to-r from-teal-600 to-teal-400 bg-clip-text text-transparent">
-                  one place
+                <span className="shrink-0 whitespace-nowrap rounded-full bg-amber-400 px-2.5 py-0.5 text-xs font-bold text-amber-950">
+                  Launch offer
                 </span>
+                First {LAUNCH_OFFER.maxSchools} schools from Rs{' '}
+                {lowestOffer.toLocaleString('en-PK')}/month
+                <ArrowRight className="w-4 h-4 text-teal-600" />
+              </a>
+
+              <h1 className="mt-6 text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.05]">
+                Mizenzo School
+                <span className="lp-shine block pb-1">for a Smarter Tomorrow</span>
               </h1>
-              <p className="mt-5 text-lg text-gray-600 dark:text-gray-300 max-w-xl">
-                Mizenzo School Management is the all-in-one platform for admissions, attendance,
-                fees, exams and day-to-day operations — for branches big and small.
+              <p className="mt-6 text-lg text-slate-600 max-w-xl">
+                Students, staff, attendance, fees, exams and more — all in one easy-to-use system,
+                with portals for parents and students and an Android app for everyone.
               </p>
 
-              <div className="mt-8 flex flex-wrap items-center gap-4">
-                <Link
-                  href={isAuthed ? '/dashboard' : '/signin'}
-                  className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-teal-600 hover:bg-teal-700 text-white font-semibold shadow-lg shadow-teal-600/30 hover:shadow-teal-600/40 transition-all"
-                >
-                  {isAuthed ? 'Open dashboard' : 'Start free trial'}
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
+              <div className="mt-8 flex flex-wrap gap-3">
                 <a
-                  href="#features"
-                  className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-gray-200 dark:border-white/15 hover:bg-gray-50 dark:hover:bg-white/5 font-semibold transition-all"
-                >
-                  See features
-                </a>
-              </div>
-
-              <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-gray-500 dark:text-gray-400">
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-teal-600" /> No credit card
-                </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-teal-600" /> 14-day trial
-                </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-teal-600" /> Cancel anytime
-                </div>
-              </div>
-            </div>
-
-            {/* Dashboard mock */}
-            <div className="relative">
-              <div className="absolute -inset-6 bg-gradient-to-tr from-teal-400/30 to-yellow-200/30 dark:from-teal-700/20 dark:to-yellow-700/10 blur-2xl rounded-3xl -z-10" />
-              <div className="rounded-2xl bg-white dark:bg-[#161616] border border-gray-200 dark:border-white/10 shadow-2xl overflow-hidden">
-                <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-100 dark:border-white/10">
-                  <div className="w-3 h-3 rounded-full bg-red-400" />
-                  <div className="w-3 h-3 rounded-full bg-yellow-400" />
-                  <div className="w-3 h-3 rounded-full bg-green-400" />
-                  <div className="ml-3 text-xs text-gray-500">app.mizenzo.com/dashboard</div>
-                </div>
-                <div className="p-5 grid grid-cols-3 gap-4">
-                  {[
-                    { label: 'Students', value: '2,418', tone: 'teal' },
-                    { label: 'Attendance', value: '96%', tone: 'yellow' },
-                    { label: 'Fees collected', value: 'Rs 1.84M', tone: 'teal' },
-                  ].map((s) => (
-                    <div
-                      key={s.label}
-                      className="rounded-xl p-4 bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/5"
-                    >
-                      <div className="text-[11px] uppercase tracking-wide text-gray-500">
-                        {s.label}
-                      </div>
-                      <div
-                        className={`mt-1 text-xl font-bold ${
-                          s.tone === 'teal' ? 'text-teal-600' : 'text-yellow-500'
-                        }`}
-                      >
-                        {s.value}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <div className="px-5 pb-5">
-                  <div className="rounded-xl border border-gray-100 dark:border-white/5 bg-gray-50 dark:bg-white/5 p-4">
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="text-sm font-semibold">Weekly attendance</div>
-                      <div className="text-xs text-gray-500">This week</div>
-                    </div>
-                    <div className="flex items-end gap-2 h-24">
-                      {[60, 75, 55, 90, 80, 95, 70].map((h, i) => (
-                        <div
-                          key={i}
-                          className="flex-1 rounded-md bg-gradient-to-t from-teal-600 to-teal-300"
-                          style={{ height: `${h}%` }}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ───────────────────────── Logos / trust ───────────────────────── */}
-      <section className="border-y border-gray-200/60 dark:border-white/10 bg-gray-50/60 dark:bg-white/[0.02]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-wrap items-center justify-center gap-x-10 gap-y-4 text-gray-400 dark:text-gray-500 text-sm font-semibold tracking-wider uppercase">
-          <span>Trusted by 200+ schools</span>
-          <span className="hidden sm:inline">•</span>
-          <span>50,000+ students managed</span>
-          <span className="hidden sm:inline">•</span>
-          <span>99.9% uptime</span>
-        </div>
-      </section>
-
-      {/* ───────────────────────── Features ───────────────────────── */}
-      <section id="features" className="py-20 lg:py-28">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-2xl">
-            <div className="text-sm font-semibold text-teal-600 uppercase tracking-wider">
-              Features
-            </div>
-            <h2 className="mt-2 text-3xl sm:text-4xl font-bold tracking-tight">
-              Everything your school needs, nothing it doesn&apos;t
-            </h2>
-            <p className="mt-4 text-gray-600 dark:text-gray-300">
-              From the front desk to the finance office, Mizenzo School Management replaces a stack
-              of spreadsheets with one fast, modern workspace.
-            </p>
-          </div>
-
-          <div className="mt-14 grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {features.map((f) => (
-              <div
-                key={f.title}
-                className="group relative rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#141414] p-6 hover:border-teal-300 dark:hover:border-teal-700 hover:shadow-xl hover:shadow-teal-600/10 transition-all"
-              >
-                <div className="w-11 h-11 rounded-xl bg-teal-50 dark:bg-teal-900/30 text-teal-600 flex items-center justify-center group-hover:bg-teal-600 group-hover:text-white transition-colors">
-                  <f.icon className="w-5 h-5" />
-                </div>
-                <h3 className="mt-5 text-lg font-semibold">{f.title}</h3>
-                <p className="mt-2 text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
-                  {f.desc}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ───────────────────────── Stats ───────────────────────── */}
-      <section className="py-16 bg-gradient-to-br from-teal-600 to-teal-800 text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-          {stats.map((s) => (
-            <div key={s.label}>
-              <div className="text-4xl sm:text-5xl font-extrabold tracking-tight">{s.value}</div>
-              <div className="mt-2 text-teal-100 text-sm">{s.label}</div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ───────────────────────── How it works ───────────────────────── */}
-      <section id="how" className="py-20 lg:py-28">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-2xl">
-            <div className="text-sm font-semibold text-teal-600 uppercase tracking-wider">
-              How it works
-            </div>
-            <h2 className="mt-2 text-3xl sm:text-4xl font-bold tracking-tight">
-              Go live in days, not months
-            </h2>
-            <p className="mt-4 text-gray-600 dark:text-gray-300">
-              Setup is guided end-to-end. Most schools migrate their data and onboard staff inside a
-              week.
-            </p>
-          </div>
-
-          <div className="mt-14 grid md:grid-cols-3 gap-6">
-            {steps.map((s, i) => (
-              <div
-                key={s.title}
-                className="relative rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#141414] p-6"
-              >
-                <div className="absolute -top-4 left-6 w-9 h-9 rounded-full bg-teal-600 text-white text-sm font-bold flex items-center justify-center shadow-lg shadow-teal-600/40">
-                  {i + 1}
-                </div>
-                <h3 className="mt-4 text-lg font-semibold">{s.title}</h3>
-                <p className="mt-2 text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
-                  {s.desc}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ───────────────────────── Testimonials ───────────────────────── */}
-      <section
-        id="testimonials"
-        className="py-20 lg:py-28 bg-gray-50/60 dark:bg-white/[0.02] border-y border-gray-200/60 dark:border-white/10"
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-2xl">
-            <div className="text-sm font-semibold text-teal-600 uppercase tracking-wider">
-              Loved by educators
-            </div>
-            <h2 className="mt-2 text-3xl sm:text-4xl font-bold tracking-tight">
-              What schools are saying
-            </h2>
-          </div>
-          <div className="mt-14 grid md:grid-cols-3 gap-6">
-            {testimonials.map((t) => (
-              <figure
-                key={t.author}
-                className="rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#141414] p-6 shadow-sm"
-              >
-                <div className="flex items-center gap-1 text-yellow-400">
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <Star key={i} className="w-4 h-4 fill-current" />
-                  ))}
-                </div>
-                <blockquote className="mt-4 text-gray-700 dark:text-gray-200 leading-relaxed">
-                  &ldquo;{t.quote}&rdquo;
-                </blockquote>
-                <figcaption className="mt-5 flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-teal-500 to-teal-700 flex items-center justify-center text-white font-bold">
-                    {t.author[0]}
-                  </div>
-                  <div>
-                    <div className="text-sm font-semibold">{t.author}</div>
-                    <div className="text-xs text-gray-500">{t.role}</div>
-                  </div>
-                </figcaption>
-              </figure>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ───────────────────────── Final CTA ───────────────────────── */}
-      <section className="py-20 lg:py-28">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-teal-600 via-teal-700 to-teal-900 p-10 lg:p-14 text-white">
-            <div className="absolute -top-20 -right-20 w-64 h-64 rounded-full bg-yellow-300/20 blur-3xl" />
-            <div className="absolute -bottom-20 -left-20 w-64 h-64 rounded-full bg-teal-300/20 blur-3xl" />
-            <div className="relative grid lg:grid-cols-2 gap-8 items-center">
-              <div>
-                <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">
-                  Ready to modernize your school?
-                </h2>
-                <p className="mt-4 text-teal-50/90">
-                  Join hundreds of schools running smoother days with Mizenzo School Management.
-                </p>
-              </div>
-              <div className="flex flex-wrap gap-3 lg:justify-end">
-                <Link
-                  href={isAuthed ? '/dashboard' : '/signin'}
-                  className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white text-teal-700 font-semibold shadow-lg hover:bg-yellow-100 transition-colors"
-                >
-                  {isAuthed ? 'Open dashboard' : 'Start free trial'}
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
-                <a
-                  href="#contact"
-                  className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white/10 hover:bg-white/20 border border-white/30 font-semibold transition-colors"
-                >
-                  Book a demo
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ───────────────────────── Footer ───────────────────────── */}
-      <footer id="contact" className="border-t border-gray-200/60 dark:border-white/10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 grid md:grid-cols-4 gap-8">
-          <div className="md:col-span-2">
-            <div className="flex items-center gap-2">
-              <div className="w-9 h-9 rounded-xl bg-white flex items-center justify-center shadow-md p-0.5 shrink-0">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/logo.png" alt="Mizenzo" className="w-full h-full object-contain" />
-              </div>
-              <span className="text-lg font-bold tracking-tight">
-                Mizenzo<span className="text-teal-600"> School Management</span>
-              </span>
-            </div>
-            <p className="mt-4 text-sm text-gray-600 dark:text-gray-400 max-w-md">
-              A modern school management platform — admissions, attendance, fees, exams, and reports
-              in one place.
-            </p>
-          </div>
-          <div>
-            <div className="text-sm font-semibold mb-3">Product</div>
-            <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
-              <li>
-                <a href="#features" className="hover:text-teal-600">
-                  Features
-                </a>
-              </li>
-              <li>
-                <a href="#how" className="hover:text-teal-600">
-                  How it works
-                </a>
-              </li>
-              <li>
-                <a href="#testimonials" className="hover:text-teal-600">
-                  Testimonials
-                </a>
-              </li>
-            </ul>
-          </div>
-          <div>
-            <div className="text-sm font-semibold mb-3">Contact</div>
-            <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
-              <li>
-                <a href="mailto:hello@nodecampus.online" className="hover:text-teal-600">
-                  hello@nodecampus.online
-                </a>
-              </li>
-              <li>
-                <a href="mailto:support@nodecampus.online" className="hover:text-teal-600">
-                  support@nodecampus.online
-                </a>
-              </li>
-              <li>
-                <a
-                  href="https://wa.me/923109721647"
+                  href={WA_DEMO}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 hover:text-teal-600"
+                  className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full bg-teal-600 hover:bg-teal-700 text-white font-semibold shadow-xl shadow-teal-600/25 transition-all hover:-translate-y-0.5"
                 >
-                  <svg
-                    className="w-4 h-4 text-green-500"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                    aria-hidden="true"
-                  >
-                    <path d="M.057 24l1.687-6.163a11.867 11.867 0 01-1.587-5.946C.16 5.335 5.495 0 12.05 0a11.817 11.817 0 018.413 3.488 11.824 11.824 0 013.48 8.414c-.003 6.557-5.338 11.892-11.893 11.892a11.9 11.9 0 01-5.688-1.448L.057 24zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.371-.025-.52-.075-.149-.669-1.611-.916-2.206-.242-.579-.487-.5-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413z" />
-                  </svg>
-                  +92 310 9721647
+                  <MessageCircle className="w-5 h-5" />
+                  Book a free demo
+                </a>
+                <a
+                  href="#pricing"
+                  className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full bg-white text-teal-700 font-semibold ring-1 ring-teal-600/30 hover:ring-teal-600 transition-all"
+                >
+                  See pricing
+                  <ArrowRight className="w-5 h-5" />
+                </a>
+                <Link
+                  href="/signin"
+                  className="inline-flex items-center gap-2 px-4 py-3.5 font-semibold text-slate-700 hover:text-teal-700"
+                >
+                  School login
+                </Link>
+              </div>
+
+              <ul className="mt-10 grid grid-cols-3 sm:grid-cols-5 gap-3">
+                {HERO_ICONS.map((h) => (
+                  <li key={h.label} className="flex flex-col items-center text-center gap-2">
+                    <span className="grid place-items-center w-12 h-12 rounded-2xl bg-white text-teal-600 shadow-md shadow-teal-900/5 ring-1 ring-teal-900/10">
+                      <LandingIcon name={h.icon} className="w-6 h-6" />
+                    </span>
+                    <span className="text-xs font-medium text-slate-600 leading-tight">
+                      {h.label}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="lp-rise min-w-0 [animation-delay:150ms]">
+              <HeroArt />
+            </div>
+          </div>
+        </section>
+
+        {/* ───────────────────────── Stats ───────────────────────── */}
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-px overflow-hidden rounded-3xl bg-teal-900/10 ring-1 ring-teal-900/10">
+            {STATS.map((s) => (
+              <div key={s.label} className="bg-white px-6 py-7 text-center">
+                <div className="text-3xl sm:text-4xl font-extrabold text-teal-600">{s.value}</div>
+                <div className="mt-1 text-sm text-slate-500">{s.label}</div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* ───────────────────────── What's new ───────────────────────── */}
+        <section id="new" className="scroll-mt-20 py-20 lg:py-28">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <SectionHead
+              eyebrow={
+                <>
+                  <Sparkles className="w-3.5 h-3.5" /> Just added
+                </>
+              }
+              title="New in Mizenzo School"
+              sub="The modules schools asked for most — built, tested and running today."
+            />
+            <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+              {WHATS_NEW.map((f) => (
+                <article
+                  key={f.title}
+                  className="group relative rounded-3xl bg-white p-6 ring-1 ring-teal-900/10 shadow-sm hover:shadow-xl hover:shadow-teal-900/10 hover:-translate-y-1 transition-all duration-300"
+                >
+                  <span className="absolute top-5 right-5 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-700">
+                    New
+                  </span>
+                  <span className="grid place-items-center w-12 h-12 rounded-2xl bg-gradient-to-br from-teal-500 to-teal-700 text-white shadow-lg shadow-teal-600/25 group-hover:scale-105 transition-transform">
+                    <LandingIcon name={f.icon} className="w-6 h-6" />
+                  </span>
+                  <h3 className="mt-5 font-bold text-lg text-slate-900">{f.title}</h3>
+                  <p className="mt-2 text-sm text-slate-600 leading-relaxed">{f.body}</p>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ───────────────────────── Features ───────────────────────── */}
+        <section
+          id="features"
+          className="scroll-mt-20 py-20 lg:py-28 bg-gradient-to-b from-teal-50/70 to-white"
+        >
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <SectionHead
+              eyebrow="Features"
+              title="Everything a school office does before lunch."
+              sub="One system, one database, real transactions across modules — so a fee posting and a ledger entry can never half-happen."
+            />
+            <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+              {FEATURES.map((f) => (
+                <article
+                  key={f.title}
+                  className="rounded-3xl bg-white/80 backdrop-blur p-6 ring-1 ring-teal-900/10 hover:ring-teal-600/40 hover:bg-white transition-all"
+                >
+                  <span className="grid place-items-center w-11 h-11 rounded-xl bg-teal-50 text-teal-600">
+                    <LandingIcon name={f.icon} className="w-5 h-5" />
+                  </span>
+                  <h3 className="mt-4 font-bold text-slate-900">{f.title}</h3>
+                  <p className="mt-2 text-sm text-slate-600 leading-relaxed">{f.body}</p>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ───────────────────────── Splits ───────────────────────── */}
+        <section className="py-20 lg:py-24">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-24">
+            {SPLITS.map((s) => (
+              <div key={s.title} className="grid lg:grid-cols-2 gap-12 items-center">
+                <div className={s.reversed ? 'lg:order-2' : ''}>
+                  <p className="text-sm font-bold uppercase tracking-[0.16em] text-teal-600">
+                    {s.eyebrow}
+                  </p>
+                  <h2 className="mt-3 text-3xl font-extrabold tracking-tight text-slate-900">
+                    {s.title}
+                  </h2>
+                  <p className="mt-4 text-slate-600 leading-relaxed">{s.body}</p>
+                  <ul className="mt-6 space-y-3">
+                    {s.checks.map(([bold, rest]) => (
+                      <li key={bold} className="flex items-start gap-3 text-slate-700">
+                        <span className="mt-0.5 grid place-items-center w-5 h-5 rounded-full bg-teal-600 text-white shrink-0">
+                          <Check className="w-3.5 h-3.5" />
+                        </span>
+                        <span>
+                          <b className="text-slate-900">{bold}</b>
+                          {rest}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div className={`relative ${s.reversed ? 'lg:order-1' : ''}`}>
+                  <div className="absolute -inset-4 rounded-[2rem] bg-gradient-to-br from-teal-100 to-amber-50 -z-10 rotate-1" />
+                  <div className="rounded-3xl bg-white p-6 shadow-xl shadow-teal-900/10 ring-1 ring-teal-900/10">
+                    <div className="flex items-center gap-2 pb-4 border-b border-slate-100">
+                      <span className="w-2.5 h-2.5 rounded-full bg-red-300" />
+                      <span className="w-2.5 h-2.5 rounded-full bg-amber-300" />
+                      <span className="w-2.5 h-2.5 rounded-full bg-emerald-300" />
+                      <span className="ml-2 text-sm font-semibold text-slate-700">
+                        {s.panel.title}
+                      </span>
+                    </div>
+                    <ul className="divide-y divide-slate-100">
+                      {s.panel.rows.map((r) => (
+                        <li key={r.title} className="flex items-center gap-4 py-4">
+                          <span className="grid place-items-center w-11 h-11 rounded-xl bg-teal-600 text-white text-sm font-bold shrink-0">
+                            {r.av}
+                          </span>
+                          <span className="flex-1 min-w-0">
+                            <b className="block text-slate-900">{r.title}</b>
+                            <span className="block text-sm text-slate-500 truncate">{r.sub}</span>
+                          </span>
+                          <span
+                            className={`rounded-full px-3 py-1 text-xs font-semibold whitespace-nowrap ${
+                              r.tone ? TONE[r.tone] : 'bg-slate-50 text-slate-700'
+                            }`}
+                          >
+                            {r.amt}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* ───────────────────────── Portals ───────────────────────── */}
+        <section className="relative py-20 lg:py-28 bg-gradient-to-br from-teal-700 via-teal-800 to-teal-900 overflow-hidden">
+          <div className="pointer-events-none absolute -top-32 -right-32 w-96 h-96 rounded-full bg-amber-300/20 blur-3xl" />
+          <div className="pointer-events-none absolute -bottom-40 -left-32 w-96 h-96 rounded-full bg-teal-300/20 blur-3xl" />
+          <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <SectionHead
+              light
+              eyebrow="One school, four doors"
+              title="A portal for everyone in the school."
+              sub="Staff, students and parents each sign in to their own space — all running on the same live data."
+            />
+            <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+              {PORTALS.map((p) => {
+                const body = (
+                  <>
+                    <span className="grid place-items-center w-12 h-12 rounded-2xl bg-white text-teal-700">
+                      <LandingIcon name={p.icon} className="w-6 h-6" />
+                    </span>
+                    <h3 className="mt-5 font-bold text-lg text-white">{p.title}</h3>
+                    <p className="mt-2 text-sm text-teal-50/75 leading-relaxed">{p.who}</p>
+                    {p.href ? (
+                      <span className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-amber-300">
+                        Open <ArrowRight className="w-4 h-4" />
+                      </span>
+                    ) : (
+                      <span className="mt-5 inline-flex text-sm font-semibold text-amber-300">
+                        Ask us for the app
+                      </span>
+                    )}
+                  </>
+                );
+                const cls =
+                  'block rounded-3xl bg-white/10 p-6 ring-1 ring-white/15 backdrop-blur hover:bg-white/15 hover:-translate-y-1 transition-all';
+                if (!p.href) {
+                  return (
+                    <a
+                      key={p.key}
+                      href={WA_DEMO}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={cls}
+                    >
+                      {body}
+                    </a>
+                  );
+                }
+                return p.href.startsWith('/') ? (
+                  <Link key={p.key} href={p.href} className={cls}>
+                    {body}
+                  </Link>
+                ) : (
+                  <a key={p.key} href={p.href} className={cls}>
+                    {body}
+                  </a>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+
+        {/* ───────────────────────── Modules ───────────────────────── */}
+        <section id="modules" className="scroll-mt-20 py-20 lg:py-28">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <SectionHead
+              eyebrow="Modules"
+              title="Not a roadmap — all of it is built and running."
+              sub="Every module below works today, for every branch of your school."
+            />
+            <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {MODULES.map((g) => (
+                <div
+                  key={g.title}
+                  className="rounded-3xl p-6 bg-slate-50/80 ring-1 ring-slate-200/70"
+                >
+                  <h3 className="font-bold text-teal-700">{g.title}</h3>
+                  <ul className="mt-4 flex flex-wrap gap-2">
+                    {g.items.map((i) => (
+                      <li
+                        key={i}
+                        className="rounded-full bg-white px-3 py-1.5 text-sm text-slate-700 ring-1 ring-slate-200"
+                      >
+                        {i}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ───────────────────────── Pricing ───────────────────────── */}
+        <section
+          id="pricing"
+          className="scroll-mt-20 py-20 lg:py-28 bg-gradient-to-b from-teal-50/80 via-white to-white"
+        >
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <SectionHead
+              eyebrow="Pricing"
+              title="Simple monthly plans. No per-student surprises."
+              sub={`Launch offer for the first ${LAUNCH_OFFER.maxSchools} schools — the offer price stays locked for a full year. Pay yearly and get two months free.`}
+            />
+            <div className="mt-12">
+              <Pricing />
+            </div>
+          </div>
+        </section>
+
+        {/* ───────────────────────── FAQ ───────────────────────── */}
+        <section id="faq" className="scroll-mt-20 py-20 lg:py-28">
+          <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+            <SectionHead eyebrow="FAQ" title="Questions schools ask us" />
+            <div className="mt-12 space-y-3">
+              {FAQS.map((f) => (
+                <details
+                  key={f.q}
+                  className="group rounded-2xl bg-white ring-1 ring-slate-200 open:ring-teal-600/40 open:shadow-lg open:shadow-teal-900/5 transition-all"
+                >
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-5 font-semibold text-slate-900 [&::-webkit-details-marker]:hidden">
+                    {f.q}
+                    <span className="grid place-items-center w-7 h-7 rounded-full bg-teal-50 text-teal-700 text-lg leading-none shrink-0 transition-transform group-open:rotate-45">
+                      +
+                    </span>
+                  </summary>
+                  <p className="px-5 pb-5 -mt-1 text-slate-600 leading-relaxed">{f.a}</p>
+                </details>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ───────────────────────── CTA ───────────────────────── */}
+        <section className="px-4 sm:px-6 lg:px-8 pb-20">
+          <div className="relative max-w-6xl mx-auto overflow-hidden rounded-[2rem] bg-gradient-to-br from-teal-600 via-teal-700 to-teal-900 px-6 py-14 sm:px-14 text-center text-white">
+            <div className="pointer-events-none absolute -top-24 -left-24 w-72 h-72 rounded-full bg-amber-300/25 blur-3xl" />
+            <div className="pointer-events-none absolute -bottom-24 -right-24 w-72 h-72 rounded-full bg-teal-300/25 blur-3xl" />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/logo-light.png"
+              alt=""
+              width={88}
+              height={88}
+              className="relative mx-auto w-20 h-20 object-contain drop-shadow-xl"
+            />
+            <h2 className="relative mt-5 text-3xl sm:text-4xl font-extrabold tracking-tight">
+              Poora school, ek system mein.
+            </h2>
+            <p className="relative mt-4 max-w-2xl mx-auto text-teal-50/85 text-lg">
+              Tell us how many students and campuses you run, and we will walk you through the
+              school portal, the parent portal and the Android app on your own screen.
+            </p>
+            <div className="relative mt-8 flex flex-wrap justify-center gap-3">
+              <a
+                href={WA_DEMO}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-amber-400 hover:bg-amber-300 text-amber-950 font-bold shadow-xl transition-all hover:-translate-y-0.5"
+              >
+                <MessageCircle className="w-5 h-5" />
+                WhatsApp {CONTACT.phoneDisplay}
+              </a>
+              <Link
+                href="/signin"
+                className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-white/10 hover:bg-white/20 ring-1 ring-white/30 font-semibold transition-colors"
+              >
+                School login
+                <ArrowRight className="w-5 h-5" />
+              </Link>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      {/* ───────────────────────── Footer ───────────────────────── */}
+      <footer className="bg-teal-950 text-teal-50/80">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 grid gap-10 md:grid-cols-4">
+          <div className="md:col-span-2">
+            <div className="flex items-center gap-3">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/logo-light.png"
+                alt=""
+                width={48}
+                height={48}
+                className="w-12 h-12 object-contain"
+              />
+              <span className="leading-none">
+                <span className="block text-xl font-extrabold text-white">Mizenzo</span>
+                <span className="block text-[11px] font-semibold uppercase tracking-[0.18em] text-amber-300">
+                  School
+                </span>
+              </span>
+            </div>
+            <p className="mt-5 max-w-md text-sm leading-relaxed">
+              School management for Pakistan — admissions, attendance, fees, exams, payroll and
+              parent communication in one system. A product of Mizenzo Solutions.
+            </p>
+          </div>
+          <div>
+            <p className="text-sm font-semibold text-white">Explore</p>
+            <ul className="mt-4 space-y-2.5 text-sm">
+              {[
+                ['#new', "What's new"],
+                ['#features', 'Features'],
+                ['#pricing', 'Pricing'],
+                ['#faq', 'FAQ'],
+              ].map(([href, label]) => (
+                <li key={href}>
+                  <a href={href} className="hover:text-amber-300 transition-colors">
+                    {label}
+                  </a>
+                </li>
+              ))}
+              {PORTALS.filter((p) => p.href).map((p) => (
+                <li key={p.key}>
+                  <a href={p.href} className="hover:text-amber-300 transition-colors">
+                    {p.title}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div>
+            <p className="text-sm font-semibold text-white">Contact</p>
+            <ul className="mt-4 space-y-3 text-sm">
+              <li>
+                <a
+                  href={WA_DEMO}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 hover:text-amber-300"
+                >
+                  <MessageCircle className="w-4 h-4" /> WhatsApp {CONTACT.phoneDisplay}
+                </a>
+              </li>
+              <li>
+                <a
+                  href={`tel:${CONTACT.phoneE164}`}
+                  className="inline-flex items-center gap-2 hover:text-amber-300"
+                >
+                  <Phone className="w-4 h-4" /> {CONTACT.phoneDisplay}
+                </a>
+              </li>
+              <li>
+                <a
+                  href={`mailto:${CONTACT.email}`}
+                  className="inline-flex items-center gap-2 hover:text-amber-300 break-all"
+                >
+                  <Mail className="w-4 h-4 shrink-0" /> {CONTACT.email}
                 </a>
               </li>
             </ul>
           </div>
         </div>
-        <div className="border-t border-gray-200/60 dark:border-white/10">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-gray-500">
-            <div>© {new Date().getFullYear()} Mizenzo School Management. All rights reserved.</div>
-            <div className="flex gap-4">
-              <a href="#" className="hover:text-teal-600">
-                Privacy
-              </a>
-              <a href="#" className="hover:text-teal-600">
-                Terms
-              </a>
-            </div>
+        <div className="border-t border-white/10">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col sm:flex-row gap-2 justify-between text-xs text-teal-50/60">
+            <p>© {new Date().getFullYear()} Mizenzo Solutions. All rights reserved.</p>
+            <a href={CONTACT.website} className="hover:text-amber-300">
+              mizenzo.com
+            </a>
           </div>
         </div>
       </footer>
     </div>
   );
 }
-
-const features = [
-  {
-    icon: Users,
-    title: 'Student & staff records',
-    desc: 'A single source of truth for every profile, document, and timeline event.',
-  },
-  {
-    icon: ClipboardCheck,
-    title: 'Attendance & exams',
-    desc: 'Daily attendance, exam schedules, marksheets, and report cards — all automated.',
-  },
-  {
-    icon: Wallet,
-    title: 'Fees & finance',
-    desc: 'Invoices, payment links, dues tracking, and full ledger views for every student.',
-  },
-  {
-    icon: BookOpen,
-    title: 'Classes & timetable',
-    desc: 'Build classes, sections, subjects, and timetables that everyone stays in sync with.',
-  },
-  {
-    icon: BarChart3,
-    title: 'Reports & insights',
-    desc: 'Visualize collection trends, attendance dips, and performance — at a glance.',
-  },
-  {
-    icon: Shield,
-    title: 'Role-based access',
-    desc: 'Fine-grained permissions for admins, teachers, accountants, and parents.',
-  },
-];
-
-const stats = [
-  { value: '200+', label: 'Schools onboarded' },
-  { value: '50K+', label: 'Students managed' },
-  { value: '99.9%', label: 'Uptime' },
-  { value: '24/7', label: 'Support' },
-];
-
-const steps = [
-  {
-    title: 'Sign up & invite your team',
-    desc: 'Create your school workspace in minutes and invite admins, teachers, and accountants.',
-  },
-  {
-    title: 'Import your data',
-    desc: 'Upload students, classes, and fee structures from spreadsheets — or start fresh.',
-  },
-  {
-    title: 'Go live',
-    desc: 'Start taking attendance, collecting fees, and running exams from day one.',
-  },
-];
-
-const testimonials = [
-  {
-    quote:
-      'We replaced four different tools with Mizenzo School Management. Our front office is calmer, our parents are happier.',
-    author: 'Anita Mehra',
-    role: 'Principal, Greenwood Public School',
-  },
-  {
-    quote:
-      'Fee collection went from a monthly nightmare to a Monday morning task. The reports alone are worth it.',
-    author: 'Rajesh Iyer',
-    role: 'Accounts Head, Sunrise Academy',
-  },
-  {
-    quote:
-      'Setup was genuinely easy. Our teachers were taking attendance on the mobile view inside a week.',
-    author: 'Farah Khan',
-    role: 'Vice Principal, Horizon Schools',
-  },
-];
