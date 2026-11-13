@@ -9,12 +9,25 @@ import {
   isKeyReusedConflict,
   isKeyVoidedConflict,
   isReplayMessage,
+  holdKey,
+  isUnknownOutcome,
+  keyForTarget,
   newIdempotencyKey,
+  releaseKey,
   spentKeyMessage,
   successMessage,
 } from './idempotency.js';
 
 const err = (status, message) => Object.assign(new Error(message), { status });
+
+test('spentKeyMessage: covers journal entries and reversed payslip payments', () => {
+  assert.equal(spentKeyMessage(err(409, 'This journal entry was voided')), KEY_VOIDED_MESSAGE);
+  assert.equal(spentKeyMessage(err(409, 'This payment was reversed')), KEY_VOIDED_MESSAGE);
+  assert.equal(
+    spentKeyMessage(err(409, 'Idempotency-Key was already used for a different payment')),
+    KEY_REUSED_MESSAGE,
+  );
+});
 
 test('newIdempotencyKey: uuid-shaped and unique', () => {
   const a = newIdempotencyKey();
@@ -80,4 +93,38 @@ test('successMessage: friendly text for a replay, server text otherwise', () => 
   assert.equal(successMessage({}, 'Fallback'), 'Fallback');
   assert.equal(successMessage(undefined, 'Fallback'), 'Fallback');
   assert.equal(isReplayMessage('Payment recorded'), false);
+});
+
+test('isUnknownOutcome: no response or a 5xx may have been recorded; a 4xx was refused', () => {
+  assert.equal(isUnknownOutcome(err(undefined, 'Network Error')), true);
+  assert.equal(isUnknownOutcome(err(500, 'Internal Server Error')), true);
+  assert.equal(isUnknownOutcome(err(504, 'Gateway Timeout')), true);
+  assert.equal(isUnknownOutcome(err(400, 'Amount exceeds balance')), false);
+  assert.equal(isUnknownOutcome(err(403, 'Forbidden')), false);
+  assert.equal(isUnknownOutcome(err(409, 'Conflict')), false);
+  assert.equal(isUnknownOutcome(undefined), true);
+});
+
+test('keyForTarget: a fresh key per call while nothing is held', () => {
+  assert.notEqual(keyForTarget('t:fresh'), keyForTarget('t:fresh'));
+});
+
+test('holdKey: the same target gets the held key on every reopen', () => {
+  holdKey('t:held', 'key-1');
+  assert.equal(keyForTarget('t:held'), 'key-1');
+  assert.equal(keyForTarget('t:held'), 'key-1');
+  releaseKey('t:held');
+});
+
+test('holdKey: another target is not affected', () => {
+  holdKey('t:a', 'key-a');
+  assert.notEqual(keyForTarget('t:b'), 'key-a');
+  releaseKey('t:a');
+});
+
+test('releaseKey: the next open is a new key; an unknown target is a no-op', () => {
+  holdKey('t:done', 'key-1');
+  releaseKey('t:done');
+  assert.notEqual(keyForTarget('t:done'), 'key-1');
+  assert.doesNotThrow(() => releaseKey('t:never-held'));
 });

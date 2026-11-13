@@ -1,6 +1,7 @@
 // Pure helpers for the Certificates module: labels, date formatting, list /
 // issue payload builders, and the formal English + Urdu certificate wording.
 // No React and no '@/…' imports, so node tests can load it directly.
+import { schoolCurrencySymbol } from './schoolCurrency.js';
 
 export const CERTIFICATE_TYPES = ['slc', 'character', 'bonafide', 'fee-clearance'];
 export const CERTIFICATE_STATUSES = ['issued', 'cancelled'];
@@ -437,9 +438,10 @@ export function openLoansLabel(n) {
 
 /**
  * What holds back an SLC that needs forcing: "Rs 1,200 outstanding and
- * 2 library books not returned". `money` formats an amount (e.g. "Rs 1,200").
+ * 2 library books not returned". `money` formats an amount (e.g. "Rs 1,200");
+ * by default it prefixes the school's currency symbol.
  */
-export function forceSummary(eligibility, money = (n) => `Rs ${n}`) {
+export function forceSummary(eligibility, money = (n) => `${schoolCurrencySymbol()} ${n}`) {
   const parts = [];
   const { total } = outstandingSummary(eligibility);
   if (total > 0) parts.push(`${money(total)} outstanding`);

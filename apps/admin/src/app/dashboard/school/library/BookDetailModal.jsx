@@ -1,7 +1,7 @@
 'use client';
 // One title with its copies: add copies (auto or manual accession numbers),
 // edit a copy's condition / status / barcode, withdraw a copy.
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { Plus, Pencil, Archive } from 'lucide-react';
@@ -10,7 +10,7 @@ import QueryErrorState from '@/component/QueryErrorState';
 import { fetchData, patchData, postData } from '@/utils/api';
 import { retryUnless4xx } from '@/utils/queryError';
 import { useTokenStore } from '@/store/tokenStore';
-import { COPY_CONDITIONS, normalizeCode, splitList } from '@/utils/library';
+import { COPY_CONDITIONS, MAX_COPIES_PER_REQUEST, normalizeCode, splitList } from '@/utils/library';
 import ConfirmModal from './ConfirmModal';
 import {
   CopyStatusBadge,
@@ -160,9 +160,15 @@ function AddCopies({ bookId }) {
   const [count, setCount] = useState('1');
   const [manual, setManual] = useState('');
   const [error, setError] = useState('');
+  // The disabled button only lands on the next render; a fast second click can
+  // beat it, and every add mints new accession numbers.
+  const inFlight = useRef(false);
 
   const mutation = useMutation({
     mutationFn: (payload) => postData({ url: `/library/books/${bookId}/copies`, payload, token }),
+    onSettled: () => {
+      inFlight.current = false;
+    },
     onSuccess: (res) => {
       toast.success(res?.message || 'Copies added');
       invalidateLibraryCatalogue(queryClient);
@@ -175,16 +181,23 @@ function AddCopies({ bookId }) {
     },
   });
 
+  const send = (payload) => {
+    inFlight.current = true;
+    mutation.mutate(payload);
+  };
+
   const submit = () => {
+    if (inFlight.current || mutation.isPending) return;
     setError('');
     if (mode === 'auto') {
       const n = Number(count);
-      if (!Number.isInteger(n) || n < 1 || n > 500) return setError('Enter 1–500 copies');
-      return mutation.mutate({ count: n });
+      if (!Number.isInteger(n) || n < 1 || n > MAX_COPIES_PER_REQUEST)
+        return setError(`Enter 1–${MAX_COPIES_PER_REQUEST} copies`);
+      return send({ count: n });
     }
     const list = splitList(manual).map(normalizeCode).filter(Boolean);
     if (!list.length) return setError('Enter at least one accession number');
-    return mutation.mutate({ accessionNumbers: [...new Set(list)] });
+    return send({ accessionNumbers: [...new Set(list)] });
   };
 
   return (
@@ -203,7 +216,7 @@ function AddCopies({ bookId }) {
             <input
               type="number"
               min="1"
-              max="500"
+              max={MAX_COPIES_PER_REQUEST}
               value={count}
               onChange={(e) => setCount(e.target.value)}
               className={inputCls}

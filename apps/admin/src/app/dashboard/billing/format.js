@@ -1,10 +1,8 @@
 // Shared display helpers for the billing screens.
 
-export const fmtMoney = (value) => {
-  const n = Number(value);
-  if (!Number.isFinite(n)) return '-';
-  return n.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 });
-};
+// Platform billing money: always the platform's currency ("Rs 10"), never
+// the school's own currency setting.
+export { PLATFORM_CURRENCY_SYMBOL, fmtPlatformMoney as fmtMoney } from '@/utils/platformMoney';
 
 export const fmtDate = (value) =>
   value ? new Date(value).toLocaleDateString(undefined, { dateStyle: 'medium' }) : '-';
@@ -19,9 +17,8 @@ export const SUB_STATUS_COLORS = {
   downgraded: 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300',
 };
 
-// Effective limit = customLimits?.X ?? computedLimits.X
-export const effectiveLimit = (sub, key) =>
-  sub?.customLimits?.[key] ?? sub?.computedLimits?.[key] ?? null;
+// Effective limit = (customLimits?.X ?? computedLimits.X) + add-on units.
+export { effectiveLimit } from '@/utils/planAddons';
 
 // Invoice status pill colours.
 export const INVOICE_STATUS_COLORS = {

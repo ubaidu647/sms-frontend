@@ -2,6 +2,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Table } from '@/component/Table';
+import QueryErrorState from '@/component/QueryErrorState';
 import {
   Plus,
   Search,
@@ -178,7 +179,7 @@ export default function VouchersPage() {
     userBranchId,
   ];
 
-  const { data } = useQuery({
+  const { data, isError, error } = useQuery({
     queryKey,
     queryFn: () => {
       const params = {};
@@ -528,6 +529,12 @@ export default function VouchersPage() {
           <p className="-mt-2 mb-3 text-xs text-gray-500 dark:text-gray-400">
             The text filter only searches the vouchers loaded on this page, not all results.
           </p>
+        )}
+
+        {isError && (
+          <div className="mb-3">
+            <QueryErrorState error={error} fallback="Could not load vouchers" />
+          </div>
         )}
 
         <Table

@@ -132,10 +132,50 @@ export const changePackage = async (payload) => {
 };
 
 // Renew same package, fresh cycle, re-snapshots current catalog pricing.
-// payload: { schoolId, paymentInfo? }
+// payload: { schoolId, paymentInfo?, startFrom?, keepAddons? } — keepAddons
+// (default true) carries the add-ons over, billed for the full new period;
+// false drops them and credits their paid, unused value.
 export const renewSubscription = async (payload) => {
   try {
     const res = await apiClient.post('/subscription/renew', payload);
+    return unwrap(res);
+  } catch (error) {
+    normalizeError(error);
+  }
+};
+
+/* -------------------------------- Add-ons ------------------------------- */
+
+// Price an add-on (extra units of a limit) without buying it.
+// body: { schoolId, resource, quantity, unitPrice? } → data: { resource,
+// quantity, defaultUnitPrice, unitPrice, periodAmount, remainingDays,
+// durationInDays, amount, currentLimit, newLimit }. 400 when the plan lists no
+// price and none is given, or the period has ended.
+export const quoteAddon = async (body) => {
+  try {
+    const res = await apiClient.post('/subscription/addon/quote', body);
+    return unwrap(res);
+  } catch (error) {
+    normalizeError(error);
+  }
+};
+
+// Buy an add-on: raises the limit now, bills the days left on an `addon`
+// invoice. body: quote body + paymentInfo? → data: { addon, quote, invoiceId, amountDue }
+export const addAddon = async (body) => {
+  try {
+    const res = await apiClient.post('/subscription/addon', body);
+    return unwrap(res);
+  } catch (error) {
+    normalizeError(error);
+  }
+};
+
+// Take back an add-on whose invoice is unpaid (that invoice is voided).
+// 400 when it is already paid.
+export const removeAddon = async ({ schoolId, addonId }) => {
+  try {
+    const res = await apiClient.post('/subscription/addon/remove', { schoolId, addonId });
     return unwrap(res);
   } catch (error) {
     normalizeError(error);

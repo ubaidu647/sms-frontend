@@ -2,6 +2,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUserStore } from '@/store/userStore';
+import { usePlanFeatures } from '@/hooks/usePlanFeatures';
 import { BUSINESS_SETTINGS_TABS } from './tabs';
 
 // Which tab is the landing tab depends on the role, and the role is only known
@@ -9,8 +10,14 @@ import { BUSINESS_SETTINGS_TABS } from './tabs';
 export default function BusinessSettingsIndexPage() {
   const router = useRouter();
   const { user } = useUserStore();
+  const { gate } = usePlanFeatures();
 
-  const firstTab = BUSINESS_SETTINGS_TABS.find((t) => t.canAccess(user?.role));
+  // Prefer a tab the plan includes; a locked one still lands on its upgrade
+  // screen, a hidden one is skipped.
+  const permitted = BUSINESS_SETTINGS_TABS.filter((t) => t.canAccess(user?.role));
+  const firstTab =
+    permitted.find((t) => gate(t.feature) === 'show') ||
+    permitted.find((t) => gate(t.feature) === 'lock');
 
   useEffect(() => {
     if (firstTab) router.replace(firstTab.href);

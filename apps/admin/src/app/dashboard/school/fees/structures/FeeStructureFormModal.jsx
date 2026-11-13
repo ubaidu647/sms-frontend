@@ -6,9 +6,12 @@ import { Plus, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { fetchData, postData, putData } from '@/utils/api';
+import PickerError from '@/component/PickerError';
+import { retryUnless4xx } from '@/utils/queryError';
 import { useTokenStore } from '@/store/tokenStore';
 import { useUserStore } from '@/store/userStore';
 import { FEE_FREQUENCIES, MONTH_OPTIONS, currentAcademicYear } from '@/constants/fee';
+import { useSchoolCurrency } from '@/hooks/useSchoolCurrency';
 
 const inputCls =
   'w-full px-3 py-2 border border-gray-200 rounded-lg outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 text-sm text-gray-900 bg-white placeholder:text-gray-400';
@@ -24,6 +27,7 @@ const blankComponent = () => ({
 });
 
 export default function FeeStructureFormModal({ isOpen, onClose, structure }) {
+  const { symbol: currencySymbol } = useSchoolCurrency();
   const isEdit = !!structure;
   const { accessToken: token } = useTokenStore();
   const { user } = useUserStore();
@@ -72,7 +76,7 @@ export default function FeeStructureFormModal({ isOpen, onClose, structure }) {
     setSuccessState(false);
   }, [isOpen, isEdit, structure]);
 
-  const { data: classData } = useQuery({
+  const { data: classData, error: classesError } = useQuery({
     queryKey: ['classes-fee-structure', canCreateAllBranch, userBranchId, academicYear],
     queryFn: () => {
       const params = { page: 1, limit: 200, token };
@@ -82,6 +86,7 @@ export default function FeeStructureFormModal({ isOpen, onClose, structure }) {
     },
     enabled: !!token && isOpen && !isEdit,
     staleTime: 30000,
+    retry: retryUnless4xx,
   });
   const classes = classData?.data || [];
 
@@ -246,6 +251,7 @@ export default function FeeStructureFormModal({ isOpen, onClose, structure }) {
                   </option>
                 ))}
               </select>
+              <PickerError error={classesError} />
             </div>
           )}
           <div>
@@ -304,7 +310,7 @@ export default function FeeStructureFormModal({ isOpen, onClose, structure }) {
             <span className="text-xs text-gray-500 dark:text-gray-400">
               Monthly total:{' '}
               <strong className="text-teal-700 dark:text-teal-400">
-                ₨ {totalMonthly.toLocaleString()}
+                {currencySymbol} {totalMonthly.toLocaleString()}
               </strong>
             </span>
           </div>

@@ -225,5 +225,33 @@
       "footnote": "Your choice is saved. Translations will roll out across the app gradually.",
       "toast": "Language set to {lang}"
     }
+  },
+  "planModules": {
+    "title": "Modules",
+    "coreNote": "Core modules are always included: students, classes, attendance, exams, fees, timetable, homework, announcements, promotion and reports.",
+    "selectAll": "Select all",
+    "clear": "Clear",
+    "selectedCount": "{count} of {total} add-on modules selected",
+    "legacyNote": "This package has no module list yet, so every module is ticked to match what its schools get today.",
+    "allModules": "All modules",
+    "coreOnly": "Core only",
+    "columnCount": "{count} of {total}",
+    "groups": {
+      "academic": "Students & School Office",
+      "staff": "Staff",
+      "operations": "Operations & Finance"
+    },
+    "modules": {
+      "admissions": "Admissions & Online Form",
+      "certificates": "Certificates",
+      "library": "Library",
+      "leave": "Leave Management",
+      "staff-attendance": "Staff Attendance",
+      "staff-salary": "Staff Salary / Payroll",
+      "transport": "Transport",
+      "inventory": "Inventory & School Shop",
+      "accounting": "Accounting / Ledger",
+      "whatsapp": "WhatsApp Notifications"
+    }
   }
 }

@@ -20,6 +20,27 @@ const CSRF_COOKIE = `sms_csrf_${PORTAL}`;
  * shares cookies, so one name let an admin sign-in overwrite the system app's. */
 export const ROLE_COOKIE = `auth-role-${PORTAL}`;
 
+/** localStorage key of the persisted token store (see store/tokenStore.js). */
+export const TOKEN_STORAGE_KEY = 'token-storage';
+
+const hasSessionMarker = (raw) => {
+  try {
+    return !!JSON.parse(raw)?.state?.accessToken;
+  } catch {
+    return false;
+  }
+};
+
+/**
+ * Did this `storage` event end the session? Logging out rewrites the entry with
+ * a null marker rather than removing it, and a null `key` means storage was
+ * cleared. Fires in the other tabs only, never in the tab that logged out.
+ */
+export function isCrossTabSignOut({ key, oldValue, newValue }) {
+  if (key === null) return true;
+  return key === TOKEN_STORAGE_KEY && hasSessionMarker(oldValue) && !hasSessionMarker(newValue);
+}
+
 const SAFE_METHODS = ['get', 'head', 'options'];
 
 export function readCsrfToken() {

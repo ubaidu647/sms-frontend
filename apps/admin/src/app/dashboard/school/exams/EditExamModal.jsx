@@ -8,6 +8,7 @@ import * as yup from 'yup';
 import toast from 'react-hot-toast';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { putData } from '@/utils/api';
+import { editPayload } from '@/utils/editPayload';
 import { useTokenStore } from '@/store/tokenStore';
 import { EXAM_TYPES, EXAM_STATUSES, toYMD } from '@/constants/exam';
 
@@ -51,6 +52,17 @@ function Field({ label, required, error, children }) {
   );
 }
 
+// The form's values for an exam — also the baseline an edit is diffed against.
+const formValuesOf = (exam) => ({
+  name: exam.name || '',
+  type: exam.type || '',
+  startDate: toYMD(exam.startDate),
+  endDate: toYMD(exam.endDate),
+  status: exam.status || 'planned',
+  passingPercentage: exam.passingPercentage ?? 40,
+  description: exam.description || '',
+});
+
 export default function EditExamModal({ isOpen, onClose, onSuccess, exam }) {
   const { accessToken: token } = useTokenStore();
   const queryClient = useQueryClient();
@@ -66,15 +78,7 @@ export default function EditExamModal({ isOpen, onClose, onSuccess, exam }) {
 
   useEffect(() => {
     if (isOpen && exam) {
-      reset({
-        name: exam.name || '',
-        type: exam.type || '',
-        startDate: toYMD(exam.startDate),
-        endDate: toYMD(exam.endDate),
-        status: exam.status || 'planned',
-        passingPercentage: exam.passingPercentage ?? 40,
-        description: exam.description || '',
-      });
+      reset(formValuesOf(exam));
       setSubmitError('');
       setSuccessState(false);
     }
@@ -102,10 +106,13 @@ export default function EditExamModal({ isOpen, onClose, onSuccess, exam }) {
 
   const onSubmit = (data) => {
     setSubmitError('');
-    const payload = { ...data };
-    Object.keys(payload).forEach((k) => {
-      if (payload[k] === '' || payload[k] === null || payload[k] === undefined) delete payload[k];
+    const payload = editPayload(formValuesOf(exam), data, {
+      required: ['name', 'type', 'startDate', 'endDate', 'status', 'passingPercentage'],
     });
+    if (Object.keys(payload).length === 0) {
+      setSubmitError('Nothing to save — no field was changed.');
+      return;
+    }
     mutation.mutate(payload);
   };
 

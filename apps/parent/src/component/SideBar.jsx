@@ -18,6 +18,8 @@ import {
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
+import { usePlanFeatures } from "@/hooks/usePlanFeatures";
+import { visibleNavItems } from "@/utils/planFeatures";
 
 // Flat parent menu (views of the selected child; Leave also lets the parent apply). Mirrors the admin sidebar's look; no role/permission gating.
 // One entry per backend-backed dashboard section.
@@ -57,6 +59,10 @@ export const Sidebar = ({ isMobileOpen = false, onMobileClose }) => {
   const sidebarRef = useRef(null);
   const pathname = usePathname();
   const { logout } = useAuth();
+  // Add-on modules the school's plan leaves out are hidden (shown while the
+  // plan is loading or unknown).
+  const { features } = usePlanFeatures();
+  const menuItems = visibleNavItems(navigationItems, features);
 
   // Auto-close the mobile drawer when navigating to a new route.
   useEffect(() => {
@@ -180,12 +186,12 @@ export const Sidebar = ({ isMobileOpen = false, onMobileClose }) => {
         </div>
 
         <nav className="flex flex-col items-start w-full flex-1 overflow-y-auto overflow-x-hidden scrollbar-hide">
-          {navigationItems.map((item, index) => {
+          {menuItems.map((item) => {
             const itemIsActive = isActive(item.path);
             const Icon = item.iconComponent;
             return (
               <Link
-                key={index}
+                key={item.path}
                 href={item.path}
                 className={`w-full h-14 ${
                   isCollapsed ? "justify-center px-0" : "justify-start px-0"

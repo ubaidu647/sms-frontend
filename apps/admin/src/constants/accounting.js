@@ -3,8 +3,17 @@
 // so the finance modules share formatting helpers and vocabulary.
 
 import { localYMD } from '../utils/localDate.js';
+import { schoolCurrencySymbol } from '../utils/schoolCurrency.js';
 
 export const ACCOUNT_TYPES = ['asset', 'liability', 'equity', 'income', 'expense'];
+
+/**
+ * Whether the caller may edit (or delete) this account. `allowed` is holding
+ * the action at any tier, `allBranch` holding it at the all-branch tier: the
+ * API refuses a branch-tier caller any account that applies to all branches.
+ */
+export const canManageAccount = (account, { allowed, allBranch }) =>
+  !!allowed && !account?.isSystem && (!!allBranch || !account?.appliesToAllBranches);
 
 // Normal balance side per type — drives which column a positive balance lands in
 // and helps label the create form. Assets/expenses are debit-natured; the rest credit.
@@ -137,9 +146,11 @@ export const MAPPING_ROLES = [
 
 /* ------------------------------ Formatters ------------------------------ */
 
-export function formatMoney(n) {
+// The school's own money. `symbol` defaults to the school's currency in force
+// (utils/schoolCurrency.js); components pass useSchoolCurrency().symbol.
+export function formatMoney(n, symbol = schoolCurrencySymbol()) {
   const num = Number(n) || 0;
-  return `₨ ${num.toLocaleString()}`;
+  return `${symbol} ${num.toLocaleString()}`;
 }
 
 // Ledger amounts often come as separate debit/credit numbers where one is 0.
@@ -192,6 +203,13 @@ export function postableLines(lines = []) {
   return lines.filter((l) => l?.accountId && (Number(l.debit) || Number(l.credit)));
 }
 
+// Accounts a manual journal line can use. Group headers take no entries, and a
+// control account needs a party, which these forms don't collect, so the server
+// would refuse it. Those are posted through a payment or receipt voucher.
+export function journalLineAccounts(accounts = []) {
+  return accounts.filter((a) => !a.isGroup && !a.isControlAccount);
+}
+
 // The first problem with a manual journal's lines, or null. Messages name the
 // row as the user sees it (1-based, blank rows counted), so "Line 3" is the
 // third row on screen. A row with an amount but no account is an error rather
@@ -211,6 +229,13 @@ export function journalLinesError(lines = []) {
   if (posted < 2) return 'Add at least two lines with an account and an amount';
   return null;
 }
+
+// True when a value needs no more than 2 decimals: 10.5 and 10.550 pass, 10.555
+// doesn't. toFixed rounds to paisa, so only a value already there survives it.
+export const hasAtMostTwoDecimals = (x) => {
+  const n = Number(x);
+  return Number.isFinite(n) && Number(n.toFixed(2)) === n;
+};
 
 // Money in whole paisa, so float noise (0.1 + 0.2) can't decide a comparison.
 export const toPaisa = (x) => Math.round((Number(x) || 0) * 100);

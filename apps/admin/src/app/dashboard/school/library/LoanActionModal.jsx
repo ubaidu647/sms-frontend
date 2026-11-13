@@ -27,6 +27,7 @@ import {
   money,
   useLibrarySettings,
 } from './libraryShared';
+import { useSchoolCurrency } from '@/hooks/useSchoolCurrency';
 
 const MODES = {
   return: { title: 'Return book', confirmLabel: 'Return', tone: 'primary', done: 'Book returned' },
@@ -45,6 +46,7 @@ const MODES = {
 export const loanOfResponse = (res) => res?.data?.loan || res?.data || null;
 
 export default function LoanActionModal({ mode, loan, onClose, onDone }) {
+  const { symbol: currencySymbol } = useSchoolCurrency();
   const { accessToken: token } = useTokenStore();
   const queryClient = useQueryClient();
   const cfg = MODES[mode] || MODES.return;
@@ -193,7 +195,7 @@ export default function LoanActionModal({ mode, loan, onClose, onDone }) {
         {mode === 'lost' && (
           <>
             <div>
-              <label className={labelCls}>Replacement charge (Rs)</label>
+              <label className={labelCls}>Replacement charge ({currencySymbol})</label>
               <input
                 type="number"
                 min="0"
@@ -225,7 +227,7 @@ export default function LoanActionModal({ mode, loan, onClose, onDone }) {
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               rows={3}
-              maxLength={500}
+              maxLength={300}
               className={inputCls}
             />
           </div>

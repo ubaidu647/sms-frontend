@@ -139,3 +139,37 @@ test('rosterStudents maps the roster to list-row shape and keeps promoted', () =
   );
   assert.deepEqual(rosterStudents(undefined), []);
 });
+
+test('teacherMarkSections adds sections the teacher leads to the taught ones', async () => {
+  const { teacherMarkSections } = await import('./marksEntries.js');
+  const assignments = [
+    { section: { _id: 's1', name: 'A' } },
+    { section: { _id: 's1', name: 'A' } },
+  ];
+  const classDoc = {
+    classTeacher: 'other',
+    sections: [
+      { _id: 's1', name: 'A', classTeacher: 'me' },
+      { _id: 's2', name: 'B', classTeacher: 'me' },
+      { _id: 's3', name: 'C', classTeacher: 'other' },
+    ],
+  };
+  assert.deepEqual(
+    teacherMarkSections({ assignments, classDoc, staffId: 'me' }).map((s) => s._id),
+    ['s1', 's2'],
+  );
+  // Leading the class covers every section.
+  assert.deepEqual(
+    teacherMarkSections({
+      assignments: [],
+      classDoc: { ...classDoc, classTeacher: 'me' },
+      staffId: 'me',
+    }).map((s) => s._id),
+    ['s1', 's2', 's3'],
+  );
+  // No class detail (no view-class): only taught sections.
+  assert.deepEqual(
+    teacherMarkSections({ assignments, classDoc: undefined, staffId: 'me' }).map((s) => s._id),
+    ['s1'],
+  );
+});

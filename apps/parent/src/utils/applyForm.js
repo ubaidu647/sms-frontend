@@ -34,6 +34,14 @@ export function localYMD(date = new Date()) {
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 }
 
+/** The backend refuses a date of birth more than this many years back. */
+export const MAX_CHILD_AGE_YEARS = 30;
+
+/** Earliest date of birth the backend accepts: `today` minus MAX_CHILD_AGE_YEARS. */
+export function oldestDobYMD(today = localYMD()) {
+  return `${Number(today.slice(0, 4)) - MAX_CHILD_AGE_YEARS}${today.slice(4)}`;
+}
+
 /** True for a real calendar date "YYYY-MM-DD". */
 export function isValidYMD(ymd) {
   const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(ymd ?? ""));
@@ -124,7 +132,8 @@ export function validateApplyForm(form, { grades = [], today } = {}) {
     if (!isValidYMD(f.dob)) errors.dob = "Enter a valid date.";
     else if (f.dob >= todayYMD)
       errors.dob = "Date of birth must be in the past.";
-    else if (f.dob < "1990-01-01") errors.dob = "Enter a valid date of birth.";
+    else if (f.dob < oldestDobYMD(todayYMD))
+      errors.dob = "Enter a valid date of birth.";
   }
 
   if (len(cleanText(f.previousSchool)) > SCHOOL_MAX)

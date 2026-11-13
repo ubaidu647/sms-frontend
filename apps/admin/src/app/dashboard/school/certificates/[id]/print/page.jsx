@@ -16,6 +16,7 @@ import {
   buildVerifyUrl,
   formatCertDate,
 } from '@/utils/certificateText';
+import { waitForPrintAssets } from '@/utils/printReady';
 
 const nastaliq = Noto_Nastaliq_Urdu({
   subsets: ['arabic'],
@@ -80,10 +81,16 @@ function CertificatePrint() {
 
   useEffect(() => {
     if (!autoPrint || !cert || printed.current) return undefined;
-    printed.current = true;
-    // Give the images (letterhead, signature, stamp) and font a moment to load.
-    const t = setTimeout(() => window.print(), 700);
-    return () => clearTimeout(t);
+    // Wait for the images (letterhead, signature, stamp) and the font.
+    let cancelled = false;
+    waitForPrintAssets(document).then(() => {
+      if (cancelled || printed.current) return;
+      printed.current = true;
+      window.print();
+    });
+    return () => {
+      cancelled = true;
+    };
   }, [autoPrint, cert]);
 
   const setLang = (l) => {

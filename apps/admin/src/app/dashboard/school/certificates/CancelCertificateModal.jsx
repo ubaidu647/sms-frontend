@@ -87,7 +87,7 @@ export default function CancelCertificateModal({ certificate, onClose, onCancell
             value={reason}
             onChange={(e) => setReason(e.target.value)}
             rows={3}
-            maxLength={500}
+            maxLength={300}
             className={inputCls}
           />
           {error && <p className={errorCls}>{error}</p>}

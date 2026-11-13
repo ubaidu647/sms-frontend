@@ -68,18 +68,46 @@ test("validateLeaveForm checks type, dates, order, span and reason", () => {
   assert.deepEqual(validateLeaveForm({ ...ok, reason: "x".repeat(500) }), {});
 });
 
-test("canParentCancel: pending + parent-created only", () => {
+test("canParentCancel: pending, parent-created, by this parent only", () => {
+  const me = "u1";
   assert.equal(
-    canParentCancel({ status: "pending", requestedBy: { role: "parent" } }),
+    canParentCancel(
+      { status: "pending", requestedBy: { role: "parent", userId: "u1" } },
+      me,
+    ),
     true,
   );
   assert.equal(
-    canParentCancel({ status: "pending", requestedBy: { role: "staff" } }),
+    canParentCancel(
+      { status: "pending", requestedBy: { role: "parent", userId: "u2" } },
+      me,
+    ),
     false,
   );
   assert.equal(
-    canParentCancel({ status: "approved", requestedBy: { role: "parent" } }),
+    canParentCancel(
+      { status: "pending", requestedBy: { role: "staff", userId: "u1" } },
+      me,
+    ),
     false,
   );
-  assert.equal(canParentCancel(null), false);
+  assert.equal(
+    canParentCancel(
+      { status: "approved", requestedBy: { role: "parent", userId: "u1" } },
+      me,
+    ),
+    false,
+  );
+  assert.equal(
+    canParentCancel({ status: "pending", requestedBy: { role: "parent" } }, me),
+    false,
+  );
+  assert.equal(
+    canParentCancel(
+      { status: "pending", requestedBy: { role: "parent", userId: "u1" } },
+      undefined,
+    ),
+    false,
+  );
+  assert.equal(canParentCancel(null, me), false);
 });

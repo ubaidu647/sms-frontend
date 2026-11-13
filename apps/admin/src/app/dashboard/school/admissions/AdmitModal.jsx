@@ -13,6 +13,8 @@ import { Modal } from '@/component/Modal';
 import Button from '@/component/Button';
 import Switch from '@/component/Switch';
 import { fetchData, postData, postDataWithStatus } from '@/utils/api';
+import PickerError from '@/component/PickerError';
+import { retryUnless4xx } from '@/utils/queryError';
 import { localYM, localYMD } from '@/utils/localDate';
 import { academicYearStartMonth, currentAcademicYear } from '@/utils/academicYear';
 import { PARENT_PASSWORD_MIN } from '@/utils/parentAccounts';
@@ -210,12 +212,17 @@ export default function AdmitModal({ enquiry, perms, onClose }) {
   const parentEnabled = watch('parent.enabled');
   const voucherEnabled = watch('voucher.enabled');
 
-  const { data: classData, isFetching: classesLoading } = useQuery({
+  const {
+    data: classData,
+    isFetching: classesLoading,
+    error: classesError,
+  } = useQuery({
     queryKey: ['classes-dropdown', branchId, academicYear],
     queryFn: () =>
       fetchData({ url: '/class/list', page: 1, limit: 200, token, branchId, academicYear }),
     enabled: !!token && !!branchId && /^\d{4}-\d{4}$/.test(academicYear || ''),
     staleTime: 30000,
+    retry: retryUnless4xx,
   });
   const classes = classData?.data || [];
 
@@ -369,6 +376,7 @@ export default function AdmitModal({ enquiry, perms, onClose }) {
                   </option>
                 ))}
               </select>
+              <PickerError error={classesError} />
               {noClassForGrade && (
                 <p className="text-xs text-amber-600 mt-1">
                   No {gradeLabel(enquiry.desiredGrade)} class in {academicYear}.
@@ -678,13 +686,31 @@ function AdmitResult({ result, voucher }) {
         <StatTile label="Academic year" value={s.academicYear} />
       </div>
 
+      {s.defaultPasswordHint && (
+        <div className="p-4 rounded-xl bg-amber-50 border border-amber-200">
+          <div className="text-xs font-bold text-amber-900 uppercase tracking-wide">
+            Default Password
+          </div>
+          <p className="text-sm text-amber-800 mt-1">
+            The student’s default login password is the admission number:{' '}
+            <span className="font-mono font-bold bg-white dark:bg-gray-900 px-2 py-0.5 rounded border border-amber-300">
+              {s.admissionNumber}
+            </span>
+          </p>
+          <p className="text-xs text-amber-700 mt-1">
+            Please share this with the student/guardian. The student must change it at first
+            sign-in.
+          </p>
+        </div>
+      )}
+
       {p && (
         <div className="flex items-start gap-3 p-3 rounded-xl border border-teal-200 dark:border-teal-900 bg-teal-50 dark:bg-teal-950/40 text-sm text-teal-800 dark:text-teal-300">
           <Info className="w-5 h-5 flex-shrink-0 mt-0.5" />
           <span>
             {p.linkedExisting
               ? `Linked to the existing parent account ${p.email || ''} (its password was not changed).`
-              : `Parent portal account created for ${p.email || ''}.`}
+              : `Parent portal account created for ${p.email || ''}. The parent must change the password at first sign-in.`}
           </span>
         </div>
       )}

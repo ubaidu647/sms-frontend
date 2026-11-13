@@ -1,8 +1,15 @@
 'use client';
 
 // SVG progress ring for the attendance presentPercentage. Use the backend's
-// presentPercentage straight for the value.
-export default function AttendanceRing({ percentage = 0, size = 140, stroke = 12 }) {
+// presentPercentage straight for the value. No percentage yet (null), or
+// `failed`, shows a dash rather than a 0% the student never scored.
+export default function AttendanceRing({
+  percentage = 0,
+  size = 140,
+  stroke = 12,
+  failed = false,
+}) {
+  const known = !failed && percentage !== null;
   const pct = Math.max(0, Math.min(100, Math.round(percentage)));
   const radius = (size - stroke) / 2;
   const circumference = 2 * Math.PI * radius;
@@ -21,22 +28,26 @@ export default function AttendanceRing({ percentage = 0, size = 140, stroke = 12
           strokeWidth={stroke}
           className="text-gray-200 dark:text-gray-700"
         />
-        <circle
-          cx={size / 2}
-          cy={size / 2}
-          r={radius}
-          fill="none"
-          stroke={color}
-          strokeWidth={stroke}
-          strokeLinecap="round"
-          strokeDasharray={circumference}
-          strokeDashoffset={offset}
-          style={{ transition: 'stroke-dashoffset 0.6s ease' }}
-        />
+        {known && (
+          <circle
+            cx={size / 2}
+            cy={size / 2}
+            r={radius}
+            fill="none"
+            stroke={color}
+            strokeWidth={stroke}
+            strokeLinecap="round"
+            strokeDasharray={circumference}
+            strokeDashoffset={offset}
+            style={{ transition: 'stroke-dashoffset 0.6s ease' }}
+          />
+        )}
       </svg>
       <div className="absolute flex flex-col items-center">
-        <span className="text-2xl font-bold text-gray-900 dark:text-gray-100">{pct}%</span>
-        <span className="text-xs text-gray-500 dark:text-gray-400">present</span>
+        <span className="text-2xl font-bold text-gray-900 dark:text-gray-100">{known ? `${pct}%` : '—'}</span>
+        <span className="text-xs text-gray-500 dark:text-gray-400">
+          {failed ? 'Could not load' : 'present'}
+        </span>
       </div>
     </div>
   );

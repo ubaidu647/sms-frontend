@@ -86,6 +86,8 @@ export default function SectionView({ runId, sectionId, runStatus }) {
   const applyIds = selected.size > 0 ? [...selected] : pendingIds;
   const applyCounts = countDecisions(plan, applyIds);
   const readOnly = runStatus === 'undone';
+  // A completed run still allows undo, but the API refuses apply until reopened.
+  const applyClosed = readOnly || runStatus === 'completed';
 
   const onMutationError = (fallback) => (err) => {
     const msg = err.message || fallback;
@@ -298,8 +300,15 @@ export default function SectionView({ runId, sectionId, runStatus }) {
         </div>
       )}
 
+      {pendingIds.length > 0 && runStatus === 'completed' && (
+        <p className="text-sm text-amber-700 dark:text-amber-400">
+          This run is completed. Reopen it to process the {pendingIds.length} remaining student
+          {pendingIds.length === 1 ? '' : 's'}.
+        </p>
+      )}
+
       {/* Bulk actions */}
-      {pendingIds.length > 0 && !readOnly && (
+      {pendingIds.length > 0 && !applyClosed && (
         <div className="flex flex-wrap items-center gap-2">
           <button type="button" className={secondaryBtn} onClick={setAllDefault} disabled={busy}>
             Set all to {isLastGrade ? 'Pass out' : 'Promote'}
@@ -337,7 +346,7 @@ export default function SectionView({ runId, sectionId, runStatus }) {
                 <input
                   type="checkbox"
                   checked={allSelected}
-                  disabled={pendingIds.length === 0 || readOnly}
+                  disabled={pendingIds.length === 0 || applyClosed}
                   onChange={() => setSelected(allSelected ? new Set() : new Set(pendingIds))}
                   aria-label="Select all pending students"
                 />
@@ -374,7 +383,7 @@ export default function SectionView({ runId, sectionId, runStatus }) {
                       <input
                         type="checkbox"
                         checked={selected.has(s._id)}
-                        disabled={readOnly}
+                        disabled={applyClosed}
                         onChange={() => toggle(s._id)}
                         aria-label={`Select ${s.name}`}
                       />
@@ -429,7 +438,7 @@ export default function SectionView({ runId, sectionId, runStatus }) {
                           value={entry.decision}
                           onChange={(e) => changeDecision(s._id, e.target.value)}
                           className={`${inputCls} w-full`}
-                          disabled={busy || readOnly}
+                          disabled={busy || applyClosed}
                         >
                           {allowedDecisions(isLastGrade, s).map((d) => (
                             <option key={d} value={d}>
@@ -444,7 +453,7 @@ export default function SectionView({ runId, sectionId, runStatus }) {
                             value={entry.toSectionId || ''}
                             onChange={(e) => changeTarget(s._id, e.target.value)}
                             className={`${inputCls} w-full ${entry.toSectionId ? '' : 'border-red-400'}`}
-                            disabled={busy || readOnly}
+                            disabled={busy || applyClosed}
                           >
                             <option value="">Select section…</option>
                             {options.map((t) => (
@@ -471,7 +480,7 @@ export default function SectionView({ runId, sectionId, runStatus }) {
       </div>
 
       {/* Apply bar */}
-      {pendingIds.length > 0 && !readOnly && (
+      {pendingIds.length > 0 && !applyClosed && (
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700">
           <div className="flex flex-wrap gap-2">
             {Object.entries(applyCounts)

@@ -4,6 +4,8 @@ import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useTokenStore } from '@/store/tokenStore';
 import { fetchData } from '@/utils/api';
+import PickerError from '@/component/PickerError';
+import { retryUnless4xx } from '@/utils/queryError';
 import { CERTIFICATE_STATUS_COLORS, certificateTypeLabel } from '@/utils/certificateText';
 
 export const inputCls =
@@ -91,12 +93,13 @@ export function StudentSearch({ value, label, onSelect, onClear }) {
   const [open, setOpen] = useState(false);
   const term = search.trim();
 
-  const { data, isFetching } = useQuery({
+  const { data, isFetching, error } = useQuery({
     queryKey: ['certificate-student-search', term, left],
     queryFn: () =>
       fetchData({ url: '/student/list', page: 1, limit: 10, token, search: term, isActive: !left }),
     enabled: !!token && term.length >= 2,
     staleTime: 10000,
+    retry: retryUnless4xx,
   });
   const students = data?.data || [];
 
@@ -168,6 +171,7 @@ export function StudentSearch({ value, label, onSelect, onClear }) {
         {open && term.length >= 2 && data && !isFetching && students.length === 0 && (
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">No students found.</p>
         )}
+        <PickerError error={error} />
       </div>
       <label className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
         <input

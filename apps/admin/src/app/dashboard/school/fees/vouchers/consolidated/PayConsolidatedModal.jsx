@@ -5,7 +5,15 @@ import Button from '@/component/Button';
 import toast from 'react-hot-toast';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { postData } from '@/utils/api';
-import { idempotencyHeader, newIdempotencyKey } from '@/utils/idempotency';
+import {
+  holdKey,
+  idempotencyHeader,
+  isUnknownOutcome,
+  keyForTarget,
+  newIdempotencyKey,
+  releaseKey,
+  spentKeyMessage,
+} from '@/utils/idempotency';
 import { useTokenStore } from '@/store/tokenStore';
 import { invalidateFeeQueries } from '@/utils/feeQueries';
 import PaymentAccountSelect from '@/component/PaymentAccountSelect';
@@ -23,6 +31,7 @@ export default function PayConsolidatedModal({
   onClose,
   studentId,
   outstandingTotal = 0,
+  payable = 0,
   studentLabel,
   branchId,
 }) {
@@ -41,6 +50,7 @@ export default function PayConsolidatedModal({
   // One key per payment attempt: minted on open and again after every recorded
   // payment, reused only for retries of the same unsubmitted attempt so a
   // resubmit after a lost response can't double-record.
+  const keyTarget = `fee-consolidated:${studentId}`;
   const idempotencyKeyRef = useRef(null);
 
   // Reset on open only. Keyed on isOpen alone: an outstanding-total refetch
@@ -48,8 +58,8 @@ export default function PayConsolidatedModal({
   // new key nor wipe the result being shown.
   useEffect(() => {
     if (!isOpen) return;
-    idempotencyKeyRef.current = newIdempotencyKey();
-    setAmount(outstandingTotal || 0);
+    idempotencyKeyRef.current = keyForTarget(keyTarget);
+    setAmount(payable || 0);
     setPaymentDate(localYMD());
     setAccount(null);
     setReferenceNumber('');
@@ -69,6 +79,7 @@ export default function PayConsolidatedModal({
       }),
     onSuccess: (res) => {
       // This attempt is recorded; the next payment must not replay it.
+      releaseKey(keyTarget);
       idempotencyKeyRef.current = newIdempotencyKey();
       const payload = res?.data;
       toast.success(
@@ -80,9 +91,27 @@ export default function PayConsolidatedModal({
       setResult(payload);
     },
     onError: (err) => {
+      // The key is spent — it went through earlier with a different amount, or
+      // that payment was voided since — so it can never succeed again: start a
+      // fresh one and refresh the lists.
+      const spent = spentKeyMessage(err);
+      if (spent) {
+        releaseKey(keyTarget);
+        idempotencyKeyRef.current = newIdempotencyKey();
+        invalidateFeeQueries(queryClient);
+        setSubmitError(spent);
+        toast.error(spent);
+        return;
+      }
+      // Network/timeout etc.: keep the key so an unchanged retry is recognised.
       const msg = err.message || 'Failed to record consolidated payment';
       setSubmitError(msg);
       toast.error(msg);
+      if (isUnknownOutcome(err)) {
+        // It may have gone through: a cancel and reopen must reuse this key.
+        holdKey(keyTarget, idempotencyKeyRef.current);
+        invalidateFeeQueries(queryClient);
+      }
     },
   });
 
@@ -93,8 +122,8 @@ export default function PayConsolidatedModal({
     setSubmitError('');
     const num = Number(amount);
     if (!num || num <= 0) return setSubmitError('Amount must be > 0');
-    if (num > outstandingTotal)
-      return setSubmitError(`Amount cannot exceed outstanding ${formatMoney(outstandingTotal)}`);
+    if (num > payable)
+      return setSubmitError(`Amount cannot exceed the payable ${formatMoney(payable)}`);
     const dateError = paymentDateError(paymentDate);
     if (dateError) return setSubmitError(dateError);
     if (!account) return setSubmitError('Select the cash or bank account the money came into');
@@ -115,10 +144,16 @@ export default function PayConsolidatedModal({
 
   if (!studentId) return null;
 
+  // Closing mid-request and reopening mints a new idempotency key, so a retry
+  // of a payment that did go through would record it twice.
+  const closeIfIdle = () => {
+    if (!mutation.isPending) onClose();
+  };
+
   return (
     <Modal
       isOpen={isOpen}
-      onClose={onClose}
+      onClose={closeIfIdle}
       title={result ? 'Payment Applied' : 'Pay Arrears'}
       subtitle={studentLabel || 'Consolidated payment'}
       size="lg"
@@ -126,7 +161,7 @@ export default function PayConsolidatedModal({
         <div className="flex gap-3 w-full">
           <Button
             label={result ? 'Close' : 'Cancel'}
-            handleClick={onClose}
+            handleClick={closeIfIdle}
             type="button"
             styleObject={{
               baseColor: 'bg-white border border-gray-300',
@@ -186,6 +221,12 @@ export default function PayConsolidatedModal({
             <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
               Payment is applied FIFO — earliest month first, then forward.
             </div>
+            {payable < outstandingTotal && (
+              <div className="text-xs text-amber-700 dark:text-amber-400 mt-1">
+                Up to {formatMoney(payable)} can be collected here; a later voucher belongs to
+                another branch.
+              </div>
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-3">
@@ -196,7 +237,7 @@ export default function PayConsolidatedModal({
               <input
                 type="number"
                 min={1}
-                max={outstandingTotal}
+                max={payable}
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 className={inputCls}

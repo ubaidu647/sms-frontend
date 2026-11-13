@@ -17,7 +17,7 @@ import { useTokenStore } from '@/store/tokenStore';
 import { useUserStore } from '@/store/userStore';
 import { hasAnyAction } from '@/utils/permissions';
 import { retryUnless4xx } from '@/utils/queryError';
-import { formatAmount } from '@/utils/money';
+import { formatMoney } from '@/utils/money';
 import { localYMD } from '@/utils/localDate';
 import {
   CERTIFICATE_TYPES,
@@ -48,6 +48,7 @@ import {
   warningsOf,
   PRINT_PATH,
 } from './certificateShared';
+import { useSchoolCurrency } from '@/hooks/useSchoolCurrency';
 
 const TYPE_HINTS = {
   slc: 'Issued when the student leaves. Fees must be clear; the student is marked as left.',
@@ -75,7 +76,7 @@ const SCHEMAS = {
         is: 'other',
         then: (s) => s.required('Describe the reason'),
       }),
-    lastClass: yup.string().trim().required('Last class is required').max(60),
+    lastClass: yup.string().trim().required('Last class is required').max(50),
     conduct: yup.string().oneOf(CONDUCTS).required('Pick the conduct'),
     remarks,
   }),
@@ -212,6 +213,7 @@ export default function IssueCertificateModal({ isOpen, onClose, initialStudent 
 }
 
 function EligibilityPanel({ eligibility }) {
+  const { symbol: currencySymbol } = useSchoolCurrency();
   const s = eligibility.student || {};
   const { total: outstanding, parts: outstandingParts } = outstandingSummary(eligibility);
   const reasons = eligibility.reasons || [];
@@ -237,7 +239,7 @@ function EligibilityPanel({ eligibility }) {
                   : 'text-green-700 dark:text-green-400 font-semibold'
               }
             >
-              Rs {formatAmount(outstanding)}
+              {formatMoney(outstanding, currencySymbol)}
             </span>
           }
         />
@@ -263,7 +265,7 @@ function EligibilityPanel({ eligibility }) {
                       : 'text-gray-700 dark:text-gray-300'
                   }
                 >
-                  Rs {formatAmount(p.amount)}
+                  {formatMoney(p.amount, currencySymbol)}
                 </span>
               </span>
             ))}
@@ -312,6 +314,7 @@ function Info({ label, value }) {
 }
 
 function IssueForm({ type, studentId, studentName, eligibility, onCancel, onIssued }) {
+  const { symbol: currencySymbol } = useSchoolCurrency();
   const { accessToken: token } = useTokenStore();
   const { user } = useUserStore();
   const router = useRouter();
@@ -338,7 +341,7 @@ function IssueForm({ type, studentId, studentName, eligibility, onCancel, onIssu
   // `canIssue` to such a user, so key off `needsForce` alone.
   const forceable =
     type === 'slc' && !!eligibility?.needsForce && !(eligibility?.reasons || []).length;
-  const holdBack = forceSummary(eligibility, (n) => `Rs ${formatAmount(n)}`);
+  const holdBack = forceSummary(eligibility, (n) => formatMoney(n, currencySymbol));
   const canSubmit = canSubmitIssue(eligibility, { force, canForce });
 
   const mutation = useMutation({
@@ -410,7 +413,7 @@ function IssueForm({ type, studentId, studentName, eligibility, onCancel, onIssu
           </div>
           <div>
             <label className={labelCls}>Last class attended</label>
-            <input type="text" {...register('lastClass')} maxLength={60} className={inputCls} />
+            <input type="text" {...register('lastClass')} maxLength={50} className={inputCls} />
             {err('lastClass')}
           </div>
           <ConductSelect register={register} err={err} />

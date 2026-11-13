@@ -11,6 +11,8 @@ import { fetchData, postData } from '@/utils/api';
 import { useTokenStore } from '@/store/tokenStore';
 import { useUserStore } from '@/store/userStore';
 import { AVAILABLE_MENUS, AVAILABLE_ACTIONS, ACTIONS } from '@/constants/rolePermissions';
+import { usePlanFeatures } from '@/hooks/usePlanFeatures';
+import { actionsInPlan, menusInPlan } from '@/utils/planFeatures';
 
 const PRESETS = {
   teacher: {
@@ -104,14 +106,21 @@ export default function AddRoleModal({ isOpen, onClose, onSuccess }) {
   });
   const branches = branchData?.data || [];
 
-  // Only show menus/actions the current user has access to
-  const allowedMenus = isAdmin
-    ? AVAILABLE_MENUS
-    : AVAILABLE_MENUS.filter((m) => user?.role?.menus?.includes(m.key));
+  // Only show menus/actions the current user has access to — and, whatever
+  // the lock/hide setting, never those of modules outside the school's plan
+  // (presets below are filtered through these lists too).
+  const { features } = usePlanFeatures();
+  const allowedMenus = menusInPlan(
+    isAdmin ? AVAILABLE_MENUS : AVAILABLE_MENUS.filter((m) => user?.role?.menus?.includes(m.key)),
+    features,
+  );
 
-  const allowedActions = isAdmin
-    ? AVAILABLE_ACTIONS
-    : AVAILABLE_ACTIONS.filter((a) => user?.role?.actions?.includes(a.key));
+  const allowedActions = actionsInPlan(
+    isAdmin
+      ? AVAILABLE_ACTIONS
+      : AVAILABLE_ACTIONS.filter((a) => user?.role?.actions?.includes(a.key)),
+    features,
+  );
 
   const {
     register,

@@ -184,7 +184,7 @@ export default function PreviewPanel({ branchId, fromYear, onPrepared }) {
           )}
         </label>
         <div className="flex-1 text-xs text-gray-500 dark:text-gray-400">
-          Fee structures are copied with amounts × (1 + %/100), rounded to the nearest rupee.
+          Fee structures are copied with amounts × (1 + %/100), rounded to the nearest whole amount.
         </div>
         <button
           type="button"

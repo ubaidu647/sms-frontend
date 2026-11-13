@@ -3,6 +3,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
+  MAX_COPIES_PER_REQUEST,
   normalizeCode,
   ymdOf,
   diffDaysYMD,
@@ -244,4 +245,8 @@ test('settings form round-trip', () => {
   });
   assert.equal(buildSettingsPayload({ ...form, maxFinePerLoan: '150' }, 'b1').maxFinePerLoan, 150);
   assert.equal(buildSettingsPayload(form, 'b1').branchId, 'b1');
+});
+
+test('copies per request match the API limit', () => {
+  assert.equal(MAX_COPIES_PER_REQUEST, 200);
 });

@@ -296,6 +296,7 @@ export default function StaffPage() {
           total: Math.max((old.total || 1) - 1, 0),
         };
       });
+      queryClient.invalidateQueries({ queryKey: ['staff'] });
       toast.success('Staff deleted successfully');
       setDeleteTarget(null);
     },

@@ -30,6 +30,7 @@ import {
   ACCOUNT_TYPE_COLORS,
   ACCOUNT_CATEGORY_COLORS,
   ACCOUNT_CATEGORY_LABELS,
+  canManageAccount,
 } from '@/constants/accounting';
 
 const TypeBadge = ({ type }) => (
@@ -60,8 +61,8 @@ function AccountTreeNode({
   expanded,
   onToggle,
   onAction,
-  canUpdate,
-  canDelete,
+  canEditAccount,
+  canDeleteAccount,
   canViewLedger,
 }) {
   // The row menu renders in a portal: the tree scrolls inside an
@@ -79,8 +80,8 @@ function AccountTreeNode({
     ...(canViewLedger && !node.isGroup
       ? [{ value: 'ledger', label: 'Ledger', icon: Receipt }]
       : []),
-    ...(canUpdate && !node.isSystem ? [{ value: 'edit', label: 'Edit', icon: Edit }] : []),
-    ...(canDelete && !node.isSystem && !hasChildren
+    ...(canEditAccount(node) ? [{ value: 'edit', label: 'Edit', icon: Edit }] : []),
+    ...(canDeleteAccount(node) && !hasChildren
       ? [{ value: 'delete', label: 'Delete', icon: Trash2, danger: true }]
       : []),
   ];
@@ -202,8 +203,8 @@ function AccountTreeNode({
             expanded={expanded}
             onToggle={onToggle}
             onAction={onAction}
-            canUpdate={canUpdate}
-            canDelete={canDelete}
+            canEditAccount={canEditAccount}
+            canDeleteAccount={canDeleteAccount}
             canViewLedger={canViewLedger}
           />
         ))}
@@ -260,6 +261,16 @@ export default function AccountsPage() {
     isAdmin || actions.includes('update-account') || actions.includes('update-all-branch-account');
   const canDelete =
     isAdmin || actions.includes('delete-account') || actions.includes('delete-all-branch-account');
+  const canEditAccount = (account) =>
+    canManageAccount(account, {
+      allowed: canUpdate,
+      allBranch: isAdmin || actions.includes('update-all-branch-account'),
+    });
+  const canDeleteAccount = (account) =>
+    canManageAccount(account, {
+      allowed: canDelete,
+      allBranch: isAdmin || actions.includes('delete-all-branch-account'),
+    });
   const isOrgLevel = isAdmin || actions.includes('view-all-branch-account');
   const canViewLedger =
     isAdmin || actions.includes('view-journal') || actions.includes('view-all-branch-journal');
@@ -426,8 +437,8 @@ export default function AccountsPage() {
     const items = [{ label: 'View', value: 'view', icon: Eye }];
     if (canViewLedger && !row.isGroup)
       items.push({ label: 'Ledger', value: 'ledger', icon: Receipt });
-    if (canUpdate && !row.isSystem) items.push({ label: 'Edit', value: 'edit', icon: Edit });
-    if (canDelete && !row.isSystem) items.push({ label: 'Delete', value: 'delete', icon: Trash2 });
+    if (canEditAccount(row)) items.push({ label: 'Edit', value: 'edit', icon: Edit });
+    if (canDeleteAccount(row)) items.push({ label: 'Delete', value: 'delete', icon: Trash2 });
     return items;
   };
 
@@ -567,8 +578,8 @@ export default function AccountsPage() {
                   expanded={expanded}
                   onToggle={toggleNode}
                   onAction={handleAction}
-                  canUpdate={canUpdate}
-                  canDelete={canDelete}
+                  canEditAccount={canEditAccount}
+                  canDeleteAccount={canDeleteAccount}
                   canViewLedger={canViewLedger}
                 />
               ))

@@ -2,6 +2,8 @@
 import React from 'react';
 import { Eye, Edit, Trash2, Ban, CheckCircle, Building2, Globe2, KeyRound } from 'lucide-react';
 import { AVAILABLE_MENUS } from '@/constants/rolePermissions';
+import { usePlanFeatures } from '@/hooks/usePlanFeatures';
+import { isActionInPlan, isMenuInPlan } from '@/utils/planFeatures';
 
 // Stable accent per role — same role always gets the same colour, so the grid
 // stays recognisable between visits without storing anything.
@@ -41,9 +43,12 @@ const CHIP_LIMIT = 4;
 
 export default function RoleCard({ role, actions = [], onAction }) {
   const accent = accentFor(role.name);
+  const { features } = usePlanFeatures();
 
-  const menus = role.menus || [];
-  const actionKeys = role.actions || [];
+  // Grants of modules outside the school's plan are not shown (the role
+  // keeps them for a later upgrade).
+  const menus = (role.menus || []).filter((m) => isMenuInPlan(m, features));
+  const actionKeys = (role.actions || []).filter((a) => isActionInPlan(a, features));
   // A role that can reach other branches is worth calling out — it is the
   // difference between a branch clerk and a head-office one.
   const isOrgWide = actionKeys.some((a) => a.includes('-all-branch-'));

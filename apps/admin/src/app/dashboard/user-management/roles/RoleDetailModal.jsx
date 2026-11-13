@@ -3,7 +3,10 @@ import React from 'react';
 import { Modal } from '@/component/Modal';
 import { useQuery } from '@tanstack/react-query';
 import apiClient from '@/services/apiClient';
+import { useTranslations } from 'next-intl';
 import { AVAILABLE_MENUS, AVAILABLE_ACTIONS } from '@/constants/rolePermissions';
+import { usePlanFeatures } from '@/hooks/usePlanFeatures';
+import { isActionInPlan, isMenuInPlan, outOfPlanGrants } from '@/utils/planFeatures';
 
 async function fetchRoleById(id) {
   const { data } = await apiClient.get(`/role/${id}`);
@@ -22,8 +25,10 @@ function DetailRow({ label, children }) {
 }
 
 export default function RoleDetailModal({ isOpen, onClose, roleId }) {
+  const tPlan = useTranslations('planFeatures');
+  const { features } = usePlanFeatures();
   const {
-    data: role,
+    data: fullRole,
     isLoading,
     isError,
   } = useQuery({
@@ -32,6 +37,17 @@ export default function RoleDetailModal({ isOpen, onClose, roleId }) {
     enabled: !!roleId && isOpen,
     staleTime: 30_000,
   });
+
+  // Grants of modules outside the school's plan are not listed; the role
+  // keeps them, and a note says how many.
+  const role = fullRole
+    ? {
+        ...fullRole,
+        menus: (fullRole.menus || []).filter((m) => isMenuInPlan(m, features)),
+        actions: (fullRole.actions || []).filter((a) => isActionInPlan(a, features)),
+      }
+    : fullRole;
+  const keptOutOfPlan = fullRole ? outOfPlanGrants(fullRole, features).actions.length : 0;
 
   const menuLabelMap = Object.fromEntries(AVAILABLE_MENUS.map((m) => [m.key, m.label]));
   const actionLabelMap = Object.fromEntries(AVAILABLE_ACTIONS.map((a) => [a.key, a.label]));
@@ -161,6 +177,12 @@ export default function RoleDetailModal({ isOpen, onClose, roleId }) {
                 )}
               </div>
             </div>
+          )}
+
+          {keptOutOfPlan > 0 && (
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              {tPlan('keptOnRole', { count: keptOutOfPlan })}
+            </p>
           )}
         </div>
       )}

@@ -1,14 +1,17 @@
 'use client';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Modal } from '@/component/Modal';
 import Button from '@/component/Button';
 import toast from 'react-hot-toast';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { fetchData, postData } from '@/utils/api';
+import PickerError from '@/component/PickerError';
+import { retryUnless4xx } from '@/utils/queryError';
 import { useTokenStore } from '@/store/tokenStore';
 import { useUserStore } from '@/store/userStore';
 import { currentMonth, formatMoney, previousMonth } from '@/constants/staffSalary';
 import { filterAmountInput, parseAmountInput, payslipMonthError } from '@/utils/payslipInput';
+import { leaverTag, payslipStaffOptions } from '@/utils/payslipDisplay';
 
 const inputCls =
   'w-full px-3 py-2 border border-gray-200 rounded-lg outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 text-sm text-gray-900 bg-white placeholder:text-gray-400';
@@ -42,7 +45,7 @@ export default function GeneratePayslipModal({ isOpen, onClose }) {
     setSuccessState(false);
   }, [isOpen]);
 
-  const { data: staffData } = useQuery({
+  const { data: staffData, error: staffError } = useQuery({
     queryKey: ['staff-dropdown-form', canAllBranch, userBranchId],
     queryFn: () => {
       const params = { page: 1, limit: 500, token };
@@ -51,8 +54,30 @@ export default function GeneratePayslipModal({ isOpen, onClose }) {
     },
     enabled: !!token && isOpen,
     staleTime: 60000,
+    retry: retryUnless4xx,
   });
-  const staffList = staffData?.data || [];
+  // Leavers are owed the months up to the one they left in, so inactive staff
+  // with a leaving date on or after the month are offered too.
+  const { data: leaverData, error: leaverError } = useQuery({
+    queryKey: ['staff-dropdown-form-inactive', canAllBranch, userBranchId],
+    queryFn: () => {
+      const params = { page: 1, limit: 500, isActive: 'false', token };
+      if (!canAllBranch && userBranchId) params.branchId = userBranchId;
+      return fetchData({ url: '/staff/list', ...params });
+    },
+    enabled: !!token && isOpen,
+    staleTime: 60000,
+    retry: retryUnless4xx,
+  });
+  const staffList = useMemo(
+    () => payslipStaffOptions(staffData?.data, leaverData?.data, month),
+    [staffData, leaverData, month],
+  );
+
+  // A leaver picked for one month may not be owed a later one.
+  useEffect(() => {
+    if (staffId && staffData && !staffList.some((s) => s._id === staffId)) setStaffId('');
+  }, [staffId, staffData, staffList]);
 
   const { data: activeStruct, isFetching: structLoading } = useQuery({
     queryKey: ['staff-salary-active', staffId],
@@ -174,13 +199,16 @@ export default function GeneratePayslipModal({ isOpen, onClose }) {
               {staffList.map((s) => {
                 const label = s.user?.name || s.userId?.name || s.name || 'Staff';
                 const ref = s.serialNumber || s.employeeId;
+                const left = leaverTag(s);
                 return (
                   <option key={s._id} value={s._id}>
                     {label} {ref ? `(${ref})` : ''}
+                    {left ? ` — ${left}` : ''}
                   </option>
                 );
               })}
             </select>
+            <PickerError error={staffError || leaverError} />
           </div>
 
           {staffId && (

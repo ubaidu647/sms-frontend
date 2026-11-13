@@ -158,7 +158,8 @@ export const getMyCurrentSubscription = async () => {
 // Lightweight subscription STATE for the logged-in school — readable by ANY
 // signed-in tenant user (no 'view-billing' needed), so the global guard works
 // for every staff role. Returns { state, hardBlockAt, endDate, graceEndsAt?,
-// packageName }. Errors keep the HTTP status on `error.status` so the guard can
+// packageName, features } — `features` = the enabled add-on modules, or null
+// for all (see utils/planFeatures.js). Errors keep the HTTP status on `error.status` so the guard can
 // skip retries for 4xx.
 export const getMySubscriptionStatus = async () => {
   try {

@@ -30,3 +30,19 @@ export function assignedDateForUpdate(value) {
   const d = new Date(value);
   return Number.isNaN(d.getTime()) ? undefined : d.toISOString();
 }
+
+// Mirrors the server: once students have submitted an MCQ homework, its answers
+// point at questions and options by position, so questions and options can no
+// longer be added or removed. Text, the correct option and marks stay editable.
+export const MCQ_SHAPE_LOCKED_MESSAGE =
+  'Students have already submitted this homework: questions and options cannot be added or removed. You can still edit question text, the correct option and marks.';
+
+export function mcqShapeChangeError(previous = [], next = []) {
+  if (previous.length !== next.length) return MCQ_SHAPE_LOCKED_MESSAGE;
+  for (let i = 0; i < previous.length; i++) {
+    if ((previous[i]?.options?.length ?? 0) !== (next[i]?.options?.length ?? 0)) {
+      return MCQ_SHAPE_LOCKED_MESSAGE;
+    }
+  }
+  return null;
+}

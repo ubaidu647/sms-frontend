@@ -47,3 +47,20 @@ test('an empty assigned date is left out of the update', () => {
     new Date('2026-01-05T09:00').toISOString(),
   );
 });
+
+import { mcqShapeChangeError, MCQ_SHAPE_LOCKED_MESSAGE } from './homeworkGrading.js';
+
+const q = (n) => ({ options: Array.from({ length: n }, () => ({ text: 'x' })) });
+
+test('mcq shape: same question and option counts are allowed', () => {
+  assert.equal(mcqShapeChangeError([q(2), q(3)], [q(2), q(3)]), null);
+});
+
+test('mcq shape: adding or removing a question is refused', () => {
+  assert.equal(mcqShapeChangeError([q(2)], [q(2), q(2)]), MCQ_SHAPE_LOCKED_MESSAGE);
+  assert.equal(mcqShapeChangeError([q(2), q(2)], [q(2)]), MCQ_SHAPE_LOCKED_MESSAGE);
+});
+
+test('mcq shape: changing a question option count is refused', () => {
+  assert.equal(mcqShapeChangeError([q(2), q(3)], [q(2), q(4)]), MCQ_SHAPE_LOCKED_MESSAGE);
+});

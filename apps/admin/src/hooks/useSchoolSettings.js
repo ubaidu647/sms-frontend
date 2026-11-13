@@ -7,6 +7,7 @@ import {
   setSchoolAcademicYearStartMonth,
   startMonthFromSettings,
 } from '@/utils/academicYear';
+import { currencyFromSettings, setSchoolCurrency } from '@/utils/schoolCurrency';
 
 // One request per signed-in user per page load, shared by every caller.
 let loadedFor = null;
@@ -16,6 +17,8 @@ const SETTINGS_WAIT_MS = 8000;
 function loadFor(userKey) {
   // A sign-out in between clears the active user, so signing back in reloads.
   if (loadedFor === userKey && inFlight && academicYearUser() === userKey) return inFlight;
+  // A different user never inherits the previous school's currency.
+  if (loadedFor !== userKey) setSchoolCurrency(null);
   loadedFor = userKey;
   // The remembered month is per user: a different user never inherits it.
   setAcademicYearUser(userKey);
@@ -30,12 +33,15 @@ function loadFor(userKey) {
       if (academicYearUser() !== userKey) return; // signed out / switched user meanwhile
       // The month the API itself uses, so client and server never disagree.
       setSchoolAcademicYearStartMonth(startMonthFromSettings(res.data?.data));
+      // The school's money label, for every formatter (constants/* formatMoney).
+      setSchoolCurrency(currencyFromSettings(res.data?.data));
     })
     .catch((err) => {
       // A user with no school (platform admin) gets 403: follow the default.
       // Anything else (offline, 5xx): keep the last remembered month.
       if (err.response?.status === 403 && academicYearUser() === userKey) {
         setSchoolAcademicYearStartMonth(null);
+        setSchoolCurrency(null);
       }
     });
   inFlight = Promise.race([request, giveUp]);
@@ -43,7 +49,7 @@ function loadFor(userKey) {
 }
 
 /**
- * Load the school's settings (academic year start month) once the user is
+ * Load the school's settings (academic year start month, currency) once the user is
  * known, before the dashboard renders: forms and filters compute "the current
  * academic year" when they mount, so the month must already be in place.
  * Never blocks for good — a failed request falls back to the remembered or

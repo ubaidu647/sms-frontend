@@ -11,6 +11,7 @@ import {
   isVoidVoucher,
   pageCount,
 } from "@/utils/portalResults";
+import { useSchoolCurrency } from "@/hooks/useSchoolCurrency";
 
 const STATUS_STYLES = {
   paid: "bg-[#00918e]/10 text-[#00918e]",
@@ -20,6 +21,7 @@ const STATUS_STYLES = {
 };
 
 function ChildFees() {
+  const { symbol: currencySymbol } = useSchoolCurrency();
   const [page, setPage] = useState(1);
   const { data, isLoading, isError, error, refetch, isFetching } = useFees({
     page,
@@ -48,7 +50,7 @@ function ChildFees() {
           <div className="rounded-2xl bg-[#00918e] text-white p-6 mb-4">
             <p className="text-sm opacity-90">Amount due</p>
             <p className="mt-1 text-3xl font-bold">
-              {formatMoney(outstanding)}
+              {formatMoney(outstanding, currencySymbol)}
             </p>
             <p className="mt-1 text-xs opacity-80">
               {outstanding > 0
@@ -121,7 +123,7 @@ function ChildFees() {
                         </p>
                       </div>
                       <span className="text-sm font-semibold text-[#00918e]">
-                        {formatMoney(p.amount ?? p.paidAmount)}
+                        {formatMoney(p.amount ?? p.paidAmount, currencySymbol)}
                       </span>
                     </li>
                   ))}
@@ -141,6 +143,7 @@ function ChildFees() {
 }
 
 function VoucherCard({ voucher: v }) {
+  const { symbol: currencySymbol } = useSchoolCurrency();
   const [open, setOpen] = useState(false);
   const lineItems = v.lineItems || [];
   const status = v.status || "unpaid";
@@ -177,10 +180,10 @@ function VoucherCard({ voucher: v }) {
         ) : (
           <div className="text-right flex-shrink-0">
             <div className="font-bold text-gray-900 dark:text-gray-100">
-              {formatMoney(v.balanceAmount ?? v.totalAmount)}
+              {formatMoney(v.balanceAmount ?? v.totalAmount, currencySymbol)}
             </div>
             <div className="text-xs text-gray-400">
-              of {formatMoney(v.totalAmount)}
+              of {formatMoney(v.totalAmount, currencySymbol)}
             </div>
           </div>
         )}
@@ -200,20 +203,20 @@ function VoucherCard({ voucher: v }) {
                   {li.name || li.label || "Item"}
                 </span>
                 <span className="text-gray-900 dark:text-gray-100">
-                  {formatMoney(li.finalAmount ?? li.amount)}
+                  {formatMoney(li.finalAmount ?? li.amount, currencySymbol)}
                 </span>
               </li>
             ))}
             {v.lateFee > 0 && (
               <li className="flex justify-between text-sm text-red-500">
                 <span>Late fee</span>
-                <span>{formatMoney(v.lateFee)}</span>
+                <span>{formatMoney(v.lateFee, currencySymbol)}</span>
               </li>
             )}
             <li className="flex justify-between text-sm font-semibold border-t border-gray-100 dark:border-gray-800 pt-2">
               <span className="text-gray-700 dark:text-gray-200">Paid</span>
               <span className="text-[#00918e]">
-                {formatMoney(v.paidAmount)}
+                {formatMoney(v.paidAmount, currencySymbol)}
               </span>
             </li>
           </ul>

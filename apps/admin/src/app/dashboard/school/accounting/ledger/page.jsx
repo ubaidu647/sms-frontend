@@ -7,6 +7,7 @@ import { useUserStore } from '@/store/userStore';
 import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import { fetchData } from '@/utils/api';
 import AccountCombobox from '@/component/AccountCombobox';
+import QueryErrorState from '@/component/QueryErrorState';
 import ReportPagination from '@/component/ReportPagination';
 import {
   JOURNAL_SOURCE_COLORS,
@@ -76,7 +77,7 @@ export default function AccountLedgerPage() {
     setPage(1);
   };
 
-  const { data, isFetching } = useQuery({
+  const { data, isFetching, isError, error } = useQuery({
     queryKey: ['account-ledger', accountId, from, to, page, limit],
     queryFn: () => {
       const params = {};
@@ -164,10 +165,17 @@ export default function AccountLedgerPage() {
             </div>
           ) : isFetching && !ledger ? (
             <div className="py-16 text-center text-gray-400 text-sm">Loading ledger…</div>
+          ) : isError && !ledger ? (
+            <QueryErrorState error={error} fallback="Could not load this ledger" />
           ) : !ledger ? (
             <div className="py-16 text-center text-gray-400 text-sm">No entries in this range.</div>
           ) : (
             <>
+              {isError && (
+                <div className="mb-4 print:hidden">
+                  <QueryErrorState error={error} fallback="Could not load this ledger" />
+                </div>
+              )}
               <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4">
                 {ledger.account?.code} · {ledger.account?.name}
                 <span className="ml-2 text-xs font-normal text-gray-500 capitalize">

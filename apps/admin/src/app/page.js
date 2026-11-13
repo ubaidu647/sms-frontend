@@ -3,7 +3,6 @@
 import Link from 'next/link';
 import { useTokenStore } from '@/store/tokenStore';
 import {
-  GraduationCap,
   Users,
   ClipboardCheck,
   Wallet,
@@ -31,11 +30,12 @@ export default function Home() {
       <header className="fixed top-0 left-0 right-0 z-40 backdrop-blur bg-white/80 dark:bg-[#0a0a0a]/80 border-b border-gray-200/60 dark:border-white/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2 group">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-teal-500 to-teal-700 flex items-center justify-center shadow-lg shadow-teal-600/30 group-hover:scale-105 transition-transform">
-              <GraduationCap className="w-5 h-5 text-white" />
+            <div className="w-9 h-9 rounded-xl bg-white flex items-center justify-center shadow-md p-0.5 shrink-0">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/logo.png" alt="Mizenzo" className="w-full h-full object-contain" />
             </div>
             <span className="text-lg font-bold tracking-tight">
-              Node<span className="text-teal-600">Campus</span>
+              Mizenzo<span className="text-teal-600"> School Management</span>
             </span>
           </Link>
 
@@ -129,8 +129,8 @@ export default function Home() {
                 </span>
               </h1>
               <p className="mt-5 text-lg text-gray-600 dark:text-gray-300 max-w-xl">
-                Node Campus is the all-in-one platform for admissions, attendance, fees, exams and
-                day-to-day operations — for branches big and small.
+                Mizenzo School Management is the all-in-one platform for admissions, attendance,
+                fees, exams and day-to-day operations — for branches big and small.
               </p>
 
               <div className="mt-8 flex flex-wrap items-center gap-4">
@@ -170,7 +170,7 @@ export default function Home() {
                   <div className="w-3 h-3 rounded-full bg-red-400" />
                   <div className="w-3 h-3 rounded-full bg-yellow-400" />
                   <div className="w-3 h-3 rounded-full bg-green-400" />
-                  <div className="ml-3 text-xs text-gray-500">app.nodecampus.online/dashboard</div>
+                  <div className="ml-3 text-xs text-gray-500">app.mizenzo.com/dashboard</div>
                 </div>
                 <div className="p-5 grid grid-cols-3 gap-4">
                   {[
@@ -240,8 +240,8 @@ export default function Home() {
               Everything your school needs, nothing it doesn&apos;t
             </h2>
             <p className="mt-4 text-gray-600 dark:text-gray-300">
-              From the front desk to the finance office, Node Campus replaces a stack of
-              spreadsheets with one fast, modern workspace.
+              From the front desk to the finance office, Mizenzo School Management replaces a stack
+              of spreadsheets with one fast, modern workspace.
             </p>
           </div>
 
@@ -366,7 +366,7 @@ export default function Home() {
                   Ready to modernize your school?
                 </h2>
                 <p className="mt-4 text-teal-50/90">
-                  Join hundreds of schools running smoother days with Node Campus.
+                  Join hundreds of schools running smoother days with Mizenzo School Management.
                 </p>
               </div>
               <div className="flex flex-wrap gap-3 lg:justify-end">
@@ -394,11 +394,12 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 grid md:grid-cols-4 gap-8">
           <div className="md:col-span-2">
             <div className="flex items-center gap-2">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-teal-500 to-teal-700 flex items-center justify-center shadow-lg shadow-teal-600/30">
-                <GraduationCap className="w-5 h-5 text-white" />
+              <div className="w-9 h-9 rounded-xl bg-white flex items-center justify-center shadow-md p-0.5 shrink-0">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/logo.png" alt="Mizenzo" className="w-full h-full object-contain" />
               </div>
               <span className="text-lg font-bold tracking-tight">
-                Node<span className="text-teal-600">Campus</span>
+                Mizenzo<span className="text-teal-600"> School Management</span>
               </span>
             </div>
             <p className="mt-4 text-sm text-gray-600 dark:text-gray-400 max-w-md">
@@ -462,7 +463,7 @@ export default function Home() {
         </div>
         <div className="border-t border-gray-200/60 dark:border-white/10">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-gray-500">
-            <div>© {new Date().getFullYear()} Node Campus. All rights reserved.</div>
+            <div>© {new Date().getFullYear()} Mizenzo School Management. All rights reserved.</div>
             <div className="flex gap-4">
               <a href="#" className="hover:text-teal-600">
                 Privacy
@@ -536,7 +537,7 @@ const steps = [
 const testimonials = [
   {
     quote:
-      'We replaced four different tools with Node Campus. Our front office is calmer, our parents are happier.',
+      'We replaced four different tools with Mizenzo School Management. Our front office is calmer, our parents are happier.',
     author: 'Anita Mehra',
     role: 'Principal, Greenwood Public School',
   },

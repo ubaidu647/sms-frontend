@@ -187,7 +187,8 @@ export default function AccountFormModal({ isOpen, onClose, account, branchId, i
 
     const payload = {
       name: name.trim(),
-      description: description.trim() || undefined,
+      // Blank clears it on an edit: left out, the API keeps the old text.
+      description: description.trim() || (isEdit ? null : undefined),
     };
     // Control flags only exist on postable (level-3) accounts — send them only
     // where they're legal, and drop subLedgerType entirely when not a control.

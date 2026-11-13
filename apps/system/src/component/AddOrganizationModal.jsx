@@ -13,6 +13,10 @@ import { postData } from '@/utils/api';
 import { usePackages } from '@/app/dashboard/packages/hooks/usePackages';
 import { fmtMoney } from '@/app/dashboard/packages/format';
 import { PASSWORD_MIN, PASSWORD_MAX } from '@/utils/changePassword';
+import { readPaymentDue, withPaymentDue } from '@/utils/paymentDue';
+import PaymentDueField from '@/app/dashboard/subscriptions/PaymentDueField';
+import LaunchOfferField from '@/app/dashboard/subscriptions/LaunchOfferField';
+import { launchOfferPayload, offerAvailable } from '@/utils/launchOffer';
 // Validation schema
 const organizationSchema = yup.object().shape({
   name: yup.string().required('School name is required'),
@@ -73,13 +77,25 @@ export const AddOrganizationModal = ({ isOpen, onClose, token, onSuccess = null 
   });
   const packages = pkgData?.data ?? [];
   const selectedPackageId = watch('packageId');
+  const selectedPackage = packages.find((p) => p._id === selectedPackageId);
+  // "Apply launch offer" — default on; re-ticked when the package changes.
+  const [applyOffer, setApplyOffer] = useState(true);
+  useEffect(() => {
+    setApplyOffer(true);
+  }, [selectedPackageId]);
 
   const [successState, setSuccessState] = useState(false);
   const [submitError, setSubmitError] = useState('');
+  // Kept outside the form schema: a checkbox + optional number.
+  const [blockUnpaid, setBlockUnpaid] = useState(true);
+  const [dueDays, setDueDays] = useState(''); // blank → server default (15)
 
   useEffect(() => {
     if (!isOpen) {
       reset();
+      setBlockUnpaid(true);
+      setDueDays('');
+      setApplyOffer(true);
       setSubmitError('');
       setSuccessState(false);
     }
@@ -136,8 +152,13 @@ export const AddOrganizationModal = ({ isOpen, onClose, token, onSuccess = null 
   const onSubmit = (data) => {
     setSubmitError('');
     setSuccessState(false);
+    const due = readPaymentDue({ block: blockUnpaid, days: dueDays });
+    if (due.error) {
+      setSubmitError(due.error);
+      return;
+    }
     // Omit grace when blank (→ backend default 0); otherwise send a number.
-    const payload = { ...data };
+    let payload = { ...data, ...launchOfferPayload(selectedPackage, applyOffer) };
     if (payload.gracePeriodInDays === '' || payload.gracePeriodInDays == null) {
       delete payload.gracePeriodInDays;
     } else {
@@ -149,6 +170,7 @@ export const AddOrganizationModal = ({ isOpen, onClose, token, onSuccess = null 
     const phoneDigits = (payload.phone || '').replace(/\D/g, '');
     if (phoneDigits) payload.phone = phoneDigits;
     else delete payload.phone;
+    payload = withPaymentDue(payload, due.value);
     createSchoolMutation.mutate(payload);
   };
 
@@ -266,6 +288,7 @@ export const AddOrganizationModal = ({ isOpen, onClose, token, onSuccess = null 
                 packages.map((p) => (
                   <option key={p._id} value={p._id}>
                     {p.name} — {fmtMoney(p.price)} / {p.durationInDays}d
+                    {offerAvailable(p) ? ` (offer ${fmtMoney(p.launchOffer.price)})` : ''}
                   </option>
                 ))
               )}
@@ -292,6 +315,8 @@ export const AddOrganizationModal = ({ isOpen, onClose, token, onSuccess = null 
           </div>
         </div>
 
+        <LaunchOfferField pkg={selectedPackage} apply={applyOffer} onChange={setApplyOffer} />
+
         <div>
           <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
             Grace period (days after expiry)
@@ -315,6 +340,15 @@ export const AddOrganizationModal = ({ isOpen, onClose, token, onSuccess = null 
             </p>
           )}
         </div>
+
+        <PaymentDueField
+          block={blockUnpaid}
+          onBlockChange={setBlockUnpaid}
+          days={dueDays}
+          onDaysChange={setDueDays}
+          hint="Leave empty for the default (15 days)."
+          inputClassName="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 rounded-xl disabled:opacity-50"
+        />
 
         <InputField
           name="password"

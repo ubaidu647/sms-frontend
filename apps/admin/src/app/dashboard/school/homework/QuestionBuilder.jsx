@@ -1,6 +1,7 @@
 'use client';
 import React from 'react';
 import { Plus, Trash2, X } from 'lucide-react';
+import { MCQ_SHAPE_LOCKED_MESSAGE as lockShapeMessage } from '@/utils/homeworkGrading';
 
 // Controlled MCQ question builder. `value` is the questions array, `onChange`
 // receives the next array. Each question: { questionText, options:[{text}],
@@ -16,7 +17,9 @@ const emptyQuestion = () => ({
 const inputCls =
   'w-full px-3 py-2 border border-gray-200 rounded-lg outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 text-sm text-gray-900 bg-white placeholder:text-gray-400';
 
-export default function QuestionBuilder({ value = [], onChange }) {
+// `lockShape`: students have submitted, so questions and options can only be
+// edited in place — never added or removed (answers point at them by position).
+export default function QuestionBuilder({ value = [], onChange, lockShape = false }) {
   const questions = value;
 
   const update = (next) => onChange(next);
@@ -54,14 +57,22 @@ export default function QuestionBuilder({ value = [], onChange }) {
         <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">
           Questions ({questions.length}) · {totalMarks} total marks
         </h3>
-        <button
-          type="button"
-          onClick={addQuestion}
-          className="flex items-center gap-1 text-sm font-medium text-teal-700 dark:text-teal-400 hover:underline"
-        >
-          <Plus className="w-4 h-4" /> Add question
-        </button>
+        {!lockShape && (
+          <button
+            type="button"
+            onClick={addQuestion}
+            className="flex items-center gap-1 text-sm font-medium text-teal-700 dark:text-teal-400 hover:underline"
+          >
+            <Plus className="w-4 h-4" /> Add question
+          </button>
+        )}
       </div>
+
+      {lockShape && (
+        <p className="text-xs text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900 rounded-lg p-2">
+          {lockShapeMessage}
+        </p>
+      )}
 
       {questions.length === 0 && (
         <p className="text-sm text-gray-400 dark:text-gray-500 italic">
@@ -82,14 +93,16 @@ export default function QuestionBuilder({ value = [], onChange }) {
               placeholder="Question text"
               className={inputCls}
             />
-            <button
-              type="button"
-              onClick={() => removeQuestion(qi)}
-              title="Remove question"
-              className="mt-1 p-1.5 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40"
-            >
-              <Trash2 className="w-4 h-4" />
-            </button>
+            {!lockShape && (
+              <button
+                type="button"
+                onClick={() => removeQuestion(qi)}
+                title="Remove question"
+                className="mt-1 p-1.5 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            )}
           </div>
 
           <div className="space-y-2 pl-5">
@@ -112,7 +125,7 @@ export default function QuestionBuilder({ value = [], onChange }) {
                 <button
                   type="button"
                   onClick={() => removeOption(qi, oi)}
-                  disabled={q.options.length <= 2}
+                  disabled={lockShape || q.options.length <= 2}
                   title="Remove option"
                   className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 disabled:opacity-30 disabled:cursor-not-allowed"
                 >
@@ -121,13 +134,17 @@ export default function QuestionBuilder({ value = [], onChange }) {
               </div>
             ))}
             <div className="flex items-center justify-between pt-1">
-              <button
-                type="button"
-                onClick={() => addOption(qi)}
-                className="text-xs font-medium text-teal-700 dark:text-teal-400 hover:underline"
-              >
-                + Add option
-              </button>
+              {lockShape ? (
+                <span />
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => addOption(qi)}
+                  className="text-xs font-medium text-teal-700 dark:text-teal-400 hover:underline"
+                >
+                  + Add option
+                </button>
+              )}
               <label className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
                 Marks
                 <input

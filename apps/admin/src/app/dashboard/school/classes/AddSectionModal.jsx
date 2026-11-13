@@ -43,7 +43,14 @@ function Field({ label, required, error, children }) {
   );
 }
 
-export default function AddSectionModal({ isOpen, onClose, onSuccess, classId, academicYear }) {
+export default function AddSectionModal({
+  isOpen,
+  onClose,
+  onSuccess,
+  classId,
+  academicYear,
+  branchId,
+}) {
   const { accessToken: token } = useTokenStore();
   const queryClient = useQueryClient();
   const [submitError, setSubmitError] = useState('');
@@ -81,10 +88,18 @@ export default function AddSectionModal({ isOpen, onClose, onSuccess, classId, a
     }
   }, [isOpen, academicYear, reset]);
 
+  // A section's teacher must be in its branch (the server refuses others).
   const { data: staffData } = useQuery({
-    queryKey: ['teaching-staff-dropdown'],
+    queryKey: ['teaching-staff-dropdown', branchId || ''],
     queryFn: () =>
-      fetchData({ url: '/staff/list', page: 1, limit: 200, token, staffType: 'teaching' }),
+      fetchData({
+        url: '/staff/list',
+        page: 1,
+        limit: 200,
+        token,
+        staffType: 'teaching',
+        branchId: branchId || undefined,
+      }),
     enabled: !!token && isOpen,
     staleTime: 30000,
   });

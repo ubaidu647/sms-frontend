@@ -21,7 +21,7 @@ const formValuesOf = (cls) => ({
   medium: cls.medium || 'english',
   classTeacher: cls.classTeacherInfo?._id || '',
   totalCapacity: cls.totalCapacity ?? '',
-  status: cls.status || 'active',
+  status: cls.isActive === false ? 'inactive' : 'active',
 });
 
 // Can't be cleared, with the error an emptied one blocks the save with.

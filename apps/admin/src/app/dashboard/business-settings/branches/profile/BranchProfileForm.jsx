@@ -52,6 +52,9 @@ export default function BranchProfileForm({ initialProfile, branchLabel, branchI
       setProfile({
         ...blank,
         ...initialProfile,
+        // isActive is what every reader honours; a status left over from
+        // older writes must not flip the profile off on the next save.
+        status: initialProfile.isActive === false ? 'inactive' : 'active',
         principal: { ...blank.principal, ...(initialProfile.principal || {}) },
         socialLinks: { ...(initialProfile.socialLinks || {}) },
       });

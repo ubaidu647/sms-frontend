@@ -105,3 +105,32 @@ export function rosterStudents(students) {
       promoted: s.promoted === true,
     }));
 }
+
+const idOf = (v) => (v && typeof v === 'object' ? v._id : v);
+
+/**
+ * The sections a teacher may enter marks for in one class: those they teach
+ * the paper's subject in (teaching-assignment rows) plus those they lead as
+ * class teacher — every section of a class they lead, or a section naming
+ * them. `classDoc` is GET /class/:id (with `sections`); it may be missing
+ * (e.g. the role cannot view classes), leaving the assignment sections.
+ */
+export function teacherMarkSections({ assignments, classDoc, staffId }) {
+  const seen = new Map();
+  for (const a of assignments || []) {
+    const sec = a?.section;
+    if (!sec?._id || seen.has(String(sec._id))) continue;
+    seen.set(String(sec._id), { _id: sec._id, name: sec.name });
+  }
+  if (staffId && classDoc) {
+    const me = String(staffId);
+    const leadsClass = String(idOf(classDoc.classTeacher) ?? '') === me;
+    for (const sec of classDoc.sections || []) {
+      if (!sec?._id || seen.has(String(sec._id))) continue;
+      if (leadsClass || String(idOf(sec.classTeacher) ?? '') === me) {
+        seen.set(String(sec._id), { _id: sec._id, name: sec.name });
+      }
+    }
+  }
+  return Array.from(seen.values());
+}

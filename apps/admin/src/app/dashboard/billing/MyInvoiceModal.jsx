@@ -1,5 +1,6 @@
 'use client';
 import React from 'react';
+import { useTranslations } from 'next-intl';
 import { Modal } from '@/component/Modal';
 import { fmtMoney, fmtDate, INVOICE_STATUS_COLORS } from './format';
 
@@ -7,6 +8,8 @@ import { fmtMoney, fmtDate, INVOICE_STATUS_COLORS } from './format';
 // straight from GET /invoice/me (no extra fetch), and there is no "Mark as paid"
 // action — paying invoices is super-admin only.
 export default function MyInvoiceModal({ isOpen, onClose, invoice }) {
+  const t = useTranslations('billing');
+  const typeLabel = (type) => (t.has(`invoiceTypes.${type}`) ? t(`invoiceTypes.${type}`) : type);
   return (
     <Modal
       isOpen={isOpen}
@@ -28,8 +31,8 @@ export default function MyInvoiceModal({ isOpen, onClose, invoice }) {
             >
               {invoice.status || 'unknown'}
             </span>
-            <span className="text-sm text-gray-600 dark:text-gray-400 capitalize">
-              {invoice.type} · {fmtDate(invoice.createdAt)}
+            <span className="text-sm text-gray-600 dark:text-gray-400">
+              {typeLabel(invoice.type)} · {fmtDate(invoice.createdAt)}
             </span>
           </div>
 

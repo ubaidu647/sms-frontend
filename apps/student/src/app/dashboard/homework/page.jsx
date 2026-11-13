@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { useHomeworkList } from "@/hooks/useHomework";
 import { PageHeader, Panel } from "@/component/dashboard/Panel";
-import { Loading, ErrorState, EmptyState } from "@/component/dashboard/States";
+import { Loading, SeatErrorState, EmptyState } from "@/component/dashboard/States";
 import {
   SubmissionBadge,
   TypeBadge,
@@ -51,7 +51,7 @@ export default function HomeworkPage() {
       {isLoading ? (
         <Loading label="Loading homework…" />
       ) : isError ? (
-        <ErrorState error={error} onRetry={refetch} />
+        <SeatErrorState error={error} onRetry={refetch} />
       ) : items.length === 0 ? (
         <EmptyState
           title="No homework yet"

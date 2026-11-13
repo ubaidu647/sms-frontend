@@ -1,6 +1,7 @@
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import apiClient from "@/services/apiClient";
 import { useUserStore } from "@/store/userStore";
+import { retryUnlessRefused } from "@/utils/seatRefusal";
 
 // All dashboard routes are GET, auto-scoped to the logged-in student by the
 // backend (never send studentId/classId/sectionId). Responses are shaped
@@ -77,6 +78,7 @@ export function useAnnouncements({ page = 1, limit = 20 } = {}) {
   const uid = useUid();
   return useQuery({
     queryKey: ["dashboard", uid, "announcements", page, limit],
+    retry: retryUnlessRefused,
     queryFn: async () => {
       const res = await apiClient.get("/dashboard/student/announcements", {
         params: { page, limit },
@@ -109,6 +111,7 @@ export function useLibraryCatalogue({
   const q = search.trim();
   return useQuery({
     queryKey: ["dashboard", uid, "library-catalogue", q, page, limit],
+    retry: retryUnlessRefused,
     queryFn: async () => {
       const res = await apiClient.get("/dashboard/student/library/catalogue", {
         params: { ...(q ? { search: q } : {}), page, limit },

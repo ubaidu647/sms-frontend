@@ -25,6 +25,7 @@ import {
   labelCls,
   useLibrarySettings,
 } from './libraryShared';
+import { useSchoolCurrency } from '@/hooks/useSchoolCurrency';
 
 const SOURCE_COLORS = {
   branch: 'bg-teal-100 text-teal-800 dark:bg-teal-900/40 dark:text-teal-300',
@@ -51,6 +52,7 @@ const schema = yup.object().shape({
 const SCHOOL = '';
 
 export default function SettingsPanel({ orgTier, userBranchId }) {
+  const { symbol: currencySymbol } = useSchoolCurrency();
   const { accessToken: token } = useTokenStore();
   const queryClient = useQueryClient();
   // Org tier: '' = school default, else a branch. Branch tier: own branch only.
@@ -163,8 +165,8 @@ export default function SettingsPanel({ orgTier, userBranchId }) {
               Late fines
             </legend>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              {field('finePerDay', 'Fine per day (Rs)', { min: 0, step: '0.01' })}
-              {field('maxFinePerLoan', 'Max fine per loan (Rs, blank = no cap)', {
+              {field('finePerDay', `Fine per day (${currencySymbol})`, { min: 0, step: '0.01' })}
+              {field('maxFinePerLoan', `Max fine per loan (${currencySymbol}, blank = no cap)`, {
                 min: 0,
                 step: '0.01',
               })}

@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { planNoticeFor, takeSigninNotice } from '@/utils/authErrors';
 import Link from 'next/link';
-import { GraduationCap, ShieldCheck, BarChart3, Sparkles } from 'lucide-react';
+import { ShieldCheck, BarChart3, Sparkles } from 'lucide-react';
 import SignInForm from './SignInForm';
 
 const STUDENT_PORTAL_URL = process.env.NEXT_PUBLIC_STUDENT_URL || 'http://localhost:3001/signin';
@@ -36,11 +36,12 @@ const SignInPage = () => {
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(255,255,255,0.08),transparent_60%)]" />
 
         <Link href="/" className="relative flex items-center gap-2 w-fit">
-          <div className="w-10 h-10 rounded-xl bg-white/15 backdrop-blur flex items-center justify-center border border-white/20">
-            <GraduationCap className="w-5 h-5" />
+          <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center shadow-md p-0.5 shrink-0">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/logo.png" alt="Mizenzo" className="w-full h-full object-contain" />
           </div>
           <span className="text-xl font-bold tracking-tight">
-            Node<span className="text-yellow-300">Campus</span>
+            Mizenzo<span className="text-yellow-300"> School Management</span>
           </span>
         </Link>
 
@@ -71,7 +72,7 @@ const SignInPage = () => {
         </div>
 
         <div className="relative text-xs text-teal-50/70">
-          © {new Date().getFullYear()} Node Campus. All rights reserved.
+          © {new Date().getFullYear()} Mizenzo School Management. All rights reserved.
         </div>
       </div>
 
@@ -80,11 +81,12 @@ const SignInPage = () => {
         <div className="w-full max-w-md">
           {/* Mobile brand */}
           <Link href="/" className="lg:hidden flex items-center gap-2 mb-10 w-fit">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-500 to-teal-700 flex items-center justify-center shadow-lg shadow-teal-600/30">
-              <GraduationCap className="w-5 h-5 text-white" />
+            <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center shadow-md p-0.5 shrink-0">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/logo.png" alt="Mizenzo" className="w-full h-full object-contain" />
             </div>
             <span className="text-lg font-bold tracking-tight text-gray-900 dark:text-gray-100">
-              Node<span className="text-teal-600">Campus</span>
+              Mizenzo<span className="text-teal-600"> School Management</span>
             </span>
           </Link>
 

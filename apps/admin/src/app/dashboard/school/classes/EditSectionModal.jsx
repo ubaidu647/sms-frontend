@@ -16,7 +16,7 @@ const formValuesOf = (section) => ({
   name: section.name || '',
   capacity: section.capacity ?? '',
   classTeacher: section.classTeacherInfo?._id || '',
-  status: section.status || 'active',
+  status: section.isActive === false ? 'inactive' : 'active',
 });
 
 // Can't be cleared, with the error an emptied one blocks the save with.
@@ -83,10 +83,19 @@ export default function EditSectionModal({ isOpen, onClose, onSuccess, classId, 
     }
   }, [isOpen, reset]);
 
+  // A section's teacher must be in its branch (the server refuses others).
+  const branchId = section?.branchId ? String(section.branchId?._id || section.branchId) : '';
   const { data: staffData } = useQuery({
-    queryKey: ['teaching-staff-dropdown'],
+    queryKey: ['teaching-staff-dropdown', branchId || ''],
     queryFn: () =>
-      fetchData({ url: '/staff/list', page: 1, limit: 200, token, staffType: 'teaching' }),
+      fetchData({
+        url: '/staff/list',
+        page: 1,
+        limit: 200,
+        token,
+        staffType: 'teaching',
+        branchId: branchId || undefined,
+      }),
     enabled: !!token && isOpen,
     staleTime: 30000,
   });

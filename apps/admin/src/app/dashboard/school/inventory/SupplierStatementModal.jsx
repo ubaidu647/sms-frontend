@@ -56,10 +56,7 @@ export default function SupplierStatementModal({ supplier, onClose }) {
   const print = () =>
     printSheet({
       title: `Supplier statement — ${name}`,
-      subtitle: [
-        `Period: ${from || '…'} to ${to || '…'}`,
-        `Opening balance: Rs ${formatAmount(st.opening)}`,
-      ],
+      subtitle: [`Period: ${from || '…'} to ${to || '…'}`, `Opening balance: ${money(st.opening)}`],
       headers: ['Date', 'Type', 'Ref', 'Debit (paid)', 'Credit (owed)', 'Balance'],
       rows: rows.map((r) => [
         fmtDate(r.date),
@@ -69,7 +66,7 @@ export default function SupplierStatementModal({ supplier, onClose }) {
         amt(r.credit),
         formatAmount(r.balance),
       ]),
-      footer: `Closing balance: Rs ${formatAmount(st.closing)}`,
+      footer: `Closing balance: ${money(st.closing)}`,
     });
 
   return (

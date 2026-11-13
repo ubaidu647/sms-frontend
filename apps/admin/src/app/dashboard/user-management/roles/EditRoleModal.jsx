@@ -12,6 +12,8 @@ import { useTokenStore } from '@/store/tokenStore';
 import { useUserStore } from '@/store/userStore';
 import { refreshCurrentUser } from '@/hooks/useAuth';
 import { AVAILABLE_MENUS, AVAILABLE_ACTIONS } from '@/constants/rolePermissions';
+import { usePlanFeatures } from '@/hooks/usePlanFeatures';
+import { actionsInPlan, menusInPlan, withPreservedGrants } from '@/utils/planFeatures';
 
 const editRoleSchema = yup.object().shape({
   name: yup.string().required('Role name is required'),
@@ -39,13 +41,24 @@ export default function EditRoleModal({ isOpen, onClose, onSuccess, role }) {
   });
   const branches = branchData?.data || [];
 
-  const allowedMenus = canChangeBranch
-    ? AVAILABLE_MENUS
-    : AVAILABLE_MENUS.filter((m) => user?.role?.menus?.includes(m.key));
+  // Menus/actions of modules outside the school's plan are never offered. A
+  // role may still hold some (granted before a downgrade): they stay in the
+  // form state untouched and are re-added on save (withPreservedGrants), so an
+  // upgrade later restores the access.
+  const { features } = usePlanFeatures();
+  const allowedMenus = menusInPlan(
+    canChangeBranch
+      ? AVAILABLE_MENUS
+      : AVAILABLE_MENUS.filter((m) => user?.role?.menus?.includes(m.key)),
+    features,
+  );
 
-  const allowedActions = canChangeBranch
-    ? AVAILABLE_ACTIONS
-    : AVAILABLE_ACTIONS.filter((a) => user?.role?.actions?.includes(a.key));
+  const allowedActions = actionsInPlan(
+    canChangeBranch
+      ? AVAILABLE_ACTIONS
+      : AVAILABLE_ACTIONS.filter((a) => user?.role?.actions?.includes(a.key)),
+    features,
+  );
 
   const {
     register,
@@ -128,11 +141,11 @@ export default function EditRoleModal({ isOpen, onClose, onSuccess, role }) {
 
   const onSubmit = (formData) => {
     setSubmitError('');
-    const payload = {
-      name: formData.name,
-      menus: formData.menus,
-      actions: formData.actions,
-    };
+    const payload = withPreservedGrants(
+      { name: formData.name, menus: formData.menus, actions: formData.actions },
+      role,
+      features,
+    );
     if (canChangeBranch) payload.branchId = formData.branchId;
     updateRoleMutation.mutate(payload);
   };

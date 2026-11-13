@@ -11,8 +11,12 @@ import CashBankAccountSelect from '@/component/CashBankAccountSelect';
 import { postData } from '@/utils/api';
 import { localYMD } from '@/utils/localDate';
 import {
+  holdKey,
   idempotencyHeader,
+  isUnknownOutcome,
+  keyForTarget,
   newIdempotencyKey,
+  releaseKey,
   spentKeyMessage,
   successMessage,
 } from '@/utils/idempotency';
@@ -41,6 +45,7 @@ import {
   useItemOptions,
   useSupplierOptions,
 } from './inventoryShared';
+import { useSchoolCurrency } from '@/hooks/useSchoolCurrency';
 
 const KIND_LABELS = { stock: 'Stock item', asset: 'Fixed asset', expense: 'Expense' };
 
@@ -62,19 +67,28 @@ export default function PurchaseFormModal({
   defaultBranchId,
   onCreated,
 }) {
+  const { symbol: currencySymbol } = useSchoolCurrency();
   const { accessToken: token } = useTokenStore();
   const queryClient = useQueryClient();
   const [form, setForm] = useState(initial(defaultBranchId));
   const [errors, setErrors] = useState({});
+  // A new purchase has no id, so its attempts are tracked per branch: a form
+  // reopened on the branch of a lost response picks that key up again and a
+  // resubmit replays instead of posting the purchase twice.
+  const keyTarget = `inventory-purchase:${form.branchId || 'own'}`;
   const keyRef = useRef(null);
 
   useEffect(() => {
     if (isOpen) {
       setForm(initial(defaultBranchId));
       setErrors({});
-      keyRef.current = newIdempotencyKey();
     }
   }, [isOpen, defaultBranchId]);
+
+  // Apart from the reset: the branch can change while the form is open.
+  useEffect(() => {
+    if (isOpen) keyRef.current = keyForTarget(keyTarget);
+  }, [isOpen, keyTarget]);
 
   const { suppliers } = useSupplierOptions();
   const needBranch = orgTier && !form.branchId;
@@ -86,32 +100,41 @@ export default function PurchaseFormModal({
     setForm((f) => ({ ...f, lines: f.lines.map((l, j) => (j === i ? { ...l, ...patch } : l)) }));
 
   const mutation = useMutation({
-    mutationFn: (payload) =>
+    // The attempt travels with the call: the form's branch can change mid-request.
+    mutationFn: ({ payload, idempotencyKey }) =>
       postData({
         url: '/inventory/purchases',
         payload,
         token,
-        headers: idempotencyHeader(keyRef.current),
+        headers: idempotencyHeader(idempotencyKey),
       }),
-    onSuccess: (res) => {
-      keyRef.current = newIdempotencyKey();
+    onSuccess: (res, attempt) => {
+      // This purchase is posted; the next one must not replay it.
+      releaseKey(attempt.keyTarget);
+      if (keyRef.current === attempt.idempotencyKey) keyRef.current = newIdempotencyKey();
       toast.success(successMessage(res, 'Purchase posted'));
       invalidateInventoryPurchases(queryClient);
       onClose();
       onCreated?.(res?.data);
     },
-    onError: (err) => {
+    onError: (err, attempt) => {
       // The key is spent — it went through earlier with a different payload, or
       // matches a document voided since — so it can never succeed again: start
       // a fresh one and refresh the lists.
       const spent = spentKeyMessage(err);
       if (spent) {
-        keyRef.current = newIdempotencyKey();
+        releaseKey(attempt.keyTarget);
+        if (keyRef.current === attempt.idempotencyKey) keyRef.current = newIdempotencyKey();
         invalidateInventoryPurchases(queryClient);
         toast.error(spent);
         return;
       }
       // Network/timeout etc.: keep the key so an unchanged retry is recognised.
+      if (isUnknownOutcome(err)) {
+        // It may have gone through: a cancel and reopen must reuse this key.
+        holdKey(attempt.keyTarget, attempt.idempotencyKey);
+        invalidateInventoryPurchases(queryClient);
+      }
       toast.error(err.message || 'Could not post the purchase');
     },
   });
@@ -136,7 +159,11 @@ export default function PurchaseFormModal({
       next.paidAmount
     )
       return;
-    mutation.mutate(buildPurchasePayload({ ...form, branchId: orgTier ? form.branchId : '' }));
+    mutation.mutate({
+      payload: buildPurchasePayload({ ...form, branchId: orgTier ? form.branchId : '' }),
+      keyTarget,
+      idempotencyKey: keyRef.current,
+    });
   };
 
   const lineField = (i, key, props = {}) => {
@@ -157,15 +184,21 @@ export default function PurchaseFormModal({
     );
   };
 
+  // Closing mid-request and reopening mints a new idempotency key, so a retry
+  // of a payment that did go through would record it twice.
+  const closeIfIdle = () => {
+    if (!mutation.isPending) onClose();
+  };
+
   return (
     <Modal
       isOpen={isOpen}
-      onClose={onClose}
+      onClose={closeIfIdle}
       title="New purchase"
       size="xl"
       footer={
         <ModalFooter
-          onCancel={onClose}
+          onCancel={closeIfIdle}
           onSubmit={submit}
           submitLabel="Post purchase"
           loading={mutation.isPending}
@@ -373,7 +406,7 @@ export default function PurchaseFormModal({
           <div className="space-y-3">
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className={labelCls}>Paid now (Rs)</label>
+                <label className={labelCls}>Paid now ({currencySymbol})</label>
                 <input
                   value={form.paidAmount}
                   onChange={(e) => set({ paidAmount: e.target.value })}

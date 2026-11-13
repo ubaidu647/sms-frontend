@@ -8,6 +8,7 @@ import * as yup from 'yup';
 import toast from 'react-hot-toast';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { putData } from '@/utils/api';
+import { editPayload } from '@/utils/editPayload';
 import { useTokenStore } from '@/store/tokenStore';
 import { toYMD } from '@/constants/exam';
 
@@ -66,6 +67,17 @@ function Field({ label, required, error, children }) {
   );
 }
 
+// The form's values for a paper — also the baseline an edit is diffed against.
+const formValuesOf = (examSubject) => ({
+  examDate: toYMD(examSubject.examDate),
+  startTime: examSubject.startTime || '',
+  endTime: examSubject.endTime || '',
+  totalMarks: examSubject.totalMarks ?? 100,
+  passingMarks: examSubject.passingMarks ?? 40,
+  theoryMarks: examSubject.theoryMarks ?? '',
+  practicalMarks: examSubject.practicalMarks ?? '',
+});
+
 export default function EditExamSubjectModal({ isOpen, onClose, onSuccess, examId, examSubject }) {
   const { accessToken: token } = useTokenStore();
   const queryClient = useQueryClient();
@@ -81,15 +93,7 @@ export default function EditExamSubjectModal({ isOpen, onClose, onSuccess, examI
 
   useEffect(() => {
     if (isOpen && examSubject) {
-      reset({
-        examDate: toYMD(examSubject.examDate),
-        startTime: examSubject.startTime || '',
-        endTime: examSubject.endTime || '',
-        totalMarks: examSubject.totalMarks ?? 100,
-        passingMarks: examSubject.passingMarks ?? 40,
-        theoryMarks: examSubject.theoryMarks ?? '',
-        practicalMarks: examSubject.practicalMarks ?? '',
-      });
+      reset(formValuesOf(examSubject));
       setSubmitError('');
       setSuccessState(false);
     }
@@ -119,10 +123,13 @@ export default function EditExamSubjectModal({ isOpen, onClose, onSuccess, examI
 
   const onSubmit = (data) => {
     setSubmitError('');
-    const payload = { ...data };
-    Object.keys(payload).forEach((k) => {
-      if (payload[k] === '' || payload[k] === null || payload[k] === undefined) delete payload[k];
+    const payload = editPayload(formValuesOf(examSubject), data, {
+      required: ['examDate', 'totalMarks', 'passingMarks'],
     });
+    if (Object.keys(payload).length === 0) {
+      setSubmitError('Nothing to save — no field was changed.');
+      return;
+    }
     mutation.mutate(payload);
   };
 

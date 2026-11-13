@@ -5,7 +5,15 @@ import Button from '@/component/Button';
 import toast from 'react-hot-toast';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { postData } from '@/utils/api';
-import { idempotencyHeader, newIdempotencyKey } from '@/utils/idempotency';
+import {
+  holdKey,
+  idempotencyHeader,
+  isUnknownOutcome,
+  keyForTarget,
+  newIdempotencyKey,
+  releaseKey,
+  spentKeyMessage,
+} from '@/utils/idempotency';
 import { useTokenStore } from '@/store/tokenStore';
 import { invalidateFeeQueries } from '@/utils/feeQueries';
 import PaymentAccountSelect from '@/component/PaymentAccountSelect';
@@ -35,6 +43,7 @@ export default function RecordPaymentModal({ isOpen, onClose, voucher }) {
   // One key per payment attempt: minted on open and again after every recorded
   // payment, reused only for retries of the same unsubmitted attempt so a
   // resubmit after a lost response can't double-record.
+  const keyTarget = `fee-payment:${voucher?._id}`;
   const idempotencyKeyRef = useRef(null);
 
   // Reset on open only. Keyed on isOpen alone: a voucher refetch while open
@@ -42,7 +51,7 @@ export default function RecordPaymentModal({ isOpen, onClose, voucher }) {
   // wipe the receipt being shown.
   useEffect(() => {
     if (!isOpen) return;
-    idempotencyKeyRef.current = newIdempotencyKey();
+    idempotencyKeyRef.current = keyForTarget(keyTarget);
     setAmount(voucher?.balanceAmount ?? 0);
     setPaymentDate(localYMD());
     setAccount(null);
@@ -63,15 +72,34 @@ export default function RecordPaymentModal({ isOpen, onClose, voucher }) {
       }),
     onSuccess: (res) => {
       // This attempt is recorded; the next payment must not replay it.
+      releaseKey(keyTarget);
       idempotencyKeyRef.current = newIdempotencyKey();
       toast.success(`Receipt ${res?.data?.payment?.receiptNumber} saved`);
       invalidateFeeQueries(queryClient);
       setReceipt(res?.data);
     },
     onError: (err) => {
+      // The key is spent — it went through earlier with a different amount, or
+      // that payment was voided since — so it can never succeed again: start a
+      // fresh one and refresh the lists.
+      const spent = spentKeyMessage(err);
+      if (spent) {
+        releaseKey(keyTarget);
+        idempotencyKeyRef.current = newIdempotencyKey();
+        invalidateFeeQueries(queryClient);
+        setSubmitError(spent);
+        toast.error(spent);
+        return;
+      }
+      // Network/timeout etc.: keep the key so an unchanged retry is recognised.
       const msg = err.message || 'Failed to record payment';
       setSubmitError(msg);
       toast.error(msg);
+      if (isUnknownOutcome(err)) {
+        // It may have gone through: a cancel and reopen must reuse this key.
+        holdKey(keyTarget, idempotencyKeyRef.current);
+        invalidateFeeQueries(queryClient);
+      }
     },
   });
 
@@ -113,10 +141,16 @@ export default function RecordPaymentModal({ isOpen, onClose, voucher }) {
 
   if (!voucher) return null;
 
+  // Closing mid-request and reopening mints a new idempotency key, so a retry
+  // of a payment that did go through would record it twice.
+  const closeIfIdle = () => {
+    if (!mutation.isPending) onClose();
+  };
+
   return (
     <Modal
       isOpen={isOpen}
-      onClose={onClose}
+      onClose={closeIfIdle}
       title={receipt ? 'Payment Receipt' : 'Record Payment'}
       subtitle={voucher.voucherNumber}
       size="md"
@@ -124,7 +158,7 @@ export default function RecordPaymentModal({ isOpen, onClose, voucher }) {
         <div className="flex gap-3 w-full">
           <Button
             label={receipt ? 'Close' : 'Cancel'}
-            handleClick={onClose}
+            handleClick={closeIfIdle}
             type="button"
             styleObject={{
               baseColor: 'bg-white border border-gray-300',

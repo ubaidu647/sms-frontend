@@ -1,6 +1,6 @@
-# SMS Workspace (NodeCampus)
+# SMS Workspace (Mizenzo School Management)
 
-Nx monorepo for the NodeCampus **web** apps. The backend (`sms-backend`)
+Nx monorepo for the Mizenzo School Management **web** apps. The backend (`sms-backend`)
 stays in its own repo — coupling is only via the backend HTTP API.
 
 ## Structure

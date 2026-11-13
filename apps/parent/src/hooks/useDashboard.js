@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import apiClient from "@/services/apiClient";
 import { useUserStore } from "@/store/userStore";
+import { retryUnlessRefused } from "@/utils/seatRefusal";
 import { useSelectedChildId } from "@/hooks/useChildren";
 
 // Per-child dashboard routes: /dashboard/parent/children/:studentId/<x>. They
@@ -102,6 +103,7 @@ export function useAnnouncements({ page = 1, limit = 20 } = {}) {
   const studentId = useSelectedChildId();
   return useQuery({
     queryKey: ["dashboard", uid, studentId, "announcements", page, limit],
+    retry: retryUnlessRefused,
     queryFn: async () => {
       const res = await apiClient.get(childPath(studentId, "announcements"), {
         params: { page, limit },
@@ -146,6 +148,7 @@ export function useLibraryCatalogue({
       page,
       limit,
     ],
+    retry: retryUnlessRefused,
     queryFn: async () => {
       const res = await apiClient.get(
         childPath(studentId, "library/catalogue"),

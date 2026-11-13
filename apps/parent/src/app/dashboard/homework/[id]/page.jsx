@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { useHomeworkDetail } from "@/hooks/useHomework";
 import { PageHeader, Panel } from "@/component/dashboard/Panel";
-import { Loading, ErrorState } from "@/component/dashboard/States";
+import { Loading, SeatErrorState } from "@/component/dashboard/States";
 import {
   SubmissionBadge,
   TypeBadge,
@@ -180,7 +180,7 @@ export default function HomeworkDetailPage({ params }) {
     return (
       <div className="max-w-3xl">
         {backLink}
-        <ErrorState error={error} onRetry={refetch} />
+        <SeatErrorState error={error} onRetry={refetch} />
       </div>
     );
   }

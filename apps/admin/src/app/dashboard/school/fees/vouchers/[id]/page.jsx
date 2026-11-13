@@ -36,8 +36,12 @@ import LateFeeModal from '../LateFeeModal';
 import RegenerateVoucherModal from '../RegenerateVoucherModal';
 import RecordPaymentModal from '../../payments/RecordPaymentModal';
 import VoidPaymentModal from '../../payments/VoidPaymentModal';
+import toast from 'react-hot-toast';
+import { PDF_CAPTURE_OPTIONS, PDF_FAILED_MESSAGE } from '@/utils/pdfCapture';
+import { useSchoolCurrency } from '@/hooks/useSchoolCurrency';
 
 export default function VoucherDetailPage() {
+  const { symbol: currencySymbol } = useSchoolCurrency();
   const router = useRouter();
   const params = useParams();
   const voucherId = params?.id;
@@ -103,11 +107,7 @@ export default function VoucherDetailPage() {
         import('jspdf'),
       ]);
       const filename = `Voucher-${voucher.voucherNumber || voucherId}.pdf`;
-      const canvas = await html2canvas(printableRef.current, {
-        scale: 2,
-        useCORS: true,
-        backgroundColor: '#ffffff',
-      });
+      const canvas = await html2canvas(printableRef.current, PDF_CAPTURE_OPTIONS);
       const imgData = canvas.toDataURL('image/jpeg', 0.98);
       const pdf = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
       const pageWidth = pdf.internal.pageSize.getWidth();
@@ -126,6 +126,9 @@ export default function VoucherDetailPage() {
         heightLeft -= pageHeight - margin * 2;
       }
       pdf.save(filename);
+    } catch (err) {
+      console.warn('PDF capture failed', err);
+      toast.error(PDF_FAILED_MESSAGE);
     } finally {
       setDownloadingPdf(false);
     }
@@ -281,10 +284,10 @@ export default function VoucherDetailPage() {
                             {li.frequency}
                           </td>
                           <td className="px-3 py-2 text-right text-gray-600 dark:text-gray-400">
-                            {formatMoney(li.amount)}
+                            {formatMoney(li.amount, currencySymbol)}
                           </td>
                           <td className="px-3 py-2 text-right font-medium text-gray-900 dark:text-gray-100">
-                            {formatMoney(li.finalAmount)}
+                            {formatMoney(li.finalAmount, currencySymbol)}
                           </td>
                         </tr>
                       );
@@ -295,7 +298,7 @@ export default function VoucherDetailPage() {
                         <td className="px-3 py-2 text-amber-700">—</td>
                         <td className="px-3 py-2 text-right text-amber-700">—</td>
                         <td className="px-3 py-2 text-right font-medium text-amber-900">
-                          {formatMoney(voucher.lateFee)}
+                          {formatMoney(voucher.lateFee, currencySymbol)}
                         </td>
                       </tr>
                     )}
@@ -370,7 +373,7 @@ export default function VoucherDetailPage() {
                               p.isVoid ? 'line-through text-gray-400' : 'text-gray-900'
                             }`}
                           >
-                            {formatMoney(p.amount)}
+                            {formatMoney(p.amount, currencySymbol)}
                           </td>
                           <td className="px-3 py-2">
                             {p.isVoid ? (
@@ -513,14 +516,15 @@ function Info({ label, value }) {
   );
 }
 
-function Total({ label, value, tone = 'text-gray-900', big }) {
+function Total({ label, value, tone = 'text-gray-900 dark:text-gray-100', big }) {
+  const { symbol: currencySymbol } = useSchoolCurrency();
   return (
     <div className={`flex items-center justify-end gap-4 ${big ? 'border-t pt-2 mt-1' : ''}`}>
       <span className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">
         {label}
       </span>
       <span className={`${big ? 'text-2xl font-bold' : 'font-medium'} ${tone}`}>
-        {formatMoney(value)}
+        {formatMoney(value, currencySymbol)}
       </span>
     </div>
   );

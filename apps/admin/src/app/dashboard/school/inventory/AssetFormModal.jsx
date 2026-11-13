@@ -22,6 +22,7 @@ import {
   invalidateInventoryAssets,
   labelCls,
 } from './inventoryShared';
+import { useSchoolCurrency } from '@/hooks/useSchoolCurrency';
 
 const makeSchema = ({ isCreate, needBranch }) =>
   yup.object().shape({
@@ -51,6 +52,7 @@ const toForm = (a, branchId) => ({
 });
 
 export default function AssetFormModal({ isOpen, onClose, asset, orgTier, defaultBranchId }) {
+  const { symbol: currencySymbol } = useSchoolCurrency();
   const { accessToken: token } = useTokenStore();
   const queryClient = useQueryClient();
   const isCreate = !asset;
@@ -179,13 +181,12 @@ export default function AssetFormModal({ isOpen, onClose, asset, orgTier, defaul
           {isCreate && (
             <>
               {field('purchaseDate', 'Purchase date *', { type: 'date' })}
-              {field('cost', 'Cost (Rs) *', { inputMode: 'decimal' })}
+              {field('cost', `Cost (${currencySymbol}) *`, { inputMode: 'decimal' })}
               <div>
                 <label className={labelCls}>Status</label>
                 <select {...register('status')} className={inputCls}>
                   <option value="in-use">In use</option>
                   <option value="in-store">In store</option>
-                  <option value="under-repair">Under repair</option>
                 </select>
               </div>
             </>

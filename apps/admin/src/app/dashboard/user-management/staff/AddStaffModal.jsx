@@ -250,16 +250,16 @@ export default function AddStaffModal({ isOpen, onClose, onSuccess }) {
       if (v !== '' && v !== null && v !== undefined) fd.append(k, String(v));
     });
 
-    const street = data['address.street'];
-    const city = data['address.city'];
-    const state = data['address.state'];
+    const street = data.address?.street;
+    const city = data.address?.city;
+    const state = data.address?.state;
     if (street || city || state) {
       fd.append('address', JSON.stringify({ street, city, state }));
     }
 
-    const ecName = data['emergencyContact.name'];
-    const ecPhone = data['emergencyContact.phone'];
-    const ecRelation = data['emergencyContact.relation'];
+    const ecName = data.emergencyContact?.name;
+    const ecPhone = data.emergencyContact?.phone;
+    const ecRelation = data.emergencyContact?.relation;
     if (ecName || ecPhone || ecRelation) {
       fd.append(
         'emergencyContact',
@@ -344,6 +344,9 @@ export default function AddStaffModal({ isOpen, onClose, onSuccess }) {
                 placeholder={`Min ${PASSWORD_MIN} characters`}
                 className={inputCls}
               />
+              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                The staff member must change this password at first sign-in.
+              </p>
             </Field>
             <Field label="Phone" error={errors.phone?.message}>
               <input {...register('phone')} placeholder="03211234567" className={inputCls} />

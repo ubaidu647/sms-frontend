@@ -1,6 +1,7 @@
 'use client';
 import React, { useMemo, useState } from 'react';
 import { Table } from '@/component/Table';
+import QueryErrorState from '@/component/QueryErrorState';
 import { Search, Eye, Ban, X } from 'lucide-react';
 import { useTokenStore } from '@/store/tokenStore';
 import { useUserStore } from '@/store/userStore';
@@ -98,7 +99,7 @@ export default function PaymentsPage() {
     userBranchId,
   ];
 
-  const { data } = useQuery({
+  const { data, isError, error } = useQuery({
     queryKey,
     queryFn: () => {
       const params = {};
@@ -320,6 +321,12 @@ export default function PaymentsPage() {
           <p className="-mt-2 mb-3 text-xs text-gray-500 dark:text-gray-400">
             The text filter only searches the payments loaded on this page, not all results.
           </p>
+        )}
+
+        {isError && (
+          <div className="mb-3">
+            <QueryErrorState error={error} fallback="Could not load payments" />
+          </div>
         )}
 
         <Table

@@ -1,4 +1,5 @@
 import apiClient from '@/services/apiClient';
+import { storageFullMessage } from '@/utils/storage';
 
 export const fetchData = async ({
   url,
@@ -23,9 +24,15 @@ export const fetchData = async ({
 
 // Re-throws an axios failure as a plain Error carrying the server's message,
 // plus the HTTP `status` so callers can branch on it (see utils/queryError.js).
+// An upload over the school's storage limit (403 STORAGE_LIMIT_REACHED) always
+// carries the server's "Storage full: … used" message, so every upload form
+// that shows `err.message` explains it without handling it itself.
 const toApiError = (error) => {
-  const err = new Error(error.response?.data?.message || error.message || 'Failed');
+  const err = new Error(
+    storageFullMessage(error) || error.response?.data?.message || error.message || 'Failed',
+  );
   if (error.response?.status) err.status = error.response.status;
+  if (error.response?.data?.code) err.code = error.response.data.code;
   // Some refusals carry details (e.g. per-section counts) in the envelope's `data`.
   if (error.response?.data?.data !== undefined) err.data = error.response.data.data;
   return err;

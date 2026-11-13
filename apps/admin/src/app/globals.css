@@ -1,6 +1,13 @@
 @import 'tailwindcss';
 
-@custom-variant dark (&:where(.dark, .dark *));
+/* Paper is always light: dark: utilities are off in print, on every printed page. */
+@custom-variant dark {
+  @media not print {
+    &:where(.dark, .dark *) {
+      @slot;
+    }
+  }
+}
 
 :root {
   --background: #ffffff;
@@ -16,6 +23,16 @@
   --surface: #161616;
   --surface-muted: #1f1f1f;
   --border: #2a2a2a;
+}
+
+@media print {
+  .dark {
+    --background: #ffffff;
+    --foreground: #171717;
+    --surface: #ffffff;
+    --surface-muted: #f6f6f6;
+    --border: #e5e7eb;
+  }
 }
 
 @theme inline {

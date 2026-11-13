@@ -431,6 +431,7 @@ function PartyLedger({ report }) {
           <thead className="bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
             <tr>
               <th className="px-3 py-2 text-left font-semibold">Party</th>
+              <th className="px-3 py-2 text-right font-semibold">Opening</th>
               <th className="px-3 py-2 text-right font-semibold">Debit</th>
               <th className="px-3 py-2 text-right font-semibold">Credit</th>
               <th className="px-3 py-2 text-right font-semibold">Balance</th>
@@ -440,6 +441,7 @@ function PartyLedger({ report }) {
             {(report.parties || []).map((p) => (
               <tr key={p.partyId} className="border-t border-gray-100 dark:border-gray-800">
                 <td className="px-3 py-2 text-gray-900 dark:text-gray-100">{p.partyLabel}</td>
+                <td className="px-3 py-2 text-right font-mono">{formatMoney(p.openingBalance)}</td>
                 <td className="px-3 py-2 text-right font-mono">
                   {formatLedgerAmount(p.totalDebit)}
                 </td>

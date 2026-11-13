@@ -3,6 +3,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { Scale, Plus, Save } from 'lucide-react';
+import QueryErrorState from '@/component/QueryErrorState';
 import { fetchData, putData } from '@/utils/api';
 import { useTokenStore } from '@/store/tokenStore';
 import { useUserStore } from '@/store/userStore';
@@ -108,7 +109,12 @@ export default function StaffSalaryPolicyPage() {
   const effectiveBranchId = isOrgLevel ? branchId : userBranchId;
 
   const policyKey = ['staff-salary-policy', effectiveBranchId, tab];
-  const { data: policyResp, isFetching } = useQuery({
+  const {
+    data: policyResp,
+    isFetching,
+    isError,
+    error,
+  } = useQuery({
     queryKey: policyKey,
     queryFn: () =>
       fetchData({
@@ -170,7 +176,9 @@ export default function StaffSalaryPolicyPage() {
     );
   }
 
-  const showForm = !!policy || creating;
+  // A failed GET is not "no policy": the form must not offer to overwrite it.
+  const loadFailed = isError && !policy;
+  const showForm = !loadFailed && (!!policy || creating);
   const formDisabled = !canEdit;
 
   return (
@@ -229,6 +237,8 @@ export default function StaffSalaryPolicyPage() {
           </div>
         ) : isFetching && !policy ? (
           <div className="text-sm text-gray-500 dark:text-gray-400">Loading policy…</div>
+        ) : loadFailed ? (
+          <QueryErrorState error={error} fallback="Could not load this policy" />
         ) : !showForm ? (
           <EmptyState
             staffTypeLabel={STAFF_TYPE_LABELS[tab]}

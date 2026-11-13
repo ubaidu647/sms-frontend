@@ -14,6 +14,7 @@ import {
   VEHICLE_STATUSES,
 } from '@/constants/transport';
 import { invalidateVehicleQueries } from '@/utils/transportQueries';
+import { buildVehiclePayload } from '@/utils/vehiclePayload';
 
 const inputCls =
   'w-full px-3 py-2 border border-gray-200 rounded-lg outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 text-sm text-gray-900 bg-white placeholder:text-gray-400';
@@ -160,36 +161,7 @@ export default function VehicleFormModal({ isOpen, onClose, vehicle }) {
       return;
     }
 
-    const payload = {
-      registrationNumber: form.registrationNumber.trim(),
-      vehicleType: form.vehicleType,
-      capacity: Number(form.capacity),
-      fuelType: form.fuelType,
-      ownership: form.ownership,
-      driver: {
-        name: form.driver.name.trim(),
-        phone: form.driver.phone.trim(),
-        licenseNumber: form.driver.licenseNumber.trim(),
-      },
-    };
-
-    if (form.make?.trim()) payload.make = form.make.trim();
-    if (form.modelName?.trim()) payload.modelName = form.modelName.trim();
-    if (form.manufactureYear !== '' && !Number.isNaN(Number(form.manufactureYear)))
-      payload.manufactureYear = Number(form.manufactureYear);
-    if (form.color?.trim()) payload.color = form.color.trim();
-    if (form.insuranceNumber?.trim()) payload.insuranceNumber = form.insuranceNumber.trim();
-    if (form.insuranceExpiry) payload.insuranceExpiry = form.insuranceExpiry;
-    if (form.fitnessExpiry) payload.fitnessExpiry = form.fitnessExpiry;
-    if (form.registrationExpiry) payload.registrationExpiry = form.registrationExpiry;
-    if (form.driver.cnic?.trim()) payload.driver.cnic = form.driver.cnic.trim();
-    if (form.driver.licenseExpiry) payload.driver.licenseExpiry = form.driver.licenseExpiry;
-    if (form.conductor.name?.trim()) {
-      payload.conductor = { name: form.conductor.name.trim() };
-      if (form.conductor.phone?.trim()) payload.conductor.phone = form.conductor.phone.trim();
-    }
-    if (form.trackerId?.trim()) payload.trackerId = form.trackerId.trim();
-    if (form.notes?.trim()) payload.notes = form.notes.trim();
+    const payload = buildVehiclePayload(form, vehicle);
 
     if (!isEdit) {
       payload.branchId = form.branchId;

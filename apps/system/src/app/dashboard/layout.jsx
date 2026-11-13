@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
+import { useCrossTabSignOut } from '@/hooks/useCrossTabSignOut';
 import { SystemSidebar } from '@/component/SystemSidebar';
 import { Topbar } from '@/component/TopBar';
 import ForcedPasswordChange from '@/component/ForcedPasswordChange';
@@ -9,6 +10,7 @@ import ForcedPasswordChange from '@/component/ForcedPasswordChange';
 const PASSWORD_PATH = '/dashboard/change-password';
 
 export default function SystemLayout({ children }) {
+  useCrossTabSignOut();
   const { user, logout, hasHydrated, accessToken, loading, offline } = useAuth();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const signedOut = hasHydrated && !loading && !accessToken && !offline;

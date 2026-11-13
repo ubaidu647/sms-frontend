@@ -24,6 +24,8 @@ import { useUserStore } from '@/store/userStore';
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { fetchData, deleteData, patchData } from '@/utils/api';
 import { AVAILABLE_MENUS, AVAILABLE_ACTIONS } from '@/constants/rolePermissions';
+import { usePlanFeatures } from '@/hooks/usePlanFeatures';
+import { actionsInPlan, isMenuInPlan, menusInPlan } from '@/utils/planFeatures';
 import toast from 'react-hot-toast';
 import { useTranslations } from 'next-intl';
 import { localYMD, monthsAgoYMD } from '@/utils/localDate';
@@ -293,6 +295,10 @@ export default function RolesPage() {
   });
   const branches = branchData?.data || [];
 
+  // Out-of-plan modules never show among a role's permissions (filters and
+  // the menus column); the roles themselves keep them.
+  const { features } = usePlanFeatures();
+
   const columns = useMemo(
     () => [
       {
@@ -315,14 +321,16 @@ export default function RolesPage() {
         accessor: 'menus',
         render: (v) => (
           <div className="flex flex-wrap gap-1">
-            {v?.map((m) => (
-              <span
-                key={m}
-                className="inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-teal-100 text-teal-800"
-              >
-                {m}
-              </span>
-            ))}
+            {v
+              ?.filter((m) => isMenuInPlan(m, features))
+              .map((m) => (
+                <span
+                  key={m}
+                  className="inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-teal-100 text-teal-800"
+                >
+                  {m}
+                </span>
+              ))}
           </div>
         ),
       },
@@ -367,7 +375,7 @@ export default function RolesPage() {
         ),
       },
     ],
-    [],
+    [features],
   );
 
   const visibleColumns = useMemo(() => columns.map((c) => c.accessor), [columns]);
@@ -626,7 +634,7 @@ export default function RolesPage() {
           {/* Actions multi-select */}
           <MultiSelectDropdown
             label="Actions"
-            options={AVAILABLE_ACTIONS}
+            options={actionsInPlan(AVAILABLE_ACTIONS, features)}
             selected={draftActions}
             onChange={setDraftActions}
           />
@@ -634,7 +642,7 @@ export default function RolesPage() {
           {/* Menus multi-select */}
           <MultiSelectDropdown
             label="Menus"
-            options={AVAILABLE_MENUS}
+            options={menusInPlan(AVAILABLE_MENUS, features)}
             selected={draftMenus}
             onChange={setDraftMenus}
           />

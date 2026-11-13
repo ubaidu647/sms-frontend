@@ -520,7 +520,7 @@ function TransportSection({ data }) {
                   value={
                     a.vehicleId
                       ? `${a.vehicleId.registrationNumber || ''}${
-                          a.vehicleId.model ? ` (${a.vehicleId.model})` : ''
+                          a.vehicleId.modelName ? ` (${a.vehicleId.modelName})` : ''
                         }`
                       : '—'
                   }
@@ -670,7 +670,7 @@ export default function ReportDocument({ data, profile, branchName, generatedAt 
         <span>Generated {generatedAt}</span>
         <span>
           {schoolName} — Powered by{' '}
-          <span className="font-semibold text-teal-700 dark:text-teal-400">nodeCampus.online</span>
+          <span className="font-semibold text-teal-700 dark:text-teal-400">mizenzo.com</span>
         </span>
       </div>
     </div>

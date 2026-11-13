@@ -16,22 +16,34 @@ import AssignSubscriptionModal from './AssignSubscriptionModal';
 import ChangePlanModal from './ChangePlanModal';
 import SubscriptionDetailModal from './SubscriptionDetailModal';
 import InvoiceModal from './InvoiceModal';
-import GracePeriodField from './GracePeriodField';
+import RenewSubscriptionModal from './RenewSubscriptionModal';
+import AddonModal from './AddonModal';
+import AddonsPanel from './AddonsPanel';
 import SchoolPicker from './SchoolPicker';
+import { isPaymentOverdue, paymentWindowLabel } from '@/utils/paymentDue';
+import {
+  COUNT_RESOURCES,
+  addonModulesOf,
+  addonTotals,
+  baseLimit,
+  invoicesById,
+  moduleLabel,
+} from '@/utils/addons';
+import PriceLockBadge from './PriceLockBadge';
+import StorageUsage from './StorageUsage';
 import {
   useCurrentSubscription,
   useSubscriptionHistory,
-  useRenewSubscription,
   useCancelSubscription,
   useSyncSubscriptionPlan,
   useInvoiceSummary,
+  useInvoices,
 } from './hooks/useSubscriptions';
 import {
   fmtMoney,
   fmtDate,
   effectiveLimit,
   SUB_STATUS_COLORS,
-  validateGraceDays,
   graceCutoff,
 } from '../packages/format';
 
@@ -80,10 +92,23 @@ const StatusPill = ({ status }) => (
   </span>
 );
 
-const LimitStat = ({ label, value }) => (
+// The plan's invoice is past due: the school is read-only until it is paid.
+const OverdueBadge = ({ sub }) =>
+  isPaymentOverdue(sub) ? (
+    <span className="inline-flex px-3 py-1 rounded-full text-xs font-medium bg-red-600 text-white">
+      Overdue (blocked)
+    </span>
+  ) : null;
+
+const LimitStat = ({ label, value, base, extra }) => (
   <div className="rounded-lg bg-gray-50 dark:bg-gray-800/60 p-3 text-center">
     <p className="text-lg font-semibold text-gray-900 dark:text-gray-100">{value ?? '∞'}</p>
     <p className="text-xs text-gray-500 dark:text-gray-400">{label}</p>
+    {extra > 0 && (
+      <p className="text-xs text-teal-700 dark:text-teal-400">
+        {base ?? 0} + {extra} add-on
+      </p>
+    )}
   </div>
 );
 
@@ -114,7 +139,14 @@ export default function SubscriptionsPage() {
   const { data: summaryData } = useInvoiceSummary(schoolId);
   const dues = summaryData?.data ?? null;
 
-  const renew = useRenewSubscription();
+  // Invoice statuses for the add-ons (and the plan invoice, which the
+  // by-subscription read can't tell apart from a newer add-on bill).
+  const invoicesQuery = useInvoices(schoolId);
+  const invoicesMap = invoicesQuery.isSuccess
+    ? invoicesById(invoicesQuery.data?.data ?? [])
+    : undefined;
+  const extraUnits = addonTotals(current);
+
   const cancel = useCancelSubscription();
   const syncPlan = useSyncSubscriptionPlan();
 
@@ -123,15 +155,14 @@ export default function SubscriptionsPage() {
   const [renewOpen, setRenewOpen] = useState(false);
   const [cancelOpen, setCancelOpen] = useState(false);
   const [syncOpen, setSyncOpen] = useState(false);
-
-  // Renew is a confirm dialog, so its grace input lives here on the page.
-  const [renewGrace, setRenewGrace] = useState('');
-  const [renewError, setRenewError] = useState('');
+  const [addonOpen, setAddonOpen] = useState(false);
 
   // Row that the History three-dots menu is acting on, plus which modal it opened.
   const [selectedSub, setSelectedSub] = useState(null);
   const [detailOpen, setDetailOpen] = useState(false);
   const [invoiceOpen, setInvoiceOpen] = useState(false);
+  // Invoice to open first in the invoice dialog (e.g. an add-on's bill).
+  const [invoiceFocusId, setInvoiceFocusId] = useState(null);
 
   const historyColumns = useMemo(
     () => [
@@ -154,7 +185,12 @@ export default function SubscriptionsPage() {
       {
         header: 'Status',
         accessor: 'status',
-        render: (v) => <StatusPill status={v} />,
+        render: (v, row) => (
+          <span className="inline-flex flex-wrap items-center gap-1.5">
+            <StatusPill status={v} />
+            <OverdueBadge sub={row} />
+          </span>
+        ),
       },
       {
         header: 'Start',
@@ -165,6 +201,18 @@ export default function SubscriptionsPage() {
         header: 'End',
         accessor: 'endDate',
         render: (v) => <span className="text-gray-600 dark:text-gray-400">{fmtDate(v)}</span>,
+      },
+      {
+        header: 'Payment due',
+        accessor: 'paymentDueAt',
+        render: (v, row) => (
+          <span className="text-gray-600 dark:text-gray-400">
+            {v ? fmtDate(v) : '-'}
+            <span className="block text-xs text-gray-400 dark:text-gray-500">
+              Window: {paymentWindowLabel(row.paymentDueInDays)}
+            </span>
+          </span>
+        ),
       },
     ],
     [],
@@ -214,11 +262,13 @@ export default function SubscriptionsPage() {
                 <>
                   <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-5">
                     <div>
-                      <div className="flex items-center gap-3">
+                      <div className="flex flex-wrap items-center gap-3">
                         <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">
                           {current.packageSnapshot?.name ?? 'Subscription'}
                         </h2>
                         <StatusPill status={current.status} />
+                        <OverdueBadge sub={current} />
+                        <PriceLockBadge sub={current} />
                       </div>
                       <p className="text-gray-600 dark:text-gray-400 mt-1">
                         {fmtMoney(current.packageSnapshot?.price)} ·{' '}
@@ -238,6 +288,21 @@ export default function SubscriptionsPage() {
                           </>
                         )}
                       </p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                        Payment window: {paymentWindowLabel(current.paymentDueInDays)}
+                        {current.paymentDueAt && (
+                          <>
+                            {' '}
+                            · invoice due {fmtDate(current.paymentDueAt)}
+                            {isPaymentOverdue(current) && (
+                              <span className="text-red-600 dark:text-red-400">
+                                {' '}
+                                — overdue, the school is read-only until it is marked paid
+                              </span>
+                            )}
+                          </>
+                        )}
+                      </p>
                     </div>
                     <div className="flex flex-wrap gap-2">
                       <button
@@ -248,15 +313,7 @@ export default function SubscriptionsPage() {
                         Change Plan
                       </button>
                       <button
-                        onClick={() => {
-                          setRenewGrace(
-                            current?.gracePeriodInDays != null
-                              ? String(current.gracePeriodInDays)
-                              : '',
-                          );
-                          setRenewError('');
-                          setRenewOpen(true);
-                        }}
+                        onClick={() => setRenewOpen(true)}
                         className="flex items-center gap-2 px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-sm"
                       >
                         <RefreshCw className="w-4 h-4" />
@@ -281,11 +338,18 @@ export default function SubscriptionsPage() {
                   </div>
 
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
-                    <LimitStat label="Students" value={effectiveLimit(current, 'noOfStudents')} />
-                    <LimitStat label="Branches" value={effectiveLimit(current, 'noOfBranches')} />
-                    <LimitStat label="Staff" value={effectiveLimit(current, 'noOfStaffs')} />
-                    <LimitStat label="Sections" value={effectiveLimit(current, 'noOfSections')} />
+                    {COUNT_RESOURCES.map(([key, label]) => (
+                      <LimitStat
+                        key={key}
+                        label={label}
+                        value={effectiveLimit(current, key)}
+                        base={baseLimit(current, key)}
+                        extra={extraUnits[key] ?? 0}
+                      />
+                    ))}
                   </div>
+
+                  <StorageUsage storage={current.storage} className="mb-4" />
 
                   <div className="flex flex-wrap gap-x-8 gap-y-2 text-sm">
                     <div>
@@ -305,12 +369,34 @@ export default function SubscriptionsPage() {
                           : 'All features'}
                       </span>
                     </div>
+                    {addonModulesOf(current).length > 0 && (
+                      <div>
+                        <span className="text-gray-500 dark:text-gray-400">
+                          Opened by add-ons:{' '}
+                        </span>
+                        <span className="text-gray-800 dark:text-gray-200">
+                          {addonModulesOf(current).map(moduleLabel).join(', ')}
+                        </span>
+                      </div>
+                    )}
                   </div>
                   {current.customLimits && Object.keys(current.customLimits).length > 0 && (
                     <p className="mt-3 text-xs text-amber-600 dark:text-amber-400">
                       This school has custom limit overrides applied.
                     </p>
                   )}
+
+                  <AddonsPanel
+                    current={current}
+                    schoolId={schoolId}
+                    invoicesById={invoicesMap}
+                    onAdd={() => setAddonOpen(true)}
+                    onViewInvoice={(inv) => {
+                      setSelectedSub(current);
+                      setInvoiceFocusId(inv._id);
+                      setInvoiceOpen(true);
+                    }}
+                  />
                 </>
               ) : !canAssign ? (
                 <div className="text-red-600 dark:text-red-400">
@@ -403,6 +489,7 @@ export default function SubscriptionsPage() {
                   ]}
                   onRowAction={(action, row) => {
                     setSelectedSub(row);
+                    setInvoiceFocusId(null);
                     if (action === 'details') setDetailOpen(true);
                     if (action === 'invoice') setInvoiceOpen(true);
                   }}
@@ -434,42 +521,20 @@ export default function SubscriptionsPage() {
           schoolName={selectedSchool?.name}
           current={current}
         />
-        <ConfirmModal
+        <RenewSubscriptionModal
           isOpen={renewOpen}
           onClose={() => setRenewOpen(false)}
-          title="Renew Subscription"
-          message={
-            current
-              ? `Renew “${current.packageSnapshot?.name}” for ${selectedSchool?.name}? This starts a fresh ${current.packageSnapshot?.durationInDays}-day cycle at current catalog pricing.`
-              : ''
-          }
-          confirmLabel="Renew"
-          confirmTone="primary"
-          loading={renew.isPending}
-          onConfirm={() => {
-            const graceError = validateGraceDays(renewGrace);
-            if (graceError) {
-              setRenewError(graceError);
-              return;
-            }
-            const payload = { schoolId };
-            if (renewGrace !== '' && renewGrace != null) {
-              payload.gracePeriodInDays = Number(renewGrace);
-            }
-            renew.mutate(payload, { onSuccess: () => setRenewOpen(false) });
-          }}
-        >
-          <div className="mt-4">
-            <GracePeriodField
-              value={renewGrace}
-              onChange={setRenewGrace}
-              hint="Leave unchanged to keep the current grace period."
-            />
-            {renewError && (
-              <p className="mt-2 text-sm text-red-600 dark:text-red-400">{renewError}</p>
-            )}
-          </div>
-        </ConfirmModal>
+          schoolId={schoolId}
+          schoolName={selectedSchool?.name}
+          current={current}
+        />
+        <AddonModal
+          isOpen={addonOpen && !!current}
+          onClose={() => setAddonOpen(false)}
+          schoolId={schoolId}
+          schoolName={selectedSchool?.name}
+          current={current}
+        />
         <ConfirmModal
           isOpen={cancelOpen}
           onClose={() => setCancelOpen(false)}
@@ -516,6 +581,7 @@ export default function SubscriptionsPage() {
           onClose={() => setInvoiceOpen(false)}
           subscription={selectedSub}
           schoolId={schoolId}
+          focusInvoiceId={invoiceFocusId}
         />
       </div>
     </div>

@@ -1,14 +1,23 @@
 'use client';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Modal } from '@/component/Modal';
 import Button from '@/component/Button';
 import toast from 'react-hot-toast';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { fetchData, postData } from '@/utils/api';
+import {
+  holdKey,
+  idempotencyHeader,
+  isUnknownOutcome,
+  keyForTarget,
+  newIdempotencyKey,
+  releaseKey,
+  spentKeyMessage,
+} from '@/utils/idempotency';
 import { useTokenStore } from '@/store/tokenStore';
 import { useUserStore } from '@/store/userStore';
 import CashBankAccountSelect from '@/component/CashBankAccountSelect';
-import { todayYMD, formatMoney } from '@/constants/accounting';
+import { todayYMD, formatMoney, hasAtMostTwoDecimals } from '@/constants/accounting';
 import { invalidateLedgerQueries } from '@/utils/ledgerQueries';
 
 const inputCls =
@@ -72,9 +81,14 @@ export default function VoucherFormModal({
   const [partyId, setPartyId] = useState('');
   const [submitError, setSubmitError] = useState('');
   const [successState, setSuccessState] = useState(false);
+  // One key per opened form, reused only for retries of the same unsaved voucher
+  // so a resubmit after a lost response can't post it twice.
+  const keyTarget = `ledger-voucher:${kind}`;
+  const idempotencyKeyRef = useRef(null);
 
   useEffect(() => {
     if (!isOpen) return;
+    idempotencyKeyRef.current = keyForTarget(keyTarget);
     setSelectedBranch(isOrgLevel ? branchId || '' : userBranchId);
     setDate(todayYMD());
     setNarration('');
@@ -89,7 +103,7 @@ export default function VoucherFormModal({
     setPartyId('');
     setSubmitError('');
     setSuccessState(false);
-  }, [isOpen, kind, branchId, isOrgLevel, userBranchId]);
+  }, [isOpen, keyTarget, branchId, isOrgLevel, userBranchId]);
 
   const effectiveBranch = isOrgLevel ? selectedBranch : userBranchId;
 
@@ -170,8 +184,17 @@ export default function VoucherFormModal({
   const parties = partyListData?.data || [];
 
   const mutation = useMutation({
-    mutationFn: (payload) => postData({ url: copy.url, payload, token }),
+    mutationFn: ({ idempotencyKey, ...payload }) =>
+      postData({
+        url: isContra ? '/ledger/voucher/contra' : copy.url,
+        payload,
+        token,
+        headers: idempotencyHeader(idempotencyKey),
+      }),
     onSuccess: (res) => {
+      // This voucher is posted; the next one must not replay it.
+      releaseKey(keyTarget);
+      idempotencyKeyRef.current = newIdempotencyKey();
       toast.success(res?.message || `${copy.title || 'Voucher'} posted`);
       invalidateLedgerQueries(queryClient);
       setSuccessState(true);
@@ -181,9 +204,27 @@ export default function VoucherFormModal({
       }, 700);
     },
     onError: (err) => {
+      // The key is spent — it went through earlier with a different payload, or
+      // that entry was reversed since — so it can never succeed again: start a
+      // fresh one and refresh the lists.
+      const spent = spentKeyMessage(err);
+      if (spent) {
+        releaseKey(keyTarget);
+        idempotencyKeyRef.current = newIdempotencyKey();
+        invalidateLedgerQueries(queryClient);
+        setSubmitError(spent);
+        toast.error(spent);
+        return;
+      }
+      // Network/timeout etc.: keep the key so an unchanged retry is recognised.
       const msg = err.message || 'Failed to post voucher';
       setSubmitError(msg);
       toast.error(msg);
+      if (isUnknownOutcome(err)) {
+        // It may have gone through: a cancel and reopen must reuse this key.
+        holdKey(keyTarget, idempotencyKeyRef.current);
+        invalidateLedgerQueries(queryClient);
+      }
     },
   });
 
@@ -192,6 +233,7 @@ export default function VoucherFormModal({
     if (!date) return 'Date is required';
     if (!narration?.trim()) return 'Narration is required';
     if (!amount || Number(amount) <= 0) return 'Amount must be greater than zero';
+    if (!hasAtMostTwoDecimals(amount)) return 'Amount can have at most 2 decimal places';
     if (isContra) {
       if (!fromAccountId) return 'Select the account money moves out of';
       if (!toAccountId) return 'Select the account money moves into';
@@ -232,7 +274,13 @@ export default function VoucherFormModal({
         payload.partyId = partyId;
       }
     }
-    mutation.mutate(payload);
+    mutation.mutate({ ...payload, idempotencyKey: idempotencyKeyRef.current });
+  };
+
+  // Closing mid-request and reopening mints a new idempotency key, so a retry
+  // of a voucher that did go through would post it twice.
+  const closeIfIdle = () => {
+    if (!mutation.isPending) onClose();
   };
 
   const accountOptions = (
@@ -258,7 +306,7 @@ export default function VoucherFormModal({
   return (
     <Modal
       isOpen={isOpen}
-      onClose={onClose}
+      onClose={closeIfIdle}
       title={title}
       subtitle={subtitle}
       size="lg"
@@ -273,7 +321,7 @@ export default function VoucherFormModal({
           <div className="flex gap-3">
             <Button
               label="Cancel"
-              handleClick={onClose}
+              handleClick={closeIfIdle}
               type="button"
               styleObject={{
                 baseColor: 'bg-white border border-gray-300',
@@ -315,7 +363,15 @@ export default function VoucherFormModal({
               </label>
               <select
                 value={selectedBranch}
-                onChange={(e) => setSelectedBranch(e.target.value)}
+                onChange={(e) => {
+                  setSelectedBranch(e.target.value);
+                  // Accounts and parties are per branch; a kept pick could be
+                  // missing from the new list, showing blank while still submitted.
+                  setAccountId('');
+                  setFromAccountId('');
+                  setToAccountId('');
+                  setPartyId('');
+                }}
                 className={inputCls}
               >
                 <option value="">Select branch…</option>

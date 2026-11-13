@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import apiClient from "@/services/apiClient";
 import { useUserStore } from "@/store/userStore";
+import { retryUnlessRefused } from "@/utils/seatRefusal";
 import { useSelectedChildId } from "@/hooks/useChildren";
 import { childPath, keepSameChildData } from "@/hooks/useDashboard";
 
@@ -17,6 +18,7 @@ export function useHomeworkList({ page = 1, limit = 20 } = {}) {
   const studentId = useSelectedChildId();
   return useQuery({
     queryKey: ["homework", uid, studentId, "list", page, limit],
+    retry: retryUnlessRefused,
     queryFn: async () => {
       const res = await apiClient.get(childPath(studentId, "homework"), {
         params: { page, limit },
@@ -71,6 +73,7 @@ export function useHomeworkDetail(id) {
   const studentId = useSelectedChildId();
   return useQuery({
     queryKey: ["homework", uid, studentId, "detail", id],
+    retry: retryUnlessRefused,
     queryFn: async () =>
       normalizeHomeworkDetail(
         unwrap(

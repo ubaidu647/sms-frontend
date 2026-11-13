@@ -199,6 +199,7 @@ function AddParentForm({ t, student, studentId, onDone, onCancel }) {
           />
         </Field>
       </div>
+      <p className="text-xs text-gray-500 dark:text-gray-400">{t('firstSignInHint')}</p>
       <p className="text-xs text-gray-500 dark:text-gray-400">{t('linkHint')}</p>
       {submitError && <p className="text-sm text-red-600 dark:text-red-400">{submitError}</p>}
       <FormActions t={t} onCancel={onCancel} loading={mutation.isPending} label={t('addParent')} />

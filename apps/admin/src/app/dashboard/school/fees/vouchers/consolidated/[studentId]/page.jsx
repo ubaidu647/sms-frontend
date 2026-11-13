@@ -1,5 +1,6 @@
 'use client';
 import React, { useRef, useState } from 'react';
+import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import {
   ArrowLeft,
@@ -18,10 +19,15 @@ import apiClient from '@/services/apiClient';
 import { useTokenStore } from '@/store/tokenStore';
 import { useUserStore } from '@/store/userStore';
 import { resolveScope, hasAnyAction, canActInBranch } from '@/utils/permissions';
+import { consolidatedReach } from '@/utils/consolidatedPayment';
 import { formatDate, formatMoney, formatMonth, VOUCHER_STATUS_COLORS } from '@/constants/fee';
 import PayConsolidatedModal from '../PayConsolidatedModal';
+import toast from 'react-hot-toast';
+import { PDF_CAPTURE_OPTIONS, PDF_FAILED_MESSAGE } from '@/utils/pdfCapture';
+import { useSchoolCurrency } from '@/hooks/useSchoolCurrency';
 
 export default function ConsolidatedVoucherPage() {
+  const { symbol: currencySymbol } = useSchoolCurrency();
   const router = useRouter();
   const params = useParams();
   const studentId = params?.studentId;
@@ -64,11 +70,7 @@ export default function ConsolidatedVoucherPage() {
         import('jspdf'),
       ]);
       const filename = `Consolidated-${student?.admissionNumber || studentId}.pdf`;
-      const canvas = await html2canvas(printableRef.current, {
-        scale: 2,
-        useCORS: true,
-        backgroundColor: '#ffffff',
-      });
+      const canvas = await html2canvas(printableRef.current, PDF_CAPTURE_OPTIONS);
       const imgData = canvas.toDataURL('image/jpeg', 0.98);
       const pdf = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
       const pageWidth = pdf.internal.pageSize.getWidth();
@@ -87,6 +89,9 @@ export default function ConsolidatedVoucherPage() {
         heightLeft -= pageHeight - margin * 2;
       }
       pdf.save(filename);
+    } catch (err) {
+      console.warn('PDF capture failed', err);
+      toast.error(PDF_FAILED_MESSAGE);
     } finally {
       setDownloadingPdf(false);
     }
@@ -124,16 +129,15 @@ export default function ConsolidatedVoucherPage() {
   const vouchers = slip.vouchers || [];
   const outstanding = totals.outstandingTotal ?? 0;
   const hasArrears = outstanding > 0 && vouchers.length > 0;
-  // A branch-tier collector can only settle vouchers billed by their own branch
-  // (the API restricts the allocation to them); without record-all-branch-payment
-  // there must be at least one such voucher. Falls back to the student's branch
-  // when the vouchers carry no branch.
+  // The API applies a payment oldest voucher first and refuses all of it if any
+  // slice lands on a voucher of another branch (without record-all-branch-payment).
+  // So the oldest unpaid voucher decides, not whether some voucher is in the
+  // user's branch. Falls back to the student's branch for a voucher with none.
   const userBranchId = user?.branchId || user?.branch?._id;
-  const canPay =
-    canPayAny &&
-    (vouchers.some((v) => v.branchId)
-      ? vouchers.some((v) => canActInBranch(user?.role, 'record-payment', userBranchId, v.branchId))
-      : canActInBranch(user?.role, 'record-payment', userBranchId, student?.branch));
+  const { payable, blocker } = consolidatedReach(vouchers, (v) =>
+    canActInBranch(user?.role, 'record-payment', userBranchId, v.branchId || student?.branch),
+  );
+  const canPay = canPayAny && payable > 0;
 
   return (
     <>
@@ -172,6 +176,20 @@ export default function ConsolidatedVoucherPage() {
               )}
             </div>
           </div>
+
+          {canPayAny && hasArrears && blocker && (
+            <div className="mb-6 p-4 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 text-sm text-amber-800 dark:text-amber-300 print:hidden">
+              {payable > 0
+                ? `Voucher ${blocker.voucherNumber} belongs to another branch. Pay Arrears can collect up to ${formatMoney(payable, currencySymbol)} here; a larger amount is refused. `
+                : `The oldest unpaid voucher (${blocker.voucherNumber}) belongs to another branch, so Pay Arrears is not available. `}
+              <Link
+                href={`/dashboard/school/fees/vouchers?studentId=${studentId}`}
+                className="font-medium underline"
+              >
+                Pay single vouchers of your branch instead
+              </Link>
+            </div>
+          )}
 
           <div ref={printableRef}>
             <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-8 print:shadow-none print:border-0">
@@ -296,10 +314,10 @@ export default function ConsolidatedVoucherPage() {
                                   {li.frequency || '—'}
                                 </td>
                                 <td className="px-3 py-2 text-right text-gray-600 dark:text-gray-400">
-                                  {formatMoney(li.amount)}
+                                  {formatMoney(li.amount, currencySymbol)}
                                 </td>
                                 <td className="px-3 py-2 text-right font-medium text-gray-900 dark:text-gray-100">
-                                  {formatMoney(li.finalAmount)}
+                                  {formatMoney(li.finalAmount, currencySymbol)}
                                 </td>
                               </tr>
                             ))}
@@ -309,7 +327,7 @@ export default function ConsolidatedVoucherPage() {
                                 <td className="px-3 py-2 text-amber-700">—</td>
                                 <td className="px-3 py-2 text-right text-amber-700">—</td>
                                 <td className="px-3 py-2 text-right font-medium text-amber-900">
-                                  {formatMoney(v.lateFee)}
+                                  {formatMoney(v.lateFee, currencySymbol)}
                                 </td>
                               </tr>
                             )}
@@ -321,11 +339,13 @@ export default function ConsolidatedVoucherPage() {
                                 Subtotal · Paid · Balance
                               </td>
                               <td className="px-3 py-2 text-right text-sm text-gray-700 dark:text-gray-300">
-                                {formatMoney(v.totalAmount)} ·{' '}
-                                <span className="text-green-700">{formatMoney(v.paidAmount)}</span>
+                                {formatMoney(v.totalAmount, currencySymbol)} ·{' '}
+                                <span className="text-green-700">
+                                  {formatMoney(v.paidAmount, currencySymbol)}
+                                </span>
                               </td>
                               <td className="px-3 py-2 text-right text-sm font-semibold text-red-700">
-                                {formatMoney(v.balanceAmount)}
+                                {formatMoney(v.balanceAmount, currencySymbol)}
                               </td>
                             </tr>
                           </tbody>
@@ -337,10 +357,15 @@ export default function ConsolidatedVoucherPage() {
                   <div className="flex items-end justify-end">
                     <div className="flex flex-col items-end gap-1 text-sm">
                       <Total label="Gross Total" value={totals.grossTotal} />
-                      <Total label="Total Paid" value={totals.totalPaid} tone="text-green-700" />
+                      {/* Already inside the gross total, not added on top of it. */}
                       {totals.totalLateFee > 0 && (
-                        <Total label="Late Fee" value={totals.totalLateFee} tone="text-amber-700" />
+                        <Total
+                          label="of which late fee"
+                          value={totals.totalLateFee}
+                          tone="text-amber-700"
+                        />
                       )}
+                      <Total label="Total Paid" value={totals.totalPaid} tone="text-green-700" />
                       <Total
                         label="Outstanding"
                         value={totals.outstandingTotal}
@@ -361,6 +386,7 @@ export default function ConsolidatedVoucherPage() {
         onClose={() => setPayOpen(false)}
         studentId={studentId}
         outstandingTotal={outstanding}
+        payable={payable}
         studentLabel={student?.user?.name}
         branchId={branchIdForProfile}
       />
@@ -452,14 +478,15 @@ function Info({ label, value }) {
   );
 }
 
-function Total({ label, value, tone = 'text-gray-900', big }) {
+function Total({ label, value, tone = 'text-gray-900 dark:text-gray-100', big }) {
+  const { symbol: currencySymbol } = useSchoolCurrency();
   return (
     <div className={`flex items-center justify-end gap-4 ${big ? 'border-t pt-2 mt-1' : ''}`}>
       <span className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">
         {label}
       </span>
       <span className={`${big ? 'text-2xl font-bold' : 'font-medium'} ${tone}`}>
-        {formatMoney(value)}
+        {formatMoney(value, currencySymbol)}
       </span>
     </div>
   );

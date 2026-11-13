@@ -9,8 +9,12 @@ import { Plus, Info } from 'lucide-react';
 import { Modal } from '@/component/Modal';
 import { postData } from '@/utils/api';
 import {
+  holdKey,
   idempotencyHeader,
+  isUnknownOutcome,
+  keyForTarget,
   newIdempotencyKey,
+  releaseKey,
   spentKeyMessage,
   successMessage,
 } from '@/utils/idempotency';
@@ -50,7 +54,8 @@ export default function ShopSaleFormModal({ isOpen, onClose, branchId: headerBra
   const [date, setDate] = useState(localYMD());
   const [lines, setLines] = useState([blank()]);
   const [errors, setErrors] = useState({});
-  // One key per sale attempt: reused on retries, renewed after success.
+  // One key per sale attempt: reused on retries, renewed after success, and kept
+  // per branch across a close when the response was lost (see keyTarget below).
   const keyRef = useRef(null);
 
   useEffect(() => {
@@ -59,12 +64,20 @@ export default function ShopSaleFormModal({ isOpen, onClose, branchId: headerBra
       setDate(localYMD());
       setLines([blank()]);
       setErrors({});
-      keyRef.current = newIdempotencyKey();
     }
   }, [isOpen]);
 
   // Stock is taken from the student's own branch.
   const studentBranch = idOf(student?.branchId || student?.branch) || headerBranchId || '';
+
+  // A new sale has no id, so its attempts are tracked per branch: a form reopened
+  // on the branch of a lost response picks that key up again and a resubmit
+  // replays instead of recording the sale twice.
+  const keyTarget = `inventory-sale:${studentBranch || 'own'}`;
+  useEffect(() => {
+    if (isOpen) keyRef.current = keyForTarget(keyTarget);
+  }, [isOpen, keyTarget]);
+
   const { items } = useItemOptions({
     branchId: studentBranch,
     saleable: true,
@@ -78,33 +91,43 @@ export default function ShopSaleFormModal({ isOpen, onClose, branchId: headerBra
     setLines((ls) => ls.map((l, j) => (j === i ? { ...l, ...patch } : l)));
 
   const mutation = useMutation({
-    mutationFn: (payload) =>
+    // The attempt travels with the call: picking another student mid-request can
+    // change the form's branch.
+    mutationFn: ({ payload, idempotencyKey }) =>
       postData({
         url: '/inventory/sales',
         payload,
         token,
-        headers: idempotencyHeader(keyRef.current),
+        headers: idempotencyHeader(idempotencyKey),
       }),
-    onSuccess: (res) => {
-      keyRef.current = newIdempotencyKey();
+    onSuccess: (res, attempt) => {
+      // This sale is recorded; the next one must not replay it.
+      releaseKey(attempt.keyTarget);
+      if (keyRef.current === attempt.idempotencyKey) keyRef.current = newIdempotencyKey();
       toast.success(
         successMessage(res, 'Sale recorded — it will be added to the next fee voucher'),
       );
       invalidateInventoryShop(queryClient);
       onClose();
     },
-    onError: (err) => {
+    onError: (err, attempt) => {
       // The key is spent — it went through earlier with a different payload, or
       // matches a document voided since — so it can never succeed again: start
       // a fresh one and refresh the lists.
       const spent = spentKeyMessage(err);
       if (spent) {
-        keyRef.current = newIdempotencyKey();
+        releaseKey(attempt.keyTarget);
+        if (keyRef.current === attempt.idempotencyKey) keyRef.current = newIdempotencyKey();
         invalidateInventoryShop(queryClient);
         toast.error(spent);
         return;
       }
       // Network/timeout etc.: keep the key so an unchanged retry is recognised.
+      if (isUnknownOutcome(err)) {
+        // It may have gone through: a cancel and reopen must reuse this key.
+        holdKey(attempt.keyTarget, attempt.idempotencyKey);
+        invalidateInventoryShop(queryClient);
+      }
       toast.error(err.message || 'Could not record the sale');
     },
   });
@@ -123,25 +146,35 @@ export default function ShopSaleFormModal({ isOpen, onClose, branchId: headerBra
     if (next.student || next.date || next.short || lineErrors.some((e) => Object.keys(e).length))
       return;
     mutation.mutate({
-      studentId: student._id,
-      date,
-      lines: lines.map((l) => ({
-        itemId: l.itemId,
-        quantity: Number(l.quantity),
-        unitPrice: fromPaisa(toPaisa(l.unitPrice)),
-      })),
+      payload: {
+        studentId: student._id,
+        date,
+        lines: lines.map((l) => ({
+          itemId: l.itemId,
+          quantity: Number(l.quantity),
+          unitPrice: fromPaisa(toPaisa(l.unitPrice)),
+        })),
+      },
+      keyTarget,
+      idempotencyKey: keyRef.current,
     });
+  };
+
+  // Closing mid-request and reopening mints a new idempotency key, so a retry
+  // of a payment that did go through would record it twice.
+  const closeIfIdle = () => {
+    if (!mutation.isPending) onClose();
   };
 
   return (
     <Modal
       isOpen={isOpen}
-      onClose={onClose}
+      onClose={closeIfIdle}
       title="New shop sale"
       size="lg"
       footer={
         <ModalFooter
-          onCancel={onClose}
+          onCancel={closeIfIdle}
           onSubmit={submit}
           submitLabel="Record sale"
           loading={mutation.isPending}

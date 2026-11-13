@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { TOKEN_STORAGE_KEY } from '@/utils/session';
 
 /**
  * Session state — no secrets.
@@ -25,7 +26,7 @@ export const useTokenStore = create(
       clearTokens: () => set({ accessToken: null }),
     }),
     {
-      name: 'token-storage',
+      name: TOKEN_STORAGE_KEY,
       // v1 stored the real tokens in localStorage. Drop them on upgrade — the
       // user signs in once more and gets a cookie session.
       version: 2,

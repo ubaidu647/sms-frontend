@@ -35,13 +35,21 @@ export default function PeriodsPage() {
 
   const effectiveBranchId = isOrgLevel ? branchId : userBranchId;
 
-  const { data: branchData } = useQuery({
+  const {
+    data: branchData,
+    isError: branchesFailed,
+    refetch: refetchBranches,
+  } = useQuery({
     queryKey: ['branches-dropdown'],
     queryFn: () => fetchData({ url: '/branch/list', page: 1, limit: 100, token }),
-    enabled: !!token && isOrgLevel && branchDropdownTouched,
+    // Close Period needs the list too: without it the only scope it offers is
+    // every branch.
+    enabled: !!token && isOrgLevel && (branchDropdownTouched || closeOpen),
     staleTime: Infinity,
   });
   const branches = branchData?.data || [];
+  // Loaded once is enough; a later failed refetch keeps the list it had.
+  const branchesReady = !isOrgLevel || branchData !== undefined;
 
   const { data } = useQuery({
     queryKey: ['accounting-periods', status, effectiveBranchId],
@@ -184,6 +192,9 @@ export default function PeriodsPage() {
           branchId={effectiveBranchId}
           isOrgLevel={isOrgLevel}
           branches={branches}
+          branchesReady={branchesReady}
+          branchesFailed={branchesFailed && !branchesReady}
+          onRetryBranches={() => refetchBranches()}
         />
         <ConfirmModal
           isOpen={!!reopenTarget}

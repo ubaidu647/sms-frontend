@@ -7,6 +7,7 @@ import { fetchData } from '@/utils/api';
 import { STAFF_TYPES, formatWorkedMinutes } from '@/constants/staffAttendance';
 import { formatMoney } from '@/constants/fee';
 import { localYM } from '@/utils/localDate';
+import { anyHasSalaryField } from '@/utils/staffSalary';
 
 function currentMonth() {
   return localYM();
@@ -58,6 +59,7 @@ export default function MonthlyStaffSummaryPanel() {
   });
 
   const staff = data?.data?.staff || [];
+  const showSalary = anyHasSalaryField(staff);
 
   return (
     <div className="space-y-4">
@@ -138,9 +140,11 @@ export default function MonthlyStaffSummaryPanel() {
                 <th className="text-left px-3 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
                   Designation
                 </th>
-                <th className="text-right px-3 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
-                  Salary
-                </th>
+                {showSalary && (
+                  <th className="text-right px-3 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                    Salary
+                  </th>
+                )}
                 <th className="text-center px-3 py-3 text-xs font-semibold text-green-700 dark:text-green-400 uppercase tracking-wide">
                   Present
                 </th>
@@ -188,9 +192,11 @@ export default function MonthlyStaffSummaryPanel() {
                   <td className="px-3 py-3 text-sm text-gray-700 dark:text-gray-300">
                     {s.designation || '—'}
                   </td>
-                  <td className="px-3 py-3 text-right text-sm text-gray-700 dark:text-gray-300">
-                    {s.salary != null ? formatMoney(s.salary) : '—'}
-                  </td>
+                  {showSalary && (
+                    <td className="px-3 py-3 text-right text-sm text-gray-700 dark:text-gray-300">
+                      {s.salary != null ? formatMoney(s.salary) : '—'}
+                    </td>
+                  )}
                   <td className="px-3 py-3 text-center text-sm text-gray-700 dark:text-gray-300">
                     {s.present}
                   </td>

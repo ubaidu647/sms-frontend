@@ -12,7 +12,7 @@ import Button from '@/component/Button';
 import { postData, putData } from '@/utils/api';
 import { branchIdOf } from '@/utils/permissions';
 import { useTokenStore } from '@/store/tokenStore';
-import { buildBookPayload } from '@/utils/library';
+import { MAX_COPIES_PER_REQUEST, buildBookPayload, splitList } from '@/utils/library';
 import { BranchSelect } from '../leave/LeavePickers';
 import { errorCls, inputCls, invalidateLibraryCatalogue, labelCls } from './libraryShared';
 
@@ -25,8 +25,12 @@ const makeSchema = ({ isCreate, needBranch }) =>
   yup.object().shape({
     branchId:
       isCreate && needBranch ? yup.string().required('Pick a branch') : yup.string().nullable(),
-    title: yup.string().trim().required('Title is required').max(300),
-    authors: yup.string().trim().max(500),
+    title: yup.string().trim().required('Title is required').max(200),
+    authors: yup
+      .string()
+      .trim()
+      .max(500)
+      .test('authors', 'At least one author is required', (v) => splitList(v).length > 0),
     isbn: yup.string().trim().max(20),
     publisher: yup.string().trim().max(200),
     edition: yup.string().trim().max(50),
@@ -40,8 +44,8 @@ const makeSchema = ({ isCreate, needBranch }) =>
           .string()
           .test(
             'copies',
-            'Copies must be a whole number from 0 to 500',
-            (v) => !v || (/^\d+$/.test(v) && Number(v) <= 500),
+            `Copies must be a whole number from 0 to ${MAX_COPIES_PER_REQUEST}`,
+            (v) => !v || (/^\d+$/.test(v) && Number(v) <= MAX_COPIES_PER_REQUEST),
           )
       : yup.string().nullable(),
   });
@@ -167,7 +171,9 @@ export default function BookFormModal({ isOpen, onClose, book, orgTier, defaultB
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div className="sm:col-span-2">{field('title', 'Title *')}</div>
           <div className="sm:col-span-2">
-            {field('authors', 'Authors (comma separated)', { placeholder: 'e.g. A. Khan, B. Ali' })}
+            {field('authors', 'Authors (comma separated) *', {
+              placeholder: 'e.g. A. Khan, B. Ali',
+            })}
           </div>
           {field('isbn', 'ISBN')}
           {field('publisher', 'Publisher')}
@@ -181,7 +187,7 @@ export default function BookFormModal({ isOpen, onClose, book, orgTier, defaultB
             field('copies', 'Number of copies', {
               type: 'number',
               min: 0,
-              max: 500,
+              max: MAX_COPIES_PER_REQUEST,
               step: 1,
             })}
         </div>

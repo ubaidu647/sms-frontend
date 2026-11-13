@@ -243,6 +243,7 @@ export default function SectionsModal({ isOpen, onClose, cls }) {
         onSuccess={() => setIsAddOpen(false)}
         classId={classId}
         academicYear={cls?.academicYear}
+        branchId={cls?.branchId ? String(cls.branchId?._id || cls.branchId) : ''}
       />
 
       <EditSectionModal

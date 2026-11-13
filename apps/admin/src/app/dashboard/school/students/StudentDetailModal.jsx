@@ -6,6 +6,7 @@ import { fetchData, postData, deleteData } from '@/utils/api';
 import { useTokenStore } from '@/store/tokenStore';
 import toast from 'react-hot-toast';
 import { Upload, Trash2, FileText, ExternalLink } from 'lucide-react';
+import { useSchoolCurrency } from '@/hooks/useSchoolCurrency';
 
 const ALLOWED_DOC_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'application/pdf'];
 const MAX_DOC_SIZE = 5 * 1024 * 1024;
@@ -99,6 +100,7 @@ export default function StudentDetailModal({
   studentId,
   canManageDocuments = false,
 }) {
+  const { symbol: currencySymbol } = useSchoolCurrency();
   const { accessToken: token } = useTokenStore();
   const queryClient = useQueryClient();
   const fileInputRef = useRef(null);
@@ -292,7 +294,7 @@ export default function StudentDetailModal({
                 label="Monthly Income"
                 value={
                   s.father.monthlyIncome != null
-                    ? `PKR ${Number(s.father.monthlyIncome).toLocaleString()}`
+                    ? `${currencySymbol} ${Number(s.father.monthlyIncome).toLocaleString()}`
                     : null
                 }
               />

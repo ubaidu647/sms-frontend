@@ -7,12 +7,14 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { patchData } from '@/utils/api';
 import { useTokenStore } from '@/store/tokenStore';
 import { invalidateFeeQueries } from '@/utils/feeQueries';
+import { useSchoolCurrency } from '@/hooks/useSchoolCurrency';
 
 const inputCls =
   'w-full px-3 py-2 border border-gray-200 rounded-lg outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 text-sm text-gray-900 bg-white';
 const labelCls = 'block text-xs font-semibold text-gray-700 mb-1';
 
 export default function LateFeeModal({ isOpen, onClose, voucher }) {
+  const { symbol: currencySymbol } = useSchoolCurrency();
   const { accessToken: token } = useTokenStore();
   const queryClient = useQueryClient();
   const [lateFee, setLateFee] = useState(0);
@@ -96,7 +98,7 @@ export default function LateFeeModal({ isOpen, onClose, voucher }) {
             rows={3}
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
-            placeholder="10 days overdue × ₨ 20/day"
+            placeholder={`10 days overdue × ${currencySymbol} 20/day`}
             className={inputCls}
           />
         </div>

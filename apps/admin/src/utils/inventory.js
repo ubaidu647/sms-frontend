@@ -11,7 +11,7 @@ export const ISSUED_TO_TYPES = ['department', 'staff', 'other'];
 export const SALE_STATUSES = ['pending', 'billed', 'void'];
 export const DOC_STATUSES = ['posted', 'void'];
 export const ITEM_UNITS = ['pcs', 'box', 'ream', 'kg', 'set', 'pair', 'pack', 'dozen', 'litre'];
-export const MAX_ASSET_QTY_PER_LINE = 500;
+export const MAX_ASSET_QTY_PER_LINE = 200;
 
 export const MOVEMENT_TYPE_LABELS = {
   purchase: 'Purchase',

@@ -11,8 +11,14 @@ import {
 import { useLibrary, useLibraryCatalogue } from "@/hooks/useDashboard";
 import { useSelectedChild, useSelectedChildId } from "@/hooks/useChildren";
 import { PageHeader, Panel } from "@/component/dashboard/Panel";
-import { Loading, ErrorState, EmptyState } from "@/component/dashboard/States";
+import {
+  Loading,
+  ErrorState,
+  SeatErrorState,
+  EmptyState,
+} from "@/component/dashboard/States";
 import { formatMoney } from "@/utils/format";
+import { seatRefusalMessage } from "@/utils/seatRefusal";
 import {
   localYMD,
   loanOverdueDays,
@@ -22,6 +28,7 @@ import {
   totalPages as pageCount,
   billedFineCard,
 } from "@/utils/library";
+import { useSchoolCurrency } from "@/hooks/useSchoolCurrency";
 
 const LIMIT = 20;
 const SEARCH_DEBOUNCE_MS = 400;
@@ -73,6 +80,7 @@ export default function LibraryPage() {
 }
 
 function MyBooks() {
+  const { symbol: currencySymbol } = useSchoolCurrency();
   const child = useSelectedChild();
   const { data, isLoading, isError, error, refetch } = useLibrary();
   const openLoans = Array.isArray(data?.openLoans) ? data.openLoans : [];
@@ -90,7 +98,7 @@ function MyBooks() {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
         <div className="rounded-2xl bg-[#00918e] text-white p-6">
           <p className="text-sm opacity-90">Pending library fine</p>
-          <p className="mt-1 text-3xl font-bold">{formatMoney(pendingFines)}</p>
+          <p className="mt-1 text-3xl font-bold">{formatMoney(pendingFines, currencySymbol)}</p>
           <p className="mt-1 text-xs opacity-80">
             {pendingFines > 0
               ? "Will be added to the next fee voucher"
@@ -102,7 +110,7 @@ function MyBooks() {
             {billed.label}
           </p>
           <p className="mt-1 text-3xl font-bold text-gray-900 dark:text-gray-100">
-            {formatMoney(billed.amount)}
+            {formatMoney(billed.amount, currencySymbol)}
           </p>
           <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">
             {billed.hint}
@@ -199,6 +207,7 @@ function OpenLoanRow({ loan, today }) {
 }
 
 function HistoryRow({ item: h }) {
+  const { symbol: currencySymbol } = useSchoolCurrency();
   const status = h.status || (h.returnedAt ? "returned" : "issued");
   const fineAmount = Number(h.fine?.amount ?? h.fineAmount) || 0;
   const fineStatus = h.fine?.status ?? h.fineStatus;
@@ -214,7 +223,7 @@ function HistoryRow({ item: h }) {
           {formatLibraryDate(h.issuedAt)}
           {h.returnedAt ? ` → ${formatLibraryDate(h.returnedAt)}` : ""}
           {fineAmount > 0
-            ? ` · Fine ${formatMoney(fineAmount)}${
+            ? ` · Fine ${formatMoney(fineAmount, currencySymbol)}${
                 FINE_STATUS_LABEL[fineStatus]
                   ? ` (${FINE_STATUS_LABEL[fineStatus]})`
                   : ""
@@ -248,6 +257,8 @@ function Catalogue() {
   const items = data?.items ?? [];
   const total = data?.total ?? 0;
   const totalPages = pageCount(total, LIMIT);
+  // Searching cannot change a refusal, so the box goes with it.
+  const refused = isError && !!seatRefusalMessage(error);
 
   return (
     <Panel
@@ -261,7 +272,7 @@ function Catalogue() {
         )
       }
     >
-      <div className="px-5 pt-4">
+      <div className={`px-5 pt-4 ${refused ? "hidden" : ""}`}>
         <div className="relative">
           <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
           <input
@@ -277,7 +288,7 @@ function Catalogue() {
       {isLoading ? (
         <Loading label="Loading catalogue…" />
       ) : isError ? (
-        <ErrorState error={error} onRetry={refetch} />
+        <SeatErrorState error={error} onRetry={refetch} />
       ) : items.length === 0 ? (
         <EmptyState
           title={debouncedSearch.trim() ? "No matching books" : "No books"}

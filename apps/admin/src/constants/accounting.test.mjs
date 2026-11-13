@@ -2,7 +2,15 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { isBalanced, journalLinesError, postableLines, sumLines } from './accounting.js';
+import {
+  canManageAccount,
+  hasAtMostTwoDecimals,
+  isBalanced,
+  journalLineAccounts,
+  journalLinesError,
+  postableLines,
+  sumLines,
+} from './accounting.js';
 
 test('decimal lines that agree to the paisa balance despite float noise', () => {
   const totals = sumLines([
@@ -66,4 +74,37 @@ test('negative amounts are refused', () => {
     ]),
     "Line 1: amounts can't be negative",
   );
+});
+
+test('journalLineAccounts: drops group headers and control accounts', () => {
+  const cash = { _id: 'cash' };
+  const list = [cash, { _id: 'group', isGroup: true }, { _id: 'ar', isControlAccount: true }];
+  assert.deepEqual(journalLineAccounts(list), [cash]);
+  assert.deepEqual(journalLineAccounts(undefined), []);
+});
+
+test('hasAtMostTwoDecimals: refuses a third decimal, ignores trailing zeros', () => {
+  for (const ok of ['10', '10.5', '10.55', '10.550', '0.01', '12345678.91', 1.1]) {
+    assert.equal(hasAtMostTwoDecimals(ok), true, ok);
+  }
+  for (const bad of ['10.555', '0.001', '1e-3', 'abc', Infinity]) {
+    assert.equal(hasAtMostTwoDecimals(bad), false, bad);
+  }
+});
+
+test('a branch-tier caller cannot manage an all-branch account', () => {
+  const branchTier = { allowed: true, allBranch: false };
+  assert.equal(canManageAccount({ appliesToAllBranches: true }, branchTier), false);
+  assert.equal(canManageAccount({ appliesToAllBranches: false }, branchTier), true);
+});
+
+test('an all-branch caller can, except a system account', () => {
+  const orgTier = { allowed: true, allBranch: true };
+  assert.equal(canManageAccount({ appliesToAllBranches: true }, orgTier), true);
+  assert.equal(canManageAccount({ appliesToAllBranches: true, isSystem: true }, orgTier), false);
+});
+
+test('no action, no management', () => {
+  const none = { allowed: false, allBranch: false };
+  assert.equal(canManageAccount({ appliesToAllBranches: false }, none), false);
 });

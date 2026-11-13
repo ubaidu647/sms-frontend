@@ -7,7 +7,16 @@ export function formatDate(value, opts = { day: 'numeric', month: 'short', year:
   return d.toLocaleDateString(undefined, opts);
 }
 
-export function formatMoney(value) {
+/**
+ * The school's money: "Rs 1,250" with `symbol` (useSchoolCurrency().symbol),
+ * the bare amount without one.
+ */
+export function formatMoney(value, symbol) {
   const n = Number(value || 0);
-  return n.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+  const amount = n.toLocaleString(undefined, {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  });
+  const sym = typeof symbol === 'string' ? symbol.trim() : '';
+  return sym ? `${sym} ${amount}` : amount;
 }

@@ -29,14 +29,15 @@ export function isKeyReusedConflict(err) {
 }
 
 // The key matches a document that was recorded and has been voided since: the
-// server refuses with 409 "This sale/purchase/(supplier) payment was voided".
+// server refuses with 409 "This sale/purchase/(supplier) payment/journal entry
+// was voided", or "This payment was reversed" for a payslip instalment.
 // Retrying with that key can never succeed either.
 export const KEY_VOIDED_MESSAGE =
   'Your earlier attempt was recorded and later voided — submit again to record a new one';
 
 export function isKeyVoidedConflict(err) {
   if (!err || err.status !== 409) return false;
-  return /^this .*\bwas voided\b/i.test(String(err.message || '').trim());
+  return /^this .*\bwas (voided|reversed)\b/i.test(String(err.message || '').trim());
 }
 
 /**
@@ -48,6 +49,36 @@ export function spentKeyMessage(err) {
   if (isKeyReusedConflict(err)) return KEY_REUSED_MESSAGE;
   if (isKeyVoidedConflict(err)) return KEY_VOIDED_MESSAGE;
   return null;
+}
+
+// No HTTP response, or a 5xx: the server may have recorded the request before
+// the failure. A 4xx is a definite refusal. Refresh the lists on an unknown
+// outcome so the user sees whether it went through before retrying.
+export function isUnknownOutcome(err) {
+  const status = err?.status;
+  return !status || status >= 500;
+}
+
+// Keys of submissions whose outcome is unknown, by target (a voucher id, a
+// student, a form mode). A form reopened on the same target picks its key up
+// again, so resubmitting after a lost response replays instead of double-posting;
+// a changed resubmit gets the spent-key 409 above. In memory only: a reload or
+// a logout forgets them.
+const heldKeys = new Map();
+
+/** The key to open a form with: the one held for this target, else a new one. */
+export function keyForTarget(target) {
+  return heldKeys.get(target) || newIdempotencyKey();
+}
+
+/** Keep this key for the target until `releaseKey`. */
+export function holdKey(target, key) {
+  heldKeys.set(target, key);
+}
+
+/** Call on a success or a spent key: the target's next attempt is a new one. */
+export function releaseKey(target) {
+  heldKeys.delete(target);
 }
 
 // A 200 replay of an earlier, identical submission carries a technical message

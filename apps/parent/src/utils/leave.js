@@ -84,9 +84,17 @@ export function validateLeaveForm({ leaveType, fromDate, toDate, reason }) {
   return errors;
 }
 
-/** A parent may cancel only PENDING requests that a parent created. */
-export function canParentCancel(request) {
+/**
+ * A parent may cancel only PENDING requests that they themselves created — the
+ * server refuses (404) one filed by another guardian of the same child.
+ */
+export function canParentCancel(request, userId) {
+  const requester = request?.requestedBy?.userId;
   return (
-    request?.status === "pending" && request?.requestedBy?.role === "parent"
+    request?.status === "pending" &&
+    request?.requestedBy?.role === "parent" &&
+    !!userId &&
+    requester != null &&
+    String(requester?._id ?? requester) === String(userId)
   );
 }

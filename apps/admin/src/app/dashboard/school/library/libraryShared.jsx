@@ -5,7 +5,8 @@ import { useQuery } from '@tanstack/react-query';
 import { useTokenStore } from '@/store/tokenStore';
 import { fetchData } from '@/utils/api';
 import { retryUnless4xx } from '@/utils/queryError';
-import { formatAmount } from '@/utils/money';
+import { formatMoney } from '@/utils/money';
+import { schoolCurrencySymbol } from '@/utils/schoolCurrency';
 import { invalidateLedgerQueries } from '@/utils/ledgerQueries';
 import {
   COPY_STATUS_COLORS,
@@ -71,9 +72,7 @@ export function FineCell({ fine }) {
   if (status === 'none' && !amount) return <span className="text-gray-400">—</span>;
   return (
     <span className="inline-flex items-center gap-1.5">
-      <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
-        Rs {formatAmount(amount)}
-      </span>
+      <span className="text-sm font-medium text-gray-900 dark:text-gray-100">{money(amount)}</span>
       <Badge cls={FINE_STATUS_COLORS[status] || FINE_STATUS_COLORS.none}>{status}</Badge>
     </span>
   );
@@ -82,7 +81,8 @@ export function FineCell({ fine }) {
 /** Stored date-only value → 'YYYY-MM-DD' (keeps UTC formatting), '—' when empty. */
 export const fmtDate = (v) => ymdOf(v) || '—';
 
-export const money = (n) => `Rs ${formatAmount(n)}`;
+// The school's own money, in its currency (Business Settings → Currency).
+export const money = (n) => formatMoney(n, schoolCurrencySymbol());
 
 /**
  * Effective library settings for a branch (empty = the caller's own branch /

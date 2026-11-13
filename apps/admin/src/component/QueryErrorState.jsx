@@ -7,8 +7,16 @@ const TITLES = {
   404: 'Not found',
 };
 
-/** Inline error panel for a failed detail query — shows the server message. */
-export default function QueryErrorState({ error, fallback = 'Could not load this record' }) {
+/**
+ * Inline error panel for a failed query — shows the server message. Pass
+ * `onRetry` for a Retry button; `retrying` disables it while the query runs.
+ */
+export default function QueryErrorState({
+  error,
+  fallback = 'Could not load this record',
+  onRetry,
+  retrying,
+}) {
   const status = errorStatus(error);
   return (
     <div
@@ -23,6 +31,16 @@ export default function QueryErrorState({ error, fallback = 'Could not load this
         <p className="text-sm text-red-600 dark:text-red-400 mt-0.5 break-words">
           {errorMessage(error, fallback)}
         </p>
+        {onRetry && (
+          <button
+            type="button"
+            onClick={onRetry}
+            disabled={retrying}
+            className="mt-2 text-sm font-semibold text-red-700 dark:text-red-300 underline disabled:opacity-50"
+          >
+            {retrying ? 'Retrying…' : 'Retry'}
+          </button>
+        )}
       </div>
     </div>
   );

@@ -26,7 +26,7 @@ const formValuesOf = (subject) => ({
   practicalMarks: subject.practicalMarks ?? '',
   creditHours: subject.creditHours ?? '',
   defaultTeacher: subject.teacherInfo?._id || subject.defaultTeacher || '',
-  status: subject.status || 'active',
+  status: subject.isActive === false ? 'inactive' : 'active',
 });
 
 // Can't be cleared, with the error an emptied one blocks the save with.

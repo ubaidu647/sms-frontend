@@ -6,7 +6,10 @@ import { useQuery } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { useTokenStore } from '@/store/tokenStore';
 import { fetchData } from '@/utils/api';
-import { formatAmount } from '@/utils/money';
+import PickerError from '@/component/PickerError';
+import { retryUnless4xx } from '@/utils/queryError';
+import { formatMoney } from '@/utils/money';
+import { schoolCurrencySymbol } from '@/utils/schoolCurrency';
 import { invalidateFeeQueries } from '@/utils/feeQueries';
 import { invalidateLedgerQueries } from '@/utils/ledgerQueries';
 import { ymdOf } from '@/utils/library';
@@ -36,7 +39,8 @@ export const linkBtn = 'text-xs font-medium text-teal-700 dark:text-teal-400 hov
 /** Stored date-only value → 'YYYY-MM-DD', '—' when empty. */
 export const fmtDate = (v) => ymdOf(v) || '—';
 
-export const money = (n) => `Rs ${formatAmount(n)}`;
+// The school's own money, in its currency (Business Settings → Currency).
+export const money = (n) => formatMoney(n, schoolCurrencySymbol());
 
 export const fmtQty = (n) =>
   (Number(n) || 0).toLocaleString(undefined, { maximumFractionDigits: 2 });
@@ -195,7 +199,7 @@ export function StudentSearch({ value, onChange, branchId }) {
   const [open, setOpen] = useState(false);
   const term = search.trim();
 
-  const { data, isFetching } = useQuery({
+  const { data, isFetching, error } = useQuery({
     queryKey: ['inventory-student-search', term, branchId || ''],
     queryFn: () =>
       fetchData({
@@ -209,6 +213,7 @@ export function StudentSearch({ value, onChange, branchId }) {
       }),
     enabled: !!token && term.length >= 2,
     staleTime: 10000,
+    retry: retryUnless4xx,
   });
   const students = data?.data || [];
 
@@ -280,6 +285,7 @@ export function StudentSearch({ value, onChange, branchId }) {
       {open && term.length >= 2 && !isFetching && data && students.length === 0 && (
         <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">No students found.</p>
       )}
+      <PickerError error={error} />
     </div>
   );
 }

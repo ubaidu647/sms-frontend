@@ -14,11 +14,13 @@ import {
   Users,
   Award,
   Library,
+  KeyRound,
 } from 'lucide-react';
 import AddStudentModal from './AddStudentModal';
 import EditStudentModal from './EditStudentModal';
 import StudentDetailModal from './StudentDetailModal';
 import TransferStudentModal from './TransferStudentModal';
+import ResetStudentPasswordModal from './ResetStudentPasswordModal';
 import StudentParentsModal from './StudentParentsModal';
 import IssueCertificateModal from '../certificates/IssueCertificateModal';
 import { studentOptionLabel } from '../certificates/certificateShared';
@@ -56,6 +58,7 @@ export default function StudentsPage() {
   const [parentsStudent, setParentsStudent] = useState(null);
   const [certificateStudent, setCertificateStudent] = useState(null);
   const [libraryBorrower, setLibraryBorrower] = useState(null);
+  const [resetStudent, setResetStudent] = useState(null);
 
   // Pagination
   const [page, setPage] = useState(1);
@@ -372,6 +375,12 @@ export default function StudentsPage() {
     if (canTransfer && !isOwnOnly) {
       items.push({ label: 'Transfer', value: 'transfer', icon: ArrowRightLeft });
     }
+    if (
+      !isOwnOnly &&
+      canActInBranch(user?.role, 'update-student', userBranchId, row.branch?._id || row.branchId)
+    ) {
+      items.push({ label: 'Reset password', value: 'reset-password', icon: KeyRound });
+    }
     if (canDelete && !isOwnOnly) {
       if (canActOnAllBranches || row.branch?._id === userBranchId) {
         items.push(
@@ -654,6 +663,7 @@ export default function StudentsPage() {
             if (action === 'view') setDetailStudentId(row._id);
             if (action === 'edit') setEditStudent(row);
             if (action === 'transfer') setTransferStudent(row);
+            if (action === 'reset-password') setResetStudent(row);
             if (action === 'parents') setParentsStudent(row);
             if (action === 'certificates') {
               setCertificateStudent({ studentId: row._id, label: studentOptionLabel(row) });
@@ -716,6 +726,8 @@ export default function StudentsPage() {
           onSuccess={() => setTransferStudent(null)}
           student={transferStudent}
         />
+
+        <ResetStudentPasswordModal student={resetStudent} onClose={() => setResetStudent(null)} />
       </div>
     </div>
   );

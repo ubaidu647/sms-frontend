@@ -9,7 +9,7 @@ import { fetchData } from '@/utils/api';
 import SchoolHeader from '../../../SchoolHeader';
 import PrintStyles from '../../../printStyles';
 import { GRADE_COLORS, formatDate } from '@/constants/exam';
-import { missingPapersReason } from '@/utils/examResult';
+import { missingPapersReason, resultCardPlacement } from '@/utils/examResult';
 
 export default function ResultCardPage() {
   const params = useParams();
@@ -37,6 +37,7 @@ export default function ResultCardPage() {
   }
 
   const { student, exam, subjects, summary } = card;
+  const placement = resultCardPlacement(student);
   const missingReason = missingPapersReason(summary);
 
   return (
@@ -70,7 +71,7 @@ export default function ResultCardPage() {
               <Info label="Student Name" value={student.name} />
               <Info
                 label="Class"
-                value={`${student.class?.name || ''}${student.section?.name ? ' - ' + student.section.name : ''}`}
+                value={`${placement.className}${placement.sectionName ? ' - ' + placement.sectionName : ''}`}
               />
               <Info label="Roll Number" value={student.rollNumber} />
               <Info label="Admission No." value={student.admissionNumber} />

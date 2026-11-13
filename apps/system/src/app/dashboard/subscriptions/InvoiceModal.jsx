@@ -1,18 +1,40 @@
 'use client';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Modal } from '@/component/Modal';
 import Button from '@/component/Button';
-import { fmtMoney, fmtDate, INVOICE_STATUS_COLORS } from '../packages/format';
-import { useInvoiceBySubscription, useMarkInvoicePaid } from './hooks/useSubscriptions';
+import { fmtMoney, fmtDate, INVOICE_STATUS_COLORS, invoiceTypeLabel } from '../packages/format';
+import { invoicesForSubscription, planInvoiceFor } from '@/utils/addons';
+import {
+  useInvoiceBySubscription,
+  useInvoices,
+  useMarkInvoicePaid,
+} from './hooks/useSubscriptions';
 
-// Shows the invoice tied to a single subscription (assign/change/renew each
-// create one). Lets a super-admin mark an unpaid invoice as paid.
-export default function InvoiceModal({ isOpen, onClose, subscription, schoolId }) {
+// Shows the invoices tied to a single subscription: its plan invoice
+// (assign/change/renew) and any add-on invoices raised on it since. Lets a
+// super-admin mark an unpaid one as paid. `focusInvoiceId` opens that one first.
+export default function InvoiceModal({ isOpen, onClose, subscription, schoolId, focusInvoiceId }) {
   const subscriptionId = subscription?._id;
-  const { data, isLoading, isError, error } = useInvoiceBySubscription(
-    isOpen ? subscriptionId : null,
-  );
-  const invoice = data?.data ?? null;
+  const listQuery = useInvoices(isOpen ? schoolId : null);
+  const own = invoicesForSubscription(listQuery.data?.data, subscriptionId);
+  // Older than the school's newest page of invoices: read it on its own.
+  const needSingle = isOpen && listQuery.isSuccess && own.length === 0;
+  const single = useInvoiceBySubscription(needSingle ? subscriptionId : null);
+  const choices = own.length ? own : single.data?.data ? [single.data.data] : [];
+
+  const [selectedId, setSelectedId] = useState(null);
+  useEffect(() => {
+    if (isOpen) setSelectedId(focusInvoiceId ?? null);
+  }, [isOpen, focusInvoiceId, subscriptionId]);
+  const invoice =
+    choices.find((i) => String(i._id) === String(selectedId)) ??
+    planInvoiceFor(choices, subscriptionId) ??
+    choices[0] ??
+    null;
+
+  const isLoading = listQuery.isLoading || (needSingle && single.isLoading);
+  const isError = listQuery.isError || (needSingle && single.isError);
+  const error = listQuery.error || single.error;
   const markPaid = useMarkInvoicePaid(schoolId);
 
   return (
@@ -57,6 +79,28 @@ export default function InvoiceModal({ isOpen, onClose, subscription, schoolId }
         </p>
       ) : (
         <div className="space-y-5">
+          {choices.length > 1 && (
+            <div className="flex flex-wrap gap-2">
+              {choices.map((inv) => {
+                const on = String(inv._id) === String(invoice._id);
+                return (
+                  <button
+                    key={inv._id}
+                    type="button"
+                    onClick={() => setSelectedId(inv._id)}
+                    className={`px-3 py-1.5 rounded-lg border text-xs ${
+                      on
+                        ? 'border-teal-500 bg-teal-50 text-teal-800 dark:bg-teal-950/30 dark:text-teal-300'
+                        : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
+                    }`}
+                  >
+                    {invoiceTypeLabel(inv.type)}
+                    {inv.serialNumber ? ` #${inv.serialNumber}` : ''} · {inv.status}
+                  </button>
+                );
+              })}
+            </div>
+          )}
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-3">
               <span
@@ -66,8 +110,8 @@ export default function InvoiceModal({ isOpen, onClose, subscription, schoolId }
               >
                 {invoice.status || 'unknown'}
               </span>
-              <span className="text-sm text-gray-600 dark:text-gray-400 capitalize">
-                {invoice.type} · {fmtDate(invoice.createdAt)}
+              <span className="text-sm text-gray-600 dark:text-gray-400">
+                {invoiceTypeLabel(invoice.type)} · {fmtDate(invoice.createdAt)}
               </span>
             </div>
           </div>
@@ -113,8 +157,9 @@ export default function InvoiceModal({ isOpen, onClose, subscription, schoolId }
 
           {invoice.status === 'void' && (
             <p className="rounded-lg bg-gray-50 dark:bg-gray-800/60 p-3 text-sm text-gray-500 dark:text-gray-400">
-              This invoice was voided when the plan changed before it was paid — nothing is owed on
-              it.
+              {invoice.type === 'addon'
+                ? 'This add-on invoice was voided (the add-on was removed or the plan changed before it was paid) — nothing is owed on it.'
+                : 'This invoice was voided when the plan changed before it was paid — nothing is owed on it.'}
             </p>
           )}
 

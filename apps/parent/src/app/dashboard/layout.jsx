@@ -5,10 +5,18 @@ import { Loader2, Users } from "lucide-react";
 import { useTokenStore } from "@/store/tokenStore";
 import { useUserStore } from "@/store/userStore";
 import { useAuth } from "@/hooks/useAuth";
+import { useCrossTabSignOut } from "@/hooks/useCrossTabSignOut";
 import { useSyncSelectedChild } from "@/hooks/useChildren";
+import { usePlanFeatures } from "@/hooks/usePlanFeatures";
+import { featureForPath } from "@/utils/planFeatures";
 import { Sidebar } from "@/component/SideBar";
 import { Topbar } from "@/component/TopBar";
-import { Loading, ErrorState, EmptyState } from "@/component/dashboard/States";
+import {
+  Loading,
+  ErrorState,
+  EmptyState,
+  FeatureUnavailableState,
+} from "@/component/dashboard/States";
 import ForcedPasswordChange from "@/component/ForcedPasswordChange";
 
 const PASSWORD_PATH = "/dashboard/change-password";
@@ -22,6 +30,7 @@ function FullScreenSpinner() {
 }
 
 export default function DashboardLayout({ children }) {
+  useCrossTabSignOut();
   const router = useRouter();
   const pathname = usePathname();
   const hasHydrated = useTokenStore((s) => s.hasHydrated);
@@ -60,6 +69,11 @@ export default function DashboardLayout({ children }) {
   const childrenQuery = useSyncSelectedChild({
     enabled: signedIn && isParent && !mustChangePassword,
   });
+  // A page of an add-on module the plan leaves out (reached by a direct link):
+  // say so instead of loading it. Unknown/loading plan = enabled.
+  const { isEnabled } = usePlanFeatures();
+  const pageFeature = featureForPath(pathname);
+  const featureOff = !!pageFeature && !isEnabled(pageFeature);
 
   if (!signedIn || wrongType) return <FullScreenSpinner />;
   if (mustChangePassword) return <ForcedPasswordChange onLogout={logout} />;
@@ -71,6 +85,8 @@ export default function DashboardLayout({ children }) {
   let content;
   if (isAccountPage) {
     content = children;
+  } else if (featureOff) {
+    content = <FeatureUnavailableState />;
   } else if (childrenQuery.isLoading) {
     content = <Loading label="Loading your children…" />;
   } else if (childrenQuery.isError) {

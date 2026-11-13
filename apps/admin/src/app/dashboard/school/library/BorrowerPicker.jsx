@@ -5,6 +5,8 @@ import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useTokenStore } from '@/store/tokenStore';
 import { fetchData } from '@/utils/api';
+import PickerError from '@/component/PickerError';
+import { retryUnless4xx } from '@/utils/queryError';
 import { inputCls } from './libraryShared';
 
 const staffName = (s) => s?.user?.name || s?.userId?.name || s?.name || 'Staff';
@@ -33,7 +35,7 @@ export default function BorrowerPicker({ type, value, onChange, branchId, autoFo
   const [open, setOpen] = useState(false);
   const term = search.trim();
 
-  const { data, isFetching } = useQuery({
+  const { data, isFetching, error } = useQuery({
     queryKey: ['library-borrower-search', type, term, branchId || ''],
     queryFn: () =>
       fetchData({
@@ -47,6 +49,7 @@ export default function BorrowerPicker({ type, value, onChange, branchId, autoFo
       }),
     enabled: !!token && term.length >= 2,
     staleTime: 10000,
+    retry: retryUnless4xx,
   });
   const rows = (data?.data || []).map((r) => optionOf(type, r));
 
@@ -111,6 +114,7 @@ export default function BorrowerPicker({ type, value, onChange, branchId, autoFo
       {open && term.length >= 2 && data && !isFetching && rows.length === 0 && (
         <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">No matches.</p>
       )}
+      <PickerError error={error} />
     </div>
   );
 }

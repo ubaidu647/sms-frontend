@@ -7,8 +7,11 @@ import { ColumnSelector } from '@/component/ColumnSelector';
 import ConfirmModal from '../organizations/ConfirmModal';
 import PackageFormModal from './PackageFormModal';
 import PackageDetailModal from './PackageDetailModal';
+import { ModuleSummary } from './ModuleChips';
 import { usePackages, useDeletePackage } from './hooks/usePackages';
 import { fmtMoney } from './format';
+import { addonUnitName, moduleLabel, pricedAddons, pricedModules } from '@/utils/addons';
+import { offerAvailable, offerChip } from '@/utils/launchOffer';
 
 const PAGE_SIZE = 20;
 
@@ -48,7 +51,25 @@ export default function PackagesPage() {
       {
         header: 'Price',
         accessor: 'price',
-        render: (v) => <span className="text-gray-700 dark:text-gray-300">{fmtMoney(v)}</span>,
+        render: (v, row) => {
+          const chip = offerChip(row, fmtMoney);
+          return (
+            <span className="text-gray-700 dark:text-gray-300">
+              {fmtMoney(v)}
+              {chip && (
+                <span
+                  className={`mt-1 block w-fit rounded-full px-2 py-0.5 text-xs font-medium ${
+                    offerAvailable(row)
+                      ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300'
+                      : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
+                  }`}
+                >
+                  {chip}
+                </span>
+              )}
+            </span>
+          );
+        },
       },
       {
         header: 'Duration',
@@ -61,6 +82,40 @@ export default function PackagesPage() {
         render: (v) => (
           <span className="text-gray-600 dark:text-gray-400">{v?.noOfStudents ?? '-'}</span>
         ),
+      },
+      {
+        header: 'Storage',
+        accessor: 'storage',
+        render: (_v, row) => (
+          <span className="text-gray-600 dark:text-gray-400">
+            {row.limits?.storageGB != null ? `${row.limits.storageGB} GB` : 'Unlimited'}
+          </span>
+        ),
+      },
+      {
+        header: 'Add-on prices',
+        accessor: 'addonPrices',
+        render: (v, row) => {
+          const priced = pricedAddons(v);
+          const modules = pricedModules(row.moduleAddonPrices);
+          return (
+            <span className="text-gray-600 dark:text-gray-400 text-xs">
+              {priced.length
+                ? priced.map((p) => `${fmtMoney(p.price)}/${addonUnitName(p.key)}`).join(', ')
+                : '-'}
+              {modules.length > 0 && (
+                <span
+                  className="block"
+                  title={modules
+                    .map((m) => `${moduleLabel(m.key)} ${fmtMoney(m.price)}`)
+                    .join(', ')}
+                >
+                  {modules.length} module add-on{modules.length === 1 ? '' : 's'}
+                </span>
+              )}
+            </span>
+          );
+        },
       },
       {
         header: 'Platforms',
@@ -77,11 +132,11 @@ export default function PackagesPage() {
         },
       },
       {
-        header: 'Features',
+        header: 'Modules',
         accessor: 'features',
         render: (v) => (
           <span className="text-gray-600 dark:text-gray-400">
-            {v?.length ? `${v.length} feature${v.length > 1 ? 's' : ''}` : 'All'}
+            <ModuleSummary features={v} />
           </span>
         ),
       },

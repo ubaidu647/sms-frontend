@@ -2,6 +2,7 @@
 import { useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
+import { useCrossTabSignOut } from '@/hooks/useCrossTabSignOut';
 import { useSchoolSettings } from '@/hooks/useSchoolSettings';
 import { useUserStore } from '@/store/userStore';
 import { Loader2 } from 'lucide-react';
@@ -12,6 +13,7 @@ import ForcedPasswordChange from '@/component/ForcedPasswordChange';
 const PASSWORD_PATH = '/dashboard/settings/password';
 
 export default function DashboardLayout({ children }) {
+  useCrossTabSignOut();
   const { hasHydrated, accessToken, loading, logout, offline } = useAuth();
   const signedOut = hasHydrated && !loading && !accessToken && !offline;
   const { user } = useUserStore();

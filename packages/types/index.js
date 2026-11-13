@@ -1,4 +1,4 @@
-// Shared data models / types for all NodeCampus web apps.
+// Shared data models / types for all Mizenzo School Management web apps.
 // Use JSDoc typedefs here so both admin and student apps share one contract.
 //
 // Example:

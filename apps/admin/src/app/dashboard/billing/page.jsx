@@ -1,7 +1,22 @@
 'use client';
 import React, { useMemo, useState } from 'react';
-import { CreditCard, Receipt, Eye } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { CreditCard, Receipt, Eye, AlertTriangle } from 'lucide-react';
 import { Table } from '@/component/Table';
+import { useSubscriptionGuard } from '@/hooks/useSubscriptionGuard';
+import { paymentDueSoon } from '@/utils/subscriptionState';
+import {
+  ADDON_KEYS,
+  addonModulesOf,
+  addonUnits,
+  baseLimit,
+  buyableModuleOffers,
+  isModuleAddon,
+  livePriceLock,
+  pricedAddons,
+} from '@/utils/planAddons';
+import { storageUsage } from '@/utils/storage';
+import { moduleName } from '@/component/PlanUpgrade';
 import MyInvoiceModal from './MyInvoiceModal';
 import SubscriptionDetailModal from './SubscriptionDetailModal';
 import {
@@ -64,14 +79,227 @@ const StatusPill = ({ status, colors }) => (
   </span>
 );
 
-const LimitStat = ({ label, value }) => (
+const LIMIT_LABELS = {
+  noOfStudents: 'Students',
+  noOfBranches: 'Branches',
+  noOfStaffs: 'Staff',
+  noOfSections: 'Sections',
+};
+
+// `breakdown` (e.g. "300 + 100 add-on") shows when add-ons raise the limit.
+const LimitStat = ({ label, value, breakdown }) => (
   <div className="rounded-lg bg-gray-50 dark:bg-gray-800/60 p-3 text-center">
     <p className="text-lg font-semibold text-gray-900 dark:text-gray-100">{value ?? '∞'}</p>
     <p className="text-xs text-gray-500 dark:text-gray-400">{label}</p>
+    {breakdown && <p className="text-xs text-teal-700 dark:text-teal-400">({breakdown})</p>}
   </div>
 );
 
+// Upload storage: used / limit with a bar that turns amber at 90% and red when full.
+function StorageCard({ storage }) {
+  const t = useTranslations('billing');
+  const u = storageUsage(storage);
+  if (!u) return null;
+  const tone = u.full
+    ? 'border-red-300 dark:border-red-800'
+    : u.warn
+      ? 'border-amber-300 dark:border-amber-800'
+      : 'border-gray-200 dark:border-gray-700';
+  const bar = u.full ? 'bg-red-600' : u.warn ? 'bg-amber-500' : 'bg-teal-600';
+  const text = u.full
+    ? 'text-red-700 dark:text-red-400'
+    : u.warn
+      ? 'text-amber-700 dark:text-amber-400'
+      : 'text-gray-700 dark:text-gray-300';
+  return (
+    <div className={`mb-4 rounded-lg border p-4 text-sm ${tone}`}>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <span className="font-semibold text-gray-700 dark:text-gray-300">{t('storageTitle')}</span>
+        <span className={text}>
+          {u.unlimited
+            ? t('storageUnlimited', { used: u.usedText })
+            : t('storageUsed', { used: u.usedText, limit: u.limitText, percent: u.percent })}
+        </span>
+      </div>
+      {!u.unlimited && (
+        <div
+          className="mt-2 h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700"
+          role="progressbar"
+          aria-label={t('storageTitle')}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={u.percent}
+        >
+          <div className={`h-full ${bar}`} style={{ width: `${u.percent}%` }} />
+        </div>
+      )}
+      {(u.warn || u.full) && (
+        <p className={`mt-2 text-xs ${text}`}>{u.full ? t('storageFull') : t('storageWarn')}</p>
+      )}
+    </div>
+  );
+}
+
+// The launch-offer price the school renews at while its lock runs.
+function PriceLockNote({ current }) {
+  const t = useTranslations('billing');
+  const lock = current?.priceLock;
+  if (!lock || lock.price == null) return null;
+  const live = !!livePriceLock(current);
+  return (
+    <p
+      className={`mt-2 inline-flex rounded-full px-3 py-1 text-xs font-medium ${
+        live
+          ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300'
+          : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
+      }`}
+    >
+      {t(live ? 'priceLock' : 'priceLockEnded', {
+        price: fmtMoney(lock.price),
+        date: fmtDate(lock.until),
+      })}
+    </p>
+  );
+}
+
+// Gated modules the school could add, with their prices, and the ones its
+// add-ons already opened. Bought through the platform admin, not here.
+function ModuleAddons({ current }) {
+  const t = useTranslations('billing');
+  const tm = useTranslations('planFeatures');
+  const offers = buyableModuleOffers(current);
+  const opened = addonModulesOf(current);
+  const days = current?.packageSnapshot?.durationInDays ?? 0;
+  if (!offers.length && !opened.length) return null;
+  return (
+    <div className="mt-4 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+      <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+        {t('moduleAddonsTitle')}
+      </h4>
+      {opened.length > 0 && (
+        <p className="mb-2 text-sm text-gray-800 dark:text-gray-200">
+          {t('openedModules', { modules: opened.map((k) => moduleName(tm, k)).join(', ') })}
+        </p>
+      )}
+      {offers.length > 0 && (
+        <>
+          <ul className="space-y-1 text-sm text-gray-800 dark:text-gray-200">
+            {offers.map((o) => (
+              <li key={o.key}>
+                {o.price != null
+                  ? t('moduleOffer', {
+                      module: moduleName(tm, o.key),
+                      price: fmtMoney(o.price),
+                      days,
+                    })
+                  : t('moduleNoPrice', { module: moduleName(tm, o.key) })}
+              </li>
+            ))}
+          </ul>
+          <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">{t('moduleAddonsHelp')}</p>
+        </>
+      )}
+    </div>
+  );
+}
+
+// The add-on prices that apply to the school, and the add-ons it has. Extras
+// are added by the platform admin; nothing is bought from this screen.
+function PlanAddons({ current }) {
+  const t = useTranslations('billing');
+  const tm = useTranslations('planFeatures');
+  const priced = pricedAddons(current?.addonPrices);
+  const addons = current?.addons ?? [];
+  const days = current?.packageSnapshot?.durationInDays;
+  if (!priced.length && !addons.length) return null;
+  return (
+    <div className="mt-5 grid grid-cols-1 md:grid-cols-2 gap-4">
+      {addons.length > 0 && (
+        <div className="rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+          <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+            {t('activeAddonsTitle')}
+          </h4>
+          <ul className="space-y-1.5 text-sm">
+            {addons.map((a) => (
+              <li key={a._id} className="text-gray-800 dark:text-gray-200">
+                {isModuleAddon(a)
+                  ? t('moduleAddonLine', {
+                      module: moduleName(tm, a.module),
+                      price: fmtMoney(a.unitPrice),
+                    })
+                  : t('addonLine', {
+                      quantity: a.quantity,
+                      unit: t.has(`units.${a.resource}`)
+                        ? t(`units.${a.resource}`, { count: a.quantity })
+                        : a.resource,
+                      price: fmtMoney(a.unitPrice),
+                    })}
+                <span className="block text-xs text-gray-500 dark:text-gray-400">
+                  {t('addonAdded', { date: fmtDate(a.addedAt) })}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {priced.length > 0 && (
+        <div className="rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+          <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+            {t('addonPricesTitle')}
+          </h4>
+          <ul className="space-y-1 text-sm text-gray-800 dark:text-gray-200">
+            {priced.map((p) => (
+              <li key={p.key}>
+                {t('addonPriceLine', {
+                  unit: t(`units.${p.key}`, { count: 1 }),
+                  price: fmtMoney(p.price),
+                  days: days ?? 0,
+                })}
+              </li>
+            ))}
+          </ul>
+          <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">{t('addonPricesHelp')}</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Overdue (read-only) or due-soon notice for the plan's unpaid invoice. The
+// guard's overlay steps aside on this screen, so this is where it is explained.
+function PaymentDueNotice() {
+  const t = useTranslations('subscriptionGuard');
+  const guard = useSubscriptionGuard();
+  const dueSoon = paymentDueSoon(guard);
+  if (guard.state !== 'unpaid' && !dueSoon) return null;
+  const overdue = guard.state === 'unpaid';
+  const cls = overdue
+    ? 'border-red-300 bg-red-50 text-red-700 dark:border-red-800 dark:bg-red-950/40 dark:text-red-400'
+    : 'border-amber-300 bg-amber-50 text-amber-800 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-300';
+  return (
+    <div
+      role="alert"
+      className={`mb-6 flex items-start gap-3 rounded-xl border p-4 text-sm ${cls}`}
+    >
+      <AlertTriangle className="mt-0.5 h-5 w-5 flex-shrink-0" />
+      <div>
+        {overdue && <p className="font-semibold">{t('unpaidTitle')}</p>}
+        <p>
+          {overdue
+            ? guard.paymentDueAt
+              ? t('unpaidBody', { date: fmtDate(guard.paymentDueAt) })
+              : t('unpaidBodyNoDate')
+            : t('dueSoonBanner', { date: fmtDate(dueSoon) })}{' '}
+          {overdue ? t('payHint') : t('dueSoonHint')}
+        </p>
+      </div>
+    </div>
+  );
+}
+
 export default function BillingPage() {
+  const t = useTranslations('subscriptionGuard');
+  const tb = useTranslations('billing');
   const { data: currentData, isLoading: currentLoading } = useMyCurrentSubscription();
   const current = currentData?.data ?? null;
 
@@ -114,7 +342,11 @@ export default function BillingPage() {
       {
         header: 'Type',
         accessor: 'type',
-        render: (v) => <span className="capitalize text-gray-700 dark:text-gray-300">{v}</span>,
+        render: (v) => (
+          <span className="text-gray-700 dark:text-gray-300">
+            {tb.has(`invoiceTypes.${v}`) ? tb(`invoiceTypes.${v}`) : v}
+          </span>
+        ),
       },
       {
         header: 'Date',
@@ -132,7 +364,7 @@ export default function BillingPage() {
         render: (v) => <StatusPill status={v} colors={INVOICE_STATUS_COLORS} />,
       },
     ],
-    [],
+    [tb],
   );
   const invoiceVisible = invoiceColumns.map((c) => c.accessor);
 
@@ -186,6 +418,8 @@ export default function BillingPage() {
           </p>
         </div>
 
+        <PaymentDueNotice />
+
         {/* Current plan */}
         <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-5 sm:p-6 mb-6">
           {currentLoading ? (
@@ -203,6 +437,7 @@ export default function BillingPage() {
                   {fmtMoney(current.packageSnapshot?.price)} ·{' '}
                   {current.packageSnapshot?.durationInDays}d cycle
                 </p>
+                <PriceLockNote current={current} />
                 <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                   {fmtDate(current.startDate)} → {fmtDate(current.endDate)}
                 </p>
@@ -217,14 +452,32 @@ export default function BillingPage() {
                     </>
                   )}
                 </p>
+                {current.paymentDueAt && (
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                    {t('paymentDue')}: {fmtDate(current.paymentDueAt)}
+                  </p>
+                )}
               </div>
 
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
-                <LimitStat label="Students" value={effectiveLimit(current, 'noOfStudents')} />
-                <LimitStat label="Branches" value={effectiveLimit(current, 'noOfBranches')} />
-                <LimitStat label="Staff" value={effectiveLimit(current, 'noOfStaffs')} />
-                <LimitStat label="Sections" value={effectiveLimit(current, 'noOfSections')} />
+                {ADDON_KEYS.map((key) => {
+                  const extra = addonUnits(current, key);
+                  return (
+                    <LimitStat
+                      key={key}
+                      label={LIMIT_LABELS[key]}
+                      value={effectiveLimit(current, key)}
+                      breakdown={
+                        extra > 0
+                          ? tb('limitWithAddon', { base: baseLimit(current, key) ?? 0, extra })
+                          : null
+                      }
+                    />
+                  );
+                })}
               </div>
+
+              <StorageCard storage={current.storage} />
 
               <div className="flex flex-wrap gap-x-8 gap-y-2 text-sm">
                 <div>
@@ -253,6 +506,9 @@ export default function BillingPage() {
                   </span>
                 </div>
               </div>
+
+              <PlanAddons current={current} />
+              <ModuleAddons current={current} />
             </>
           ) : (
             <div className="py-6 text-center">

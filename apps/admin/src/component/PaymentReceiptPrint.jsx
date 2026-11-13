@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import apiClient from '@/services/apiClient';
 import { useTokenStore } from '@/store/tokenStore';
 import { formatDate, formatMoney } from '@/constants/fee';
+import { useSchoolCurrency } from '@/hooks/useSchoolCurrency';
 
 /**
  * Send only the receipt to the printer.
@@ -51,6 +52,7 @@ export default function PaymentReceiptPrint({
   summary = [],
   receivedBy,
 }) {
+  const { symbol: currencySymbol } = useSchoolCurrency();
   const { accessToken: token } = useTokenStore();
   const [mounted, setMounted] = useState(false);
 
@@ -158,14 +160,14 @@ export default function PaymentReceiptPrint({
               {items.map((it, i) => (
                 <tr key={i}>
                   <td>{it.label}</td>
-                  <td className="num">{formatMoney(it.amount)}</td>
+                  <td className="num">{formatMoney(it.amount, currencySymbol)}</td>
                 </tr>
               ))}
             </tbody>
             <tfoot>
               <tr>
                 <td>Total Received</td>
-                <td className="num">{formatMoney(amount)}</td>
+                <td className="num">{formatMoney(amount, currencySymbol)}</td>
               </tr>
             </tfoot>
           </table>

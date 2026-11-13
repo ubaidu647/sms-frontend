@@ -3,6 +3,9 @@
 import { addDaysYMD, localYMD } from './localDate.js';
 import { round2 } from './money.js';
 
+// The API's cap on copies created in one request.
+export const MAX_COPIES_PER_REQUEST = 200;
+
 export const LIBRARY_DEFAULT_SETTINGS = {
   student: { maxBooks: 2, loanDays: 14 },
   staff: { maxBooks: 5, loanDays: 30 },

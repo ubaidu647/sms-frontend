@@ -1,5 +1,10 @@
 "use client";
-import { Loader2, AlertCircle, Inbox } from "lucide-react";
+import { Loader2, AlertCircle, Inbox, Info, PackageX } from "lucide-react";
+import { seatRefusalMessage } from "@/utils/seatRefusal";
+import {
+  FEATURE_UNAVAILABLE_MESSAGE,
+  isFeatureDisabledError,
+} from "@/utils/planFeatures";
 
 // Shared loading / error / empty blocks so every dashboard page behaves the
 // same. Empty states are normal 200s (data: [] or zeroed summaries) — they are
@@ -17,6 +22,7 @@ export function Loading({ label = "Loading…", className = "" }) {
 }
 
 export function ErrorState({ error, onRetry }) {
+  if (isFeatureDisabledError(error)) return <FeatureUnavailableState />;
   const message =
     error?.response?.data?.message ||
     error?.message ||
@@ -39,6 +45,26 @@ export function ErrorState({ error, onRetry }) {
   );
 }
 
+// The server's answer rather than a failure: calm, and nothing to retry.
+export function NoticeState({ message }) {
+  return (
+    <div className="flex flex-col items-center justify-center py-16 text-center">
+      <Info className="w-8 h-8 text-[#00918e]" />
+      <p className="mt-3 text-sm text-gray-600 dark:text-gray-300 max-w-sm">
+        {message}
+      </p>
+    </div>
+  );
+}
+
+// For the routes refused to a child without a seat (see utils/seatRefusal).
+export function SeatErrorState({ error, onRetry }) {
+  if (isFeatureDisabledError(error)) return <FeatureUnavailableState />;
+  const notice = seatRefusalMessage(error);
+  if (notice) return <NoticeState message={notice} />;
+  return <ErrorState error={error} onRetry={onRetry} />;
+}
+
 export function EmptyState({
   title = "Nothing here yet",
   description,
@@ -56,5 +82,17 @@ export function EmptyState({
         </p>
       )}
     </div>
+  );
+}
+
+// A page whose add-on module the school's plan does not include (reached by a
+// direct link, or refused by the API with PLAN_FEATURE_DISABLED).
+export function FeatureUnavailableState() {
+  return (
+    <EmptyState
+      icon={PackageX}
+      title={FEATURE_UNAVAILABLE_MESSAGE}
+      description="Please contact the school if you think this is a mistake."
+    />
   );
 }

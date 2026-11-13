@@ -6,6 +6,7 @@ import {
 } from "@tanstack/react-query";
 import apiClient from "@/services/apiClient";
 import { useUserStore } from "@/store/userStore";
+import { retryUnlessRefused } from "@/utils/seatRefusal";
 
 // Student homework endpoints (auto-scoped to the logged-in student by the
 // backend). List/detail are GET; submit is a mutation. Responses are the
@@ -23,6 +24,7 @@ export function useHomeworkList({ page = 1, limit = 20 } = {}) {
   const uid = useUid();
   return useQuery({
     queryKey: ["homework", uid, "list", page, limit],
+    retry: retryUnlessRefused,
     queryFn: async () => {
       const res = await apiClient.get("/dashboard/student/homework", {
         params: { page, limit },
@@ -75,6 +77,7 @@ export function useHomeworkDetail(id) {
   const uid = useUid();
   return useQuery({
     queryKey: ["homework", uid, "detail", id],
+    retry: retryUnlessRefused,
     queryFn: async () =>
       normalizeHomeworkDetail(
         unwrap(await apiClient.get(`/dashboard/student/homework/${id}`)),

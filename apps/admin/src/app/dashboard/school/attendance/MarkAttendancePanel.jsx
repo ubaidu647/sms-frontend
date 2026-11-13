@@ -3,12 +3,15 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useTokenStore } from '@/store/tokenStore';
 import { useUserStore } from '@/store/userStore';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import QueryErrorState from '@/component/QueryErrorState';
+import { retryUnless4xx } from '@/utils/queryError';
 import { fetchData, postData } from '@/utils/api';
 import apiClient from '@/services/apiClient';
 import toast from 'react-hot-toast';
 import { Save, CheckCircle2, CalendarDays, Search, X } from 'lucide-react';
 import { localYMD } from '@/utils/localDate';
 import { invalidateStudentAttendanceQueries } from '@/utils/attendanceQueries';
+import { skippedUnmarkedMessage } from '@/utils/attendanceMark';
 import { currentAcademicYear } from '@/utils/academicYear';
 import {
   isLeaveRequestRow,
@@ -197,7 +200,12 @@ export default function MarkAttendancePanel() {
 
   // Daily roster
   const dailyKey = ['attendance-daily', classId, sectionId, date];
-  const { data: dailyData, isFetching: dailyLoading } = useQuery({
+  const {
+    data: dailyData,
+    isFetching: dailyLoading,
+    error: dailyError,
+    refetch: refetchDaily,
+  } = useQuery({
     queryKey: dailyKey,
     queryFn: () =>
       fetchData({
@@ -209,6 +217,7 @@ export default function MarkAttendancePanel() {
       }),
     enabled: !!token && !!classId && !!sectionId && !!date,
     staleTime: 0,
+    retry: retryUnless4xx,
   });
 
   const roster = useMemo(() => dailyData?.data?.roster || [], [dailyData]);
@@ -270,8 +279,10 @@ export default function MarkAttendancePanel() {
   const markMutation = useMutation({
     mutationFn: (payload) => postData({ url: '/attendance/mark', payload, token }),
     onSuccess: (res, vars) => {
-      const { created = 0, updated = 0 } = res?.data || {};
+      const { created = 0, updated = 0, skippedUnmarked = 0 } = res?.data || {};
       toast.success(`Saved — ${created} created, ${updated} updated`);
+      const skippedNote = skippedUnmarkedMessage(skippedUnmarked);
+      if (skippedNote) toast(skippedNote, { duration: 6000 });
       // Only rows this save turned absent on an approved-leave day — not every
       // leave row that was simply left as it was.
       const leaveNote = keptAsLeaveMessage(keptAsLeaveCount(roster, vars?.entries, 'studentId'));
@@ -652,8 +663,18 @@ export default function MarkAttendancePanel() {
         </>
       )}
 
+      {/* A failed load is not an empty section */}
+      {classId && sectionId && dailyError && roster.length === 0 && (
+        <QueryErrorState
+          error={dailyError}
+          fallback="Could not load the register"
+          onRetry={() => refetchDaily()}
+          retrying={dailyLoading}
+        />
+      )}
+
       {/* No students */}
-      {classId && sectionId && !dailyLoading && roster.length === 0 && (
+      {classId && sectionId && !dailyLoading && !dailyError && roster.length === 0 && (
         <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-12 text-center">
           <p className="text-gray-500 dark:text-gray-400">No students enrolled in this section.</p>
         </div>

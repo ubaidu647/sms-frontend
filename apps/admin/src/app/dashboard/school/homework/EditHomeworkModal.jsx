@@ -9,7 +9,7 @@ import { putData } from '@/utils/api';
 import { useTokenStore } from '@/store/tokenStore';
 import { SUBMISSION_TYPES } from './constants';
 import QuestionBuilder, { validateQuestions, serializeQuestions } from './QuestionBuilder';
-import { assignedDateForUpdate } from '@/utils/homeworkGrading';
+import { assignedDateForUpdate, mcqShapeChangeError } from '@/utils/homeworkGrading';
 
 const inputCls =
   'w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 text-sm text-gray-900 bg-white placeholder:text-gray-400';
@@ -45,6 +45,10 @@ export default function EditHomeworkModal({ isOpen, onClose, onSuccess, homework
   const [questions, setQuestions] = useState([]);
 
   const id = homework?._id;
+  // The list row carries the live submission count. Once students have
+  // answered an MCQ, its questions and options can be edited but not added
+  // or removed (the server refuses with 409).
+  const lockShape = homework?.submissionType === 'mcq' && (homework?.submissionCount ?? 0) > 0;
 
   const { register, handleSubmit, reset, watch } = useForm({
     defaultValues: {
@@ -123,6 +127,13 @@ export default function EditHomeworkModal({ isOpen, onClose, onSuccess, homework
       if (qError) {
         setSubmitError(qError);
         return;
+      }
+      if (lockShape) {
+        const shapeError = mcqShapeChangeError(homework.questions || [], questions);
+        if (shapeError) {
+          setSubmitError(shapeError);
+          return;
+        }
       }
     }
 
@@ -219,7 +230,7 @@ export default function EditHomeworkModal({ isOpen, onClose, onSuccess, homework
 
         {submissionType === 'mcq' && (
           <div className="border-t border-gray-100 dark:border-gray-800 pt-5">
-            <QuestionBuilder value={questions} onChange={setQuestions} />
+            <QuestionBuilder value={questions} onChange={setQuestions} lockShape={lockShape} />
           </div>
         )}
 

@@ -1,12 +1,17 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { useQueries, useQuery } from '@tanstack/react-query';
-import { CheckCircle2, Circle, Loader2, ArrowRight, LayoutGrid } from 'lucide-react';
+import { CheckCircle2, Circle, Loader2, ArrowRight, LayoutGrid, Lock } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useUserStore } from '@/store/userStore';
 import { useTokenStore } from '@/store/tokenStore';
 import { fetchData } from '@/utils/api';
 import { buildChecklist, visibleQuickLinks, visibleSteps } from '@/utils/gettingStarted';
+import { featureForPath } from '@/utils/planFeatures';
+import { usePlanFeatures } from '@/hooks/usePlanFeatures';
+import { PlanUpgradeModal } from '@/component/PlanUpgrade';
 
 // One light request per checklist step: limit 1 where only the total matters.
 const SOURCES = {
@@ -23,6 +28,18 @@ export default function Dashboard() {
   const { user } = useUserStore();
   const { accessToken: token } = useTokenStore();
   const role = user?.role;
+  const tPlan = useTranslations('planFeatures');
+  const { gate } = usePlanFeatures();
+  const [lockedFeature, setLockedFeature] = useState(null);
+  // A step or link into a module outside the plan is hidden or locked, per
+  // the school's setting (its href says which module it opens).
+  const gateOf = (href) => gate(featureForPath(href));
+  // Click on a locked entry: explain instead of opening a page of refusals.
+  const lockedClick = (href) => (e) => {
+    if (gateOf(href) !== 'lock') return;
+    e.preventDefault();
+    setLockedFeature(featureForPath(href));
+  };
 
   const steps = visibleSteps(role);
 
@@ -65,10 +82,10 @@ export default function Dashboard() {
     else if (q.isPending) results[s.key] = { status: 'loading' };
     else results[s.key] = { status: 'ok', value: q.data };
   });
-  const rows = buildChecklist(role, results);
+  const rows = buildChecklist(role, results).filter((r) => gateOf(r.href) !== 'hide');
   const doneCount = rows.filter((r) => r.state === 'done').length;
   const settled = rows.filter((r) => r.state !== 'loading').length;
-  const links = visibleQuickLinks(role);
+  const links = visibleQuickLinks(role).filter((l) => gateOf(l.href) !== 'hide');
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
@@ -98,7 +115,11 @@ export default function Dashboard() {
                 <li key={r.key}>
                   <Link
                     href={r.href}
-                    className="flex items-start gap-3 px-4 sm:px-5 py-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 no-underline"
+                    onClick={lockedClick(r.href)}
+                    title={gateOf(r.href) === 'lock' ? tPlan('locked') : undefined}
+                    className={`flex items-start gap-3 px-4 sm:px-5 py-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 no-underline ${
+                      gateOf(r.href) === 'lock' ? 'opacity-60' : ''
+                    }`}
                   >
                     <span className="mt-0.5" aria-hidden="true">
                       {r.state === 'loading' && (
@@ -124,7 +145,14 @@ export default function Dashboard() {
                         {r.detail || r.hint}
                       </span>
                     </span>
-                    <ArrowRight className="w-4 h-4 text-gray-400 mt-1 flex-shrink-0" />
+                    {gateOf(r.href) === 'lock' ? (
+                      <Lock
+                        className="w-4 h-4 text-gray-400 mt-1 flex-shrink-0"
+                        aria-label={tPlan('locked')}
+                      />
+                    ) : (
+                      <ArrowRight className="w-4 h-4 text-gray-400 mt-1 flex-shrink-0" />
+                    )}
                   </Link>
                 </li>
               ))}
@@ -146,13 +174,28 @@ export default function Dashboard() {
               <Link
                 key={l.href}
                 href={l.href}
-                className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-sm font-medium text-gray-800 dark:text-gray-200 hover:border-teal-500 no-underline"
+                onClick={lockedClick(l.href)}
+                title={gateOf(l.href) === 'lock' ? tPlan('locked') : undefined}
+                className={`flex items-center justify-between gap-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-sm font-medium text-gray-800 dark:text-gray-200 hover:border-teal-500 no-underline ${
+                  gateOf(l.href) === 'lock' ? 'opacity-60' : ''
+                }`}
               >
                 {l.label}
+                {gateOf(l.href) === 'lock' && (
+                  <Lock
+                    className="w-4 h-4 text-gray-400 flex-shrink-0"
+                    aria-label={tPlan('locked')}
+                  />
+                )}
               </Link>
             ))}
           </div>
         </section>
+        <PlanUpgradeModal
+          isOpen={!!lockedFeature}
+          feature={lockedFeature}
+          onClose={() => setLockedFeature(null)}
+        />
       </div>
     </div>
   );

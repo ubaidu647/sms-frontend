@@ -4,6 +4,8 @@ import { Modal } from '@/component/Modal';
 import { useQuery } from '@tanstack/react-query';
 import { fetchData } from '@/utils/api';
 import { useTokenStore } from '@/store/tokenStore';
+import { hasSalaryField } from '@/utils/staffSalary';
+import { useSchoolCurrency } from '@/hooks/useSchoolCurrency';
 
 function Row({ label, value, className = '' }) {
   return (
@@ -58,6 +60,7 @@ function fmt(date) {
 }
 
 export default function StaffDetailModal({ isOpen, onClose, staffId }) {
+  const { symbol: currencySymbol } = useSchoolCurrency();
   const { accessToken: token } = useTokenStore();
 
   const { data, isLoading } = useQuery({
@@ -151,10 +154,12 @@ export default function StaffDetailModal({ isOpen, onClose, staffId }) {
               label="Experience"
               value={s.experienceYears != null ? `${s.experienceYears} yrs` : null}
             />
-            <Row
-              label="Salary"
-              value={s.salary != null ? `PKR ${s.salary.toLocaleString()}` : null}
-            />
+            {hasSalaryField(s) && (
+              <Row
+                label="Salary"
+                value={s.salary != null ? `${currencySymbol} ${s.salary.toLocaleString()}` : null}
+              />
+            )}
             <Row label="Joining Date" value={fmt(s.joiningDate)} />
             {s.leavingDate && <Row label="Leaving Date" value={fmt(s.leavingDate)} />}
             {s.leavingReason && <Row label="Leaving Reason" value={s.leavingReason} />}

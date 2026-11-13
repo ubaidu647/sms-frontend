@@ -17,3 +17,13 @@ export function percentOf(base, pct) {
 export function formatAmount(n) {
   return round2(n).toLocaleString(undefined, { maximumFractionDigits: 2 });
 }
+
+/**
+ * Amount with a currency symbol in front ("Rs 1,250.5"). Pass the school's
+ * symbol (useSchoolCurrency().symbol); no symbol → the bare amount.
+ */
+export function formatMoney(amount, symbol) {
+  const value = formatAmount(amount);
+  const sym = typeof symbol === 'string' ? symbol.trim() : '';
+  return sym ? `${sym} ${value}` : value;
+}

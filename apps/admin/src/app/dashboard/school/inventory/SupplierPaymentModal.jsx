@@ -9,8 +9,12 @@ import CashBankAccountSelect from '@/component/CashBankAccountSelect';
 import { postData } from '@/utils/api';
 import { localYMD } from '@/utils/localDate';
 import {
+  holdKey,
   idempotencyHeader,
+  isUnknownOutcome,
+  keyForTarget,
   newIdempotencyKey,
+  releaseKey,
   spentKeyMessage,
   successMessage,
 } from '@/utils/idempotency';
@@ -25,8 +29,10 @@ import {
   labelCls,
   money,
 } from './inventoryShared';
+import { useSchoolCurrency } from '@/hooks/useSchoolCurrency';
 
 export default function SupplierPaymentModal({ supplier, onClose, orgTier, defaultBranchId }) {
+  const { symbol: currencySymbol } = useSchoolCurrency();
   const { accessToken: token } = useTokenStore();
   const queryClient = useQueryClient();
   const isOpen = !!supplier;
@@ -38,6 +44,9 @@ export default function SupplierPaymentModal({ supplier, onClose, orgTier, defau
   const [ledgerAccountId, setAccount] = useState('');
   const [reference, setReference] = useState('');
   const [errors, setErrors] = useState({});
+  // One key per payment attempt, held per supplier when the response was lost so
+  // a resubmit after reopening replays instead of paying the supplier twice.
+  const keyTarget = `inventory-supplier-payment:${supplier?._id}`;
   const keyRef = useRef(null);
 
   useEffect(() => {
@@ -49,20 +58,22 @@ export default function SupplierPaymentModal({ supplier, onClose, orgTier, defau
       setAccount('');
       setReference('');
       setErrors({});
-      keyRef.current = newIdempotencyKey();
+      keyRef.current = keyForTarget(keyTarget);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, supplier?._id, defaultBranchId]);
 
   const mutation = useMutation({
-    mutationFn: (payload) =>
+    mutationFn: ({ idempotencyKey, ...payload }) =>
       postData({
         url: '/inventory/supplier-payments',
         payload,
         token,
-        headers: idempotencyHeader(keyRef.current),
+        headers: idempotencyHeader(idempotencyKey),
       }),
     onSuccess: (res) => {
+      // This payment is recorded; the next one must not replay it.
+      releaseKey(keyTarget);
       keyRef.current = newIdempotencyKey();
       toast.success(successMessage(res, 'Payment recorded'));
       invalidateInventoryPurchases(queryClient);
@@ -74,12 +85,18 @@ export default function SupplierPaymentModal({ supplier, onClose, orgTier, defau
       // a fresh one and refresh the lists.
       const spent = spentKeyMessage(err);
       if (spent) {
+        releaseKey(keyTarget);
         keyRef.current = newIdempotencyKey();
         invalidateInventoryPurchases(queryClient);
         toast.error(spent);
         return;
       }
       // Network/timeout etc.: keep the key so an unchanged retry is recognised.
+      if (isUnknownOutcome(err)) {
+        // It may have gone through: a cancel and reopen must reuse this key.
+        holdKey(keyTarget, keyRef.current);
+        invalidateInventoryPurchases(queryClient);
+      }
       toast.error(err.message || 'Could not record the payment');
     },
   });
@@ -100,18 +117,25 @@ export default function SupplierPaymentModal({ supplier, onClose, orgTier, defau
       method,
       ...(ledgerAccountId ? { ledgerAccountId } : {}),
       ...(reference.trim() ? { reference: reference.trim() } : {}),
+      idempotencyKey: keyRef.current,
     });
+  };
+
+  // Closing mid-request and reopening mints a new idempotency key, so a retry
+  // of a payment that did go through would record it twice.
+  const closeIfIdle = () => {
+    if (!mutation.isPending) onClose();
   };
 
   return (
     <Modal
       isOpen={isOpen}
-      onClose={onClose}
+      onClose={closeIfIdle}
       title="Pay supplier"
       subtitle={supplier ? `${supplier.name} · balance ${money(balance)}` : ''}
       footer={
         <ModalFooter
-          onCancel={onClose}
+          onCancel={closeIfIdle}
           onSubmit={submit}
           submitLabel="Record payment"
           loading={mutation.isPending}
@@ -144,7 +168,7 @@ export default function SupplierPaymentModal({ supplier, onClose, orgTier, defau
           {errors.date && <p className={errorCls}>{errors.date}</p>}
         </div>
         <div>
-          <label className={labelCls}>Amount (Rs) *</label>
+          <label className={labelCls}>Amount ({currencySymbol}) *</label>
           <input
             value={amount}
             onChange={(e) => setAmount(e.target.value)}

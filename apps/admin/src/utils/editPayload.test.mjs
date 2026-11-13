@@ -131,3 +131,40 @@ test('reportEmptiedRequired lets a save through when nothing required was emptie
   const setError = () => assert.fail('no error expected');
   assert.equal(reportEmptiedRequired({ name: 'A' }, { name: 'B' }, { name: 'x' }, setError), false);
 });
+
+test('a paper edit clears emptied times and marks, and leaves the rest out', () => {
+  const saved = {
+    examDate: '2026-03-01',
+    startTime: '09:00',
+    endTime: '12:00',
+    totalMarks: 100,
+    passingMarks: 40,
+    theoryMarks: 60,
+    practicalMarks: 40,
+  };
+  const required = ['examDate', 'totalMarks', 'passingMarks'];
+  assert.deepEqual(editPayload(saved, { ...saved }, { required }), {});
+  assert.deepEqual(
+    editPayload(
+      saved,
+      { ...saved, startTime: '', endTime: '', theoryMarks: null, practicalMarks: null },
+      { required },
+    ),
+    { startTime: null, endTime: null, theoryMarks: null, practicalMarks: null },
+  );
+});
+
+test('a mark of 0 is a value, not a clear', () => {
+  assert.deepEqual(editPayload({ theoryMarks: 60 }, { theoryMarks: 0 }), { theoryMarks: 0 });
+  assert.deepEqual(editPayload({ theoryMarks: 0 }, { theoryMarks: null }), { theoryMarks: null });
+});
+
+test('an exam description emptied (or left as spaces) is cleared', () => {
+  assert.deepEqual(editPayload({ description: 'Mid-term' }, { description: '' }), {
+    description: null,
+  });
+  assert.deepEqual(editPayload({ description: 'Mid-term' }, { description: '  ' }), {
+    description: null,
+  });
+  assert.deepEqual(editPayload({ description: '' }, { description: '' }), {});
+});

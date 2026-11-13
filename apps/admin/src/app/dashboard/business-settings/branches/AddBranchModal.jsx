@@ -13,10 +13,9 @@ import { useTokenStore } from '@/store/tokenStore';
 
 const branchSchema = yup.object().shape({
   name: yup.string().required('Branch name is required'),
-  address: yup.string(),
+  address: yup.string().trim().required('Address is required'),
   email: yup.string().email('Invalid email'),
   phone: yup.string(),
-  managerName: yup.string(),
   status: yup.string().required(),
 });
 
@@ -37,7 +36,6 @@ export const AddBranchModal = ({ isOpen, onClose, onSuccess = null }) => {
       address: '',
       email: '',
       phone: '',
-      managerName: '',
       status: 'active',
     },
   });
@@ -131,16 +129,10 @@ export const AddBranchModal = ({ isOpen, onClose, onSuccess = null }) => {
           register={register}
           watch={watch}
           errors={errors}
+          required
         />
         <InputField name="email" label="Email" register={register} watch={watch} errors={errors} />
         <InputField name="phone" label="Phone" register={register} watch={watch} errors={errors} />
-        <InputField
-          name="managerName"
-          label="Manager Name"
-          register={register}
-          watch={watch}
-          errors={errors}
-        />
 
         <div>
           <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
@@ -152,7 +144,6 @@ export const AddBranchModal = ({ isOpen, onClose, onSuccess = null }) => {
           >
             <option value="active">Active</option>
             <option value="inactive">Inactive</option>
-            <option value="disabled">Disabled</option>
           </select>
         </div>
       </form>

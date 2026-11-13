@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
+import QueryErrorState from '@/component/QueryErrorState';
 import ReportPagination from '@/component/ReportPagination';
 import { fetchData } from '@/utils/api';
 import { useTokenStore } from '@/store/tokenStore';
@@ -61,7 +62,7 @@ export default function OutstandingReportPage() {
   });
   const sections = sectionData?.data || [];
 
-  const { data, isFetching } = useQuery({
+  const { data, isFetching, isError, error } = useQuery({
     queryKey: [
       'report-outstanding',
       classId,
@@ -178,6 +179,12 @@ export default function OutstandingReportPage() {
             </select>
           )}
         </div>
+
+        {isError && (
+          <div className="mb-4">
+            <QueryErrorState error={error} fallback="Could not load the outstanding report" />
+          </div>
+        )}
 
         {isFetching && !report ? (
           <div className="text-sm text-gray-500 dark:text-gray-400">Loading...</div>

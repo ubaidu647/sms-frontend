@@ -22,6 +22,7 @@ import {
   ADDRESS_MAX,
   NOTES_MAX,
   localYMD,
+  oldestDobYMD,
   validateApplyForm,
   buildApplyPayload,
   applyErrorMessage,
@@ -393,6 +394,7 @@ export default function ApplyPage() {
                 <input
                   id="dob"
                   type="date"
+                  min={oldestDobYMD()}
                   max={localYMD()}
                   value={form.dob}
                   onChange={set("dob")}

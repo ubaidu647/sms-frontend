@@ -6,10 +6,13 @@ import { Plus, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { fetchData, postData, putData } from '@/utils/api';
+import PickerError from '@/component/PickerError';
+import { retryUnless4xx } from '@/utils/queryError';
 import { useTokenStore } from '@/store/tokenStore';
 import { useUserStore } from '@/store/userStore';
 import { COMPONENT_TYPES, toYMD } from '@/constants/staffSalary';
-import { formatAmount, round2 } from '@/utils/money';
+import { formatAmount, formatMoney, round2 } from '@/utils/money';
+import { useSchoolCurrency } from '@/hooks/useSchoolCurrency';
 
 const inputCls =
   'w-full px-3 py-2 border border-gray-200 rounded-lg outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 text-sm text-gray-900 bg-white placeholder:text-gray-400';
@@ -27,6 +30,9 @@ export default function StructureFormModal({ isOpen, onClose, structure }) {
   const { accessToken: token } = useTokenStore();
   const { user } = useUserStore();
   const queryClient = useQueryClient();
+  // Salaries are paid in the school's currency (Business Settings → Currency);
+  // the API refuses any other, so the form neither edits nor sends it.
+  const currency = useSchoolCurrency();
 
   const isAdmin = !!user?.role?.isPredefined;
   const canCreateAllBranch =
@@ -35,7 +41,6 @@ export default function StructureFormModal({ isOpen, onClose, structure }) {
 
   const [staffId, setStaffId] = useState('');
   const [basicSalary, setBasicSalary] = useState('');
-  const [currency, setCurrency] = useState('PKR');
   const [effectiveFrom, setEffectiveFrom] = useState('');
   const [effectiveTo, setEffectiveTo] = useState('');
   const [allowances, setAllowances] = useState([]);
@@ -49,7 +54,6 @@ export default function StructureFormModal({ isOpen, onClose, structure }) {
     if (isEdit) {
       setStaffId(structure.staffId?._id || structure.staffId || '');
       setBasicSalary(structure.basicSalary ?? '');
-      setCurrency(structure.currency || 'PKR');
       setEffectiveFrom(toYMD(structure.effectiveFrom));
       setEffectiveTo(toYMD(structure.effectiveTo));
       setAllowances(
@@ -70,7 +74,6 @@ export default function StructureFormModal({ isOpen, onClose, structure }) {
     } else {
       setStaffId('');
       setBasicSalary('');
-      setCurrency('PKR');
       setEffectiveFrom('');
       setEffectiveTo('');
       setAllowances([]);
@@ -81,7 +84,7 @@ export default function StructureFormModal({ isOpen, onClose, structure }) {
     setSuccessState(false);
   }, [isOpen, isEdit, structure]);
 
-  const { data: staffData } = useQuery({
+  const { data: staffData, error: staffError } = useQuery({
     queryKey: ['staff-dropdown-form', canCreateAllBranch, userBranchId],
     queryFn: () => {
       const params = { page: 1, limit: 500, token };
@@ -90,6 +93,7 @@ export default function StructureFormModal({ isOpen, onClose, structure }) {
     },
     enabled: !!token && isOpen && !isEdit,
     staleTime: 60000,
+    retry: retryUnless4xx,
   });
   const staffList = useMemo(() => staffData?.data || [], [staffData]);
 
@@ -184,14 +188,19 @@ export default function StructureFormModal({ isOpen, onClose, structure }) {
 
     const payload = {
       basicSalary: Number(basicSalary),
-      currency,
       effectiveFrom,
       allowances: cleanList(allowances),
       deductions: cleanList(deductions),
     };
-    if (effectiveTo) payload.effectiveTo = effectiveTo;
-    if (notes?.trim()) payload.notes = notes.trim();
-    if (!isEdit) payload.staffId = staffId;
+    if (isEdit) {
+      // Blank means clear on an edit: left out, the API keeps the old value.
+      payload.effectiveTo = effectiveTo || null;
+      payload.notes = notes.trim();
+    } else {
+      if (effectiveTo) payload.effectiveTo = effectiveTo;
+      if (notes?.trim()) payload.notes = notes.trim();
+      payload.staffId = staffId;
+    }
 
     mutation.mutate(payload);
   };
@@ -331,6 +340,7 @@ export default function StructureFormModal({ isOpen, onClose, structure }) {
                     );
                   })}
                 </select>
+                <PickerError error={staffError} />
               </div>
             )}
 
@@ -352,10 +362,14 @@ export default function StructureFormModal({ isOpen, onClose, structure }) {
               <label className={labelCls}>Currency</label>
               <input
                 type="text"
-                value={currency}
-                onChange={(e) => setCurrency(e.target.value)}
-                className={inputCls}
+                value={`${currency.code} (${currency.symbol})`}
+                readOnly
+                aria-readonly="true"
+                className={`${inputCls} bg-gray-50 text-gray-600 cursor-not-allowed`}
               />
+              <p className="mt-1 text-[11px] text-gray-500">
+                The school&apos;s currency, set in Business Settings.
+              </p>
             </div>
 
             <div>
@@ -424,7 +438,7 @@ export default function StructureFormModal({ isOpen, onClose, structure }) {
               Net (estimate)
             </div>
             <div className="text-lg font-bold text-teal-700 dark:text-teal-400 mt-1">
-              {formatAmount(totals.net)} {currency}
+              {formatMoney(totals.net, currency.symbol)}
             </div>
           </div>
         </div>

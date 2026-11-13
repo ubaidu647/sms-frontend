@@ -3,6 +3,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
+  MAX_ASSET_QTY_PER_LINE,
   toPaisa,
   fromPaisa,
   isMoneyInput,
@@ -300,4 +301,11 @@ test('refName / escapeHtml / buildPrintHtml', () => {
   assert.match(html, /Tags &lt;1&gt;/);
   assert.match(html, /<td>AST-00001<\/td>/);
   assert.match(html, /Total 1/);
+});
+
+test('an asset line stops at the API limit of 200', () => {
+  const line = { kind: 'asset', name: 'Chair', category: 'Furniture', unitCost: '100' };
+  assert.equal(MAX_ASSET_QTY_PER_LINE, 200);
+  assert.deepEqual(validatePurchaseLine({ ...line, quantity: '200' }), {});
+  assert.equal(validatePurchaseLine({ ...line, quantity: '201' }).quantity, 'At most 200 per line');
 });

@@ -18,6 +18,8 @@ import {
   EMPTY_FORM,
   NOTES_MAX,
   ADDRESS_MAX,
+  oldestDobYMD,
+  MAX_CHILD_AGE_YEARS,
 } from "./applyForm.js";
 
 const grades = [
@@ -236,4 +238,23 @@ test("applyErrorMessage uses the server message for 429 and 503", () => {
     applyErrorMessage({ response: { status: 429, data: {} } }),
     /Too many submissions/,
   );
+});
+
+test("date of birth floor matches the backend's 30-year limit", () => {
+  assert.equal(MAX_CHILD_AGE_YEARS, 30);
+  assert.equal(oldestDobYMD("2026-11-10"), "1996-11-10");
+  const today = "2026-11-10";
+  const valid = {
+    childName: "Ali Khan",
+    desiredGrade: "5",
+    guardianName: "Khan Sahib",
+    relation: "father",
+    phone: "03001234567",
+  };
+  const dobError = (dob) =>
+    validateApplyForm({ ...valid, dob }, { grades, today }).errors.dob;
+  assert.equal(dobError("1996-11-10"), undefined);
+  assert.ok(dobError("1996-11-09"));
+  // Older than 30 but after the old fixed 1990 floor: now refused here too.
+  assert.ok(dobError("1993-06-01"));
 });

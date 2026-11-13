@@ -21,6 +21,7 @@ import {
   labelCls,
   money,
 } from './inventoryShared';
+import { useSchoolCurrency } from '@/hooks/useSchoolCurrency';
 
 const TITLES = {
   status: 'Change status',
@@ -29,6 +30,7 @@ const TITLES = {
 };
 
 export default function AssetActionModal({ asset, mode, onClose, orgTier }) {
+  const { symbol: currencySymbol } = useSchoolCurrency();
   const { accessToken: token } = useTokenStore();
   const queryClient = useQueryClient();
   const isOpen = !!asset && !!mode;
@@ -234,7 +236,7 @@ export default function AssetActionModal({ asset, mode, onClose, orgTier }) {
               {errors.reason && <p className={errorCls}>{errors.reason}</p>}
             </div>
             <div>
-              <label className={labelCls}>Amount received (Rs)</label>
+              <label className={labelCls}>Amount received ({currencySymbol})</label>
               <input
                 value={f.disposalValue || ''}
                 onChange={(e) => set({ disposalValue: e.target.value })}

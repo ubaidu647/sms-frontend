@@ -146,17 +146,17 @@ export default function FreeTeachersPanel() {
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={t.photo}
-                    alt={t.user?.name}
+                    alt={t.name || t.user?.name}
                     className="w-10 h-10 rounded-full object-cover border border-gray-200 dark:border-gray-700"
                   />
                 ) : (
                   <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-xs text-gray-600 dark:text-gray-400 font-semibold">
-                    {(t.user?.name || '?').slice(0, 1).toUpperCase()}
+                    {(t.name || t.user?.name || '?').slice(0, 1).toUpperCase()}
                   </div>
                 )}
                 <div className="flex-1">
                   <div className="font-medium text-gray-900 dark:text-gray-100">
-                    {t.user?.name || '—'}
+                    {t.name || t.user?.name || '—'}
                   </div>
                   <div className="text-xs text-gray-500 dark:text-gray-400">
                     {t.designation || '—'} · {t.serialNumber || ''}

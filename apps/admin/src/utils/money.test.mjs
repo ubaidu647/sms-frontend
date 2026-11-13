@@ -2,7 +2,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { round2, percentOf, formatAmount } from './money.js';
+import { round2, percentOf, formatAmount, formatMoney } from './money.js';
 
 test('round2 rounds to 2 decimals, including the .005 float edge', () => {
   assert.equal(round2(2499.9750000000004), 2499.98);
@@ -24,4 +24,17 @@ test('formatAmount never shows more than 2 fraction digits', () => {
   // Strip locale grouping separators before comparing.
   assert.equal(formatAmount(1234.5678).replace(/[^\d.]/g, ''), '1234.57');
   assert.equal(formatAmount(10).replace(/[^\d.]/g, ''), '10');
+});
+
+test('formatMoney puts the symbol in front of the rounded amount', () => {
+  assert.equal(formatMoney(1234.5678, 'AED').replace(/[^\d.A-Z ]/g, ''), 'AED 1234.57');
+  assert.equal(formatMoney(10, 'Rs'), 'Rs 10');
+  assert.equal(formatMoney(0, '$'), '$ 0');
+  assert.equal(formatMoney('abc', '€'), '€ 0');
+});
+
+test('formatMoney without a symbol is the bare amount', () => {
+  assert.equal(formatMoney(10), '10');
+  assert.equal(formatMoney(10, ''), '10');
+  assert.equal(formatMoney(10, '  '), '10');
 });

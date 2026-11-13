@@ -102,6 +102,8 @@ export default function MappingPage() {
   // The org default carries the switch; a branch override's flag means nothing.
   const editsSwitch = isOrgLevel && !effectiveBranchId;
   const autoPostOn = !!coverage?.autoPostEnabled || (editsSwitch && autoPostEnabled);
+  // Off the org default the toggle is read-only and shows the school's setting.
+  const autoPostShown = editsSwitch ? autoPostEnabled : !!coverage?.autoPostEnabled;
   const missingCash = coverage?.missingCash || [];
   const missingBank = coverage?.missingBank || [];
 
@@ -176,7 +178,7 @@ export default function MappingPage() {
         {/* Auto-post toggle */}
         <div className="flex items-center justify-between bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-4 mb-5">
           <div className="flex items-center gap-3">
-            {autoPostEnabled ? (
+            {autoPostShown ? (
               <Zap className="w-5 h-5 text-teal-600" />
             ) : (
               <ZapOff className="w-5 h-5 text-gray-400" />
@@ -186,22 +188,29 @@ export default function MappingPage() {
               <div className="text-xs text-gray-500">
                 When on, fee/salary payments post ledger entries automatically.
               </div>
+              {!editsSwitch && (
+                <div className="text-xs text-gray-500">
+                  {coverage
+                    ? 'Set once for the whole school, on the organisation default.'
+                    : 'Could not load the school’s setting.'}
+                </div>
+              )}
             </div>
           </div>
           <button
             type="button"
-            disabled={!canUpdate}
+            disabled={!canUpdate || !editsSwitch}
             onClick={() => {
               setAutoPostEnabled((v) => !v);
               setDirty(true);
             }}
             className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors disabled:opacity-50 ${
-              autoPostEnabled ? 'bg-teal-600' : 'bg-gray-300 dark:bg-gray-600'
+              autoPostShown ? 'bg-teal-600' : 'bg-gray-300 dark:bg-gray-600'
             }`}
           >
             <span
               className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                autoPostEnabled ? 'translate-x-6' : 'translate-x-1'
+                autoPostShown ? 'translate-x-6' : 'translate-x-1'
               }`}
             />
           </button>
@@ -297,7 +306,7 @@ export default function MappingPage() {
                   onChange={(e) => setRole(r.role, e.target.value)}
                   className={`${inputWrap} flex-1 disabled:opacity-60`}
                 >
-                  <option value="">— Not mapped —</option>
+                  <option value="">{isOrgLevel ? '— Not mapped —' : 'Uses school default'}</option>
                   {accounts.map((a) => (
                     <option key={a._id} value={a._id}>
                       {a.code} · {a.name} ({a.type})

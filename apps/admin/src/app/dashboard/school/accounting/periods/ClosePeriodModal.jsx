@@ -12,7 +12,16 @@ const inputCls =
   'w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 text-sm text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-900 placeholder:text-gray-400';
 const labelCls = 'block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1';
 
-export default function ClosePeriodModal({ isOpen, onClose, branchId, isOrgLevel, branches = [] }) {
+export default function ClosePeriodModal({
+  isOpen,
+  onClose,
+  branchId,
+  isOrgLevel,
+  branches = [],
+  branchesReady = true,
+  branchesFailed = false,
+  onRetryBranches,
+}) {
   const { accessToken: token } = useTokenStore();
   const queryClient = useQueryClient();
 
@@ -49,6 +58,11 @@ export default function ClosePeriodModal({ isOpen, onClose, branchId, isOrgLevel
       setError('Period must be in YYYY-MM format');
       return;
     }
+    // Until the branches are listed, the scope would silently be every branch.
+    if (isOrgLevel && !branchesReady) {
+      setError('Choose a scope once the branch list has loaded');
+      return;
+    }
     mutation.mutate({
       period,
       branchId: isOrgLevel ? selectedBranch || null : undefined,
@@ -80,7 +94,7 @@ export default function ClosePeriodModal({ isOpen, onClose, branchId, isOrgLevel
           <Button
             label="Close Period"
             handleClick={handleSubmit}
-            loading={mutation.isPending}
+            loading={mutation.isPending || (isOrgLevel && !branchesReady && !branchesFailed)}
             type="button"
             styleObject={{
               baseColor: 'bg-amber-600',
@@ -113,18 +127,29 @@ export default function ClosePeriodModal({ isOpen, onClose, branchId, isOrgLevel
         {isOrgLevel && (
           <div>
             <label className={labelCls}>Scope</label>
-            <select
-              value={selectedBranch}
-              onChange={(e) => setSelectedBranch(e.target.value)}
-              className={inputCls}
-            >
-              <option value="">All branches (org-wide)</option>
-              {branches.map((b) => (
-                <option key={b._id} value={b._id}>
-                  {b.name}
-                </option>
-              ))}
-            </select>
+            {branchesReady ? (
+              <select
+                value={selectedBranch}
+                onChange={(e) => setSelectedBranch(e.target.value)}
+                className={inputCls}
+              >
+                <option value="">All branches (org-wide)</option>
+                {branches.map((b) => (
+                  <option key={b._id} value={b._id}>
+                    {b.name}
+                  </option>
+                ))}
+              </select>
+            ) : branchesFailed ? (
+              <div className="p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 rounded-lg text-red-700 dark:text-red-400 text-sm">
+                Could not load branches, so no scope can be chosen.{' '}
+                <button type="button" onClick={onRetryBranches} className="underline font-medium">
+                  Retry
+                </button>
+              </div>
+            ) : (
+              <div className="text-sm text-gray-500 dark:text-gray-400">Loading branches…</div>
+            )}
           </div>
         )}
         <div>

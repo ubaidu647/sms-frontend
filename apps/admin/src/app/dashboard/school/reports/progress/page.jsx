@@ -14,6 +14,7 @@ import { useProgressReport } from './hooks/useProgressReport';
 import StudentPickerInline from './StudentPickerInline';
 import ReportDocument from './ReportDocument';
 import { monthsAgoYMD } from '@/utils/localDate';
+import { PDF_CAPTURE_OPTIONS, PDF_FAILED_MESSAGE } from '@/utils/pdfCapture';
 
 const MODULES = [
   'attendance',
@@ -112,11 +113,7 @@ export default function StudentProgressReportPage() {
         import('jspdf'),
       ]);
       const filename = `Progress-${report.student?.name || 'student'}.pdf`.replace(/\s+/g, '-');
-      const canvas = await html2canvas(printableRef.current, {
-        scale: 2,
-        useCORS: true,
-        backgroundColor: '#ffffff',
-      });
+      const canvas = await html2canvas(printableRef.current, PDF_CAPTURE_OPTIONS);
       const imgData = canvas.toDataURL('image/jpeg', 0.98);
       const pdf = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
       const pageWidth = pdf.internal.pageSize.getWidth();
@@ -138,7 +135,7 @@ export default function StudentProgressReportPage() {
       }
 
       // Per-page footer: generation time (left), page x/y (center),
-      // school name + "Powered by nodeCampus.online" (right).
+      // school name + "Powered by mizenzo.com" (right).
       const total = pdf.getNumberOfPages();
       const stamp = `Generated ${generatedAt || new Date().toLocaleString()}`;
       const school = profile?.displayName || report.student?.className || 'School';
@@ -149,11 +146,14 @@ export default function StudentProgressReportPage() {
         pdf.setTextColor(120);
         pdf.text(stamp, margin, y);
         pdf.text(`Page ${p} / ${total}`, pageWidth / 2, y, { align: 'center' });
-        pdf.text(`${school} — Powered by nodeCampus.online`, pageWidth - margin, y, {
+        pdf.text(`${school} — Powered by mizenzo.com`, pageWidth - margin, y, {
           align: 'right',
         });
       }
       pdf.save(filename);
+    } catch (err) {
+      console.warn('PDF capture failed', err);
+      toast.error(PDF_FAILED_MESSAGE);
     } finally {
       setDownloadingPdf(false);
     }

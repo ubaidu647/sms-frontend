@@ -1,17 +1,27 @@
 'use client';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Modal } from '@/component/Modal';
 import Button from '@/component/Button';
 import { Plus, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { fetchData, postData } from '@/utils/api';
+import {
+  holdKey,
+  idempotencyHeader,
+  isUnknownOutcome,
+  keyForTarget,
+  newIdempotencyKey,
+  releaseKey,
+  spentKeyMessage,
+} from '@/utils/idempotency';
 import { useTokenStore } from '@/store/tokenStore';
 import { useUserStore } from '@/store/userStore';
 import {
   todayYMD,
   sumLines,
   isBalanced,
+  journalLineAccounts,
   formatMoney,
   postableLines,
   journalLinesError,
@@ -46,16 +56,21 @@ export default function JournalFormModal({
   const [lines, setLines] = useState([blankLine(), blankLine()]);
   const [submitError, setSubmitError] = useState('');
   const [successState, setSuccessState] = useState(false);
+  // One key per opened form, reused only for retries of the same unsaved entry
+  // so a resubmit after a lost response can't post it twice.
+  const keyTarget = `journal:${mode}`;
+  const idempotencyKeyRef = useRef(null);
 
   useEffect(() => {
     if (!isOpen) return;
+    idempotencyKeyRef.current = keyForTarget(keyTarget);
     setSelectedBranch(isOrgLevel ? branchId || '' : userBranchId);
     setDate(todayYMD());
     setNarration('');
     setLines([blankLine(), blankLine()]);
     setSubmitError('');
     setSuccessState(false);
-  }, [isOpen, mode, branchId, isOrgLevel, userBranchId]);
+  }, [isOpen, keyTarget, branchId, isOrgLevel, userBranchId]);
 
   const effectiveBranch = isOrgLevel ? selectedBranch : userBranchId;
 
@@ -67,7 +82,7 @@ export default function JournalFormModal({
   });
   const branches = branchData?.data || [];
 
-  // Postable accounts — exclude group headers, which can't take direct entries.
+  // Postable accounts only: see journalLineAccounts.
   const { data: accountData } = useQuery({
     queryKey: ['journal-accounts', effectiveBranch],
     queryFn: () =>
@@ -81,10 +96,7 @@ export default function JournalFormModal({
     enabled: !!token && isOpen,
     staleTime: 30000,
   });
-  const accounts = useMemo(
-    () => (accountData?.data || []).filter((a) => !a.isGroup),
-    [accountData],
-  );
+  const accounts = useMemo(() => journalLineAccounts(accountData?.data), [accountData]);
 
   // Totals and "Balanced" describe exactly what will be posted; a row with an
   // amount but no account is flagged instead of being counted (or dropped).
@@ -101,13 +113,17 @@ export default function JournalFormModal({
   const removeLine = (i) => setLines((prev) => prev.filter((_, idx) => idx !== i));
 
   const mutation = useMutation({
-    mutationFn: (payload) =>
+    mutationFn: ({ idempotencyKey, ...payload }) =>
       postData({
         url: isOpening ? '/ledger/opening-balance' : '/ledger/journal',
         payload,
         token,
+        headers: idempotencyHeader(idempotencyKey),
       }),
     onSuccess: (res) => {
+      // This entry is posted; the next one must not replay it.
+      releaseKey(keyTarget);
+      idempotencyKeyRef.current = newIdempotencyKey();
       toast.success(
         res?.message || (isOpening ? 'Opening balance posted' : 'Journal entry posted'),
       );
@@ -119,9 +135,27 @@ export default function JournalFormModal({
       }, 700);
     },
     onError: (err) => {
+      // The key is spent — it went through earlier with a different payload, or
+      // that entry was reversed since — so it can never succeed again: start a
+      // fresh one and refresh the lists.
+      const spent = spentKeyMessage(err);
+      if (spent) {
+        releaseKey(keyTarget);
+        idempotencyKeyRef.current = newIdempotencyKey();
+        invalidateLedgerQueries(queryClient);
+        setSubmitError(spent);
+        toast.error(spent);
+        return;
+      }
+      // Network/timeout etc.: keep the key so an unchanged retry is recognised.
       const msg = err.message || 'Failed to post entry';
       setSubmitError(msg);
       toast.error(msg);
+      if (isUnknownOutcome(err)) {
+        // It may have gone through: a cancel and reopen must reuse this key.
+        holdKey(keyTarget, idempotencyKeyRef.current);
+        invalidateLedgerQueries(queryClient);
+      }
     },
   });
 
@@ -154,13 +188,19 @@ export default function JournalFormModal({
         ...(l.description?.trim() ? { description: l.description.trim() } : {}),
       })),
     };
-    mutation.mutate(payload);
+    mutation.mutate({ ...payload, idempotencyKey: idempotencyKeyRef.current });
+  };
+
+  // Closing mid-request and reopening mints a new idempotency key, so a retry
+  // of an entry that did go through would post it twice.
+  const closeIfIdle = () => {
+    if (!mutation.isPending) onClose();
   };
 
   return (
     <Modal
       isOpen={isOpen}
-      onClose={onClose}
+      onClose={closeIfIdle}
       title={isOpening ? 'Opening Balance' : 'New Journal Entry'}
       subtitle={
         isOpening
@@ -198,7 +238,7 @@ export default function JournalFormModal({
           <div className="flex gap-3">
             <Button
               label="Cancel"
-              handleClick={onClose}
+              handleClick={closeIfIdle}
               type="button"
               styleObject={{
                 baseColor: 'bg-white border border-gray-300',
@@ -240,7 +280,12 @@ export default function JournalFormModal({
               </label>
               <select
                 value={selectedBranch}
-                onChange={(e) => setSelectedBranch(e.target.value)}
+                onChange={(e) => {
+                  setSelectedBranch(e.target.value);
+                  // Each branch has its own account list; a kept pick could be
+                  // missing from it, showing blank while still being submitted.
+                  setLines((prev) => prev.map((l) => ({ ...l, accountId: '' })));
+                }}
                 className={inputCls}
               >
                 <option value="">Select branch…</option>
@@ -361,6 +406,12 @@ export default function JournalFormModal({
             <Plus className="w-4 h-4" />
             Add Line
           </button>
+          {!isOpening && (
+            <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+              Control accounts are not listed: they need a student, staff or vendor, so post them
+              through a payment or receipt voucher.
+            </p>
+          )}
         </div>
       </div>
     </Modal>

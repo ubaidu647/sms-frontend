@@ -35,7 +35,7 @@ export default function SystemDashboard() {
     <div className="p-2 sm:p-4">
       <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Welcome, {user?.name}</h1>
       <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-        NodeCampus system console — tenants, plans and billing across every school.
+        Mizenzo School Management system console — tenants, plans and billing across every school.
       </p>
 
       <div className="mt-8 grid sm:grid-cols-2 lg:grid-cols-3 gap-4">

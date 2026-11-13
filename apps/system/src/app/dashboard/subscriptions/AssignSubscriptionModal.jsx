@@ -6,6 +6,11 @@ import { usePackages } from '../packages/hooks/usePackages';
 import { fmtMoney, validateGraceDays } from '../packages/format';
 import { useAssignSubscription } from './hooks/useSubscriptions';
 import GracePeriodField from './GracePeriodField';
+import PaymentDueField from './PaymentDueField';
+import { readPaymentDue, withPaymentDue } from '@/utils/paymentDue';
+import { launchOfferPayload, offerAvailable, startPrice } from '@/utils/launchOffer';
+import { formatGB } from '@/utils/storage';
+import LaunchOfferField from './LaunchOfferField';
 
 const inputCls =
   'w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all';
@@ -33,6 +38,9 @@ export default function AssignSubscriptionModal({ isOpen, onClose, schoolId, sch
   const [method, setMethod] = useState('');
   const [transactionId, setTransactionId] = useState('');
   const [grace, setGrace] = useState('0'); // new sub has no prior plan → default 0
+  const [blockUnpaid, setBlockUnpaid] = useState(true);
+  const [dueDays, setDueDays] = useState(''); // blank → previous plan's value / server default
+  const [applyOffer, setApplyOffer] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -43,6 +51,9 @@ export default function AssignSubscriptionModal({ isOpen, onClose, schoolId, sch
       setMethod('');
       setTransactionId('');
       setGrace('0');
+      setBlockUnpaid(true);
+      setDueDays('');
+      setApplyOffer(true);
       setError('');
     }
   }, [isOpen]);
@@ -59,9 +70,14 @@ export default function AssignSubscriptionModal({ isOpen, onClose, schoolId, sch
       setError(graceError);
       return;
     }
+    const due = readPaymentDue({ block: blockUnpaid, days: dueDays });
+    if (due.error) {
+      setError(due.error);
+      return;
+    }
     setError('');
 
-    const payload = { schoolId, packageId };
+    let payload = { schoolId, packageId, ...launchOfferPayload(selected, applyOffer) };
 
     if (useCustom) {
       const limits = Object.fromEntries(
@@ -80,6 +96,7 @@ export default function AssignSubscriptionModal({ isOpen, onClose, schoolId, sch
     if (grace !== '' && grace != null) {
       payload.gracePeriodInDays = Number(grace);
     }
+    payload = withPaymentDue(payload, due.value);
 
     assign.mutate(payload, { onSuccess: () => onClose() });
   };
@@ -131,12 +148,16 @@ export default function AssignSubscriptionModal({ isOpen, onClose, schoolId, sch
           <select
             className={inputCls}
             value={packageId}
-            onChange={(e) => setPackageId(e.target.value)}
+            onChange={(e) => {
+              setPackageId(e.target.value);
+              setApplyOffer(true);
+            }}
           >
             <option value="">Select a package…</option>
             {packages.map((p) => (
               <option key={p._id} value={p._id}>
                 {p.name} — {fmtMoney(p.price)} / {p.durationInDays}d
+                {offerAvailable(p) ? ` (launch offer ${fmtMoney(p.launchOffer.price)})` : ''}
               </option>
             ))}
           </select>
@@ -146,9 +167,18 @@ export default function AssignSubscriptionModal({ isOpen, onClose, schoolId, sch
           <div className="rounded-lg bg-gray-50 dark:bg-gray-800/60 p-3 text-sm text-gray-600 dark:text-gray-300">
             Default limits — Students {selected.limits?.noOfStudents}, Branches{' '}
             {selected.limits?.noOfBranches}, Staff {selected.limits?.noOfStaffs}, Sections{' '}
-            {selected.limits?.noOfSections}
+            {selected.limits?.noOfSections}, Storage{' '}
+            {selected.limits?.storageGB != null ? formatGB(selected.limits.storageGB) : 'unlimited'}
+            <span className="block mt-1">
+              Billed: {fmtMoney(startPrice(selected, applyOffer))}
+              {offerAvailable(selected) && applyOffer ? ' (launch offer)' : ''} for{' '}
+              {selected.durationInDays} days. Estimate only — the server calculates the final
+              amount.
+            </span>
           </div>
         )}
+
+        <LaunchOfferField pkg={selected} apply={applyOffer} onChange={setApplyOffer} reuseNote />
 
         <div>
           <label className="inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
@@ -204,6 +234,14 @@ export default function AssignSubscriptionModal({ isOpen, onClose, schoolId, sch
         </div>
 
         <GracePeriodField value={grace} onChange={setGrace} />
+
+        <PaymentDueField
+          block={blockUnpaid}
+          onBlockChange={setBlockUnpaid}
+          days={dueDays}
+          onDaysChange={setDueDays}
+          hint="Leave empty to keep the school’s previous setting (default 15 days)."
+        />
       </div>
     </Modal>
   );

@@ -141,6 +141,7 @@ export default function CirculationPanel() {
             <CopyCard copy={copy} book={book} />
             {copy.status === 'available' ? (
               <IssueForm
+                key={copy._id}
                 copy={copy}
                 book={book}
                 onIssued={(res) =>
@@ -149,6 +150,7 @@ export default function CirculationPanel() {
               />
             ) : copy.status === 'issued' && loan ? (
               <IssuedLoan
+                key={copy._id}
                 loan={loan}
                 copy={copy}
                 book={book}

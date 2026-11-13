@@ -22,12 +22,14 @@ import { canSee } from '@/utils/permissions';
 import { ACTIONS } from '@/constants/rolePermissions';
 import { canOpenUserManagement } from '@/app/dashboard/user-management/tabs';
 import { canOpenBusinessSettings } from '@/app/dashboard/business-settings/tabs';
+import { usePlanFeatures } from '@/hooks/usePlanFeatures';
 
 const SYSTEM_CONSOLE_URL = process.env.NEXT_PUBLIC_SYSTEM_URL || 'http://localhost:3002';
 
 // Admin destinations that are not day-to-day school work. Order here is the
 // order in the menu: personal preferences, then the org setup, then who may use
-// it, then what it costs. `show` decides visibility from the role's grants.
+// it, then what it costs. `show(role, gate)` decides visibility from the role's
+// grants (and, for Business Settings, the plan gate of its WhatsApp tab).
 const MENU_ITEMS = [
   { key: 'settings', icon: Settings, href: '/dashboard/settings', show: () => true },
   {
@@ -77,10 +79,11 @@ export const Topbar = ({ user = {}, userRole = {}, onMenuClick }) => {
   const isDark = theme === 'dark';
   const t = useTranslations('topbar');
   const { logout } = useAuth();
+  const { gate } = usePlanFeatures();
 
   // Gated on the actual grants, not on role names — a custom role with
   // view-staff or view-role gets in, a role merely named "admin" does not.
-  const menuItems = MENU_ITEMS.filter((item) => item.show(userRole));
+  const menuItems = MENU_ITEMS.filter((item) => item.show(userRole, gate));
 
   // Recompute anchor on open + on scroll/resize so the portal-rendered menu
   // stays glued to the trigger button across viewport changes.

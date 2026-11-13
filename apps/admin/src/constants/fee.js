@@ -1,5 +1,6 @@
 import { localYMD } from '../utils/localDate.js';
 import { currentAcademicYear } from '../utils/academicYear.js';
+import { schoolCurrencySymbol } from '../utils/schoolCurrency.js';
 
 export const FEE_FREQUENCIES = ['monthly', 'one-time', 'annual', 'quarterly'];
 
@@ -77,9 +78,11 @@ export function formatMonth(ym) {
   return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short' });
 }
 
-export function formatMoney(n) {
+// The school's own money. `symbol` defaults to the school's currency in force
+// (utils/schoolCurrency.js); components pass useSchoolCurrency().symbol.
+export function formatMoney(n, symbol = schoolCurrencySymbol()) {
   const num = Number(n) || 0;
-  return `₨ ${num.toLocaleString()}`;
+  return `${symbol} ${num.toLocaleString()}`;
 }
 
 export const MONTH_OPTIONS = [

@@ -1,4 +1,5 @@
 import { formatAmount } from '@/utils/money';
+import { currencySymbolOf, schoolCurrency } from '@/utils/schoolCurrency';
 
 export const COMPONENT_TYPES = ['fixed', 'percent'];
 
@@ -58,9 +59,10 @@ export function formatDate(iso) {
   });
 }
 
-export function formatMoney(n, currency = 'PKR') {
-  const sym = currency === 'PKR' ? '₨' : currency;
-  return `${sym} ${formatAmount(n)}`;
+// `currency` is the ISO code a structure or payslip was saved in (defaults to
+// the school's currency in force); it shows as its symbol ("PKR" → "Rs").
+export function formatMoney(n, currency = schoolCurrency().code) {
+  return `${currencySymbolOf(currency)} ${formatAmount(n)}`;
 }
 
 export function toYMD(iso) {

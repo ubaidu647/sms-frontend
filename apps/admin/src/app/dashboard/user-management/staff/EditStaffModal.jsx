@@ -14,6 +14,7 @@ import Link from 'next/link';
 import { PASSWORD_MIN, PASSWORD_MAX } from '@/utils/changePassword';
 import { editPayload, reportEmptiedRequired } from '@/utils/editPayload';
 import { photoFailureMessage, saveFieldsThenPhoto } from '@/utils/saveWithPhoto';
+import { hasSalaryField } from '@/utils/staffSalary';
 import { useEditRecord } from '@/hooks/useEditRecord';
 import EditRecordStatus from '@/component/EditRecordStatus';
 
@@ -196,6 +197,9 @@ export default function EditStaffModal({ isOpen, onClose, onSuccess, staff, isSe
     token,
   });
   const record = recordQuery.data?.data;
+  // No `salary` in the record: this caller may not see it, so offer no input
+  // and never send it. A blank field here would not mean "no salary".
+  const salaryHidden = !!record && !hasSalaryField(record);
 
   const {
     register,
@@ -309,7 +313,9 @@ export default function EditStaffModal({ isOpen, onClose, onSuccess, staff, isSe
     if (!baseline) return;
     setSubmitError('');
 
-    const keys = [...(isSelf ? SELF_ALLOWED_SCALARS : ALL_SCALARS), ...MERGED_OBJECTS];
+    const keys = [...(isSelf ? SELF_ALLOWED_SCALARS : ALL_SCALARS), ...MERGED_OBJECTS].filter(
+      (k) => !(k === 'salary' && salaryHidden),
+    );
     const pick = (obj) => Object.fromEntries(keys.map((k) => [k, obj[k]]));
     if (reportEmptiedRequired(pick(baseline), pick(data), REQUIRED_FIELDS, setError)) return;
 
@@ -557,15 +563,17 @@ export default function EditStaffModal({ isOpen, onClose, onSuccess, staff, isSe
                   className={inputCls}
                 />
               </Field>
-              <Field label="Salary" error={errors.salary?.message}>
-                <input
-                  {...register('salary')}
-                  type="number"
-                  min="0"
-                  placeholder="35000"
-                  className={inputCls}
-                />
-              </Field>
+              {!salaryHidden && (
+                <Field label="Salary" error={errors.salary?.message}>
+                  <input
+                    {...register('salary')}
+                    type="number"
+                    min="0"
+                    placeholder="35000"
+                    className={inputCls}
+                  />
+                </Field>
+              )}
               <Field label="Joining Date" error={errors.joiningDate?.message}>
                 <input {...register('joiningDate')} type="date" className={inputCls} />
               </Field>

@@ -8,6 +8,10 @@ import {
   SUB_STATUS_COLORS,
   graceCutoff,
 } from '../packages/format';
+import { isPaymentOverdue, paymentWindowLabel } from '@/utils/paymentDue';
+import { COUNT_RESOURCES, addonSummary, addonTotals, baseLimit } from '@/utils/addons';
+import PriceLockBadge from './PriceLockBadge';
+import StorageUsage from './StorageUsage';
 
 const Row = ({ label, children }) => (
   <div className="flex justify-between gap-4 py-1.5 text-sm">
@@ -15,13 +19,6 @@ const Row = ({ label, children }) => (
     <span className="text-gray-900 dark:text-gray-100 text-right">{children}</span>
   </div>
 );
-
-const LIMIT_KEYS = [
-  ['noOfStudents', 'Students'],
-  ['noOfBranches', 'Branches'],
-  ['noOfStaffs', 'Staff'],
-  ['noOfSections', 'Sections'],
-];
 
 // Read-only detail view for a single subscription row in the history table.
 export default function SubscriptionDetailModal({ isOpen, onClose, subscription }) {
@@ -41,7 +38,7 @@ export default function SubscriptionDetailModal({ isOpen, onClose, subscription 
         <p className="text-gray-500 dark:text-gray-400">No subscription selected.</p>
       ) : (
         <div className="space-y-5">
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             <span
               className={`inline-flex px-3 py-1 rounded-full text-xs font-medium capitalize ${
                 SUB_STATUS_COLORS[sub.status] || 'bg-gray-100 text-gray-800'
@@ -49,9 +46,15 @@ export default function SubscriptionDetailModal({ isOpen, onClose, subscription 
             >
               {sub.status || 'unknown'}
             </span>
+            {isPaymentOverdue(sub) && (
+              <span className="inline-flex px-3 py-1 rounded-full text-xs font-medium bg-red-600 text-white">
+                Overdue (blocked)
+              </span>
+            )}
             <span className="text-gray-600 dark:text-gray-400 text-sm">
               {fmtMoney(snap?.price)} · {snap?.durationInDays}d cycle
             </span>
+            <PriceLockBadge sub={sub} />
           </div>
 
           <div className="rounded-lg border border-gray-200 dark:border-gray-700 p-4">
@@ -65,6 +68,14 @@ export default function SubscriptionDetailModal({ isOpen, onClose, subscription 
                 {fmtDate(graceCutoff(sub.endDate, sub.gracePeriodInDays))}
               </Row>
             )}
+            <Row label="Payment window">{paymentWindowLabel(sub.paymentDueInDays)}</Row>
+            <Row label="Payment due">{sub.paymentDueAt ? fmtDate(sub.paymentDueAt) : '-'}</Row>
+            {sub.prepaidUntil && (
+              <Row label="Prepaid until">
+                {fmtDate(sub.prepaidUntil)}
+                {sub.prepaidValue > 0 ? ` (worth ${fmtMoney(sub.prepaidValue)})` : ''}
+              </Row>
+            )}
             <Row label="Created">{fmtDate(sub.createdAt)}</Row>
           </div>
 
@@ -73,7 +84,7 @@ export default function SubscriptionDetailModal({ isOpen, onClose, subscription 
               Effective limits
             </h4>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              {LIMIT_KEYS.map(([key, lbl]) => (
+              {COUNT_RESOURCES.map(([key, lbl]) => (
                 <div
                   key={key}
                   className="rounded-lg bg-gray-50 dark:bg-gray-800/60 p-3 text-center"
@@ -82,9 +93,23 @@ export default function SubscriptionDetailModal({ isOpen, onClose, subscription 
                     {effectiveLimit(sub, key) ?? '∞'}
                   </p>
                   <p className="text-xs text-gray-500 dark:text-gray-400">{lbl}</p>
+                  {(addonTotals(sub)[key] ?? 0) > 0 && (
+                    <p className="text-xs text-teal-700 dark:text-teal-400">
+                      {baseLimit(sub, key) ?? 0} + {addonTotals(sub)[key]} add-on
+                    </p>
+                  )}
                 </div>
               ))}
             </div>
+            {sub.storage && <StorageUsage storage={sub.storage} className="mt-3" />}
+            {sub.addons?.length > 0 && (
+              <div className="mt-3 text-sm">
+                <span className="text-gray-500 dark:text-gray-400">Add-ons: </span>
+                <span className="text-gray-800 dark:text-gray-200">
+                  {sub.addons.map((a) => addonSummary(a, fmtMoney)).join(' · ')}
+                </span>
+              </div>
+            )}
             {sub.customLimits && Object.keys(sub.customLimits).length > 0 && (
               <p className="mt-2 text-xs text-amber-600 dark:text-amber-400">
                 Custom limit overrides are applied to this school.

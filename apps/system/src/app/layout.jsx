@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: 'NodeCampus System',
-  description: 'Tenant, package and subscription administration for NodeCampus.',
+  title: 'Mizenzo School Management — System',
+  description: 'Tenant, package and subscription administration for Mizenzo School Management.',
 };
 
 const noFlashTheme = `(function(){try{var s=JSON.parse(localStorage.getItem('theme-storage'));var t=s&&s.state&&s.state.theme;if(t==='dark')document.documentElement.classList.add('dark');}catch(e){}})();`;

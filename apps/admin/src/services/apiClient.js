@@ -11,6 +11,7 @@ import {
   planRefusalMessage,
   rememberSigninNotice,
 } from '@/utils/authErrors';
+import { PLAN_FEATURE_DISABLED } from '@/utils/planFeatures';
 
 // Default retry window when the Retry-After header can't be read. Browsers won't
 // expose Retry-After / RateLimit-* cross-origin unless the backend adds them to
@@ -96,6 +97,20 @@ function flagPasswordChange() {
 
 const isLoginUrl = (url) => url.includes('/auth/login');
 
+// 403 PLAN_FEATURE_DISABLED = the school's plan does not include the module
+// this request belongs to. Not a session problem: show the server's message
+// (one toast per burst) and tell the app, so it re-reads the plan's modules
+// and the menus/route guard catch up. The caller still gets the rejection.
+const PLAN_FEATURE_FALLBACK =
+  'This module is not included in your school’s plan. Upgrade your package to use it.';
+function handlePlanFeatureDisabled(error) {
+  const message = error.response?.data?.message || PLAN_FEATURE_FALLBACK;
+  toast.error(message, { id: 'plan-feature-disabled' });
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('plan:feature-disabled', { detail: { message } }));
+  }
+}
+
 // One refresh in flight at a time; concurrent 401s wait on the same promise.
 let refreshPromise = null;
 
@@ -124,7 +139,7 @@ apiClient.interceptors.response.use(
     const status = error.response?.status;
     const url = orig.url || '';
 
-    // 402 = subscription gate blocked a write (expired/cancelled/none). Signal the
+    // 402 = subscription gate blocked a write (expired/unpaid/cancelled/none). Signal the
     // SubscriptionGuard to re-check state immediately so the banner/block shows
     // without waiting for the next poll. Callers still get the rejection + message.
     if (status === 402 && typeof window !== 'undefined') {
@@ -147,6 +162,9 @@ apiClient.interceptors.response.use(
         return Promise.reject(error);
       }
       if (isPasswordChangeRequired(error)) flagPasswordChange();
+      else if (error.response?.data?.code === PLAN_FEATURE_DISABLED) {
+        handlePlanFeatureDisabled(error);
+      }
       return Promise.reject(error);
     }
 

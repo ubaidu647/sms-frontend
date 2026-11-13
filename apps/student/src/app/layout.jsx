@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: 'NodeCampus — Student',
-  description: 'Sign in to your NodeCampus student account.',
+  title: 'Mizenzo School Management — Student',
+  description: 'Sign in to your Mizenzo School Management student account.',
 };
 
 const noFlashTheme = `(function(){try{var s=JSON.parse(localStorage.getItem('theme-storage'));var t=s&&s.state&&s.state.theme;if(t==='dark')document.documentElement.classList.add('dark');}catch(e){}})();`;

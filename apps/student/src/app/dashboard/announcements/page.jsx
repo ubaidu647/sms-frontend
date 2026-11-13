@@ -3,8 +3,32 @@ import { useState } from 'react';
 import { Megaphone, Pin, Paperclip, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useAnnouncements } from '@/hooks/useDashboard';
 import { PageHeader, Panel } from '@/component/dashboard/Panel';
-import { Loading, ErrorState, EmptyState } from '@/component/dashboard/States';
+import { Loading, SeatErrorState, EmptyState } from '@/component/dashboard/States';
 import { formatDate } from '@/utils/format';
+import { attachmentLinks } from '@/utils/attachmentLinks';
+
+// Each attachment as a link (http/https only), opening in a new tab.
+function AttachmentList({ attachments }) {
+  const links = attachmentLinks(attachments);
+  if (!links.length) return null;
+  return (
+    <ul className="mt-2 space-y-1">
+      {links.map((att) => (
+        <li key={att.key}>
+          <a
+            href={att.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 text-xs text-[#00918e] hover:underline"
+          >
+            <Paperclip className="w-3 h-3 flex-shrink-0" />
+            <span className="truncate">{att.name}</span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  );
+}
 
 const LIMIT = 20;
 
@@ -36,7 +60,7 @@ export default function AnnouncementsPage() {
       {isLoading ? (
         <Loading label="Loading announcements…" />
       ) : isError ? (
-        <ErrorState error={error} onRetry={refetch} />
+        <SeatErrorState error={error} onRetry={refetch} />
       ) : items.length === 0 ? (
         <EmptyState
           title="No announcements"
@@ -83,14 +107,8 @@ export default function AnnouncementsPage() {
                     </p>
                     <div className="mt-2 flex items-center gap-3 text-xs text-gray-400">
                       <span>{formatDate(a.publishedAt || a.createdAt)}</span>
-                      {a.attachments?.length > 0 && (
-                        <span className="flex items-center gap-1">
-                          <Paperclip className="w-3 h-3" />
-                          {a.attachments.length} attachment
-                          {a.attachments.length === 1 ? '' : 's'}
-                        </span>
-                      )}
                     </div>
+                    <AttachmentList attachments={a.attachments} />
                   </div>
                 </div>
               </Panel>

@@ -1,6 +1,7 @@
 'use client';
 import React, { useMemo, useState } from 'react';
 import { Table } from '@/component/Table';
+import QueryErrorState from '@/component/QueryErrorState';
 import { Plus, Eye, Layers } from 'lucide-react';
 import { useTokenStore } from '@/store/tokenStore';
 import { useUserStore } from '@/store/userStore';
@@ -78,7 +79,7 @@ export default function PayslipsPage() {
     userBranchId,
   ];
 
-  const { data } = useQuery({
+  const { data, isError, error } = useQuery({
     queryKey,
     queryFn: () => {
       const params = {};
@@ -279,6 +280,12 @@ export default function PayslipsPage() {
             </select>
           )}
         </div>
+
+        {isError && (
+          <div className="mb-3">
+            <QueryErrorState error={error} fallback="Could not load payslips" />
+          </div>
+        )}
 
         <Table
           columns={columns}

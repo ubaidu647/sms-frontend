@@ -5,6 +5,7 @@ import { useUserStore } from '@/store/userStore';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { fetchData, postData } from '@/utils/api';
 import toast from 'react-hot-toast';
+import QueryErrorState from '@/component/QueryErrorState';
 import { Save, AlertCircle } from 'lucide-react';
 import { DAY_LABELS, PERIOD_TYPE_COLORS, currentAcademicYear } from '@/constants/timetable';
 import { buildTimetableSlots, incompleteKeys, describeIncomplete } from '@/utils/timetableSlots';
@@ -75,7 +76,12 @@ export default function EditorPanel() {
     setSectionId('');
   }, [classId]);
 
-  const { data: timetableRes, isFetching: timetableLoading } = useQuery({
+  const {
+    data: timetableRes,
+    isFetching: timetableLoading,
+    isError: timetableFailed,
+    error: timetableError,
+  } = useQuery({
     queryKey: ['section-timetable', sectionId, academicYear],
     queryFn: () => fetchData({ url: `/timetable/section/${sectionId}`, token, academicYear }),
     enabled: !!token && !!sectionId,
@@ -271,6 +277,8 @@ export default function EditorPanel() {
         <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-12 text-center text-gray-500 dark:text-gray-400 text-sm">
           Loading timetable…
         </div>
+      ) : timetableFailed && !periodConfig ? (
+        <QueryErrorState error={timetableError} fallback="Could not load this timetable" />
       ) : !periodConfig ? (
         <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-6 text-sm text-amber-800 bg-amber-50 flex items-start gap-2">
           <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />

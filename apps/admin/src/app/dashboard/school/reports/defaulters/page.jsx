@@ -14,6 +14,7 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
+import QueryErrorState from '@/component/QueryErrorState';
 import ReportPagination from '@/component/ReportPagination';
 import { fetchData } from '@/utils/api';
 import apiClient from '@/services/apiClient';
@@ -22,6 +23,9 @@ import { useUserStore } from '@/store/userStore';
 import { hasAnyAction } from '@/utils/permissions';
 import { formatDate, formatMoney, formatMonth, todayYMD } from '@/constants/fee';
 import { useTranslations } from 'next-intl';
+import toast from 'react-hot-toast';
+import { PDF_CAPTURE_OPTIONS, PDF_FAILED_MESSAGE } from '@/utils/pdfCapture';
+import { useSchoolCurrency } from '@/hooks/useSchoolCurrency';
 
 const inputCls =
   'px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500';
@@ -32,6 +36,7 @@ function firstOfMonth() {
 }
 
 export default function DefaultersReportPage() {
+  const { symbol: currencySymbol } = useSchoolCurrency();
   const router = useRouter();
   const { accessToken: token } = useTokenStore();
   const { user } = useUserStore();
@@ -107,7 +112,12 @@ export default function DefaultersReportPage() {
   const sections = sectionData?.data || [];
 
   // Main report query — only fires once "Generate" sets `applied`
-  const { data: reportEnvelope, isFetching } = useQuery({
+  const {
+    data: reportEnvelope,
+    isFetching,
+    isError,
+    error,
+  } = useQuery({
     queryKey: ['defaulters', applied, page, limit],
     queryFn: async () => {
       const params = {
@@ -322,11 +332,7 @@ export default function DefaultersReportPage() {
         import('html2canvas-pro'),
         import('jspdf'),
       ]);
-      const canvas = await html2canvas(printableRef.current, {
-        scale: 2,
-        useCORS: true,
-        backgroundColor: '#ffffff',
-      });
+      const canvas = await html2canvas(printableRef.current, PDF_CAPTURE_OPTIONS);
       const imgData = canvas.toDataURL('image/jpeg', 0.95);
       const pdf = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'landscape' });
       const pageWidth = pdf.internal.pageSize.getWidth();
@@ -345,6 +351,9 @@ export default function DefaultersReportPage() {
         heightLeft -= pageHeight - margin * 2;
       }
       pdf.save(`${fileBase}.pdf`);
+    } catch (err) {
+      console.warn('PDF capture failed', err);
+      toast.error(PDF_FAILED_MESSAGE);
     } finally {
       setDownloadingPdf(false);
     }
@@ -517,7 +526,7 @@ export default function DefaultersReportPage() {
 
             <div>
               <div className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
-                Min Outstanding ₨
+                Min Outstanding ({currencySymbol})
               </div>
               <input
                 type="number"
@@ -568,6 +577,12 @@ export default function DefaultersReportPage() {
 
         {applied && isFetching && !report && (
           <div className="text-sm text-gray-500 dark:text-gray-400">Loading report…</div>
+        )}
+
+        {applied && isError && (
+          <div className="mb-4 print:hidden">
+            <QueryErrorState error={error} fallback="Could not load the defaulters report" />
+          </div>
         )}
 
         {report && rows.length === 0 && page <= 1 && (
@@ -873,8 +888,9 @@ export default function DefaultersReportPage() {
                       })}
                       {totals && (
                         <tr className="bg-gray-50 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
+                          {applied?.includeDetails && <td className="print:hidden" />}
                           <td
-                            colSpan={applied?.includeDetails ? 7 : 6}
+                            colSpan={6}
                             className="px-3 py-2 text-right font-bold text-gray-900 dark:text-gray-100"
                           >
                             GRAND TOTAL

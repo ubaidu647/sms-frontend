@@ -23,6 +23,7 @@ import {
   releaseSavedEdits,
   rosterStudents,
   savedStudentIds,
+  teacherMarkSections,
   toMark,
 } from '@/utils/marksEntries';
 
@@ -104,19 +105,28 @@ export default function MarksEntryPage() {
     staleTime: 60000,
   });
 
+  // Teachers also enter marks for the sections they lead as class teacher, in
+  // any subject (the server allows it). The class detail names the class's and
+  // each section's class teacher; if the role cannot read it, the taught
+  // sections still show and the server stays the authority.
+  const { data: teacherClassData } = useQuery({
+    queryKey: ['class-detail', classId],
+    queryFn: () => fetchData({ url: `/class/${classId}`, token }),
+    enabled: !!token && isTeacherMode && !!classId,
+    staleTime: 60000,
+    retry: false,
+  });
+
   const sections = useMemo(() => {
     if (isTeacherMode) {
-      const assignments = teacherAssignData?.data || [];
-      const seen = new Map();
-      for (const a of assignments) {
-        const sec = a.section;
-        if (!sec?._id || seen.has(sec._id)) continue;
-        seen.set(sec._id, { _id: sec._id, name: sec.name });
-      }
-      return Array.from(seen.values());
+      return teacherMarkSections({
+        assignments: teacherAssignData?.data,
+        classDoc: teacherClassData?.data,
+        staffId: user?.staffId,
+      });
     }
     return allSectionsData?.data || [];
-  }, [isTeacherMode, teacherAssignData, allSectionsData]);
+  }, [isTeacherMode, teacherAssignData, teacherClassData, user?.staffId, allSectionsData]);
 
   // If the previously-chosen section is no longer in the narrowed list (e.g. teacher
   // switched subjects), clear it so the user is forced to pick a valid one.
@@ -164,6 +174,7 @@ export default function MarksEntryPage() {
     isFetching: resultsLoading,
     isError: resultsIsError,
     error: resultsError,
+    refetch: refetchResults,
   } = useQuery({
     queryKey: ['exam-results', examId, examSubjectId, sectionId],
     queryFn: () =>
@@ -257,6 +268,10 @@ export default function MarksEntryPage() {
       }
     },
   });
+
+  // Without the saved marks every row would seed blank, and saving would be
+  // done blind over marks that exist.
+  const saveDisabled = isLocked || enterMutation.isPending || resultsIsError;
 
   const handleSave = () => {
     if (!examSubjectId || !sectionId) {
@@ -462,12 +477,33 @@ export default function MarksEntryPage() {
           </div>
         ) : rosterIsError ? (
           <QueryErrorState error={rosterError} fallback="Could not load the roster" />
+        ) : resultsIsError && !resultsRes ? (
+          <QueryErrorState
+            error={resultsError}
+            fallback="Could not load the saved marks"
+            onRetry={() => refetchResults()}
+          />
         ) : students.length === 0 ? (
           <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 p-12 text-center text-gray-500 dark:text-gray-400 text-sm">
             No students in this section.
           </div>
         ) : (
           <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+            {resultsIsError && (
+              <div
+                role="alert"
+                className="px-6 py-2 flex items-center justify-between gap-3 bg-red-50 dark:bg-red-950/40 text-sm text-red-700 dark:text-red-300"
+              >
+                Could not refresh the saved marks. Saving is off until they load.
+                <button
+                  type="button"
+                  onClick={() => refetchResults()}
+                  className="font-semibold underline"
+                >
+                  Retry
+                </button>
+              </div>
+            )}
             <div className="px-6 py-3 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between flex-wrap gap-3 bg-gray-50 dark:bg-gray-800">
               <div className="text-sm text-gray-600 dark:text-gray-400">
                 <strong>{counts.total}</strong> students ·{' '}
@@ -476,7 +512,7 @@ export default function MarksEntryPage() {
               </div>
               <button
                 onClick={handleSave}
-                disabled={isLocked || enterMutation.isPending}
+                disabled={saveDisabled}
                 className="flex items-center gap-2 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Save className="w-4 h-4" />
@@ -626,7 +662,7 @@ export default function MarksEntryPage() {
             <div className="px-6 py-3 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 flex justify-end">
               <button
                 onClick={handleSave}
-                disabled={isLocked || enterMutation.isPending}
+                disabled={saveDisabled}
                 className="flex items-center gap-2 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Save className="w-4 h-4" />

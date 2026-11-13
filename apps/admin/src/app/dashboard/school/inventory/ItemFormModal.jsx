@@ -12,10 +12,11 @@ import { postData, putData } from '@/utils/api';
 import { useTokenStore } from '@/store/tokenStore';
 import { ITEM_UNITS, isMoneyInput, fromPaisa, toPaisa } from '@/utils/inventory';
 import { errorCls, inputCls, invalidateInventoryStock, labelCls } from './inventoryShared';
+import { useSchoolCurrency } from '@/hooks/useSchoolCurrency';
 
 const schema = yup.object().shape({
   name: yup.string().trim().required('Name is required').max(200),
-  sku: yup.string().trim().max(50),
+  sku: yup.string().trim().max(40, 'At most 40 characters'),
   category: yup.string().trim().max(100),
   unit: yup.string().trim().required('Unit is required').max(20, 'At most 20 characters'),
   reorderLevel: yup
@@ -45,6 +46,7 @@ const toForm = (item) => ({
 });
 
 export default function ItemFormModal({ isOpen, onClose, item }) {
+  const { symbol: currencySymbol } = useSchoolCurrency();
   const { accessToken: token } = useTokenStore();
   const queryClient = useQueryClient();
   const isCreate = !item;
@@ -161,7 +163,8 @@ export default function ItemFormModal({ isOpen, onClose, item }) {
               Sold in the school shop
             </label>
           </div>
-          {saleable && field('salePrice', 'Sale price (Rs) *', { inputMode: 'decimal' })}
+          {saleable &&
+            field('salePrice', `Sale price (${currencySymbol}) *`, { inputMode: 'decimal' })}
         </div>
         <p className="text-xs text-gray-500 dark:text-gray-400">
           Stock is added through purchases (or adjustments); the item is shown as low stock when a

@@ -41,12 +41,18 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { canSee, canEditScope, hasAnyAction } from '@/utils/permissions';
+import { featureForMenu } from '@/utils/planFeatures';
 import { useAuth } from '@/hooks/useAuth';
+import { usePlanFeatures } from '@/hooks/usePlanFeatures';
+import { PlanUpgradeModal } from '@/component/PlanUpgrade';
 
 // `key` controls which menus appear in the role form / are stored on the role.
 // `base` is the view action used by canSee() — when set, sidebar visibility falls
 // back to canSee(role, base) so own-scope users see the menu even if the admin
 // only granted them view-own-X.
+// Plan gating: an entry whose `key` maps to an add-on module (featureForMenu in
+// utils/planFeatures.js) is locked or hidden when the school's plan lacks it —
+// on top of the permission rules above, never instead of them.
 const navigationItems = [
   // Order is by how often a school actually touches each screen, grouped into
   // sections (`section` → sidebar heading). Staff and Roles are not here on
@@ -458,7 +464,11 @@ export const Sidebar = ({
   const sidebarRef = useRef(null);
   const pathname = usePathname();
   const t = useTranslations('sidebar');
+  const tPlan = useTranslations('planFeatures');
   const { logout } = useAuth();
+  const { gate } = usePlanFeatures();
+  // The module whose upgrade prompt is open (a locked entry was clicked).
+  const [lockedFeature, setLockedFeature] = useState(null);
 
   // Auto-close the mobile drawer when navigating to a new route.
   useEffect(() => {
@@ -504,12 +514,37 @@ export const Sidebar = ({
     return menus.includes(item.key) || (item.base && canSee(user?.role, item.base));
   };
 
-  // First visible item of each section — that row gets the section heading
-  // above it, so a heading never shows for a section the user cannot see.
+  // Submenu entries the role may see (permissions only).
+  const permittedSubs = (item) =>
+    (item.submenu || []).filter((sub) => user?.role?.isPredefined || subVisible(sub));
+
+  // Plan gate of one entry: 'show' | 'lock' | 'hide'.
+  const entryGate = (entry) => gate(featureForMenu(entry.key));
+
+  // A parent follows its permitted children: shown if any child is open,
+  // locked if none is open but some are locked, hidden if all are hidden.
+  const itemGate = (item) => {
+    if (!item.submenu) return entryGate(item);
+    const states = permittedSubs(item).map(entryGate);
+    if (states.includes('show')) return 'show';
+    return states.includes('lock') ? 'lock' : 'hide';
+  };
+
+  // The module a locked entry belongs to (a parent: its first locked child's).
+  const lockedFeatureOf = (item) => {
+    if (!item.submenu) return featureForMenu(item.key);
+    const sub = permittedSubs(item).find((s) => entryGate(s) === 'lock');
+    return sub ? featureForMenu(sub.key) : null;
+  };
+
+  const isItemShown = (item) => isItemVisible(item) && itemGate(item) !== 'hide';
+
+  // First shown item of each section — that row gets the section heading
+  // above it, so a heading never shows for a section that ends up empty.
   const sectionHeadIndex = {};
   navigationItems.forEach((item, idx) => {
     if (!item.section || sectionHeadIndex[item.section] !== undefined) return;
-    if (isItemVisible(item)) sectionHeadIndex[item.section] = idx;
+    if (isItemShown(item)) sectionHeadIndex[item.section] = idx;
   });
 
   useEffect(() => {
@@ -625,10 +660,14 @@ export const Sidebar = ({
 
         <nav className="flex flex-col items-start w-full flex-1 overflow-y-auto overflow-x-hidden scrollbar-hide">
           {navigationItems.map((item, index) => {
-            if (!isItemVisible(item)) return null;
+            if (!isItemShown(item)) return null;
+            const itemLocked = itemGate(item) === 'lock';
             const itemIsActive = item.hasSubmenu ? isParentActive(item) : isActive(item.path);
             const itemLabel = t(item.labelKey);
             const showSectionHeading = sectionHeadIndex[item.section] === index;
+            const lockBadge = itemLocked && !isCollapsed && (
+              <Lock className="w-4 h-4 flex-shrink-0 text-white/80" aria-label={tPlan('locked')} />
+            );
             return (
               <div key={index} className="w-full">
                 {showSectionHeading &&
@@ -641,8 +680,11 @@ export const Sidebar = ({
                   ))}
                 {item.hasSubmenu ? (
                   <button
-                    onClick={() => toggleExpand(index)}
-                    className={`w-full h-14 ${
+                    onClick={() =>
+                      itemLocked ? setLockedFeature(lockedFeatureOf(item)) : toggleExpand(index)
+                    }
+                    title={itemLocked ? tPlan('locked') : undefined}
+                    className={`w-full h-14 ${itemLocked ? 'opacity-60' : ''} ${
                       isCollapsed ? 'justify-center px-0' : 'justify-start px-0'
                     } rounded-full transition-colors hover:bg-teal-700 dark:hover:bg-slate-800 ${
                       itemIsActive ? 'bg-teal-700 dark:bg-slate-800' : 'bg-transparent'
@@ -681,13 +723,15 @@ export const Sidebar = ({
                           >
                             {itemLabel}
                           </span>
-                          <span className="text-white flex-shrink-0">
-                            {expandedItems.has(index) ? (
-                              <ChevronUp className="w-4 h-4" />
-                            ) : (
-                              <ChevronDown className="w-4 h-4" />
-                            )}
-                          </span>
+                          {lockBadge || (
+                            <span className="text-white flex-shrink-0">
+                              {expandedItems.has(index) ? (
+                                <ChevronUp className="w-4 h-4" />
+                              ) : (
+                                <ChevronDown className="w-4 h-4" />
+                              )}
+                            </span>
+                          )}
                         </>
                       )}
                     </div>
@@ -695,7 +739,14 @@ export const Sidebar = ({
                 ) : (
                   <Link
                     href={item.path}
-                    className={`w-full h-14 ${
+                    onClick={(e) => {
+                      if (!itemLocked) return;
+                      e.preventDefault();
+                      setLockedFeature(lockedFeatureOf(item));
+                    }}
+                    aria-disabled={itemLocked || undefined}
+                    title={itemLocked ? tPlan('locked') : undefined}
+                    className={`w-full h-14 ${itemLocked ? 'opacity-60' : ''} ${
                       isCollapsed ? 'justify-center px-0' : 'justify-start px-0'
                     } rounded-full transition-colors hover:bg-teal-700 ${
                       itemIsActive ? 'bg-teal-700' : 'bg-transparent'
@@ -735,24 +786,35 @@ export const Sidebar = ({
                           {itemLabel}
                         </span>
                       )}
+                      {lockBadge}
                     </div>
                   </Link>
                 )}
 
-                {!isCollapsed && item.hasSubmenu && expandedItems.has(index) && (
+                {!isCollapsed && item.hasSubmenu && !itemLocked && expandedItems.has(index) && (
                   <div className="ml-12 mt-2 mb-2 space-y-1">
-                    {item.submenu
-                      ?.filter((sub) => user?.role?.isPredefined || subVisible(sub))
+                    {permittedSubs(item)
+                      .filter((sub) => entryGate(sub) !== 'hide')
                       .map((sub) => {
                         const subActive =
                           pathname === sub.path || pathname.startsWith(sub.path + '/');
                         const SubIcon = sub.iconComponent;
                         const subLabel = t(sub.labelKey);
+                        const subLocked = entryGate(sub) === 'lock';
                         return (
                           <Link
                             key={sub.path}
                             href={sub.path}
+                            onClick={(e) => {
+                              if (!subLocked) return;
+                              e.preventDefault();
+                              setLockedFeature(featureForMenu(sub.key));
+                            }}
+                            aria-disabled={subLocked || undefined}
+                            title={subLocked ? tPlan('locked') : undefined}
                             className={`w-full h-10 flex items-center gap-2 rounded-md px-4 transition-colors no-underline ${
+                              subLocked ? 'opacity-60' : ''
+                            } ${
                               subActive
                                 ? 'bg-teal-700/80 dark:bg-slate-800'
                                 : 'hover:bg-teal-700/60 dark:hover:bg-slate-800/80'
@@ -775,6 +837,12 @@ export const Sidebar = ({
                             >
                               {subLabel}
                             </span>
+                            {subLocked && (
+                              <Lock
+                                className="w-3.5 h-3.5 ml-auto flex-shrink-0 text-white/80"
+                                aria-label={tPlan('locked')}
+                              />
+                            )}
                           </Link>
                         );
                       })}
@@ -803,6 +871,12 @@ export const Sidebar = ({
           </button>
         </div>
       </aside>
+
+      <PlanUpgradeModal
+        isOpen={!!lockedFeature}
+        feature={lockedFeature}
+        onClose={() => setLockedFeature(null)}
+      />
 
       {/* Horizontal line from sidebar to end of screen */}
       <div

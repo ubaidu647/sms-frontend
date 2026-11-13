@@ -546,8 +546,8 @@ export default function AddStudentModal({ isOpen, onClose, onSuccess }) {
                 </span>
               </p>
               <p className="text-xs text-amber-700 mt-1">
-                Please share this with the student/guardian and ask them to change it on first
-                login.
+                Please share this with the student/guardian. The student must change it at first
+                sign-in.
               </p>
             </div>
           )}
@@ -584,6 +584,9 @@ export default function AddStudentModal({ isOpen, onClose, onSuccess }) {
                   placeholder={`Min ${PASSWORD_MIN} chars (defaults to admission number)`}
                   className={inputCls}
                 />
+                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                  The student must change this password at first sign-in.
+                </p>
               </Field>
               <Field label="Phone" error={errors.phone?.message}>
                 <input {...register('phone')} placeholder="+923001234567" className={inputCls} />

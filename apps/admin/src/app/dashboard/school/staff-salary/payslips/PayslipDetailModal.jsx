@@ -1,13 +1,21 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { Modal } from '@/component/Modal';
 import Button from '@/component/Button';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useIsMutating, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { fetchData, postData, putData } from '@/utils/api';
 import { useTokenStore } from '@/store/tokenStore';
 import { useUserStore } from '@/store/userStore';
 import CashBankAccountSelect from '@/component/CashBankAccountSelect';
-import { idempotencyHeader, newIdempotencyKey } from '@/utils/idempotency';
+import {
+  holdKey,
+  idempotencyHeader,
+  isUnknownOutcome,
+  keyForTarget,
+  newIdempotencyKey,
+  releaseKey,
+  spentKeyMessage,
+} from '@/utils/idempotency';
 import toast from 'react-hot-toast';
 import {
   PAYSLIP_STATUS_COLORS,
@@ -21,8 +29,13 @@ import {
 import { Lock, DollarSign, XCircle, Edit3, RotateCcw, AlertTriangle } from 'lucide-react';
 import { localYMD } from '@/utils/localDate';
 import { invalidateLedgerQueries } from '@/utils/ledgerQueries';
-import { percentOf } from '@/utils/money';
-import { filterAmountInput, parseAmountInput } from '@/utils/payslipInput';
+import {
+  fallbackPolicyNotice,
+  outsideEmploymentNote,
+  payslipLineAmount,
+} from '@/utils/payslipDisplay';
+import { filterAmountInput, instalmentAmount, parseAmountInput } from '@/utils/payslipInput';
+import { useSchoolCurrency } from '@/hooks/useSchoolCurrency';
 
 const inputCls =
   'w-full px-3 py-2 border border-gray-200 rounded-lg outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 text-sm text-gray-900 bg-white placeholder:text-gray-400';
@@ -84,6 +97,16 @@ export default function PayslipDetailModal({ isOpen, onClose, payslipId }) {
     onError: (err) => toast.error(err.message || 'Failed to finalize'),
   });
 
+  // PayForm holds the idempotency key, so closing the dialog while it is
+  // submitting would lose the key and let a retry pay twice.
+  const paying = useIsMutating({ mutationKey: ['payslip-pay', payslipId] }) > 0;
+  const closeIfIdle = () => {
+    if (paying) return;
+    setShowPay(false);
+    setShowCancel(false);
+    onClose();
+  };
+
   if (!isOpen) return null;
 
   const status = payslip?.status;
@@ -96,11 +119,7 @@ export default function PayslipDetailModal({ isOpen, onClose, payslipId }) {
   return (
     <Modal
       isOpen={isOpen}
-      onClose={() => {
-        setShowPay(false);
-        setShowCancel(false);
-        onClose();
-      }}
+      onClose={closeIfIdle}
       title={`Payslip${payslip?.serialNumber ? ` — ${payslip.serialNumber}` : ''}`}
       subtitle={
         payslip
@@ -118,7 +137,7 @@ export default function PayslipDetailModal({ isOpen, onClose, payslipId }) {
           <div className="flex flex-wrap gap-2 justify-end w-full">
             <Button
               label="Close"
-              handleClick={onClose}
+              handleClick={closeIfIdle}
               type="button"
               styleObject={{
                 baseColor: 'bg-white border border-gray-300',
@@ -189,19 +208,30 @@ export default function PayslipDetailModal({ isOpen, onClose, payslipId }) {
           showCancel={showCancel}
           setShowCancel={setShowCancel}
           canReverse={canReverse}
+          canUpdate={canUpdate}
         />
       )}
     </Modal>
   );
 }
 
-function PayslipBody({ payslip, showPay, setShowPay, showCancel, setShowCancel, canReverse }) {
+function PayslipBody({
+  payslip,
+  showPay,
+  setShowPay,
+  showCancel,
+  setShowCancel,
+  canReverse,
+  canUpdate,
+}) {
   const { accessToken: token } = useTokenStore();
   const queryClient = useQueryClient();
+  const { code: schoolCurrencyCode } = useSchoolCurrency();
 
   const status = payslip.status;
   const isDraft = status === 'draft';
-  const cur = payslip.currency || 'PKR';
+  // The code the payslip was issued in; older ones without it → the school's.
+  const cur = payslip.currency || schoolCurrencyCode;
 
   const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: ['payslips'] });
@@ -277,7 +307,7 @@ function PayslipBody({ payslip, showPay, setShowPay, showCancel, setShowCancel, 
             </span>
           )}
         </div>
-        {isDraft && !editing && (
+        {isDraft && canUpdate && !editing && (
           <button
             onClick={() => setEditing(true)}
             className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-teal-700 dark:text-teal-400 hover:bg-teal-50 dark:hover:bg-teal-950/40 rounded-lg border border-teal-200"
@@ -307,11 +337,7 @@ function PayslipBody({ payslip, showPay, setShowPay, showCancel, setShowCancel, 
                 <Row
                   key={i}
                   label={`${a.name}${a.type === 'percent' ? ` (${a.amount}%)` : ''}`}
-                  value={
-                    a.type === 'percent'
-                      ? formatMoney(percentOf(payslip.basicSalary, a.amount), cur)
-                      : formatMoney(a.amount, cur)
-                  }
+                  value={formatMoney(payslipLineAmount(payslip.basicSalary, a), cur)}
                 />
               ))}
               {editing ? (
@@ -348,11 +374,7 @@ function PayslipBody({ payslip, showPay, setShowPay, showCancel, setShowCancel, 
                 <Row
                   key={i}
                   label={`${d.name}${d.type === 'percent' ? ` (${d.amount}%)` : ''}`}
-                  value={
-                    d.type === 'percent'
-                      ? formatMoney(percentOf(payslip.basicSalary, d.amount), cur)
-                      : formatMoney(d.amount, cur)
-                  }
+                  value={formatMoney(payslipLineAmount(payslip.basicSalary, d), cur)}
                 />
               ))}
               <Row
@@ -514,6 +536,11 @@ function PayslipBody({ payslip, showPay, setShowPay, showCancel, setShowCancel, 
             <SnapStat label="Holiday" value={payslip.attendance.holidayDays} />
             <SnapStat label="Days Paid" value={payslip.attendance.daysPaid} tone="success" />
           </div>
+          {outsideEmploymentNote(payslip.attendance) && (
+            <p className="mt-2 text-xs text-gray-600 dark:text-gray-400">
+              {outsideEmploymentNote(payslip.attendance)}
+            </p>
+          )}
         </div>
       )}
 
@@ -523,8 +550,7 @@ function PayslipBody({ payslip, showPay, setShowPay, showCancel, setShowCancel, 
       ) : (
         payslip.attendance && (
           <div className="rounded-xl bg-amber-50 border border-amber-200 p-3 text-xs text-amber-800">
-            No salary policy was active at generation time — pro-rate fallback used (basic ÷ 26 ×
-            unpaid days; absences and unpaid leave count 1, half-days ½).
+            {fallbackPolicyNotice(payslip.attendance)}
           </div>
         )
       )}
@@ -672,26 +698,53 @@ function PayForm({ payslip, onClose, onDone }) {
   const [notes, setNotes] = useState('');
   const [err, setErr] = useState('');
   // One key per opened pay form, reused if Confirm is retried after an error.
-  const [idempotencyKey] = useState(() => newIdempotencyKey());
+  const keyTarget = `payslip-pay:${payslip._id}`;
+  const idempotencyKeyRef = useRef(null);
+  if (!idempotencyKeyRef.current) idempotencyKeyRef.current = keyForTarget(keyTarget);
 
   const mut = useMutation({
+    mutationKey: ['payslip-pay', payslip._id],
     mutationFn: (payload) =>
       postData({
         url: `/staff-salary/payslip/${payslip._id}/pay`,
         payload,
         token,
-        headers: idempotencyHeader(idempotencyKey),
+        headers: idempotencyHeader(idempotencyKeyRef.current),
       }),
     onSuccess: (res) => {
+      releaseKey(keyTarget);
       toast.success(res?.message || 'Payslip marked as paid');
       onDone();
       onClose();
     },
     onError: (e) => {
+      // The key is spent — it went through earlier with a different amount, or
+      // that payment was reversed since — so it can never succeed again: start
+      // a fresh one and refresh the payslip.
+      const spent = spentKeyMessage(e);
+      if (spent) {
+        releaseKey(keyTarget);
+        idempotencyKeyRef.current = newIdempotencyKey();
+        onDone();
+        setErr(spent);
+        toast.error(spent);
+        return;
+      }
+      // Network/timeout etc.: keep the key so an unchanged retry is recognised.
       setErr(e.message || 'Failed to mark paid');
       toast.error(e.message || 'Failed to mark paid');
+      if (isUnknownOutcome(e)) {
+        // It may have gone through: a cancel and reopen must reuse this key.
+        holdKey(keyTarget, idempotencyKeyRef.current);
+        onDone();
+      }
     },
   });
+
+  // Same key rule as the parent's close: stay open until the request settles.
+  const closeIfIdle = () => {
+    if (!mut.isPending) onClose();
+  };
 
   const submit = () => {
     setErr('');
@@ -705,11 +758,10 @@ function PayForm({ payslip, onClose, onDone }) {
     // A fully deducted payslip (nothing owed) is settled without an amount.
     // Empty pays the full remaining balance; anything typed must be a valid
     // number — an unparseable one used to be dropped, paying the full balance.
-    const amountIn = parseAmountInput(paidAmount);
-    if (remaining > 0 && amountIn.invalid)
+    const { invalid, amount } = instalmentAmount(paidAmount, remaining);
+    if (invalid)
       return setErr('Enter a valid amount, or leave it empty to pay the full remaining balance');
-    if (remaining > 0 && !amountIn.empty) {
-      const amount = amountIn.value;
+    if (amount !== undefined) {
       if (amount <= 0) return setErr('Amount must be greater than 0');
       if (amount > remaining) return setErr(`Amount cannot exceed the remaining ${remaining}`);
       payload.paidAmount = amount;
@@ -804,7 +856,7 @@ function PayForm({ payslip, onClose, onDone }) {
       </div>
       <div className="flex gap-2 justify-end">
         <button
-          onClick={onClose}
+          onClick={closeIfIdle}
           className="px-4 py-1.5 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800"
         >
           Cancel

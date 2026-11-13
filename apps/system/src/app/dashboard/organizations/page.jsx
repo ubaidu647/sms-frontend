@@ -3,17 +3,7 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { FilterBar } from '@/component/FilterBar';
 import { Table } from '@/component/Table';
 import { Tabs } from '@/component/Tabs';
-import {
-  Plus,
-  Eye,
-  Edit,
-  Package,
-  CreditCard,
-  Ban,
-  CheckCircle2,
-  Trash2,
-  KeyRound,
-} from 'lucide-react';
+import { Plus, Ban, CheckCircle2, KeyRound } from 'lucide-react';
 import { ColumnSelector } from '@/component/ColumnSelector';
 import { AddOrganizationModal } from '@/component/AddOrganizationModal';
 import { useTokenStore } from '@/store/tokenStore';
@@ -191,7 +181,6 @@ export default function Organization() {
     setSelectedColumns([]);
   };
 
-  // view / edit / package / subscription / delete have no screen yet.
   const handleRowAction = (action, row) => {
     switch (action) {
       case 'disable':
@@ -211,17 +200,15 @@ export default function Organization() {
   const rowActions = useMemo(
     () => (row) => {
       const isRowDisabled = row?.isActive === false || row?.status === 'suspended';
-      const base = [
-        { label: 'View Details', value: 'view', icon: Eye },
-        { label: 'Edit', value: 'edit', icon: Edit },
-        { label: 'View Package', value: 'package', icon: Package },
-        { label: 'View Subscription', value: 'subscription', icon: CreditCard },
-        { label: 'Reset admin password', value: 'reset-admin-password', icon: KeyRound },
-      ];
+      // Only actions with a screen behind them: add view, edit, package,
+      // subscription and delete here once theirs exist.
       const toggle = isRowDisabled
         ? { label: 'Enable', value: 'enable', icon: CheckCircle2 }
         : { label: 'Disable', value: 'disable', icon: Ban };
-      return [...base, toggle, { label: 'Delete', value: 'delete', icon: Trash2, danger: true }];
+      return [
+        { label: 'Reset admin password', value: 'reset-admin-password', icon: KeyRound },
+        toggle,
+      ];
     },
     [],
   );

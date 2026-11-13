@@ -17,6 +17,7 @@ import {
   leaveErrorMessage,
 } from "@/hooks/useLeave";
 import { useSelectedChild, useSelectedChildId } from "@/hooks/useChildren";
+import { useUserStore } from "@/store/userStore";
 import { PageHeader, Panel } from "@/component/dashboard/Panel";
 import { Loading, ErrorState, EmptyState } from "@/component/dashboard/States";
 import { formatDate } from "@/utils/format";
@@ -254,7 +255,7 @@ function ApplyLeaveForm({ childName, onClose }) {
   );
 }
 
-function LeaveRow({ r, onCancel, cancelling }) {
+function LeaveRow({ r, onCancel, cancelling, userId }) {
   const sameDay =
     r.fromDate && r.toDate && fmtDay(r.fromDate) === fmtDay(r.toDate);
   const role = r.requestedBy?.role;
@@ -305,7 +306,7 @@ function LeaveRow({ r, onCancel, cancelling }) {
             )}
           </div>
         </div>
-        {canParentCancel(r) && (
+        {canParentCancel(r, userId) && (
           <button
             onClick={() => onCancel(r)}
             disabled={cancelling}
@@ -322,6 +323,7 @@ function LeaveRow({ r, onCancel, cancelling }) {
 
 // Keyed by the child id: switching child resets the page and closes the form.
 function ChildLeave({ childName }) {
+  const userId = useUserStore((s) => s.user?._id ?? s.user?.id);
   const [page, setPage] = useState(1);
   const [showForm, setShowForm] = useState(false);
   const { data, isLoading, isError, error, refetch, isFetching } =
@@ -404,6 +406,7 @@ function ChildLeave({ childName }) {
                 r={r}
                 onCancel={onCancel}
                 cancelling={cancel.isPending && cancel.variables === r._id}
+                userId={userId}
               />
             ))}
           </div>

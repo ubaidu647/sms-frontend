@@ -5,6 +5,7 @@ import { MessageCircle, Building2 } from 'lucide-react';
 import { useUserStore } from '@/store/userStore';
 import { useTokenStore } from '@/store/tokenStore';
 import { fetchData } from '@/utils/api';
+import QueryErrorState from '@/component/QueryErrorState';
 import { canSee, canEditScope, isOrgLevel as isOrgLevelScope } from '@/utils/permissions';
 import { ACTIONS } from '@/constants/rolePermissions';
 import { useWhatsAppSettings } from './hooks';
@@ -28,14 +29,22 @@ export default function WhatsAppSettingsSection() {
   const isOrgLevel = isOrgLevelScope(role, ACTIONS.VIEW_WHATSAPP_SETTINGS);
   const userBranchId = user?.branchId || user?.branch?._id || '';
 
-  const { settings, branches, isLoading, save, saving } = useWhatsAppSettings({
-    enabled: canView,
-  });
+  const { settings, branches, isLoading, isFetching, isError, error, refetch, save, saving } =
+    useWhatsAppSettings({
+      enabled: canView,
+    });
 
   // Org admins pick which branch to configure/connect. Load the full branch list
   // (same source every org-level selector uses) so branches with no WhatsApp
   // config yet still appear and can be connected.
-  const { data: branchData, isLoading: branchesLoading } = useQuery({
+  const {
+    data: branchData,
+    isLoading: branchesLoading,
+    isError: branchesFailed,
+    error: branchesError,
+    isFetching: branchesFetching,
+    refetch: refetchBranches,
+  } = useQuery({
     queryKey: ['branches-dropdown'],
     queryFn: () => fetchData({ url: '/branch/list', page: 1, limit: 100, token }),
     enabled: !!token && canView && isOrgLevel,
@@ -112,6 +121,22 @@ export default function WhatsAppSettingsSection() {
 
         {loading ? (
           <div className="text-sm text-gray-500 dark:text-gray-400">Loading settings…</div>
+        ) : isError ? (
+          // Not the form: loaded blank, its Save would overwrite the real config.
+          <QueryErrorState
+            error={error}
+            fallback="Could not load the WhatsApp settings"
+            onRetry={() => refetch()}
+            retrying={isFetching}
+          />
+        ) : isOrgLevel && branchesFailed && !activeBranchId ? (
+          // Not "No branches found": the list failed, it did not come back empty.
+          <QueryErrorState
+            error={branchesError}
+            fallback="Could not load the branches"
+            onRetry={() => refetchBranches()}
+            retrying={branchesFetching}
+          />
         ) : isOrgLevel && !activeBranchId ? (
           <div className="rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/50 px-4 py-3 text-sm text-amber-800 dark:text-amber-300">
             No branches found — create a branch first to configure WhatsApp.

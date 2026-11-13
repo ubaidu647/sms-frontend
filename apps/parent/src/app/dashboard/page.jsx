@@ -19,8 +19,18 @@ import {
 import { Panel } from "@/component/dashboard/Panel";
 import AttendanceRing from "@/component/dashboard/AttendanceRing";
 import { formatMoney, formatDate } from "@/utils/format";
+import { amountDueStatus } from "@/utils/dashboardStatus";
+import { seatRefusalMessage } from "@/utils/seatRefusal";
+import { useSchoolCurrency } from "@/hooks/useSchoolCurrency";
+
+const DUE_TONE = {
+  due: "text-red-500",
+  clear: "text-[#00918e]",
+  muted: "text-gray-500 dark:text-gray-400",
+};
 
 export default function ParentDashboard() {
+  const { symbol: currencySymbol } = useSchoolCurrency();
   const child = useSelectedChild();
   const profile = useProfile();
   const attendance = useAttendance();
@@ -29,7 +39,11 @@ export default function ParentDashboard() {
 
   const me = profile.data;
   const attSummary = attendance.data?.summary;
-  const outstanding = fees.data?.summary?.outstandingBalance ?? 0;
+  const outstanding = fees.data?.summary?.outstandingBalance;
+  const due = amountDueStatus({ isError: fees.isError, outstanding });
+  // A failed or unfinished request has no figures: show a dash, not 0.
+  const attCount = (n) =>
+    attendance.isError || !attSummary ? "—" : (n ?? 0);
   const announceItems = announcements.data?.items ?? [];
 
   return (
@@ -53,21 +67,24 @@ export default function ParentDashboard() {
             href="/dashboard/attendance"
             className="flex flex-col items-center no-underline"
           >
-            <AttendanceRing percentage={attSummary?.presentPercentage ?? 0} />
+            <AttendanceRing
+              percentage={attSummary?.presentPercentage ?? null}
+              failed={attendance.isError}
+            />
             <div className="mt-3 grid grid-cols-3 gap-3 w-full text-center">
               <Stat
                 label="Present"
-                value={attSummary?.present ?? 0}
+                value={attCount(attSummary?.present)}
                 tone="text-[#00918e]"
               />
               <Stat
                 label="Absent"
-                value={attSummary?.absent ?? 0}
+                value={attCount(attSummary?.absent)}
                 tone="text-red-500"
               />
               <Stat
                 label="Late"
-                value={attSummary?.late ?? 0}
+                value={attCount(attSummary?.late)}
                 tone="text-[#f5b21c]"
               />
             </div>
@@ -83,13 +100,9 @@ export default function ParentDashboard() {
                 <span className="text-sm">Amount due</span>
               </div>
               <div className="mt-3 text-2xl font-bold text-gray-900 dark:text-gray-100">
-                {fees.isLoading ? "—" : formatMoney(outstanding)}
+                {due.known ? formatMoney(outstanding, currencySymbol) : "—"}
               </div>
-              <div
-                className={`mt-1 text-xs ${outstanding > 0 ? "text-red-500" : "text-[#00918e]"}`}
-              >
-                {outstanding > 0 ? "Outstanding balance" : "All cleared"}
-              </div>
+              <div className={`mt-1 text-xs ${DUE_TONE[due.tone]}`}>{due.label}</div>
             </div>
           </Link>
 
@@ -131,6 +144,11 @@ export default function ParentDashboard() {
           {announcements.isLoading ? (
             <p className="p-5 text-sm text-gray-500 dark:text-gray-400">
               Loading…
+            </p>
+          ) : announcements.isError ? (
+            <p className="p-5 text-sm text-gray-500 dark:text-gray-400">
+              {seatRefusalMessage(announcements.error) ||
+                "Could not load announcements."}
             </p>
           ) : announceItems.length === 0 ? (
             <div className="p-8 text-center text-sm text-gray-500 dark:text-gray-400">

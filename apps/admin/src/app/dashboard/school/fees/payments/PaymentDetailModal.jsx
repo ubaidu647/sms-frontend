@@ -17,6 +17,9 @@ import {
   paymentAccount,
   paymentAccountLabel,
 } from '@/constants/fee';
+import toast from 'react-hot-toast';
+import { PDF_CAPTURE_OPTIONS, PDF_FAILED_MESSAGE } from '@/utils/pdfCapture';
+import { useSchoolCurrency } from '@/hooks/useSchoolCurrency';
 
 export default function PaymentDetailModal({ isOpen, onClose, paymentId }) {
   const { accessToken: token } = useTokenStore();
@@ -60,7 +63,10 @@ export default function PaymentDetailModal({ isOpen, onClose, paymentId }) {
     if (!printableRef.current) return;
     const html = printableRef.current.innerHTML;
     const win = window.open('', '_blank', 'width=900,height=1000');
-    if (!win) return;
+    if (!win) {
+      window.alert('Allow pop-ups for this site to print.');
+      return;
+    }
     win.document.write(
       `<!doctype html><html><head><title>Receipt ${p?.receiptNumber || ''}</title>`,
     );
@@ -87,11 +93,7 @@ export default function PaymentDetailModal({ isOpen, onClose, paymentId }) {
         import('jspdf'),
       ]);
       const filename = `Receipt-${p?.receiptNumber || paymentId}.pdf`;
-      const canvas = await html2canvas(printableRef.current, {
-        scale: 2,
-        useCORS: true,
-        backgroundColor: '#ffffff',
-      });
+      const canvas = await html2canvas(printableRef.current, PDF_CAPTURE_OPTIONS);
       const imgData = canvas.toDataURL('image/jpeg', 0.98);
       const pdf = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
       const pageWidth = pdf.internal.pageSize.getWidth();
@@ -110,6 +112,9 @@ export default function PaymentDetailModal({ isOpen, onClose, paymentId }) {
         heightLeft -= pageHeight - margin * 2;
       }
       pdf.save(filename);
+    } catch (err) {
+      console.warn('PDF capture failed', err);
+      toast.error(PDF_FAILED_MESSAGE);
     } finally {
       setDownloadingPdf(false);
     }
@@ -405,6 +410,7 @@ function DetailRow({ label, value, mono, capitalize }) {
 }
 
 function Total({ label, value, tone = 'text-gray-900', big, strike }) {
+  const { symbol: currencySymbol } = useSchoolCurrency();
   return (
     <div className={`flex items-center justify-end gap-4 ${big ? 'border-t pt-2 mt-1' : ''}`}>
       <span className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">
@@ -415,7 +421,7 @@ function Total({ label, value, tone = 'text-gray-900', big, strike }) {
           strike ? 'line-through text-gray-400' : ''
         }`}
       >
-        {formatMoney(value)}
+        {formatMoney(value, currencySymbol)}
       </span>
     </div>
   );

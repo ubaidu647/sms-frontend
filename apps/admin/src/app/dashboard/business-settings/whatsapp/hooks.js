@@ -60,6 +60,7 @@ export function useWhatsAppSettings({ enabled = true } = {}) {
     branches: isMultiBranch ? raw : null,
     isMultiBranch,
     isLoading: query.isLoading,
+    isFetching: query.isFetching,
     isError: query.isError,
     error: query.error,
     refetch: query.refetch,
@@ -117,14 +118,19 @@ export function useWhatsAppSession({ branchId, filterBranchId, enabled = true } 
   }, [branchId, applyStatus]);
 
   // Polling is the fallback — it no-ops while the socket is delivering events.
-  const startPolling = useCallback(() => {
-    stopPolling();
-    pollRef.current = setInterval(async () => {
-      if (socketLive.current) return; // socket is healthy — skip the HTTP poll
-      const terminal = await refreshStatus();
-      if (terminal === 'connected') stopPolling();
-    }, POLL_MS);
-  }, [refreshStatus, stopPolling]);
+  // `untilConnected: false` keeps going once connected, for a viewer with no
+  // socket: a later disconnect would otherwise never reach the screen.
+  const startPolling = useCallback(
+    ({ untilConnected = true } = {}) => {
+      stopPolling();
+      pollRef.current = setInterval(async () => {
+        if (socketLive.current) return; // socket is healthy — skip the HTTP poll
+        const terminal = await refreshStatus();
+        if (terminal === 'connected' && untilConnected) stopPolling();
+      }, POLL_MS);
+    },
+    [refreshStatus, stopPolling],
+  );
 
   const connect = useCallback(async () => {
     setError(null);
@@ -170,7 +176,11 @@ export function useWhatsAppSession({ branchId, filterBranchId, enabled = true } 
     socket.on('connect', () => {
       // Re-sent on every (re)connect: rooms do not survive a reconnect.
       socket.emit('whatsapp:watch', filterBranchId ? String(filterBranchId) : undefined, (res) => {
-        socketLive.current = !!res?.ok; // not allowed → keep polling the status endpoint
+        if (socketRef.current !== socket) return; // this socket was closed meanwhile
+        socketLive.current = !!res?.ok;
+        // The server only lets users who may change the settings watch; a
+        // view-only user gets ok: false and reads the status endpoint instead.
+        if (!res?.ok) startPolling({ untilConnected: false });
       });
     });
     socket.on('disconnect', () => {
@@ -215,7 +225,7 @@ export function useWhatsAppSession({ branchId, filterBranchId, enabled = true } 
       socket.disconnect();
       socketRef.current = null;
     };
-  }, [enabled, filterBranchId, applyStatus]);
+  }, [enabled, filterBranchId, applyStatus, startPolling]);
 
   // Load the current status once when the screen mounts / branch changes.
   useEffect(() => {
