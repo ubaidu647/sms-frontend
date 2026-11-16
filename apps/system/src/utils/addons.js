@@ -191,7 +191,8 @@ export const invoicesById = (invoices) =>
 export const planInvoiceFor = (invoices, subscriptionId) => {
   const id = idOf(subscriptionId);
   const own = (invoices ?? []).filter(
-    (inv) => idOf(inv.subscriptionId) === id && inv.type !== 'addon',
+    // Add-on bills and advances are not the plan's own invoice.
+    (inv) => idOf(inv.subscriptionId) === id && inv.type !== 'addon' && inv.type !== 'advance',
   );
   own.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
   return own[0] ?? null;

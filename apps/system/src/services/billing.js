@@ -144,6 +144,27 @@ export const renewSubscription = async (payload) => {
   }
 };
 
+// Move a running free trial's last day. payload: { schoolId, endDate: 'YYYY-MM-DD' }
+export const setTrialEnd = async (payload) => {
+  try {
+    const res = await apiClient.post('/subscription/trial-end', payload);
+    return unwrap(res);
+  } catch (error) {
+    normalizeError(error);
+  }
+};
+
+// Record money paid ahead — a paid "advance" invoice, held as credit that the
+// next plan invoice deducts. payload: { schoolId, amount, note?, paymentInfo? }
+export const recordAdvance = async (payload) => {
+  try {
+    const res = await apiClient.post('/subscription/advance', payload);
+    return unwrap(res);
+  } catch (error) {
+    normalizeError(error);
+  }
+};
+
 /* -------------------------------- Add-ons ------------------------------- */
 
 // Price an add-on (extra units of a limit) without buying it.

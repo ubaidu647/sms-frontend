@@ -9,6 +9,8 @@ import {
   Eye,
   Receipt,
   Layers,
+  CalendarClock,
+  Wallet,
 } from 'lucide-react';
 import { Table } from '@/component/Table';
 import ConfirmModal from '../organizations/ConfirmModal';
@@ -17,6 +19,8 @@ import ChangePlanModal from './ChangePlanModal';
 import SubscriptionDetailModal from './SubscriptionDetailModal';
 import InvoiceModal from './InvoiceModal';
 import RenewSubscriptionModal from './RenewSubscriptionModal';
+import TrialEndModal from './TrialEndModal';
+import AdvanceModal from './AdvanceModal';
 import AddonModal from './AddonModal';
 import AddonsPanel from './AddonsPanel';
 import SchoolPicker from './SchoolPicker';
@@ -92,6 +96,14 @@ const StatusPill = ({ status }) => (
   </span>
 );
 
+// A free trial of the package: no invoice until it is converted.
+const TrialBadge = ({ sub }) =>
+  sub?.isTrial ? (
+    <span className="inline-flex px-3 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300">
+      Free trial
+    </span>
+  ) : null;
+
 // The plan's invoice is past due: the school is read-only until it is paid.
 const OverdueBadge = ({ sub }) =>
   isPaymentOverdue(sub) ? (
@@ -153,6 +165,8 @@ export default function SubscriptionsPage() {
   const [assignOpen, setAssignOpen] = useState(false);
   const [changeOpen, setChangeOpen] = useState(false);
   const [renewOpen, setRenewOpen] = useState(false);
+  const [trialEndOpen, setTrialEndOpen] = useState(false);
+  const [advanceOpen, setAdvanceOpen] = useState(false);
   const [cancelOpen, setCancelOpen] = useState(false);
   const [syncOpen, setSyncOpen] = useState(false);
   const [addonOpen, setAddonOpen] = useState(false);
@@ -188,6 +202,7 @@ export default function SubscriptionsPage() {
         render: (v, row) => (
           <span className="inline-flex flex-wrap items-center gap-1.5">
             <StatusPill status={v} />
+            <TrialBadge sub={row} />
             <OverdueBadge sub={row} />
           </span>
         ),
@@ -267,6 +282,7 @@ export default function SubscriptionsPage() {
                           {current.packageSnapshot?.name ?? 'Subscription'}
                         </h2>
                         <StatusPill status={current.status} />
+                        <TrialBadge sub={current} />
                         <OverdueBadge sub={current} />
                         <PriceLockBadge sub={current} />
                       </div>
@@ -274,6 +290,13 @@ export default function SubscriptionsPage() {
                         {fmtMoney(current.packageSnapshot?.price)} ·{' '}
                         {current.packageSnapshot?.durationInDays}d cycle
                       </p>
+                      {current.isTrial && (
+                        <p className="text-sm text-amber-700 dark:text-amber-400 mt-1">
+                          Free trial until {fmtDate(current.endDate)} — no invoice yet. When it ends
+                          the plan starts on its own with an unpaid first invoice (payment window
+                          below). Convert it earlier to start billing now.
+                        </p>
+                      )}
                       <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                         {fmtDate(current.startDate)} → {fmtDate(current.endDate)}
                       </p>
@@ -303,6 +326,12 @@ export default function SubscriptionsPage() {
                           </>
                         )}
                       </p>
+                      {(current.carriedCredit ?? 0) > 0 && (
+                        <p className="text-sm text-teal-700 dark:text-teal-400 mt-1">
+                          Credit / advance: {fmtMoney(current.carriedCredit)} — deducted from the
+                          next plan invoice
+                        </p>
+                      )}
                     </div>
                     <div className="flex flex-wrap gap-2">
                       <button
@@ -310,14 +339,14 @@ export default function SubscriptionsPage() {
                         className="flex items-center gap-2 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors text-sm"
                       >
                         <ArrowLeftRight className="w-4 h-4" />
-                        Change Plan
+                        {current.isTrial ? 'Convert to another plan' : 'Change Plan'}
                       </button>
                       <button
                         onClick={() => setRenewOpen(true)}
                         className="flex items-center gap-2 px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-sm"
                       >
                         <RefreshCw className="w-4 h-4" />
-                        Renew
+                        {current.isTrial ? 'Convert to paid' : 'Renew'}
                       </button>
                       <button
                         onClick={() => setSyncOpen(true)}
@@ -326,6 +355,23 @@ export default function SubscriptionsPage() {
                       >
                         <Layers className="w-4 h-4" />
                         Re-apply plan
+                      </button>
+                      {current.isTrial && (
+                        <button
+                          onClick={() => setTrialEndOpen(true)}
+                          className="flex items-center gap-2 px-4 py-2 border border-amber-300 text-amber-700 dark:text-amber-400 rounded-lg hover:bg-amber-50 dark:hover:bg-amber-950/30 transition-colors text-sm"
+                        >
+                          <CalendarClock className="w-4 h-4" />
+                          Change trial end
+                        </button>
+                      )}
+                      <button
+                        onClick={() => setAdvanceOpen(true)}
+                        title="Money paid ahead — held as credit for the next invoice"
+                        className="flex items-center gap-2 px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-sm"
+                      >
+                        <Wallet className="w-4 h-4" />
+                        Record advance
                       </button>
                       <button
                         onClick={() => setCancelOpen(true)}
@@ -524,6 +570,20 @@ export default function SubscriptionsPage() {
         <RenewSubscriptionModal
           isOpen={renewOpen}
           onClose={() => setRenewOpen(false)}
+          schoolId={schoolId}
+          schoolName={selectedSchool?.name}
+          current={current}
+        />
+        <TrialEndModal
+          isOpen={trialEndOpen && !!current?.isTrial}
+          onClose={() => setTrialEndOpen(false)}
+          schoolId={schoolId}
+          schoolName={selectedSchool?.name}
+          current={current}
+        />
+        <AdvanceModal
+          isOpen={advanceOpen && !!current}
+          onClose={() => setAdvanceOpen(false)}
           schoolId={schoolId}
           schoolName={selectedSchool?.name}
           current={current}

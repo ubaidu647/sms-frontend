@@ -55,7 +55,11 @@ export default function RenewSubscriptionModal({ isOpen, onClose, schoolId, scho
     if (isOpen) {
       setOpenedAt(Date.now());
       setStartFrom('today');
-      setGrace(current?.gracePeriodInDays != null ? String(current.gracePeriodInDays) : '');
+      // A trial runs without grace; the grace chosen for its paid plan waits on it.
+      const graceDays = current?.isTrial
+        ? current?.nextGracePeriodInDays
+        : current?.gracePeriodInDays;
+      setGrace(graceDays != null ? String(graceDays) : '');
       const due = paymentDueFormState(current);
       setBlockUnpaid(due.block);
       setDueDays(due.days);
@@ -102,6 +106,8 @@ export default function RenewSubscriptionModal({ isOpen, onClose, schoolId, scho
     planFeatures,
   ]);
 
+  // Converting a trial: the paid plan starts today at full price, nothing credited.
+  const isTrial = !!current?.isTrial;
   const selected = estimates[startFrom];
   const pastEnd = !!selected && !estimates.endDate?.extendFromEnd;
 
@@ -134,8 +140,8 @@ export default function RenewSubscriptionModal({ isOpen, onClose, schoolId, scho
       return;
     }
     setError('');
-    let payload = { schoolId, startFrom };
-    if (hasAddons) payload.keepAddons = keepAddons;
+    let payload = { schoolId, startFrom: isTrial ? 'today' : startFrom };
+    if (hasAddons && !isTrial) payload.keepAddons = keepAddons;
     if (grace !== '' && grace != null) payload.gracePeriodInDays = Number(grace);
     payload = withPaymentDue(payload, due.value);
     renew.mutate(payload, {
@@ -149,7 +155,7 @@ export default function RenewSubscriptionModal({ isOpen, onClose, schoolId, scho
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Renew Subscription"
+      title={isTrial ? 'Convert Trial to Paid' : 'Renew Subscription'}
       subtitle={schoolName ? `For ${schoolName}` : undefined}
       size="lg"
       footer={
@@ -167,7 +173,7 @@ export default function RenewSubscriptionModal({ isOpen, onClose, schoolId, scho
             }}
           />
           <Button
-            label="Renew"
+            label={isTrial ? 'Convert to paid' : 'Renew'}
             handleClick={submit}
             loading={renew.isPending}
             type="button"
@@ -185,7 +191,18 @@ export default function RenewSubscriptionModal({ isOpen, onClose, schoolId, scho
       <div className="space-y-5">
         {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
 
-        {current?.packageSnapshot && (
+        {isTrial && current?.packageSnapshot && (
+          <div className="rounded-lg bg-amber-50 dark:bg-amber-950/30 p-3 text-sm text-amber-900 dark:text-amber-200">
+            Converting the free trial of{' '}
+            <span className="font-medium">{current.packageSnapshot.name}</span> to a paid plan. It
+            starts today for {durationInDays} days and is billed in full (
+            {fmtMoney(catalog?.price ?? current.packageSnapshot.price)}
+            {catalog?.launchOffer ? ', or the launch offer price if one is left' : ''}). Trial days
+            are not credited.
+          </div>
+        )}
+
+        {!isTrial && current?.packageSnapshot && (
           <div className="rounded-lg bg-gray-50 dark:bg-gray-800/60 p-3 text-sm text-gray-600 dark:text-gray-300">
             Renewing <span className="font-medium">{current.packageSnapshot.name}</span> —{' '}
             {fmtMoney(price)} / {durationInDays}d{' '}
@@ -202,86 +219,88 @@ export default function RenewSubscriptionModal({ isOpen, onClose, schoolId, scho
           </div>
         )}
 
-        <fieldset>
-          <legend className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
-            New period starts
-          </legend>
-          <div className="space-y-2">
-            {START_OPTIONS.map((opt) => {
-              const est = estimates[opt.value];
-              const checked = startFrom === opt.value;
-              return (
-                <label
-                  key={opt.value}
-                  className={`flex items-start gap-3 rounded-lg border p-3 cursor-pointer ${
-                    checked
-                      ? 'border-teal-500 bg-teal-50 dark:bg-teal-950/30'
-                      : 'border-gray-200 dark:border-gray-700'
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="renew-start"
-                    className="mt-1 h-4 w-4 accent-teal-600"
-                    value={opt.value}
-                    checked={checked}
-                    onChange={() => setStartFrom(opt.value)}
-                  />
-                  <span className="text-sm">
-                    <span className="font-medium text-gray-900 dark:text-gray-100">
-                      {opt.label}
-                    </span>
-                    <span className="block text-xs text-gray-500 dark:text-gray-400">
-                      {opt.help}
-                    </span>
-                    {est?.newEndDate && (
-                      <span className="block text-xs text-gray-700 dark:text-gray-300 mt-1">
-                        New end date: {fmtDate(est.newEndDate)} · Amount due ≈{' '}
-                        {fmtMoney(est.amountDue)}
+        {!isTrial && (
+          <fieldset>
+            <legend className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
+              New period starts
+            </legend>
+            <div className="space-y-2">
+              {START_OPTIONS.map((opt) => {
+                const est = estimates[opt.value];
+                const checked = startFrom === opt.value;
+                return (
+                  <label
+                    key={opt.value}
+                    className={`flex items-start gap-3 rounded-lg border p-3 cursor-pointer ${
+                      checked
+                        ? 'border-teal-500 bg-teal-50 dark:bg-teal-950/30'
+                        : 'border-gray-200 dark:border-gray-700'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="renew-start"
+                      className="mt-1 h-4 w-4 accent-teal-600"
+                      value={opt.value}
+                      checked={checked}
+                      onChange={() => setStartFrom(opt.value)}
+                    />
+                    <span className="text-sm">
+                      <span className="font-medium text-gray-900 dark:text-gray-100">
+                        {opt.label}
                       </span>
-                    )}
-                    {est && (est.addonCharge > 0 || est.addonCredit > 0) && (
                       <span className="block text-xs text-gray-500 dark:text-gray-400">
-                        {est.addonCharge > 0 && `Includes add-ons ${fmtMoney(est.addonCharge)}`}
-                        {est.addonCharge > 0 && est.addonCredit > 0 && ' · '}
-                        {est.addonCredit > 0 &&
-                          `add-on unused credit −${fmtMoney(est.addonCredit)}`}
+                        {opt.help}
                       </span>
-                    )}
-                    {opt.value === 'endDate' && est?.unpaidBlocksExtend && (
-                      <span className="block text-xs text-amber-700 dark:text-amber-400 mt-1">
-                        {invoice?.status === 'unpaid'
-                          ? 'The current invoice is unpaid: mark it paid first, or renew from today.'
-                          : 'An add-on invoice is unpaid: mark it paid first, or renew from today.'}
-                      </span>
-                    )}
-                  </span>
-                </label>
-              );
-            })}
-          </div>
-          {pastEnd && (
-            <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-              The current period has already ended, so both options start today.
+                      {est?.newEndDate && (
+                        <span className="block text-xs text-gray-700 dark:text-gray-300 mt-1">
+                          New end date: {fmtDate(est.newEndDate)} · Amount due ≈{' '}
+                          {fmtMoney(est.amountDue)}
+                        </span>
+                      )}
+                      {est && (est.addonCharge > 0 || est.addonCredit > 0) && (
+                        <span className="block text-xs text-gray-500 dark:text-gray-400">
+                          {est.addonCharge > 0 && `Includes add-ons ${fmtMoney(est.addonCharge)}`}
+                          {est.addonCharge > 0 && est.addonCredit > 0 && ' · '}
+                          {est.addonCredit > 0 &&
+                            `add-on unused credit −${fmtMoney(est.addonCredit)}`}
+                        </span>
+                      )}
+                      {opt.value === 'endDate' && est?.unpaidBlocksExtend && (
+                        <span className="block text-xs text-amber-700 dark:text-amber-400 mt-1">
+                          {invoice?.status === 'unpaid'
+                            ? 'The current invoice is unpaid: mark it paid first, or renew from today.'
+                            : 'An add-on invoice is unpaid: mark it paid first, or renew from today.'}
+                        </span>
+                      )}
+                    </span>
+                  </label>
+                );
+              })}
+            </div>
+            {pastEnd && (
+              <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                The current period has already ended, so both options start today.
+              </p>
+            )}
+            {selected?.invoiceStatus === 'unknown' && startFrom === 'today' && (
+              <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                The current invoice is still loading, so the credit for remaining days is not shown
+                yet.
+              </p>
+            )}
+            {dueAt && (
+              <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                If unpaid, the school becomes read-only after {fmtDate(dueAt)}.
+              </p>
+            )}
+            <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">
+              Estimate only — the server calculates the final amount.
             </p>
-          )}
-          {selected?.invoiceStatus === 'unknown' && startFrom === 'today' && (
-            <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-              The current invoice is still loading, so the credit for remaining days is not shown
-              yet.
-            </p>
-          )}
-          {dueAt && (
-            <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-              If unpaid, the school becomes read-only after {fmtDate(dueAt)}.
-            </p>
-          )}
-          <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">
-            Estimate only — the server calculates the final amount.
-          </p>
-        </fieldset>
+          </fieldset>
+        )}
 
-        {hasAddons && (
+        {hasAddons && !isTrial && (
           <div className="rounded-lg border border-gray-200 dark:border-gray-700 p-3">
             <label className="flex items-start gap-3 text-sm cursor-pointer">
               <input

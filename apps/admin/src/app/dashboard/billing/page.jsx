@@ -457,6 +457,16 @@ export default function BillingPage() {
                     {t('paymentDue')}: {fmtDate(current.paymentDueAt)}
                   </p>
                 )}
+                {current.isTrial && (
+                  <p className="text-sm text-amber-700 dark:text-amber-400 mt-1">
+                    {t('trialNote', { date: fmtDate(current.endDate) })}
+                  </p>
+                )}
+                {(current.carriedCredit ?? 0) > 0 && (
+                  <p className="text-sm text-teal-700 dark:text-teal-400 mt-1">
+                    {t('creditBalance', { amount: fmtMoney(current.carriedCredit) })}
+                  </p>
+                )}
               </div>
 
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">

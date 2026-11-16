@@ -26,6 +26,21 @@ test('no invoice on record is billed like a paid one', () => {
   assert.equal(e.invoiceStatus, 'none');
 });
 
+test('a free trial converts at full price — no credit, no kept days', () => {
+  const trial = current({ isTrial: true });
+  const change = estimate({ current: trial, invoice: null });
+  assert.equal(change.unusedCredit, 0);
+  assert.equal(change.amountDue, 5000);
+  const renew = estimate({
+    current: trial,
+    invoice: null,
+    startFrom: 'endDate',
+    durationInDays: 30,
+  });
+  assert.equal(renew.unusedCredit, 0);
+  assert.equal(renew.extendFromEnd, false);
+});
+
 test('an unpaid invoice gives no unused-time credit', () => {
   const e = estimate({ current: current(), invoice: { status: 'unpaid' } });
   assert.equal(e.unusedCredit, 0);

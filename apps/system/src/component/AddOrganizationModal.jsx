@@ -17,6 +17,7 @@ import { readPaymentDue, withPaymentDue } from '@/utils/paymentDue';
 import PaymentDueField from '@/app/dashboard/subscriptions/PaymentDueField';
 import LaunchOfferField from '@/app/dashboard/subscriptions/LaunchOfferField';
 import { launchOfferPayload, offerAvailable } from '@/utils/launchOffer';
+import TrialField, { readTrial } from '@/app/dashboard/subscriptions/TrialField';
 // Validation schema
 const organizationSchema = yup.object().shape({
   name: yup.string().required('School name is required'),
@@ -89,12 +90,17 @@ export const AddOrganizationModal = ({ isOpen, onClose, token, onSuccess = null 
   // Kept outside the form schema: a checkbox + optional number.
   const [blockUnpaid, setBlockUnpaid] = useState(true);
   const [dueDays, setDueDays] = useState(''); // blank → server default (15)
+  // Free trial of the chosen package (no invoice until converted).
+  const [trialOn, setTrialOn] = useState(false);
+  const [trialDays, setTrialDays] = useState('');
 
   useEffect(() => {
     if (!isOpen) {
       reset();
       setBlockUnpaid(true);
       setDueDays('');
+      setTrialOn(false);
+      setTrialDays('');
       setApplyOffer(true);
       setSubmitError('');
       setSuccessState(false);
@@ -128,10 +134,15 @@ export const AddOrganizationModal = ({ isOpen, onClose, token, onSuccess = null 
       // so nobody goes on to "Assign" one (that is refused: use Change/Renew).
       const sub = newSchool?.data?.subscription;
       const until = sub?.endDate ? new Date(sub.endDate).toLocaleDateString() : null;
+      let planLine = null;
+      if (sub?.isTrial)
+        planLine = `Free trial of “${sub.packageName}”${until ? ` until ${until}` : ''} — no invoice yet.`;
+      else if (sub)
+        planLine = `Plan “${sub.packageName}” is active${until ? ` until ${until}` : ''}.`;
       toast.success(
         [
           'School created successfully!',
-          sub ? `Plan “${sub.packageName}” is active${until ? ` until ${until}` : ''}.` : null,
+          planLine,
           newSchool?.data?.admin?.mustChangePassword
             ? 'The admin must change this password at first login.'
             : null,
@@ -157,8 +168,16 @@ export const AddOrganizationModal = ({ isOpen, onClose, token, onSuccess = null 
       setSubmitError(due.error);
       return;
     }
+    const trial = readTrial({ on: trialOn, days: trialDays });
+    if (trial.error) {
+      setSubmitError(trial.error);
+      return;
+    }
     // Omit grace when blank (→ backend default 0); otherwise send a number.
-    let payload = { ...data, ...launchOfferPayload(selectedPackage, applyOffer) };
+    // A trial takes no launch-offer slot: the offer is decided when it converts.
+    let payload = trial.value
+      ? { ...data, trialDays: trial.value }
+      : { ...data, ...launchOfferPayload(selectedPackage, applyOffer) };
     if (payload.gracePeriodInDays === '' || payload.gracePeriodInDays == null) {
       delete payload.gracePeriodInDays;
     } else {
@@ -315,7 +334,16 @@ export const AddOrganizationModal = ({ isOpen, onClose, token, onSuccess = null 
           </div>
         </div>
 
-        <LaunchOfferField pkg={selectedPackage} apply={applyOffer} onChange={setApplyOffer} />
+        <TrialField
+          on={trialOn}
+          onToggle={setTrialOn}
+          days={trialDays}
+          onDaysChange={setTrialDays}
+        />
+
+        {!trialOn && (
+          <LaunchOfferField pkg={selectedPackage} apply={applyOffer} onChange={setApplyOffer} />
+        )}
 
         <div>
           <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
@@ -346,7 +374,11 @@ export const AddOrganizationModal = ({ isOpen, onClose, token, onSuccess = null 
           onBlockChange={setBlockUnpaid}
           days={dueDays}
           onDaysChange={setDueDays}
-          hint="Leave empty for the default (15 days)."
+          hint={
+            trialOn
+              ? 'Leave empty for the default (15 days). Counts from the day the trial is converted to a paid plan.'
+              : 'Leave empty for the default (15 days).'
+          }
           inputClassName="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 rounded-xl disabled:opacity-50"
         />
 

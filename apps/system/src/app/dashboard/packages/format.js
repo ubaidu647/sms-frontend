@@ -34,6 +34,8 @@ export const INVOICE_TYPE_LABELS = {
   downgrade: 'Downgrade',
   renewal: 'Renewal',
   addon: 'Add-on',
+  // Money paid ahead (e.g. during a trial), held as credit for the next bill.
+  advance: 'Advance',
 };
 
 export const invoiceTypeLabel = (type) => INVOICE_TYPE_LABELS[type] ?? type ?? '-';

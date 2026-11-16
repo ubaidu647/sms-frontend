@@ -61,7 +61,11 @@ export default function ChangePlanModal({ isOpen, onClose, schoolId, schoolName,
       setMethod('');
       setTransactionId('');
       // Pre-fill the school's current grace so the admin sees and can keep it.
-      setGrace(current?.gracePeriodInDays != null ? String(current.gracePeriodInDays) : '');
+      // A trial runs without grace; the grace chosen for its paid plan waits on it.
+      const graceDays = current?.isTrial
+        ? current?.nextGracePeriodInDays
+        : current?.gracePeriodInDays;
+      setGrace(graceDays != null ? String(graceDays) : '');
       const due = paymentDueFormState(current);
       setBlockUnpaid(due.block);
       setDueDays(due.days);
@@ -133,7 +137,7 @@ export default function ChangePlanModal({ isOpen, onClose, schoolId, schoolName,
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Change Plan"
+      title={current?.isTrial ? 'Convert Trial to Another Plan' : 'Change Plan'}
       subtitle={schoolName ? `For ${schoolName}` : undefined}
       size="lg"
       footer={

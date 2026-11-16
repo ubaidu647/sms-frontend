@@ -60,6 +60,7 @@ export const fromStatusResponse = (status, nowMs = Date.now()) => {
       hardBlockAt: null,
       paymentDueAt: null,
       packageName: null,
+      isTrial: false,
     };
   }
   const endDate = toDate(status.endDate);
@@ -73,7 +74,23 @@ export const fromStatusResponse = (status, nowMs = Date.now()) => {
     else if (paymentDueAt && nowMs > paymentDueAt.getTime()) state = 'unpaid';
     else if (state === 'active' && endDate && nowMs > endDate.getTime()) state = 'grace';
   }
-  return { state, endDate, hardBlockAt, paymentDueAt, packageName: status.packageName ?? null };
+  return {
+    state,
+    endDate,
+    hardBlockAt,
+    paymentDueAt,
+    packageName: status.packageName ?? null,
+    // A free trial of the package; `endDate` is its last day.
+    isTrial: status.isTrial === true,
+  };
+};
+
+// Whole days left in a free trial (at least 1 while it is running), or null.
+export const trialDaysLeft = ({ state, isTrial, endDate }, nowMs = Date.now()) => {
+  if (!isTrial || state !== 'active') return null;
+  const end = toDate(endDate);
+  if (!end) return null;
+  return Math.max(1, Math.ceil((end.getTime() - nowMs) / MS_PER_DAY));
 };
 
 // How many days ahead of an unpaid invoice's due date the warning shows.

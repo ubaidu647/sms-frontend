@@ -141,11 +141,13 @@ export function planChangeEstimate({
   if (price == null || newPrice == null || !current?.endDate) return null;
 
   const endMs = new Date(current.endDate).getTime();
-  const extendFromEnd = startFrom === 'endDate' && endMs > nowMs;
+  // A free trial converts at full price from today: no credit, no kept days.
+  const isTrial = !!current.isTrial;
+  const extendFromEnd = !isTrial && startFrom === 'endDate' && endMs > nowMs;
 
   const unknown = invoice === undefined;
   const paid = !unknown && (invoice === null || invoice.status === 'paid');
-  const unusedCredit = paid && !extendFromEnd ? unusedShare(current, price, nowMs) : 0;
+  const unusedCredit = paid && !extendFromEnd && !isTrial ? unusedShare(current, price, nowMs) : 0;
   // An unpaid invoice is voided by the change; of the credit it had consumed,
   // only the part covering days still ahead comes back. (An extension is
   // refused outright while the invoice is unpaid, so it restores nothing.)

@@ -11,6 +11,7 @@ import { readPaymentDue, withPaymentDue } from '@/utils/paymentDue';
 import { launchOfferPayload, offerAvailable, startPrice } from '@/utils/launchOffer';
 import { formatGB } from '@/utils/storage';
 import LaunchOfferField from './LaunchOfferField';
+import TrialField, { readTrial } from './TrialField';
 
 const inputCls =
   'w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all';
@@ -41,6 +42,8 @@ export default function AssignSubscriptionModal({ isOpen, onClose, schoolId, sch
   const [blockUnpaid, setBlockUnpaid] = useState(true);
   const [dueDays, setDueDays] = useState(''); // blank → previous plan's value / server default
   const [applyOffer, setApplyOffer] = useState(true);
+  const [trialOn, setTrialOn] = useState(false);
+  const [trialDays, setTrialDays] = useState('');
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -54,6 +57,8 @@ export default function AssignSubscriptionModal({ isOpen, onClose, schoolId, sch
       setBlockUnpaid(true);
       setDueDays('');
       setApplyOffer(true);
+      setTrialOn(false);
+      setTrialDays('');
       setError('');
     }
   }, [isOpen]);
@@ -75,9 +80,17 @@ export default function AssignSubscriptionModal({ isOpen, onClose, schoolId, sch
       setError(due.error);
       return;
     }
+    const trial = readTrial({ on: trialOn, days: trialDays });
+    if (trial.error) {
+      setError(trial.error);
+      return;
+    }
     setError('');
 
-    let payload = { schoolId, packageId, ...launchOfferPayload(selected, applyOffer) };
+    // A trial takes no launch-offer slot (decided when it converts) and has no bill.
+    let payload = trial.value
+      ? { schoolId, packageId, trialDays: trial.value }
+      : { schoolId, packageId, ...launchOfferPayload(selected, applyOffer) };
 
     if (useCustom) {
       const limits = Object.fromEntries(
@@ -87,7 +100,7 @@ export default function AssignSubscriptionModal({ isOpen, onClose, schoolId, sch
       );
       if (Object.keys(limits).length) payload.customLimits = limits;
     }
-    if (method || transactionId) {
+    if (!trial.value && (method || transactionId)) {
       payload.paymentInfo = {
         method: method || undefined,
         transactionId: transactionId || undefined,
@@ -123,7 +136,7 @@ export default function AssignSubscriptionModal({ isOpen, onClose, schoolId, sch
             }}
           />
           <Button
-            label="Assign"
+            label={trialOn ? 'Start trial' : 'Assign'}
             handleClick={submit}
             loading={assign.isPending}
             type="button"
@@ -169,16 +182,32 @@ export default function AssignSubscriptionModal({ isOpen, onClose, schoolId, sch
             {selected.limits?.noOfBranches}, Staff {selected.limits?.noOfStaffs}, Sections{' '}
             {selected.limits?.noOfSections}, Storage{' '}
             {selected.limits?.storageGB != null ? formatGB(selected.limits.storageGB) : 'unlimited'}
-            <span className="block mt-1">
-              Billed: {fmtMoney(startPrice(selected, applyOffer))}
-              {offerAvailable(selected) && applyOffer ? ' (launch offer)' : ''} for{' '}
-              {selected.durationInDays} days. Estimate only — the server calculates the final
-              amount.
-            </span>
+            {trialOn ? (
+              <span className="block mt-1">
+                Free trial — nothing is billed until it is converted to a paid plan.
+              </span>
+            ) : (
+              <span className="block mt-1">
+                Billed: {fmtMoney(startPrice(selected, applyOffer))}
+                {offerAvailable(selected) && applyOffer ? ' (launch offer)' : ''} for{' '}
+                {selected.durationInDays} days. Estimate only — the server calculates the final
+                amount.
+              </span>
+            )}
           </div>
         )}
 
-        <LaunchOfferField pkg={selected} apply={applyOffer} onChange={setApplyOffer} reuseNote />
+        <TrialField
+          on={trialOn}
+          onToggle={setTrialOn}
+          days={trialDays}
+          onDaysChange={setTrialDays}
+          inputClassName={inputCls}
+        />
+
+        {!trialOn && (
+          <LaunchOfferField pkg={selected} apply={applyOffer} onChange={setApplyOffer} reuseNote />
+        )}
 
         <div>
           <label className="inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
@@ -212,26 +241,28 @@ export default function AssignSubscriptionModal({ isOpen, onClose, schoolId, sch
           )}
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className={labelCls}>Payment method</label>
-            <input
-              className={inputCls}
-              placeholder="e.g. bank"
-              value={method}
-              onChange={(e) => setMethod(e.target.value)}
-            />
+        {!trialOn && (
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className={labelCls}>Payment method</label>
+              <input
+                className={inputCls}
+                placeholder="e.g. bank"
+                value={method}
+                onChange={(e) => setMethod(e.target.value)}
+              />
+            </div>
+            <div>
+              <label className={labelCls}>Transaction ID</label>
+              <input
+                className={inputCls}
+                placeholder="e.g. TX1"
+                value={transactionId}
+                onChange={(e) => setTransactionId(e.target.value)}
+              />
+            </div>
           </div>
-          <div>
-            <label className={labelCls}>Transaction ID</label>
-            <input
-              className={inputCls}
-              placeholder="e.g. TX1"
-              value={transactionId}
-              onChange={(e) => setTransactionId(e.target.value)}
-            />
-          </div>
-        </div>
+        )}
 
         <GracePeriodField value={grace} onChange={setGrace} />
 

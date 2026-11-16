@@ -409,7 +409,10 @@
     "renewHint": "Please contact your administrator to renew and restore access.",
     "payHint": "Please pay the invoice or contact your administrator to restore access.",
     "viewBilling": "View billing and invoices",
-    "paymentDue": "Payment due"
+    "paymentDue": "Payment due",
+    "trialBanner": "Free trial: {days, plural, one {# day} other {# days}} left (ends {endDate}). After that your plan starts automatically and its first invoice is issued — everything you enter is kept.",
+    "trialEndedTitle": "Free trial ended",
+    "trialEndedBody": "Your free trial ended on {date}. All your data is safe and nothing has been deleted."
   },
   "billing": {
     "limitWithAddon": "{base} + {extra} add-on",
@@ -431,7 +434,8 @@
       "upgrade": "Upgrade",
       "downgrade": "Downgrade",
       "renewal": "Renewal",
-      "addon": "Add-on"
+      "addon": "Add-on",
+      "advance": "Advance"
     },
     "storageTitle": "Storage",
     "storageUsed": "{used} of {limit} used ({percent}%)",
@@ -445,7 +449,9 @@
     "moduleAddonsHelp": "Want one of these modules? Contact your platform admin to add it. It opens at once, and you are billed only for the days left in the current period, on a separate add-on invoice.",
     "moduleAddonLine": "{module} module @ {price} per period",
     "priceLock": "Launch price {price} locked until {date}",
-    "priceLockEnded": "Launch price {price} ended on {date}"
+    "priceLockEnded": "Launch price {price} ended on {date}",
+    "trialNote": "Free trial until {date}. After that this plan starts on its own and its first invoice is issued.",
+    "creditBalance": "Advance / credit: {amount} — deducted from your next invoice."
   },
   "currencySettings": {
     "pageTitle": "Currency",

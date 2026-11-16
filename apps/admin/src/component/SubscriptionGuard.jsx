@@ -7,7 +7,12 @@ import { useSubscriptionGuard } from '@/hooks/useSubscriptionGuard';
 import { useUserStore } from '@/store/userStore';
 import { ACTIONS } from '@/constants/rolePermissions';
 import { canSee } from '@/utils/permissions';
-import { BILLING_PATH, paymentDueSoon, showsBlockOverlay } from '@/utils/subscriptionState';
+import {
+  BILLING_PATH,
+  paymentDueSoon,
+  showsBlockOverlay,
+  trialDaysLeft,
+} from '@/utils/subscriptionState';
 
 const fmtDate = (d) =>
   d ? new Date(d).toLocaleDateString(undefined, { dateStyle: 'medium' }) : '';
@@ -66,19 +71,20 @@ function MarqueeBanner({ message, tone }) {
 export default function SubscriptionGuard({ children }) {
   const t = useTranslations('subscriptionGuard');
   const guard = useSubscriptionGuard();
-  const { state, endDate, hardBlockAt, paymentDueAt } = guard;
+  const { state, endDate, hardBlockAt, paymentDueAt, isTrial } = guard;
   const pathname = usePathname();
   const role = useUserStore((s) => s.user?.role);
   const canViewBilling = canSee(role, ACTIONS.VIEW_BILLING);
   const blocked = showsBlockOverlay({ state, pathname, canViewBilling });
   const dueSoon = paymentDueSoon(guard);
+  const trialLeft = trialDaysLeft(guard);
+  // A trial that ran out is "trial ended", not "subscription expired".
+  const trialEnded = isTrial && state === 'expired';
 
-  const blockTitle =
-    state === 'cancelled'
-      ? t('cancelledTitle')
-      : state === 'unpaid'
-        ? t('unpaidTitle')
-        : t('expiredTitle');
+  let blockTitle = t('expiredTitle');
+  if (state === 'cancelled') blockTitle = t('cancelledTitle');
+  else if (state === 'unpaid') blockTitle = t('unpaidTitle');
+  else if (trialEnded) blockTitle = t('trialEndedTitle');
   let blockBody;
   if (state === 'cancelled') blockBody = t('cancelledBody');
   else if (state === 'none') blockBody = t('noneBody');
@@ -86,7 +92,8 @@ export default function SubscriptionGuard({ children }) {
     blockBody = paymentDueAt
       ? t('unpaidBody', { date: fmtDate(paymentDueAt) })
       : t('unpaidBodyNoDate');
-  } else blockBody = t('expiredBody', { date: fmtDate(hardBlockAt) });
+  } else if (trialEnded) blockBody = t('trialEndedBody', { date: fmtDate(endDate) });
+  else blockBody = t('expiredBody', { date: fmtDate(hardBlockAt) });
 
   return (
     <>
@@ -100,6 +107,11 @@ export default function SubscriptionGuard({ children }) {
             endDate: fmtDate(endDate),
             hardBlockAt: fmtDate(hardBlockAt),
           })}
+        />
+      ) : trialLeft ? (
+        <MarqueeBanner
+          tone="amber"
+          message={t('trialBanner', { days: trialLeft, endDate: fmtDate(endDate) })}
         />
       ) : dueSoon ? (
         <MarqueeBanner

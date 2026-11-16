@@ -15,6 +15,8 @@ import {
   getInvoiceSummary,
   getInvoiceBySubscription,
   markInvoicePaid,
+  setTrialEnd,
+  recordAdvance,
 } from '@/services/billing';
 import { invoicesById, planInvoiceFor } from '@/utils/addons';
 
@@ -64,6 +66,12 @@ export const useChangePackage = () =>
 
 export const useRenewSubscription = () =>
   useSubscriptionMutation((p) => renewSubscription(p), 'Subscription renewed');
+
+export const useSetTrialEnd = () =>
+  useSubscriptionMutation((p) => setTrialEnd(p), 'Trial end date changed');
+
+export const useRecordAdvance = () =>
+  useSubscriptionMutation((p) => recordAdvance(p), 'Advance recorded');
 
 export const useCancelSubscription = () =>
   useSubscriptionMutation((schoolId) => cancelSubscription(schoolId), 'Subscription cancelled');
@@ -169,8 +177,9 @@ export const usePlanInvoice = (schoolId, subscriptionId) => {
   if (fromList) invoice = fromList;
   else if (needSingle && single.isSuccess) {
     const found = single.data?.data ?? null;
-    // An add-on bill there means the plan invoice is older still: unknown.
-    invoice = found && found.type === 'addon' ? undefined : found;
+    // An add-on bill or an advance there means the plan invoice is older
+    // still: unknown.
+    invoice = found && (found.type === 'addon' || found.type === 'advance') ? undefined : found;
   }
   return { invoice, byId: loaded ? invoicesById(list.data?.data) : undefined };
 };

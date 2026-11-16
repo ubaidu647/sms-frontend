@@ -7,6 +7,7 @@ import {
   isBlockedState,
   paymentDueSoon,
   showsBlockOverlay,
+  trialDaysLeft,
 } from './subscriptionState.js';
 
 const DAY = 24 * 60 * 60 * 1000;
@@ -104,4 +105,21 @@ test('paymentDueSoon warns only within 7 days of a future due date', () => {
   assert.equal(at(3, 'unpaid'), null);
   assert.equal(at(3, 'expired'), null);
   assert.equal(paymentDueSoon({ state: 'active', paymentDueAt: null }, nowMs), null);
+});
+
+test('trialDaysLeft counts whole days left while a trial runs', () => {
+  const now = Date.UTC(2026, 0, 1);
+  const in3d = new Date(now + 2.5 * 24 * 60 * 60 * 1000);
+  assert.equal(trialDaysLeft({ state: 'active', isTrial: true, endDate: in3d }, now), 3);
+  // The last hours still read as one day, not zero.
+  const soon = new Date(now + 60 * 60 * 1000);
+  assert.equal(trialDaysLeft({ state: 'active', isTrial: true, endDate: soon }, now), 1);
+  assert.equal(trialDaysLeft({ state: 'active', isTrial: false, endDate: in3d }, now), null);
+  assert.equal(trialDaysLeft({ state: 'expired', isTrial: true, endDate: in3d }, now), null);
+});
+
+test('fromStatusResponse carries the trial flag', () => {
+  const out = fromStatusResponse({ state: 'active', endDate: '2999-01-01', isTrial: true });
+  assert.equal(out.isTrial, true);
+  assert.equal(fromStatusResponse({ state: 'active', endDate: '2999-01-01' }).isTrial, false);
 });

@@ -12,6 +12,7 @@ const UNKNOWN = {
   hardBlockAt: null,
   paymentDueAt: null,
   packageName: null,
+  isTrial: false,
 };
 
 const isClientError = (err) => err?.status >= 400 && err?.status < 500;
