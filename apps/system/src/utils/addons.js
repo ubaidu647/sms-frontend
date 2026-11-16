@@ -31,7 +31,8 @@ export const MODULE_LABELS = {
   'staff-attendance': 'Staff attendance',
   'staff-salary': 'Staff salary',
   transport: 'Transport',
-  accounting: 'Accounting',
+  // Expenses & Profit/Loss are in every plan; this is the accountant's toolset.
+  accounting: 'Full accounting',
   whatsapp: 'WhatsApp',
 };
 

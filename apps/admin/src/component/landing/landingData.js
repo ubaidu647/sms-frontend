@@ -17,6 +17,78 @@ export const wa = (message) =>
   `https://wa.me/${CONTACT.waNumber}?text=${encodeURIComponent(message)}`;
 
 export const WA_DEMO = wa('Assalam-o-Alaikum Mizenzo, mujhe Mizenzo School ka free demo chahiye.');
+export const WA_ENQUIRE = wa(
+  'Assalam-o-Alaikum, mujhe Mizenzo School ke bare mein maloomat chahiye.',
+);
+
+/** Brand colours, matched to the logo and the school dashboard (#00918E teal, gold bulb). */
+export const TONES = {
+  teal: '#00918e',
+  bright: '#00a8a4',
+  deep: '#006360',
+  gold: '#d99a00',
+  green: '#16a34a',
+};
+
+/** The navbar's "Features" dropdown: one entry per headline module. */
+export const NAV_DROP = [
+  {
+    icon: 'users',
+    title: 'Parent portal',
+    sub: 'Fees, attendance & results',
+    tone: TONES.teal,
+    href: '#new',
+  },
+  {
+    icon: 'clipboard',
+    title: 'Online admissions',
+    sub: 'From enquiry to admitted',
+    tone: TONES.gold,
+    href: '#new',
+  },
+  {
+    icon: 'wallet',
+    title: 'Fees & vouchers',
+    sub: 'Concessions, fines & ledgers',
+    tone: TONES.deep,
+    href: '#features',
+  },
+  {
+    icon: 'clock',
+    title: 'Attendance',
+    sub: 'Students and staff',
+    tone: TONES.bright,
+    href: '#features',
+  },
+  {
+    icon: 'chart',
+    title: 'Exams & results',
+    sub: 'Marks and result cards',
+    tone: TONES.teal,
+    href: '#features',
+  },
+  {
+    icon: 'coins',
+    title: 'Staff payroll',
+    sub: 'Salary & payslips',
+    tone: TONES.gold,
+    href: '#features',
+  },
+  {
+    icon: 'award',
+    title: 'Certificates',
+    sub: 'SLC, character — Urdu & English',
+    tone: TONES.deep,
+    href: '#new',
+  },
+  {
+    icon: 'bus',
+    title: 'Transport',
+    sub: 'Routes, vehicles & fee',
+    tone: TONES.bright,
+    href: '#features',
+  },
+];
 
 export const PORTALS = [
   {
@@ -24,128 +96,128 @@ export const PORTALS = [
     title: 'School portal',
     who: 'Principal, admin, teachers, accountant and every staff role',
     href: '/signin',
-    icon: 'LayoutDashboard',
+    icon: 'layout',
   },
   {
     key: 'student',
     title: 'Student portal',
     who: 'Timetable, homework, attendance, results and fee vouchers',
     href: 'https://students.school.mizenzo.com',
-    icon: 'GraduationCap',
+    icon: 'school',
   },
   {
     key: 'parent',
     title: 'Parent portal',
     who: "Every child's fees, attendance, results and announcements in one login",
     href: 'https://parents.school.mizenzo.com',
-    icon: 'Users',
+    icon: 'users',
   },
   {
     key: 'mobile',
     title: 'Android app',
     who: 'The same school on the phone — for staff, students and parents',
     href: null,
-    icon: 'Smartphone',
+    icon: 'smartphone',
   },
 ];
 
 export const HERO_ICONS = [
-  { icon: 'Users', label: 'Student management' },
-  { icon: 'Coins', label: 'Staff & payroll' },
-  { icon: 'Clock', label: 'Attendance tracking' },
-  { icon: 'Wallet', label: 'Fees & vouchers' },
-  { icon: 'BarChart3', label: 'Exams & results' },
+  { icon: 'users', label: 'Student management' },
+  { icon: 'coins', label: 'Staff & payroll' },
+  { icon: 'clock', label: 'Attendance tracking' },
+  { icon: 'wallet', label: 'Fees & vouchers' },
+  { icon: 'chart', label: 'Exams & results' },
 ];
 
 export const STATS = [
   { value: '30+', label: 'Working modules' },
-  { value: '3 + 1', label: 'Web portals + Android app' },
-  { value: 'Multi', label: 'Branch from day one' },
-  { value: 'اردو', label: 'Urdu & English certificates' },
+  { value: '4', label: 'Apps — school, student, parent + Android' },
+  { value: '3', label: 'Permission scopes — all, branch, own' },
+  { value: 'PKR', label: 'Fees, vouchers and payroll' },
 ];
 
 /** The newest modules, shown first because they are what sets us apart. */
 export const WHATS_NEW = [
   {
-    icon: 'Users',
+    icon: 'users',
     title: 'Parent portal',
     body: 'Parents sign in once and see every child: fee vouchers, attendance, results, homework and announcements. Siblings sit under one login.',
   },
   {
-    icon: 'ClipboardList',
+    icon: 'clipboard',
     title: 'Online admissions',
     body: 'A public admission form per branch. Enquiries move from new → follow-up → test → admitted, and admitting enrols the student and raises the first voucher.',
   },
   {
-    icon: 'Award',
+    icon: 'award',
     title: 'Certificates in Urdu & English',
     body: 'School leaving, character, bonafide and fee clearance certificates, printed in English or Urdu. An SLC checks fees are clear first.',
   },
   {
-    icon: 'Library',
+    icon: 'book',
     title: 'Library',
     body: 'Books, issues and returns for students and staff, with a per-day late fine that lands on the next fee voucher by itself.',
   },
   {
-    icon: 'Package',
+    icon: 'box',
     title: 'Inventory & school shop',
     body: 'Stock, fixed assets and suppliers. Uniforms and books sold at the school shop are billed on the next fee voucher.',
   },
   {
-    icon: 'CalendarCheck',
+    icon: 'calendar',
     title: 'Leave management',
     body: 'Student leave from the parent portal or the office, staff leave with yearly quotas. Approved leave is excused from attendance.',
   },
   {
-    icon: 'TrendingUp',
+    icon: 'trending',
     title: 'Year-end promotion',
     body: 'Promote whole classes in one go — fees, subjects, teachers and transport carry over, detained students stay back, and the old year closes.',
   },
   {
-    icon: 'Landmark',
-    title: 'Accounting',
-    body: 'Chart of accounts, cash and bank, and a live ledger. Fee payments, salaries and purchases post themselves.',
+    icon: 'bank',
+    title: 'Expenses, Profit & Loss — and full accounting',
+    body: 'Every plan: expenses, other income, cash & bank and a monthly Profit & Loss. Premium: chart of accounts, journals, trial balance and balance sheet. Fees, salaries and purchases post themselves.',
   },
 ];
 
 export const FEATURES = [
   {
-    icon: 'School',
+    icon: 'school',
     title: 'Admissions & registration',
     body: 'From an enquiry to a registered student with a class, a section and a roll number. Records keep their full history instead of being overwritten.',
   },
   {
-    icon: 'Clock',
+    icon: 'clock',
     title: 'Attendance — students and staff',
     body: 'Daily student attendance by class and section, and separate staff attendance that feeds straight into salary.',
   },
   {
-    icon: 'BookOpen',
+    icon: 'book',
     title: 'Timetable & teaching assignments',
     body: 'Classes, subjects, periods and which teacher takes what — with clashes caught before Monday morning.',
   },
   {
-    icon: 'BarChart3',
+    icon: 'chart',
     title: 'Exams & results',
     body: 'Exam schedules, marks entry and result cards a parent can actually read.',
   },
   {
-    icon: 'Wallet',
+    icon: 'wallet',
     title: 'Fees, vouchers & ledgers',
     body: 'Fee structures per class, vouchers, receipts, concessions and a live ledger per student. Defaulters are a list, not a search.',
   },
   {
-    icon: 'Coins',
+    icon: 'coins',
     title: 'Staff, salary & payroll',
     body: 'Staff records, attendance-linked salary, allowances and deductions, with printable payslips.',
   },
   {
-    icon: 'Bus',
+    icon: 'bus',
     title: 'Transport',
     body: 'Routes, vehicles and which student rides which route — with the transport fee on the same voucher.',
   },
   {
-    icon: 'MessageCircle',
+    icon: 'wa',
     title: 'Announcements & WhatsApp',
     body: 'Homework, announcements and WhatsApp messages to parents — on the channel families actually read.',
   },
@@ -167,6 +239,10 @@ export const SPLITS = [
         " because a teacher's student list is the same screen — just narrower.",
       ],
       ['Students and parents get their own portals,', ' kept apart from staff.'],
+      [
+        'A super-admin console',
+        ' handles schools, plans and billing, kept away from the people running the school.',
+      ],
     ],
     panel: {
       title: 'Role · Senior Teacher (Branch 2)',
@@ -262,6 +338,8 @@ export const MODULES = [
       'Concessions & fines',
       'Student ledger',
       'Staff salary & payslips',
+      'Expenses & other income',
+      'Profit & Loss',
       'Accounting',
     ],
   },
@@ -295,6 +373,8 @@ export const CORE_INCLUDED = [
   'Timetable & homework',
   'Exams & result cards',
   'Fees, vouchers & receipts',
+  'Expenses, other income & cash/bank',
+  'Profit & Loss report',
   'Announcements',
   'Year-end promotion',
   'Reports, roles & branches',
@@ -310,7 +390,8 @@ export const ADDON_MODULES = [
   { key: 'staff-salary', label: 'Staff salary & payslips', price: 800 },
   { key: 'whatsapp', label: 'WhatsApp alerts', price: 1000 },
   { key: 'transport', label: 'Transport', price: 700 },
-  { key: 'accounting', label: 'Accounting', price: 1500 },
+  // The books are kept on every plan; this opens the accountant's screens.
+  { key: 'accounting', label: 'Full accounting (ledger, balance sheet)', price: 1500 },
   { key: 'library', label: 'Library', price: 500 },
   { key: 'inventory', label: 'Inventory & school shop', price: 700 },
 ];
@@ -324,7 +405,7 @@ export const PLANS = [
   {
     code: 'starter',
     name: 'Starter',
-    description: 'Small single-branch schools',
+    description: 'Small single-branch schools — fees, expenses & Profit/Loss',
     price: 2500,
     offerPrice: 1500,
     limits: { students: 300, branches: 1, staff: 25, sections: 15, storageGB: 2 },
@@ -333,7 +414,8 @@ export const PLANS = [
   {
     code: 'standard',
     name: 'Standard',
-    description: 'Medium schools — WhatsApp, payroll, admissions, transport',
+    description:
+      'Medium schools — WhatsApp, payroll, admissions, transport, expenses & Profit/Loss',
     price: 5000,
     offerPrice: 3500,
     featured: true,
@@ -351,7 +433,8 @@ export const PLANS = [
   {
     code: 'premium',
     name: 'Premium',
-    description: 'Large schools and chains — everything, accounting included',
+    description:
+      'Large schools and chains — everything, with full accounting: ledger, trial balance & balance sheet',
     price: 9000,
     offerPrice: 6500,
     limits: { students: 2000, branches: 5, staff: 150, sections: 100, storageGB: 15 },
@@ -371,6 +454,10 @@ export const FAQS = [
   {
     q: 'How much does it cost?',
     a: `Starter is Rs 2,500 a month, Standard Rs 5,000 and Premium Rs 9,000. The first ${LAUNCH_OFFER.maxSchools} schools get the launch price — Rs 1,500, Rs 3,500 and Rs 6,500 — locked for a full year. Paying yearly gives you two months free.`,
+  },
+  {
+    q: 'Do Starter and Standard show our expenses and profit?',
+    a: 'Yes. Every plan records expenses (bijli, kiraya, stationery…), other income and cash & bank balances, and shows a Profit & Loss report month by month — fees and salaries included. Premium adds full accounting for schools with an accountant: chart of accounts, journal vouchers, trial balance, balance sheet and period closing. Your books are kept from day one, so upgrading later loses nothing.',
   },
   {
     q: 'What if we grow past our plan?',

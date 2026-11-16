@@ -36,6 +36,7 @@ import {
   Library,
   Boxes,
   House,
+  PiggyBank,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -53,6 +54,18 @@ import { PlanUpgradeModal } from '@/component/PlanUpgrade';
 // Plan gating: an entry whose `key` maps to an add-on module (featureForMenu in
 // utils/planFeatures.js) is locked or hidden when the school's plan lacks it —
 // on top of the permission rules above, never instead of them.
+
+// Expenses & Income: any finance grant opens it — a clerk who only records
+// expenses (manage-finance) must see the screens too.
+const FINANCE_ACTIONS = [
+  'view-finance',
+  'view-all-branch-finance',
+  'manage-finance',
+  'manage-all-branch-finance',
+];
+const canUseFinance = (role, menus) =>
+  menus.includes('finance') || hasAnyAction(role, FINANCE_ACTIONS);
+
 const navigationItems = [
   // Order is by how often a school actually touches each screen, grouped into
   // sections (`section` → sidebar heading). Staff and Roles are not here on
@@ -271,6 +284,47 @@ const navigationItems = [
     path: '/dashboard/school/fees',
   },
   {
+    // Simple finance — in every plan (not plan-gated: featureForMenu('finance')
+    // is null). Everything here is also booked in the ledger, so a school that
+    // later buys Accounting finds its history there.
+    section: 'sectionFinance',
+    labelKey: 'finance',
+    iconComponent: PiggyBank,
+    key: 'finance',
+    hasSubmenu: true,
+    path: '/dashboard/school/finance',
+    submenu: [
+      {
+        labelKey: 'financeExpenses',
+        iconComponent: TrendingDown,
+        key: 'finance',
+        path: '/dashboard/school/finance/expenses',
+        canAccess: (role, menus) => canUseFinance(role, menus),
+      },
+      {
+        labelKey: 'financeIncome',
+        iconComponent: TrendingUp,
+        key: 'finance',
+        path: '/dashboard/school/finance/income',
+        canAccess: (role, menus) => canUseFinance(role, menus),
+      },
+      {
+        labelKey: 'financeCashBank',
+        iconComponent: Wallet,
+        key: 'finance',
+        path: '/dashboard/school/finance/cash-bank',
+        canAccess: (role, menus) => canUseFinance(role, menus),
+      },
+      {
+        labelKey: 'financeProfitLoss',
+        iconComponent: Scale,
+        key: 'finance',
+        path: '/dashboard/school/finance/profit-loss',
+        canAccess: (role, menus) => canUseFinance(role, menus),
+      },
+    ],
+  },
+  {
     section: 'sectionFinance',
     labelKey: 'accounting',
     iconComponent: Landmark,
@@ -416,6 +470,14 @@ const navigationItems = [
         path: '/dashboard/school/reports/progress',
         canAccess: (role) =>
           role?.isPredefined || hasAnyAction(role, ['view-student', 'view-all-branch-student']),
+      },
+      // The simple P&L every plan gets (same screen as under Expenses & Income).
+      {
+        labelKey: 'financeProfitLoss',
+        iconComponent: Scale,
+        key: 'finance',
+        path: '/dashboard/school/finance/profit-loss',
+        canAccess: (role, menus) => canUseFinance(role, menus),
       },
       // Financial reports — one entry per statement instead of in-page tabs.
       {

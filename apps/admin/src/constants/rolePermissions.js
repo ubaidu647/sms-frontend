@@ -267,6 +267,12 @@ export const ACTIONS = {
   VIEW_FINANCIAL_REPORT: 'view-financial-report',
   VIEW_ALL_BRANCH_FINANCIAL_REPORT: 'view-all-branch-financial-report',
 
+  // ── Finance (simple screens, every plan) ─────────
+  VIEW_FINANCE: 'view-finance',
+  MANAGE_FINANCE: 'manage-finance',
+  VIEW_ALL_BRANCH_FINANCE: 'view-all-branch-finance',
+  MANAGE_ALL_BRANCH_FINANCE: 'manage-all-branch-finance',
+
   // ── Accounting: period locking ────────────────────
   VIEW_ACCOUNTING_PERIOD: 'view-accounting-period',
   MANAGE_ACCOUNTING_PERIOD: 'manage-accounting-period',
@@ -414,6 +420,7 @@ export const AVAILABLE_MENUS = [
   { key: 'exam', label: 'Exams' },
   { key: 'timetable', label: 'Timetable' },
   { key: 'fee', label: 'Fees' },
+  { key: 'finance', label: 'Expenses & Income' },
   { key: 'account', label: 'Accounting — Chart of Accounts' },
   { key: 'journal', label: 'Accounting — Journal Entries' },
   { key: 'account-mapping', label: 'Accounting — Account Mapping' },
@@ -700,6 +707,12 @@ export const AVAILABLE_ACTIONS = [
   { key: ACTIONS.RECORD_ALL_BRANCH_PAYMENT, label: 'Record Payment All Branch', menu: 'fee' },
   { key: ACTIONS.VIEW_ALL_BRANCH_PAYMENT, label: 'View Payment All Branch', menu: 'fee' },
   { key: ACTIONS.VOID_ALL_BRANCH_PAYMENT, label: 'Void Payment All Branch', menu: 'fee' },
+
+  // Expenses & Income (simple finance — every plan)
+  { key: ACTIONS.VIEW_FINANCE, label: 'View', menu: 'finance' },
+  { key: ACTIONS.MANAGE_FINANCE, label: 'Record & Edit', menu: 'finance' },
+  { key: ACTIONS.VIEW_ALL_BRANCH_FINANCE, label: 'View All Branch', menu: 'finance' },
+  { key: ACTIONS.MANAGE_ALL_BRANCH_FINANCE, label: 'Record & Edit All Branch', menu: 'finance' },
 
   // Accounting — Chart of Accounts
   { key: ACTIONS.VIEW_ACCOUNT, label: 'View', menu: 'account' },

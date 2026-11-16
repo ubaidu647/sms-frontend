@@ -44,6 +44,8 @@ test('menu keys map to their module', () => {
   assert.equal(featureForMenu('financial-report'), 'accounting');
   assert.equal(featureForMenu('transport-assignment'), 'transport');
   assert.equal(featureForMenu('fee'), null);
+  // Expenses, other income, cash & bank and the P&L summary are in every plan.
+  assert.equal(featureForMenu('finance'), null);
   assert.equal(featureForMenu('attendance'), null);
 });
 

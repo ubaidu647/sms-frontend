@@ -95,7 +95,7 @@ const SignInForm = () => {
       <button
         type="submit"
         disabled={isPending || blocked}
-        className="w-full h-11 rounded-xl bg-teal-600 hover:bg-teal-700 disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold shadow-lg shadow-teal-600/30 transition-all flex items-center justify-center gap-2 group"
+        className="w-full h-11 rounded-xl bg-gradient-to-r from-[#00918e] to-[#007a77] hover:from-[#007a77] hover:to-[#004c4a] disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold shadow-lg shadow-[#00918e]/30 transition-all flex items-center justify-center gap-2 group"
       >
         {isPending ? (
           <>
