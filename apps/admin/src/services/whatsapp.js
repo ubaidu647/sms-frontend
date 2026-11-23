@@ -77,3 +77,19 @@ export const logoutSession = async (branchId) => {
     normalizeError(error);
   }
 };
+
+/* ------------------------------ Message log ------------------------------ */
+
+// What was sent to parents, and what was not. Filters: branchId (org-admin),
+// state, from/to (YYYY-MM-DD), phone, page, limit. Envelope:
+// { data: rows[], total, custom: { page, limit, counts: { sent, pending, … } } }
+export const getMessageLog = async (params = {}) => {
+  const clean = Object.fromEntries(
+    Object.entries(params).filter(([, v]) => v !== undefined && v !== null && v !== ''),
+  );
+  try {
+    return unwrap(await apiClient.get('/whatsapp/messages', { params: clean }));
+  } catch (error) {
+    normalizeError(error);
+  }
+};
